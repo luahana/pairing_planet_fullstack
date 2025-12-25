@@ -25,7 +25,8 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 재발급, 에러 페이지 등은 인증 없이 접근 가능
-                        .requestMatchers("/api/v1/auth/**", "/error").permitAll()
+//                        .requestMatchers("/api/v1/auth/**", "/error").permitAll()
+                                .requestMatchers("/api/v1/**", "/error").permitAll()
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )

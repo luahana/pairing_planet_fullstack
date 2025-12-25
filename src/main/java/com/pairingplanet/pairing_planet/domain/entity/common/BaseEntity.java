@@ -2,6 +2,7 @@ package com.pairingplanet.pairing_planet.domain.entity.common;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
+@SuperBuilder
 @MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseEntity {
@@ -18,6 +20,7 @@ public abstract class BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId = UUID.randomUUID(); // Java에서 생성하여 DB에 저장
 

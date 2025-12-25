@@ -4,25 +4,49 @@ spring:
       on-profile: dev
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db}
-    username: ${SPRING_DATASOURCE_USERNAME:dev_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:dev_password}
+    # docker-compose.yml의 postgres 설정과 일치시킴
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mydatabase}
+    username: ${SPRING_DATASOURCE_USERNAME:myuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:mypassword}
 
   data:
     redis:
       host: localhost
       port: 6379
+      # [중요] docker-compose.yml에서 설정한 비밀번호 (--requirepass mypassword)
+      password: mypassword
 
   jpa:
     hibernate:
       ddl-auto: validate
-#    properties:
-#      hibernate:
-#        format_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+  # MinIO (S3) 설정
+  cloud:
+    aws:
+      s3:
+        endpoint: http://localhost:9000 # Docker 외부(Local)에서 접속하므로 9000 포트 사용
+        path-style-access-enabled: true
+      credentials:
+        # docker-compose.yml의 MINIO_ROOT_USER / PASSWORD 와 일치
+        access-key: ${MINIO_ACCESS_KEY:minioadmin}
+        secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      region:
+        static: us-east-1
+      stack:
+        auto: false
+
+  # 커스텀 설정
+  file:
+    upload:
+      bucket: pairing-planet-local # MinIO에 생성될 버킷 이름
 
   flyway:
     enabled: true
-    validate-on-migrate: true
+    validate-on-migrate: false
     baseline-on-migrate: false
 
   sql:
@@ -32,13 +56,15 @@ spring:
   logging:
     level:
       root: INFO
-      com.pairing.planet: DEBUG
+      com.pairingplanet: DEBUG
       org.hibernate.SQL: DEBUG
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE
       org.flywaydb: DEBUG
-      org.springframework.boot.autoconfigure.flyway: DEBUG
+      software.amazon.awssdk: INFO
+
 jwt:
   secret: ${JWT_SECRET:cmVtZW1iZXJpdHJpc2luZ2JlbnRmcmFtZWluZGVwZW5kZW50Y3VyaW91c3Nob3J0ZXI=}
   expiration: 1800000
+
 security:
   encryption-key: "hJk+q9L/8fM3d4a5B6c7D8e9F0g1H2i3J4k5L6m7N8o="

@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID; // [필수]
+
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -15,12 +17,56 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping
-    public ResponseEntity<PostResponseDto> createPost(
-            @RequestHeader("X-User-Id") Long userId, // 실제로는 Security Context에서 가져옴
+    // ==========================================
+    // 1. Create (타입별 분리)
+    // ==========================================
+
+    @PostMapping("/daily")
+    public ResponseEntity<PostResponseDto> createDailyPost(
+            @RequestHeader("X-User-Id") UUID userId, // [변경] Long -> UUID
             @Valid @RequestBody CreatePostRequestDto request
     ) {
-        PostResponseDto response = postService.createPost(userId, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(postService.createDailyPost(userId, request));
+    }
+
+    @PostMapping("/reviews")
+    public ResponseEntity<PostResponseDto> createReviewPost(
+            @RequestHeader("X-User-Id") UUID userId, // [변경]
+            @Valid @RequestBody CreatePostRequestDto request
+    ) {
+        if (request.rating() == null) {
+            throw new IllegalArgumentException("Rating is required for Review Post");
+        }
+        return ResponseEntity.ok(postService.createReviewPost(userId, request));
+    }
+
+    @PostMapping("/recipes")
+    public ResponseEntity<PostResponseDto> createRecipePost(
+            @RequestHeader("X-User-Id") UUID userId, // [변경]
+            @Valid @RequestBody CreatePostRequestDto request
+    ) {
+        return ResponseEntity.ok(postService.createRecipePost(userId, request));
+    }
+
+    // ==========================================
+    // 2. Update & Delete (통합)
+    // ==========================================
+
+    @PatchMapping("/{postId}")
+    public ResponseEntity<PostResponseDto> updatePost(
+            @RequestHeader("X-User-Id") UUID userId, // [변경]
+            @PathVariable UUID postId,               // [변경] Long -> UUID
+            @RequestBody CreatePostRequestDto request
+    ) {
+        return ResponseEntity.ok(postService.updatePost(userId, postId, request));
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> deletePost(
+            @RequestHeader("X-User-Id") UUID userId, // [변경]
+            @PathVariable UUID postId                // [변경]
+    ) {
+        postService.deletePost(userId, postId);
+        return ResponseEntity.ok().build();
     }
 }

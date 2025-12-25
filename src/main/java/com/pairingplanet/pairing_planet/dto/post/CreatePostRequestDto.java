@@ -4,22 +4,36 @@ import com.pairingplanet.pairing_planet.dto.food.FoodRequestDto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public record CreatePostRequestDto(
+        // --- [Common] 공통 필드 ---
         @NotNull(message = "Food1 is required")
-        FoodRequestDto food1,          // FR-40: Food1 필수
+        FoodRequestDto food1,
 
-        FoodRequestDto food2,          // FR-40: Food2 선택
+        FoodRequestDto food2,
 
-        Long whenContextId,         // FR-42: Context Tag (ID로 받음)
-        Long dietaryTagId,
+        UUID whenContextId,
+        UUID dietaryContextId,
 
         @Size(max = 3, message = "Max 3 images allowed")
-        List<String> imageUrls,     // FR-43: 이미지 3장 제한
+        List<String> imageUrls,
 
-        String content,             // FR-43: 내용
-
+        String content,
         Boolean isPrivate,
+        Boolean commentsEnabled, // 댓글 허용 여부 추가
 
-        Boolean verdictEnabled      // FR-44: 판결 기능 활성화 여부
+        // --- [Review] 리뷰 전용 ---
+        String reviewTitle,      // 리뷰 제목
+        Integer rating,          // 1~5점 (Review 필수)
+        Boolean verdictEnabled,  // 판결 기능 여부
+        Integer pickyCount,      // (선택) 초기값
+
+        // --- [Recipe] 레시피 전용 ---
+        String recipeTitle,             // 레시피 제목
+        String ingredients,             // 텍스트 재료 목록
+        Integer cookingTime,            // 조리 시간(분)
+        Integer difficulty,             // 난이도 (1:쉬움 ~ 3:어려움)
+        Map<String, Object> recipeData  // 상세 단계 JSON (Step, Timer 등)
 ) {}

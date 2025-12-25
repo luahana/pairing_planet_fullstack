@@ -1,8 +1,10 @@
 package com.pairingplanet.pairing_planet.dto.post;
 
+import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import lombok.Builder;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,10 +26,10 @@ public record SavedPostDto(
         String whenTagName,
         String dietaryTagName,
 
-        LocalDateTime savedAt,
+        Instant savedAt,
         String cursor // 다음 페이지 요청을 위한 커서 값
 ) {
-    public static SavedPostDto from(Post post, LocalDateTime savedAt, String nextCursor) {
+    public static SavedPostDto from(Post post, Instant savedAt, String nextCursor) {
         boolean deleted = post.isDeleted();
 
         // 페어링 정보 추출 (Post.getPairing() 통해 접근)
@@ -56,7 +58,9 @@ public record SavedPostDto(
                     .postId(post.getId())
                     .isDeleted(false)
                     .content(post.getContent())
-                    .imageUrls(post.getImageUrls())
+                    .imageUrls(post.getImages().stream()
+                            .map(Image::getUrl)
+                            .toList())
                     .creatorName(post.getCreator().getUsername())
                     .creatorProfileUrl(post.getCreator().getProfileImageUrl())
                     .food1Name(f1).food2Name(f2)

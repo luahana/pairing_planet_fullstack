@@ -1,19 +1,16 @@
 package com.pairingplanet.pairing_planet.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pairingplanet.pairing_planet.dto.autocomplete.AutocompleteDto;
+import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.dto.search.*;
-import com.pairingplanet.pairing_planet.repository.food.FoodCategoryRepository;
-import com.pairingplanet.pairing_planet.repository.food.FoodMasterRepository;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
-import com.pairingplanet.pairing_planet.repository.search.PostSearchRepositoryImpl;
+import com.pairingplanet.pairing_planet.repository.search.PostSearchRepositoryCustom;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 
@@ -21,42 +18,46 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SearchService {
     private final PostRepository postRepository;
-    private final PostSearchRepositoryImpl postSearchRepositoryImpl;
+    private final PostSearchRepositoryCustom postSearchRepository;
     private final ObjectMapper objectMapper;
 
-    // FR-80 ~ FR-88: 메인 포스트 검색 (Cursor Pagination 적용)
+    private static final Instant SAFE_MIN_DATE = Instant.parse("1970-01-01T00:00:00Z");
+
     @Transactional(readOnly = true)
     public SearchResponseDto searchPosts(PairingSearchRequestDto request) {
-        // 1. 커서 디코딩
+        // 1. 커서 디코딩 (이제 DTO 생성자에서 자동으로 날짜가 보정됨)
         SearchCursorDto cursor = decodeCursor(request.cursor());
+
+        Instant safeCreatedAt = cursor.lastCreatedAt();
+        if (safeCreatedAt == null || safeCreatedAt.isBefore(SAFE_MIN_DATE)) {
+            safeCreatedAt = SAFE_MIN_DATE;
+        }
         int limit = 10;
 
         List<PostSearchResultDto> results;
 
-        // Case 1: 태그/음식 없이 검색어만 있는 경우 -> 본문 검색 (PostRepository Native Query)
+        // Case 1: 텍스트 검색
         if ((request.foodIds() == null || request.foodIds().isEmpty())
                 && request.rawQuery() != null && !request.rawQuery().isBlank()) {
 
-            // PostRepository.searchByContentNative 사용 (지난번 수정된 커서 지원 메서드)
             var posts = postRepository.searchByContentNative(
                     request.rawQuery(),
                     request.locale(),
-                    cursor.lastScore(), // Popularity Score 기준 커서
+                    cursor.lastScore(),
+                    safeCreatedAt, // 무조건 안전한 날짜임
                     limit
             );
-
-            // Entity -> DTO 변환
             results = posts.stream().map(this::convertToDto).toList();
 
         } else {
-            // Case 2: 일반/고급 검색 (PostSearchRepository - QueryDSL 등 사용 가정)
-            // Repository 메서드도 (request, cursorScore, cursorId, limit)을 받도록 수정 필요
-            results = postSearchRepositoryImpl.searchPosts(request, cursor, limit);
+            // Case 2: 고급 검색 (QueryDSL)
+            SearchCursorDto safeCursor = new SearchCursorDto(cursor.lastScore(), cursor.lastId(), safeCreatedAt);
 
-            // Case 3: Fallback (검색 결과 없고 When 컨텍스트가 있었을 경우) -> When 무시 재검색
-            // 주의: 첫 페이지(cursor가 초기값)일 때만 Fallback을 시도해야 함. 스크롤 중간에 갑자기 Fallback하면 이상함.
+            results = postSearchRepository.searchPosts(request, safeCursor, limit);
+
+            // Case 3: Fallback
             if (results.isEmpty() && request.whenContextId() != null && isFirstPage(cursor)) {
-                results = postSearchRepositoryImpl.searchPostsFallback(request, cursor, limit);
+                results = postSearchRepository.searchPostsFallback(request, safeCursor, limit);
             }
         }
 
@@ -66,20 +67,24 @@ public class SearchService {
 
         if (hasNext) {
             PostSearchResultDto last = results.get(results.size() - 1);
-            // 검색은 보통 '관련도'나 '인기도' 순이므로 score와 id를 잡음
-            nextCursor = encodeCursor(new SearchCursorDto(last.popularityScore(), last.postId()));
+            nextCursor = encodeCursor(new SearchCursorDto(
+                    last.popularityScore(),
+                    last.postId(),
+                    last.createdAt()
+            ));
         }
 
         return new SearchResponseDto(results, nextCursor, hasNext);
     }
 
-    // --- Helpers ---
-
     private PostSearchResultDto convertToDto(com.pairingplanet.pairing_planet.domain.entity.post.Post p) {
         return new PostSearchResultDto(
-                p.getId(), p.getPublicId(), p.getContent(), p.getImageUrls(), p.getCreatedAt(),
-                "Unknown", null, // Creator Info 필요시 추가 조회
-                null, null, null, null,
+                p.getId(), p.getPublicId(), p.getContent(),
+                p.getImages().stream().map(Image::getUrl).toList(),
+                p.getCreatedAt(),
+                p.getCreator().getUsername(),
+                p.getCreator().getPublicId(),
+                "Unknown", null, null, null,
                 null, null,
                 p.getGeniusCount(), p.getDaringCount(), p.getPickyCount(),
                 p.getCommentCount(), p.getSavedCount(), p.getPopularityScore(),
@@ -92,9 +97,12 @@ public class SearchService {
     }
 
     private SearchCursorDto decodeCursor(String cursorStr) {
-        if (cursorStr == null || cursorStr.isBlank()) return SearchCursorDto.initial();
+        if (cursorStr == null || cursorStr.isBlank()) {
+            return SearchCursorDto.initial();
+        }
         try {
             String json = new String(Base64.getUrlDecoder().decode(cursorStr), StandardCharsets.UTF_8);
+            // Jackson이 JSON을 파싱하여 생성자를 호출할 때, Record 생성자 내부 로직이 실행되어 날짜가 보정됩니다.
             return objectMapper.readValue(json, SearchCursorDto.class);
         } catch (Exception e) {
             return SearchCursorDto.initial();

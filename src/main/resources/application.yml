@@ -24,7 +24,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID:446195380506-6p6sg5vfeurj51ld5r9cp9deuq0j0hjh.apps.googleusercontent.com}
 server:
-  port: 8080
+  port: 4001
   shutdown: graceful
   servlet:
     encoding:

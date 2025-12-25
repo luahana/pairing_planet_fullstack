@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public interface SavedPostRepository extends JpaRepository<SavedPost, SavedPostId> {
@@ -32,7 +33,7 @@ public interface SavedPostRepository extends JpaRepository<SavedPost, SavedPostI
             "AND (sp.createdAt < :cursorTime OR (sp.createdAt = :cursorTime AND sp.post.id < :cursorPostId)) " +
             "ORDER BY sp.createdAt DESC, sp.post.id DESC")
     Slice<SavedPost> findAllByUserIdWithCursor(@Param("userId") Long userId,
-                                               @Param("cursorTime") LocalDateTime cursorTime,
+                                               @Param("cursorTime") Instant cursorTime,
                                                @Param("cursorPostId") Long cursorPostId,
                                                Pageable pageable);
 

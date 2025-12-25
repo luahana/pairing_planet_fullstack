@@ -1,24 +1,31 @@
 package com.pairingplanet.pairing_planet.domain.entity.post;
 
 import com.pairingplanet.pairing_planet.domain.entity.common.BaseEntity;
+import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import java.util.ArrayList;
 import java.util.List;
 
-@Builder
-@AllArgsConstructor
+
 @Entity
 @Table(name = "posts")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // [핵심] 단일 테이블 전략
+@DiscriminatorColumn(name = "dtype")
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Post extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,9 +38,9 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "image_urls", columnDefinition = "text[]")
-    private List<String> imageUrls;
+    @Builder.Default
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images = new ArrayList<>();
 
     @Column(name = "genius_count")
     @ColumnDefault("0")
@@ -66,9 +73,6 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
-
-    @Column(name = "verdict_enabled")
-    private boolean verdictEnabled;
 
     @Column(name = "comments_enabled")
     private boolean commentsEnabled;

@@ -1,6 +1,7 @@
 package com.pairingplanet.pairing_planet.repository.comment;
 
 import com.pairingplanet.pairing_planet.domain.entity.comment.Comment;
+import com.pairingplanet.pairing_planet.domain.entity.food.FoodMaster;
 import com.pairingplanet.pairing_planet.domain.enums.VerdictType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ import java.time.Instant;
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
+
+    Optional<Comment> findByPublicId(UUID publicId);
 
     // 1. 배댓 조회 (필터 옵션이 있을 때와 없을 때)
     // 필터 없음: 전체 중 좋아요 Top 3

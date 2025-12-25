@@ -7,8 +7,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ContextTagRepository extends JpaRepository<ContextTag, Long> {
-    Optional<ContextTag> findByPublicId(UUID publicId);
+    List<ContextTag> findAllByLocaleOrderByDisplayOrderAsc(String locale);
 
-    // 특정 차원(Dimension)과 언어(Locale)에 맞는 태그 목록 조회 (ex: 한국어 'When' 태그들)
-    List<ContextTag> findByDimensionIdAndLocale(Integer dimensionId, String locale);
+    // [변경] 특정 디멘션 내에서 순서대로 조회
+    List<ContextTag> findAllByDimensionIdAndLocaleOrderByDisplayOrderAsc(Long dimensionId, String locale);
+
+    Optional<ContextTag> findByPublicId(UUID publicId);
 }

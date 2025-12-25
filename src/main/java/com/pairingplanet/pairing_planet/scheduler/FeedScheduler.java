@@ -25,6 +25,8 @@ public class FeedScheduler {
     // Redis Key
     private static final String GLOBAL_FEED_KEY = "feed:global:mixed";
 
+    private static final Instant SAFE_MAX_DATE = Instant.parse("3000-01-01T00:00:00Z");
+
     // 5분마다 실행 (300,000ms)
     @Scheduled(fixedRate = 300000)
     public void updateGlobalFeedCache() {
@@ -35,9 +37,22 @@ public class FeedScheduler {
         // 1. 각 카테고리별 상위 게시물 DB 조회 (기존 Repository 활용)
         // 넉넉하게 100~200개씩 가져옴
         List<Long> popTrend = getIds(postRepository.findPopularAndTrending(locale, 100.0, now.minus(30, ChronoUnit.DAYS), Long.MAX_VALUE, Double.MAX_VALUE, PageRequest.of(0, 100)).getContent());
-        List<Long> trendOnly = getIds(postRepository.findTrendingOnly(locale, 30.0, now.minus(7, ChronoUnit.DAYS), Long.MAX_VALUE, Double.MAX_VALUE, Instant.MAX, PageRequest.of(0, 100)).getContent());
+        List<Long> trendOnly = getIds(postRepository.findTrendingOnly(
+                locale,
+                30.0,
+                now.minus(7, ChronoUnit.DAYS),
+                Long.MAX_VALUE,
+                Double.MAX_VALUE,
+                SAFE_MAX_DATE,
+                PageRequest.of(0, 100)
+        ).getContent());
         List<Long> popOnly = getIds(postRepository.findPopularOnly(locale, Long.MAX_VALUE, Double.MAX_VALUE, PageRequest.of(0, 100)).getContent());
-        List<Long> fresh = getIds(postRepository.findFresh(locale, Long.MAX_VALUE, Instant.MAX, PageRequest.of(0, 100)).getContent());
+        List<Long> fresh = getIds(postRepository.findFresh(
+                locale,
+                Long.MAX_VALUE,
+                SAFE_MAX_DATE,
+                PageRequest.of(0, 100)
+        ).getContent());
         List<Long> trendContro = getIds(postRepository.findTrendingAndControversial(locale, 2.0, now.minus(7, ChronoUnit.DAYS), Long.MAX_VALUE, Integer.MAX_VALUE, PageRequest.of(0, 50)).getContent());
         List<Long> controOnly = getIds(postRepository.findControversialOnly(locale, Long.MAX_VALUE, Double.MAX_VALUE, PageRequest.of(0, 50)).getContent());
 

@@ -1,16 +1,19 @@
 package com.pairingplanet.pairing_planet.dto.post;
 
+import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
+import com.pairingplanet.pairing_planet.dto.image.PostImageDto;
 import lombok.Builder;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 public record MyPostResponseDto(
-        Long id,
+        UUID id,
         String content,
-        List<String> imageUrls,
+        List<PostImageDto> images,
         Instant createdAt,
         boolean isPrivate, // 자물쇠 아이콘 표시용
 
@@ -30,9 +33,11 @@ public record MyPostResponseDto(
         String f2 = post.getPairing().getFood2() != null ? post.getPairing().getFood2().getName().get("en") : null;
 
         return MyPostResponseDto.builder()
-                .id(post.getId())
+                .id(post.getPublicId())
                 .content(post.getContent())
-                .imageUrls(post.getImageUrls())
+                .images(post.getImages().stream()
+                        .map(PostImageDto::from) // Image 엔티티 -> ImageDto 변환
+                        .toList())
                 .createdAt(post.getCreatedAt())
                 .isPrivate(post.isPrivate())
                 .food1Name(f1)

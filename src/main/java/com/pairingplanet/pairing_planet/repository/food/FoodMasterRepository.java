@@ -8,8 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface FoodMasterRepository extends JpaRepository<FoodMaster, Long> {
+
+    Optional<FoodMaster> findByPublicId(UUID publicId);
 
     @Query("SELECT f FROM FoodMaster f WHERE f.isVerified = true")
     List<FoodMaster> findAllVerified();

@@ -1,9 +1,11 @@
 package com.pairingplanet.pairing_planet.service;
 
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
+import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.post.CursorResponse;
-import com.pairingplanet.pairing_planet.dto.post.MyPostResponseDto; // DTO 재사용 (구조가 같다면)
+import com.pairingplanet.pairing_planet.dto.post.MyPostResponseDto;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
+import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -12,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+
+import static com.pairingplanet.pairing_planet.dto.search.SearchCursorDto.SAFE_MIN_DATE;
 
 @Service
 @RequiredArgsConstructor
@@ -19,26 +24,45 @@ import java.util.List;
 public class UserProfileService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository; // [추가] UUID -> User 변환용
 
-    public CursorResponse<MyPostResponseDto> getOtherUserPosts(Long targetUserId, String cursor, int size) {
+    public CursorResponse<MyPostResponseDto> getOtherUserPosts(UUID targetUserId, String cursor, int size) {
+        // 1. UUID -> User Entity (내부 Long ID 획득)
+        User targetUser = userRepository.findByPublicId(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
         PageRequest pageRequest = PageRequest.of(0, size);
         Slice<Post> slice;
 
-        // Repository 호출 시 'findPublicPosts...' 메서드 사용
         if (cursor == null || cursor.isBlank()) {
-            slice = postRepository.findPublicPostsByCreatorFirstPage(targetUserId, pageRequest);
+            // Long ID 사용 (targetUser.getId())
+            slice = postRepository.findPublicPostsByCreatorFirstPage(targetUser.getId(), pageRequest);
         } else {
+            // 커서 디코딩 (UUID -> Long 변환 포함)
             String[] parts = cursor.split("_");
-            Instant cursorTime = Instant.parse(parts[0]);
-            Long cursorId = Long.parseLong(parts[1]);
+            Instant cursorTime;
+            try {
+                cursorTime = Instant.parse(parts[0]);
+                if (cursorTime.isBefore(SAFE_MIN_DATE)) {
+                    cursorTime = SAFE_MIN_DATE; // 기원전 날짜면 1970년으로 강제 변경
+                }
+            } catch (Exception e) {
+                cursorTime = SAFE_MIN_DATE;
+            }
+            UUID cursorPublicId = UUID.fromString(parts[1]);
 
-            slice = postRepository.findPublicPostsByCreatorWithCursor(targetUserId, cursorTime, cursorId, pageRequest);
+            // 커서의 UUID로 내부 Long ID 조회 (최적화)
+            Long cursorInternalId = postRepository.findByPublicId(cursorPublicId)
+                    .map(Post::getId)
+                    .orElse(0L);
+
+            slice = postRepository.findPublicPostsByCreatorWithCursor(targetUser.getId(), cursorTime, cursorInternalId, pageRequest);
         }
 
         List<MyPostResponseDto> dtos = slice.getContent().stream()
                 .map(post -> {
-                    String nextCursor = post.getCreatedAt().toString() + "_" + post.getId();
-                    // isPrivate 필드는 무조건 false일 수밖에 없지만, DTO 스펙상 넣어줍니다.
+                    // [보안] 커서 생성 시 publicId(UUID) 사용
+                    String nextCursor = post.getCreatedAt().toString() + "_" + post.getPublicId();
                     return MyPostResponseDto.from(post, nextCursor);
                 })
                 .toList();

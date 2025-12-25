@@ -15,8 +15,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.pairingplanet.pairing_planet.dto.search.SearchCursorDto.SAFE_MIN_DATE;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +63,17 @@ public class SavedPostService {
         } else {
             // 커서 포맷: "yyyy-MM-dd'T'HH:mm:ss.SSSSSS_postId"
             String[] parts = cursor.split("_");
-            LocalDateTime cursorTime = LocalDateTime.parse(parts[0]);
+
+            Instant cursorTime;
+            try {
+                cursorTime = Instant.parse(parts[0]);
+                if (cursorTime.isBefore(SAFE_MIN_DATE)) {
+                    cursorTime = SAFE_MIN_DATE;
+                }
+            } catch (Exception e) {
+                cursorTime = SAFE_MIN_DATE;
+            }
+
             Long cursorPostId = Long.parseLong(parts[1]);
 
             slice = savedPostRepository.findAllByUserIdWithCursor(userId, cursorTime, cursorPostId, pageRequest);

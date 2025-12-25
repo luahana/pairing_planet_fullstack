@@ -9,8 +9,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
+
+    Optional<Post> findByPublicId(UUID publicId);
 
     // 1. 첫 페이지 (커서 없음)
     @Query("""
@@ -188,13 +192,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         WHERE p.content ILIKE %:keyword%
         AND p.locale = :locale
         AND p.is_deleted = false
-        AND p.isPrivate = false
-        AND p.popularity_score < :lastScore
-        ORDER BY p.popularity_score DESC, p.id DESC
+        AND p.is_private = false -- Fixed snake_case/camelCase mismatch if needed, check DB column name
+        AND (
+            p.popularity_score < :lastScore
+            OR (p.popularity_score = :lastScore AND p.created_at <= :lastCreatedAt)
+        )
+        ORDER BY p.popularity_score DESC, p.created_at DESC
         LIMIT :limit
         """, nativeQuery = true)
     List<Post> searchByContentNative(@Param("keyword") String keyword,
                                      @Param("locale") String locale,
                                      @Param("lastScore") Double lastScore,
+                                     @Param("lastCreatedAt") Instant lastCreatedAt, // Guaranteed safe by Service
                                      @Param("limit") int limit);
+
+    @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isPrivate = false ORDER BY p.createdAt DESC")
+    List<Post> findAllFallback(org.springframework.data.domain.Pageable pageable);
 }

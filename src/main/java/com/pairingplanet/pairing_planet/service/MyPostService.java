@@ -1,10 +1,11 @@
 package com.pairingplanet.pairing_planet.service;
 
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
+import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.post.CursorResponse;
 import com.pairingplanet.pairing_planet.dto.post.MyPostResponseDto;
-import com.pairingplanet.pairing_planet.dto.post.PostUpdateRequestDto;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
+import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,26 +22,47 @@ import java.util.List;
 public class MyPostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository; // [추가] UUID -> User 변환용
 
+    private static final Instant SAFE_MIN_DATE = Instant.parse("1970-01-01T00:00:00Z");
     // [FR-160, FR-162] 내 포스트 목록 조회
-    public CursorResponse<MyPostResponseDto> getMyPosts(Long userId, String cursor, int size) {
+    public CursorResponse<MyPostResponseDto> getMyPosts(UUID userId, String cursor, int size) {
+        // 1. UUID userId -> User Entity (내부 Long ID 사용을 위해)
+        User user = userRepository.findByPublicId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
         PageRequest pageRequest = PageRequest.of(0, size);
         Slice<Post> slice;
 
         if (cursor == null || cursor.isBlank()) {
-            slice = postRepository.findMyPostsFirstPage(userId, pageRequest);
+            // 첫 페이지 조회 (User Entity의 ID를 사용하여 쿼리 최적화)
+            slice = postRepository.findMyPostsFirstPage(user.getId(), pageRequest);
         } else {
-            // 커서 디코딩 (형식: "yyyy-MM-ddTHH:mm:ss.SSSZ_postId")
+            // 2. 커서 디코딩 (형식: "yyyy-MM-ddTHH:mm:ss.SSSZ_publicUUID")
             String[] parts = cursor.split("_");
-            Instant cursorTime = Instant.parse(parts[0]);
-            Long cursorId = Long.parseLong(parts[1]);
 
-            slice = postRepository.findMyPostsWithCursor(userId, cursorTime, cursorId, pageRequest);
-        }
+            Instant cursorTime;
+            try {
+                cursorTime = Instant.parse(parts[0]);
+                if (cursorTime.isBefore(SAFE_MIN_DATE)) {
+                    cursorTime = SAFE_MIN_DATE; // 강제로 1970년으로 변경
+                }
+            } catch (Exception e) {
+                cursorTime = SAFE_MIN_DATE; // 파싱 에러 시 안전값 사용
+            }
+
+            UUID cursorPublicId = UUID.fromString(parts[1]);
+
+            Long cursorInternalId = postRepository.findByPublicId(cursorPublicId)
+                    .map(Post::getId)
+                    .orElse(0L);
+
+            slice = postRepository.findMyPostsWithCursor(user.getId(), cursorTime, cursorInternalId, pageRequest);}
 
         List<MyPostResponseDto> dtos = slice.getContent().stream()
                 .map(post -> {
-                    String nextCursor = post.getCreatedAt().toString() + "_" + post.getId();
+                    // 다음 커서 생성: 보안을 위해 내부 ID 대신 publicId(UUID) 사용
+                    String nextCursor = post.getCreatedAt().toString() + "_" + post.getPublicId();
                     return MyPostResponseDto.from(post, nextCursor);
                 })
                 .toList();
@@ -49,44 +72,5 @@ public class MyPostService {
         return new CursorResponse<>(dtos, nextCursor, slice.hasNext());
     }
 
-    // [FR-161] 포스트 수정
-    @Transactional
-    public void updatePost(Long userId, Long postId, PostUpdateRequestDto requestDto) {
-        Post post = getPostAndCheckOwner(userId, postId);
-
-        // 더티 체킹(Dirty Checking)으로 업데이트
-        if (requestDto.content() != null) {
-            // (주의) Post 엔티티에 updateContent 메서드나 Setter 필요
-            // 여기서는 임의로 가정하여 작성하거나 Reflection 등을 써야 함.
-            // Post.java에 update 메서드를 추가하는 것이 가장 좋습니다.
-            post.updateContent(requestDto.content());
-        }
-
-        if (requestDto.isPrivate() != null) {
-            post.setPrivate(requestDto.isPrivate());
-        }
-    }
-
-    // [FR-161] 포스트 삭제 (Soft Delete)
-    @Transactional
-    public void deletePost(Long userId, Long postId) {
-        Post post = getPostAndCheckOwner(userId, postId);
-        post.softDelete();
-    }
-
-    // 공통: 포스트 조회 및 소유권 확인
-    private Post getPostAndCheckOwner(Long userId, Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
-        if (!post.getCreator().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized: Not the owner of this post");
-        }
-
-        if (post.isDeleted()) {
-            throw new IllegalArgumentException("Post is already deleted");
-        }
-
-        return post;
-    }
+    // [삭제됨] updatePost, deletePost는 PostController/PostService로 통합되어 제거함.
 }

@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID; // [필수]
+
 @RestController
 @RequestMapping("/api/v1/posts/feed")
 @RequiredArgsConstructor
@@ -15,12 +17,11 @@ public class FeedController {
 
     @GetMapping
     public FeedResponseDto getFeed(
-            @AuthenticationPrincipal Long userId, // Security 적용 시 유저 ID 주입
-            @RequestParam(required = false, defaultValue = "0") int cursor // 단순 정수형 Offset
+            @AuthenticationPrincipal UUID userId, // [변경]
+            @RequestParam(required = false, defaultValue = "0") int cursor
     ) {
-        // 비로그인 유저 처리 로직이 필요하다면 여기서 분기 (예: userId = -1L)
-        Long effectiveUserId = (userId != null) ? userId : -1L;
-
-        return feedService.getMixedFeed(effectiveUserId, cursor);
+        // 비로그인 유저(-1L 등) 처리를 어떻게 할지 결정 필요.
+        // UUID는 -1을 가질 수 없으므로, null이면 비로그인으로 처리하도록 Service를 수정해야 함.
+        return feedService.getMixedFeed(userId, cursor);
     }
 }
