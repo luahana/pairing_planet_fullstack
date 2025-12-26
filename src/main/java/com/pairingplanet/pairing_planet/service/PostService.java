@@ -18,10 +18,14 @@ import com.pairingplanet.pairing_planet.repository.pairing.PairingMapRepository;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +33,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class PostService {
+    private final RedisTemplate<String, String> redisTemplate;
     private final PostRepository postRepository;
     private final PairingMapRepository pairingMapRepository;
     private final FoodMasterRepository foodMasterRepository;
@@ -51,7 +57,18 @@ public class PostService {
     // ==========================================
 
     @Transactional
-    public PostResponseDto createDailyPost(UUID userId, CreatePostRequestDto request) {
+    public PostResponseDto createDailyPost(UUID userId, CreatePostRequestDto request, String idempotencyKey) {
+        if (idempotencyKey != null) {
+            String redisKey = "idempotency:post:" + idempotencyKey;
+            String existingPostId = redisTemplate.opsForValue().get(redisKey);
+
+            if (existingPostId != null) {
+                log.info("Duplicate request detected for key: {}", idempotencyKey);
+                // 이미 저장된 포스트 정보를 조회해서 반환하거나, 중복 에러 대신 성공 응답을 보냄
+                return getPostResponseByPublicId(UUID.fromString(existingPostId));
+            }
+        }
+
         User user = getUser(userId);
         PairingMap pairing = processPairingLogic(user, request);
 
@@ -70,11 +87,30 @@ public class PostService {
         Post savedPost = postRepository.save(post);
         handleImageActivation(savedPost, request.imageUrls());
 
+        if (idempotencyKey != null) {
+            redisTemplate.opsForValue().set(
+                    "idempotency:post:" + idempotencyKey,
+                    savedPost.getPublicId().toString(),
+                    Duration.ofHours(1)
+            );
+        }
+
         return PostResponseDto.from(savedPost, urlPrefix);
     }
 
     @Transactional
-    public PostResponseDto createReviewPost(UUID userId, CreatePostRequestDto request) { // [변경] Long -> UUID
+    public PostResponseDto createReviewPost(UUID userId, CreatePostRequestDto request, String idempotencyKey) { // [변경] Long -> UUID
+        if (idempotencyKey != null) {
+            String redisKey = "idempotency:post:" + idempotencyKey;
+            String existingPostId = redisTemplate.opsForValue().get(redisKey);
+
+            if (existingPostId != null) {
+                log.info("Duplicate request detected for key: {}", idempotencyKey);
+                // 이미 저장된 포스트 정보를 조회해서 반환하거나, 중복 에러 대신 성공 응답을 보냄
+                return getPostResponseByPublicId(UUID.fromString(existingPostId));
+            }
+        }
+
         User user = getUser(userId);
         PairingMap pairing = processPairingLogic(user, request);
 
@@ -96,11 +132,30 @@ public class PostService {
         Post savedPost = postRepository.save(post);
         handleImageActivation(savedPost, request.imageUrls());
 
+        if (idempotencyKey != null) {
+            redisTemplate.opsForValue().set(
+                    "idempotency:post:" + idempotencyKey,
+                    savedPost.getPublicId().toString(),
+                    Duration.ofHours(1)
+            );
+        }
+
         return PostResponseDto.from(savedPost, urlPrefix);
     }
 
     @Transactional
-    public PostResponseDto createRecipePost(UUID userId, CreatePostRequestDto request) { // [변경] Long -> UUID
+    public PostResponseDto createRecipePost(UUID userId, CreatePostRequestDto request, String idempotencyKey) { // [변경] Long -> UUID
+        if (idempotencyKey != null) {
+            String redisKey = "idempotency:post:" + idempotencyKey;
+            String existingPostId = redisTemplate.opsForValue().get(redisKey);
+
+            if (existingPostId != null) {
+                log.info("Duplicate request detected for key: {}", idempotencyKey);
+                // 이미 저장된 포스트 정보를 조회해서 반환하거나, 중복 에러 대신 성공 응답을 보냄
+                return getPostResponseByPublicId(UUID.fromString(existingPostId));
+            }
+        }
+
         User user = getUser(userId);
         PairingMap pairing = processPairingLogic(user, request);
 
@@ -123,6 +178,14 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
         handleImageActivation(savedPost, request.imageUrls());
+
+        if (idempotencyKey != null) {
+            redisTemplate.opsForValue().set(
+                    "idempotency:post:" + idempotencyKey,
+                    savedPost.getPublicId().toString(),
+                    Duration.ofHours(1)
+            );
+        }
 
         return PostResponseDto.from(savedPost, urlPrefix);
     }
@@ -278,5 +341,11 @@ public class PostService {
         for (Image image : images) {
             image.setPost(post);
         }
+    }
+
+    private PostResponseDto getPostResponseByPublicId(UUID postId) {
+        Post post = postRepository.findByPublicId(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        return PostResponseDto.from(post, urlPrefix);
     }
 }

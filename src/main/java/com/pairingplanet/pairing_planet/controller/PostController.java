@@ -22,31 +22,31 @@ public class PostController {
     // 1. Create (타입별 분리)
     // ==========================================
 
-    @PostMapping("/daily")
+    @PostMapping("/daily_logs")
     public ResponseEntity<PostResponseDto> createDailyPost(
-            @AuthenticationPrincipal UUID userId, // [변경] Long -> UUID
+            @AuthenticationPrincipal UUID userId,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CreatePostRequestDto request
     ) {
-        return ResponseEntity.ok(postService.createDailyPost(userId, request));
+        return ResponseEntity.ok(postService.createDailyPost(userId, request, idempotencyKey));
     }
 
     @PostMapping("/reviews")
     public ResponseEntity<PostResponseDto> createReviewPost(
-            @AuthenticationPrincipal UUID userId, // [변경]
+            @AuthenticationPrincipal UUID userId,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CreatePostRequestDto request
     ) {
-        if (request.rating() == null) {
-            throw new IllegalArgumentException("Rating is required for Review Post");
-        }
-        return ResponseEntity.ok(postService.createReviewPost(userId, request));
+        return ResponseEntity.ok(postService.createReviewPost(userId, request, idempotencyKey));
     }
 
     @PostMapping("/recipes")
     public ResponseEntity<PostResponseDto> createRecipePost(
-            @AuthenticationPrincipal UUID userId, // [변경]
+            @AuthenticationPrincipal UUID userId,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CreatePostRequestDto request
     ) {
-        return ResponseEntity.ok(postService.createRecipePost(userId, request));
+        return ResponseEntity.ok(postService.createRecipePost(userId, request, idempotencyKey));
     }
 
     // ==========================================

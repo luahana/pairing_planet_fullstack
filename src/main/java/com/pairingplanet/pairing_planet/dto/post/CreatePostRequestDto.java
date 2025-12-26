@@ -28,7 +28,6 @@ public record CreatePostRequestDto(
 
         // --- [Review] 리뷰 전용 ---
         String reviewTitle,      // 리뷰 제목
-        Integer rating,          // 1~5점 (Review 필수)
         Boolean verdictEnabled,  // 판결 기능 여부
         Integer pickyCount,      // (선택) 초기값
 
