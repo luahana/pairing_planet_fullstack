@@ -30,11 +30,11 @@ public class AuthService {
     public AuthResponseDto socialLogin(SocialLoginRequestDto req) {
         // 1. 소셜 계정 조회 혹은 신규 생성
         // DTO에서 넘어온 String을 Enum으로 변환
-        Provider provider = req.provider();
+        Provider providerEnum = req.provider();
 
         // Repository 메서드 인자 타입에 맞춰 provider 전달
         SocialAccount socialAccount = socialAccountRepository
-                .findByProviderAndProviderUserId(provider.name(), req.providerUserId())
+                .findByProviderAndProviderUserId(providerEnum, req.providerUserId())
                 .orElseGet(() -> registerNewUser(req));
 
         User user = socialAccount.getUser();

@@ -12,7 +12,7 @@ public interface SocialAccountRepository extends JpaRepository<SocialAccount, Lo
     Optional<SocialAccount> findByPublicId(UUID publicId);
 
     // 소셜 로그인 시 기존 회원 찾기
-    Optional<SocialAccount> findByProviderAndProviderUserId(String provider, String providerUserId);
+    Optional<SocialAccount> findByProviderAndProviderUserId(Provider provider, String providerUserId);
 
     // 특정 유저의 특정 소셜 계정 삭제 (연동 해제)
     void deleteByUserAndProvider(User user, Provider provider);

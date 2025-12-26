@@ -29,12 +29,12 @@ public class FoodScoreScheduler {
         // JPA로 하나씩 가져와서 계산하면 느리므로, DB 차원에서 집계하여 한 번에 Update 합니다.
         // 알고리즘: (PairingMap 등장 횟수 * 10) + (추가 로직 가능)
         String sql = """
-            UPDATE foods_master f -- [수정] food_masters -> foods_master
+            UPDATE foods_master f 
             SET popularity_score = COALESCE(stats.usage_count, 0) * 10.0
             FROM (
                 SELECT food_id, COUNT(*) as usage_count
                 FROM (
-                    SELECT food1_master_id as food_id FROM pairing_map -- [수정] 컬럼/테이블명 확인
+                    SELECT food1_master_id as food_id FROM pairing_map
                     UNION ALL
                     SELECT food2_master_id as food_id FROM pairing_map WHERE food2_master_id IS NOT NULL
                 ) combined_foods

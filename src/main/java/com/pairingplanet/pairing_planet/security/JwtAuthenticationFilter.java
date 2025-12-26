@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -27,7 +28,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Access Token 유효성 검증
         if (token != null && tokenProvider.validateToken(token)) {
-            String userId = tokenProvider.getSubject(token);
+            String subject = tokenProvider.getSubject(token);
+            UUID userId = UUID.fromString(subject);
             String role = tokenProvider.getRole(token);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

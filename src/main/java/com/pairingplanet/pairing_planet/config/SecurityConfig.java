@@ -24,10 +24,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 로그인, 재발급, 에러 페이지 등은 인증 없이 접근 가능
-//                        .requestMatchers("/api/v1/auth/**", "/error").permitAll()
-                                .requestMatchers("/api/v1/**", "/error").permitAll()
-                        // 그 외 모든 요청은 인증 필요
+                        .requestMatchers("/api/v1/auth/**").permitAll() // [중요] reissue 포함 인증 API는 전체 허용
+                        .requestMatchers("/api/v1/images/upload").authenticated() // 업로드는 인증 필수
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
