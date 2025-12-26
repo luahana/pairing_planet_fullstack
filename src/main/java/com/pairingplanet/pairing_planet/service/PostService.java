@@ -68,13 +68,7 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
-
-        imageService.activateImages(request.imageUrls());
-
-        List<Image> images = imageRepository.findByStoredFilenameIn(
-                request.imageUrls().stream().map(url -> url.replace(urlPrefix + "/", "")).toList()
-        );
-        for (Image image : images) image.setPost(post);
+        handleImageActivation(savedPost, request.imageUrls());
 
         return PostResponseDto.from(savedPost, urlPrefix);
     }
@@ -100,13 +94,7 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
-
-        imageService.activateImages(request.imageUrls());
-
-        List<Image> images = imageRepository.findByStoredFilenameIn(
-                request.imageUrls().stream().map(url -> url.replace(urlPrefix + "/", "")).toList()
-        );
-        for (Image image : images) image.setPost(post);
+        handleImageActivation(savedPost, request.imageUrls());
 
         return PostResponseDto.from(savedPost, urlPrefix);
     }
@@ -134,15 +122,7 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
-
-        imageService.activateImages(request.imageUrls());
-
-        List<Image> images = imageRepository.findByStoredFilenameIn(
-                request.imageUrls().stream().map(url -> url.replace(urlPrefix + "/", "")).toList()
-        );
-        for (Image image : images) image.setPost(post);
-
-        imageService.activateImages(request.imageUrls());
+        handleImageActivation(savedPost, request.imageUrls());
 
         return PostResponseDto.from(savedPost, urlPrefix);
     }
@@ -244,7 +224,6 @@ public class PostService {
 
         String locale = foodReq.localeCode() != null ? foodReq.localeCode() : "en";
 
-        // 1. UserSuggestedFood Queue에 저장
         UserSuggestedFood suggested = UserSuggestedFood.builder()
                 .suggestedName(foodReq.name())
                 .localeCode(locale)
@@ -253,11 +232,11 @@ public class PostService {
                 .build();
         userSuggestedFoodRepository.save(suggested);
 
-        // 2. 임시 FoodMaster 생성
-        // (BaseEntity의 @Builder.Default publicId 덕분에 UUID는 자동 생성됨)
+        // 3. 포스트 등록을 위해 임시 FoodMaster 생성
+        // DB에서 category_id의 NOT NULL이 제거되었으므로, category를 세팅하지 않아도 저장 가능합니다.
         FoodMaster tempFood = FoodMaster.builder()
                 .name(Map.of(locale, foodReq.name()))
-                .isVerified(false)
+                .isVerified(false) // 관리자 승인 전이므로 false
                 .build();
 
         return foodMasterRepository.save(tempFood);
@@ -277,5 +256,27 @@ public class PostService {
                                 .dietaryContext(dietary)
                                 .build()
                 ));
+    }
+
+    private void handleImageActivation(Post post, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            throw new IllegalArgumentException("Image is required for posting.");
+        }
+
+        imageService.activateImages(imageUrls);
+
+        List<Image> images = imageRepository.findByStoredFilenameIn(
+                imageUrls.stream()
+                        .map(url -> url.replace(urlPrefix + "/", ""))
+                        .toList()
+        );
+
+        if (images.isEmpty()) {
+            throw new IllegalArgumentException("Invalid image URLs provided.");
+        }
+
+        for (Image image : images) {
+            image.setPost(post);
+        }
     }
 }

@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS foods_master (
                                             id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                                             public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
 
-    category_id BIGINT NOT NULL REFERENCES food_categories(id) ON DELETE RESTRICT,
+    category_id BIGINT REFERENCES food_categories(id) ON DELETE RESTRICT,
     name JSONB NOT NULL DEFAULT '{}',
     description JSONB DEFAULT '{}',
     search_keywords TEXT,
@@ -252,10 +252,8 @@ CREATE TABLE IF NOT EXISTS posts (
     pairing_id BIGINT NOT NULL REFERENCES pairing_map(id),
     locale VARCHAR(10) NOT NULL,
 
-    content         TEXT,
-    image_urls      TEXT[],
-
     title           TEXT,
+    content         TEXT,
 
     genius_count    INT DEFAULT 0,
     daring_count    INT DEFAULT 0,

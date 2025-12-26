@@ -1,6 +1,7 @@
 package com.pairingplanet.pairing_planet.dto.post;
 
 import com.pairingplanet.pairing_planet.dto.food.FoodRequestDto;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -17,6 +18,7 @@ public record CreatePostRequestDto(
         UUID whenContextId,
         UUID dietaryContextId,
 
+        @NotEmpty(message = "At least one image is required")
         @Size(max = 3, message = "Max 3 images allowed")
         List<String> imageUrls,
 
