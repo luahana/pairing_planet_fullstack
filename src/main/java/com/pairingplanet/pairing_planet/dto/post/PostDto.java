@@ -1,10 +1,9 @@
 package com.pairingplanet.pairing_planet.dto.post;
 
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
-import com.pairingplanet.pairing_planet.domain.entity.post.DailyPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
-import com.pairingplanet.pairing_planet.domain.entity.post.ReviewPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
 import lombok.Builder;
 import java.time.Instant;
 import java.util.UUID;
@@ -12,7 +11,7 @@ import java.util.UUID;
 @Builder
 public record PostDto(
         UUID id,
-        String type,           // DAILY, REVIEW, RECIPE
+        String type,           // DAILY, DISCUSSION, RECIPE
         String url,            // 메인 이미지 URL
         String content,
         String locale,
@@ -35,7 +34,7 @@ public record PostDto(
     public static PostDto from(Post post, String contextLabel, String urlPrefix) {
         // 1. 포스트 타입 결정 (DiscriminatorValue 기반)
         String dtype = "DAILY";
-        if (post instanceof ReviewPost) dtype = "REVIEW";
+        if (post instanceof DiscussionPost) dtype = "DISCUSSION";
         else if (post instanceof RecipePost) dtype = "RECIPE";
 
         // 2. 이미지 처리: 리스트의 첫 번째 이미지를 대표 이미지로 사용

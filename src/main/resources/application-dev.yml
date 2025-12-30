@@ -58,6 +58,7 @@ spring:
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE
       org.flywaydb: DEBUG
       software.amazon.awssdk: INFO
+      org.springframework.security: DEBUG
 
 jwt:
   secret: ${JWT_SECRET:cmVtZW1iZXJpdHJpc2luZ2JlbnRmcmFtZWluZGVwZW5kZW50Y3VyaW91c3Nob3J0ZXI=}
@@ -65,6 +66,10 @@ jwt:
 
 security:
   encryption-key: "hJk+q9L/8fM3d4a5B6c7D8e9F0g1H2i3J4k5L6m7N8o="
+
+internal:
+  api:
+    key: pairing-planet-bot-dev-key
 
 file:
   upload:

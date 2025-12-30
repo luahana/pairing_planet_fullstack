@@ -22,7 +22,7 @@ public class ImageController {
     /**
      * 이미지 업로드 통합 API
      * @param file 업로드할 이미지 파일
-     * @param type 이미지 용도 (PROFILE, POST_DAILY, POST_REVIEW, POST_RECIPE)
+     * @param type 이미지 용도 (PROFILE, POST_DAILY, POST_DISCUSSION, POST_RECIPE)
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ImageUploadResponseDto> uploadImage(

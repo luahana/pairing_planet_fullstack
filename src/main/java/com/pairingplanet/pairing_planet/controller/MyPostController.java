@@ -22,7 +22,7 @@ public class MyPostController {
     @GetMapping("/me/posts")
     public ResponseEntity<CursorResponseTotalCount<MyPostResponseDto>> getMyPosts(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam(defaultValue = "ALL") String type, // DAILY, REVIEW, RECIPE 필터
+            @RequestParam(defaultValue = "ALL") String type, // DAILY, DISCUSSION, RECIPE 필터
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "10") int size
     ) {

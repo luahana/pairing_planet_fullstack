@@ -13,4 +13,6 @@ public interface ContextTagRepository extends JpaRepository<ContextTag, Long> {
     List<ContextTag> findAllByDimensionIdAndLocaleOrderByDisplayOrderAsc(Long dimensionId, String locale);
 
     Optional<ContextTag> findByPublicId(UUID publicId);
+
+    Optional<ContextTag> findFirstByTagName(String tagName);
 }

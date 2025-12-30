@@ -1,11 +1,10 @@
 package com.pairingplanet.pairing_planet.service;
 
 import com.pairingplanet.pairing_planet.domain.entity.post.DailyPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
-import com.pairingplanet.pairing_planet.domain.entity.post.ReviewPost;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
-import com.pairingplanet.pairing_planet.dto.post.CursorResponse;
 import com.pairingplanet.pairing_planet.dto.post.CursorResponseTotalCount;
 import com.pairingplanet.pairing_planet.dto.post.MyPostResponseDto;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
@@ -69,7 +68,7 @@ public class MyPostService {
         if (type == null) return null;
         return switch (type.toUpperCase()) {
             case "DAILY" -> DailyPost.class;
-            case "REVIEW" -> ReviewPost.class;
+            case "DISCUSSION" -> DiscussionPost.class;
             case "RECIPE" -> RecipePost.class;
             default -> null; // ALL
         };

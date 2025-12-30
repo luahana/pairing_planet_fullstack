@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS users (
 
     marketing_agreed BOOLEAN DEFAULT FALSE,
     last_login_at TIMESTAMP WITH TIME ZONE,
+    is_bot BOOLEAN NOT NULL DEFAULT FALSE,
 
     app_refresh_token VARCHAR(512),
 
@@ -97,6 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_foods_master_category ON foods_master (category_i
 CREATE INDEX IF NOT EXISTS idx_foods_master_name_gin ON foods_master USING GIN (name);
 CREATE INDEX IF NOT EXISTS idx_foods_master_search_gin ON foods_master USING GIN (search_keywords gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_food_popularity ON foods_master (food_score DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_food_name_ko ON foods_master ((name ->> 'ko'));
 
 CREATE TABLE IF NOT EXISTS food_tags (
                                          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

@@ -1,6 +1,5 @@
 package com.pairingplanet.pairing_planet.service;
 
-import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.post.*;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.feed.FeedResponseDto;
@@ -30,7 +29,7 @@ public class FeedService {
 
     // 타입별 Redis Key (4:4:2 비율 유지용)
     private static final String KEY_DAILY = "feed:daily";
-    private static final String KEY_REVIEW = "feed:review";
+    private static final String KEY_DISCUSSION = "feed:discussion";
     private static final String KEY_RECIPE = "feed:recipe";
 
     private static final int PAGE_SIZE = 10;
@@ -42,9 +41,10 @@ public class FeedService {
     /**
      * 메인 피드 진입점: 취향 필터링 여부에 따라 로직 분기
      */
-    public FeedResponseDto getMixedFeed(UUID userId, int offset) {
+    public FeedResponseDto getMixedFeed(UUID userPublicId, int offset) {
         // 1. 유저의 식이 취향(Dietary) 정보 가져오기
-        User user = (userId != null) ? userRepository.findByPublicId(userId).orElse(null) : null;
+        User user = (userPublicId != null) ?
+                userRepository.findByPublicId(userPublicId).orElse(null) : null;
         Long preferredDietaryId = (user != null) ? user.getPreferredDietaryId() : null;
 
         try {
@@ -54,7 +54,7 @@ public class FeedService {
             }
 
             // 3. 설정이 없다면 글로벌 Redis 피드 시도
-            return getFeedFromRedis(userId, offset);
+            return getFeedFromRedis(userPublicId, offset);
         } catch (Exception e) {
             log.error("Feed error, switching to Global DB Fallback: {}", e.getMessage());
             return getFeedFallback(offset);
@@ -69,7 +69,7 @@ public class FeedService {
 
         // 4:4:2 비율로 DB 필터링 조회
         combinedPosts.addAll(fetchFromDbWithFilter(DailyPost.class, dietaryId, 4, offset));
-        combinedPosts.addAll(fetchFromDbWithFilter(ReviewPost.class, dietaryId, 4, offset));
+        combinedPosts.addAll(fetchFromDbWithFilter(DiscussionPost.class, dietaryId, 4, offset));
         combinedPosts.addAll(fetchFromDbWithFilter(RecipePost.class, dietaryId, 2, offset));
 
         Collections.shuffle(combinedPosts);
@@ -93,7 +93,7 @@ public class FeedService {
 
         // 4:4:2 비율로 Redis에서 데이터 추출
         finalPosts.addAll(fetchAndFilterFromRedis(KEY_DAILY, 4, offset, historyKey));
-        finalPosts.addAll(fetchAndFilterFromRedis(KEY_REVIEW, 4, offset, historyKey));
+        finalPosts.addAll(fetchAndFilterFromRedis(KEY_DISCUSSION, 4, offset, historyKey));
         finalPosts.addAll(fetchAndFilterFromRedis(KEY_RECIPE, 2, offset, historyKey));
 
         Collections.shuffle(finalPosts);
@@ -112,7 +112,7 @@ public class FeedService {
         List<PostDto> combinedPosts = new ArrayList<>();
 
         combinedPosts.addAll(fetchFromDbWithFilter(DailyPost.class, null, 4, offset));
-        combinedPosts.addAll(fetchFromDbWithFilter(ReviewPost.class, null, 4, offset));
+        combinedPosts.addAll(fetchFromDbWithFilter(DiscussionPost.class, null, 4, offset));
         combinedPosts.addAll(fetchFromDbWithFilter(RecipePost.class, null, 2, offset));
 
         return FeedResponseDto.builder()

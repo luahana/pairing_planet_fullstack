@@ -29,7 +29,7 @@ public class FeedScheduler {
         log.info("Starting Multi-Type Feed Cache Update...");
 
         // 처리할 타입 정의
-        List<Class<? extends Post>> postTypes = List.of(DailyPost.class, ReviewPost.class, RecipePost.class);
+        List<Class<? extends Post>> postTypes = List.of(DailyPost.class, DiscussionPost.class, RecipePost.class);
 
         // [참고] 주요 식이 취향 ID 리스트 (실제 DB ID에 맞춰 관리 필요)
         // null은 글로벌(필터 없음) 피드를 의미함
@@ -47,7 +47,7 @@ public class FeedScheduler {
     private void updateCacheForTypeAndDietary(Class<? extends Post> type, Long dietaryId) {
         String locale = "en";
         Instant now = Instant.now();
-        String typeKey = type.getSimpleName().replace("Post", "").toLowerCase(); // daily, review, recipe
+        String typeKey = type.getSimpleName().replace("Post", "").toLowerCase(); // daily, discussion, recipe
         String redisKey = (dietaryId == null) ? "feed:" + typeKey : "feed:" + typeKey + ":" + dietaryId;
 
         try {

@@ -29,7 +29,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '오므라이스, 오무라이스, omurice, 계란덮밥, 오믈렛라이스'),
                                                                                (101, jsonb_build_object('ko', '국밥', 'en', 'Gukbap', 'ja', 'クッパ'),
                                                                                 jsonb_build_object('ko', '진한 국물에 밥을 말아 먹는 한국의 대중적인 식사', 'en', 'Korean soup served with rice, typically beef, pork, or sprout broth.'),
-                                                                                '국밥, 쿡파, gukbap, 순대국밥, 돼지국밥, 해장국, 탕반');
+                                                                                '국밥, 쿡파, gukbap, 순대국밥, 돼지국밥, 해장국, 탕반') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Noodle)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -50,7 +50,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '까르보나라, 카르보나라, carbonara, 크림스파게티, 까르보'),
                                                                                (102, jsonb_build_object('ko', '자장면', 'en', 'Jajangmyeon', 'ja', 'ジャジャン麺'),
                                                                                 jsonb_build_object('ko', '춘장을 볶아 만든 검은색 소스에 면을 비벼 먹는 한국식 중화요리', 'en', 'Korean-Chinese noodles topped with a savory black bean sauce.'),
-                                                                                '자장면, 짜장면, 짜장, jajangmyeon, jjajangmyeon, 중식, 블랙데이');
+                                                                                '자장면, 짜장면, 짜장, jajangmyeon, jjajangmyeon, 중식, 블랙데이') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Meat)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -71,7 +71,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '햄버거, 버거, burger, 패스트푸드, 수제버거, 와퍼, 빅맥'),
                                                                                (103, jsonb_build_object('ko', '돈카츠', 'en', 'Tonkatsu', 'ja', 'とんかつ'),
                                                                                 jsonb_build_object('ko', '돼지고기에 빵가루를 입혀 바삭하게 튀겨낸 일본식 요리', 'en', 'Breaded and deep-fried pork cutlet, served with sauce and cabbage.'),
-                                                                                '돈카츠, 돈까스, 돈가스, tonkatsu, 포크커틀릿, 일식돈까스');
+                                                                                '돈카츠, 돈까스, 돈가스, tonkatsu, 포크커틀릿, 일식돈까스') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Coffee)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -83,7 +83,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '에스프레소, espresso, 커피원액, 샷, 커피바'),
                                                                                (301, jsonb_build_object('ko', '카페라떼', 'en', 'Cafe Latte', 'ja', 'カフェラテ'),
                                                                                 jsonb_build_object('ko', '에스프레소와 부드러운 우유를 섞어 만든 대중적인 커피', 'en', 'Espresso combined with steamed milk, topped with a touch of foam.'),
-                                                                                '카페라떼, 라떼, latte, 우유커피, 카페라테, 아이스라떼');
+                                                                                '카페라떼, 라떼, latte, 우유커피, 카페라테, 아이스라떼') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [404] 주류 - 증류주 (Spirits)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -95,7 +95,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '소주, 쏘주, soju, 초록병, 참이슬, 처음처럼, 증류식소주, 소맥'),
                                                                                (404, jsonb_build_object('ko', '하이볼', 'en', 'Highball', 'ja', 'ハイボール'),
                                                                                 jsonb_build_object('ko', '위스키나 증류주에 탄산수와 레몬을 섞어 시원하게 마시는 칵테일', 'en', 'Mixed drink of spirits, usually whisky, and a larger amount of carbonated mixer.'),
-                                                                                '하이볼, 하이보루, highball, 산토리하이볼, 위스키에이드, 짐빔하이볼');
+                                                                                '하이볼, 하이보루, highball, 산토리하이볼, 위스키에이드, 짐빔하이볼') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 피자 (Pizza)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -104,7 +104,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '페퍼로니피자, 페페로니, pepperoni pizza, 짭짤한피자, 피맥'),
                                                                                (109, jsonb_build_object('ko', '마르게리따', 'en', 'Margherita', 'ja', 'マルゲリータ'),
                                                                                 jsonb_build_object('ko', '토마토, 모짜렐라 치즈, 바질이 올라간 이탈리아 정통 나폴리 피자', 'en', 'Traditional Neapolitan pizza with tomatoes, mozzarella, and fresh basil.'),
-                                                                                '마르게리따, 마르게리타, margherita, 치즈피자, 나폴리피자, 화덕피자');
+                                                                                '마르게리따, 마르게리타, margherita, 치즈피자, 나폴리피자, 화덕피자') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [606] 소스 - 스프레드 (Spread)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -113,7 +113,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '누텔라, 악마의잼, nutella, 초코스프레드, 헤이즐넛초코'),
                                                                                (606, jsonb_build_object('ko', '과카몰리', 'en', 'Guacamole', 'ja', 'ワカモレ'),
                                                                                 jsonb_build_object('ko', '으깬 아보카도에 양파, 토마토, 라임을 넣어 만든 멕시코식 소스', 'en', 'Avocado-based dip with onion, tomato, lime, and cilantro.'),
-                                                                                '과카몰리, 과카몰레, guacamole, 아보카도소스, 나쵸소스, 멕시칸딥');
+                                                                                '과카몰리, 과카몰레, guacamole, 아보카도소스, 나쵸소스, 멕시칸딥') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Noodle) 추가분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -128,7 +128,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '쌀국수, 베트남쌀국수, pho, 포, 퍼, 월남국수, 해장국수'),
                                                                                (102, jsonb_build_object('ko', '라자냐', 'en', 'Lasagna', 'ja', 'ラザニア'),
                                                                                 jsonb_build_object('ko', '넙적한 파스타 면과 라구 소스, 치즈를 층층이 쌓아 오븐에 구운 요리', 'en', 'Baked Italian dish consisting of layers of wide pasta, meat sauce, and cheese.'),
-                                                                                '라자냐, 라쟈냐, lasagna, 오븐파스타, 이탈리아가정식');
+                                                                                '라자냐, 라쟈냐, lasagna, 오븐파스타, 이탈리아가정식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Meat) 추가분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -143,7 +143,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '양갈비구이, 양갈비, 양꼬치, lamb chops, 램스테이크, 숄더랙'),
                                                                                (103, jsonb_build_object('ko', '타코', 'en', 'Taco', 'ja', 'タコス'),
                                                                                 jsonb_build_object('ko', '또띠아에 고기, 채소, 소스를 싸서 먹는 멕시코의 대표적인 길거리 음식', 'en', 'Traditional Mexican dish consisting of a small corn or wheat tortilla with fillings.'),
-                                                                                '타코, taco, 따꼬, 멕시칸푸드, 또띠아, 소프트타코, 하드타코');
+                                                                                '타코, taco, 따꼬, 멕시칸푸드, 또띠아, 소프트타코, 하드타코') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [104] 요리 - 해산물 (Seafood)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -161,7 +161,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '랍스터롤, 랍스타롤, lobster roll, 바닷가재샌드위치, 고급샌드위치'),
                                                                                (104, jsonb_build_object('ko', '세비체', 'en', 'Ceviche', 'ja', 'セビーチェ'),
                                                                                 jsonb_build_object('ko', '해산물을 라임 즙과 채소에 버무려 차갑게 먹는 중남미식 회 요리', 'en', 'Latin American seafood dish made from fresh raw fish cured in citrus juices.'),
-                                                                                '세비체, 세비체샐러드, ceviche, 중남미요리, 상큼한회');
+                                                                                '세비체, 세비체샐러드, ceviche, 중남미요리, 상큼한회') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Bakery) 추가분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -182,7 +182,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '츄러스, 추러스, churros, 놀이동산간식, 시나몬빵'),
                                                                                (201, jsonb_build_object('ko', '스콘', 'en', 'Scone', 'ja', 'スコーン'),
                                                                                 jsonb_build_object('ko', '영국식 퀵 브레드로 잼이나 클로티드 크림과 함께 먹는 담백한 빵', 'en', 'British baked good, lightly sweetened and served with jam or cream.'),
-                                                                                '스콘, scone, 영국빵, 애프터눈티, 담백한디저트');
+                                                                                '스콘, scone, 영국빵, 애프터눈티, 담백한디저트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Coffee) 추가분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -191,7 +191,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '아인슈페너, einspanner, 비엔나커피, 크림커피, 슈페너'),
                                                                                (301, jsonb_build_object('ko', '카페라떼', 'en', 'Cafe Latte', 'ja', 'カフェラテ'),
                                                                                 jsonb_build_object('ko', '에스프레소에 스팀 우유를 섞어 부드럽게 마시는 대중적인 커피', 'en', 'Classic coffee drink made with espresso and steamed milk.'),
-                                                                                '카페라떼, 라떼, latte, 우유커피, 카페라테, 라떼아트');
+                                                                                '카페라떼, 라떼, latte, 우유커피, 카페라테, 라떼아트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [402] 주류 - 와인 (Wine)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -206,7 +206,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '샴페인, 샴팡, champagne, 스파클링와인, 축하주, 버블와인'),
                                                                                (402, jsonb_build_object('ko', '상그리아', 'en', 'Sangria', 'ja', 'サングリア'),
                                                                                 jsonb_build_object('ko', '와인에 과일과 설탕, 탄산수 등을 섞어 차갑게 마시는 스페인식 술', 'en', 'Traditional Spanish wine punch made with red wine and chopped fruit.'),
-                                                                                '상그리아, 샹그리아, sangria, 과일와인, 식전주');
+                                                                                '상그리아, 샹그리아, sangria, 과일와인, 식전주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [404] 주류 - 증류주 (Spirits) 추가분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -218,7 +218,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '테킬라, 데킬라, tequila, 아가베, 샷, 멕시코술'),
                                                                                (404, jsonb_build_object('ko', '보드카', 'en', 'Vodka', 'ja', 'ウォッカ'),
                                                                                 jsonb_build_object('ko', '곡물을 증류한 뒤 자작나무 활성탄으로 여과하여 맛이 투명하고 깨끗한 술', 'en', 'Clear distilled alcoholic beverage originating from Poland and Russia.'),
-                                                                                '보드카, vodka, 무색무취, 칵테일베이스, 앱솔루트');
+                                                                                '보드카, vodka, 무색무취, 칵테일베이스, 앱솔루트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [606] 소스 - 스프레드 (Spread) 추가분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -227,13 +227,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '땅콩버터, 피넛버터, peanut butter, 잼, 고소한소스'),
                                                                                (606, jsonb_build_object('ko', '후무스', 'en', 'Hummus', 'ja', 'フムス'),
                                                                                 jsonb_build_object('ko', '병아리콩을 삶아 올리브유, 타히니 소스와 섞은 중동식 스프레드', 'en', 'Middle Eastern dip made from cooked, mashed chickpeas blended with tahini.'),
-                                                                                '후무스, 허무스, hummus, 병아리콩, 다이어트소스, 비건스프레드');
+                                                                                '후무스, 허무스, hummus, 병아리콩, 다이어트소스, 비건스프레드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [506] 간식 - 에너지바 (Protein Bar)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (506, jsonb_build_object('ko', '단백질바', 'en', 'Protein Bar', 'ja', 'プロテインバー'),
      jsonb_build_object('ko', '단백질 함량이 높아 운동 전후나 간식으로 먹기 좋은 영양바', 'en', 'Nutrition bar that contains a high proportion of protein.'),
-     '단백질바, 에너지바, 프로틴바, protein bar, 헬스간식, 식단관리');
+     '단백질바, 에너지바, 프로틴바, protein bar, 헬스간식, 식단관리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [605] 소스 - 드레싱 (Dressing)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -242,7 +242,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '랜치드레싱, 랜치소스, ranch dressing, 샐러드소스, 피자디핑소스'),
                                                                                (605, jsonb_build_object('ko', '발사믹식초', 'en', 'Balsamic Vinegar', 'ja', 'バルサミコ酢'),
                                                                                 jsonb_build_object('ko', '포도즙을 숙성시켜 만든 풍미가 깊고 새콤한 이탈리아 전통 식초', 'en', 'Dark, concentrated, and intensely flavored vinegar from Italy.'),
-                                                                                '발사믹식초, 발사믹, balsamic vinegar, 샐러드식초, 포도식초');
+                                                                                '발사믹식초, 발사믹, balsamic vinegar, 샐러드식초, 포도식초') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [107] 요리 - 샌드위치 (Sandwich)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -254,7 +254,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '부리토, 브리또, 부리또, burrito, 멕시칸롤, 간편식, 콩부리토'),
                                                                                (107, jsonb_build_object('ko', '베이글샌드위치', 'en', 'Bagel Sandwich', 'ja', 'ベーグルサンド'),
                                                                                 jsonb_build_object('ko', '쫄깃한 베이글 사이에 크림치즈나 연어, 햄 등을 넣어 만든 샌드위치', 'en', 'Sandwich made with a sliced bagel and various savory fillings.'),
-                                                                                '베이글샌드위치, 베이글샌위치, bagel sandwich, 연어베이글, 크림치즈베이글');
+                                                                                '베이글샌드위치, 베이글샌위치, bagel sandwich, 연어베이글, 크림치즈베이글') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [108] 요리 - 샐러드 (Salad)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -263,7 +263,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '코바샐러드, 콥샐러드, cobb salad, 다이어트도시락, 건강식, 믹스샐러드'),
                                                                                (108, jsonb_build_object('ko', '그리스샐러드', 'en', 'Greek Salad', 'ja', 'ギリシャサラダ'),
                                                                                 jsonb_build_object('ko', '토마토, 오이, 페타 치즈에 올리브유를 곁들인 지중해식 샐러드', 'en', 'Fresh Mediterranean salad with tomatoes, cucumbers, feta cheese, and olives.'),
-                                                                                '그리스샐러드, 그릭샐러드, greek salad, 페타치즈샐러드, 지중해식단');
+                                                                                '그리스샐러드, 그릭샐러드, greek salad, 페타치즈샐러드, 지중해식단') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [303] 음료 - 탄산음료 (Soda)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -275,7 +275,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '레몬에이드, 레모네이드, lemonade, 레몬차, 상큼한음료, 에이드'),
                                                                                (303, jsonb_build_object('ko', '진저에일', 'en', 'Ginger Ale', 'ja', 'ジンジャーエール'),
                                                                                 jsonb_build_object('ko', '생강 향이 가미된 탄산음료로 칵테일 믹서로도 자주 쓰임', 'en', 'Carbonated soft drink flavored with ginger, often used as a mixer.'),
-                                                                                '진저에일, 진저엘, ginger ale, 생강탄산, 분다버그, 칵테일재료');
+                                                                                '진저에일, 진저엘, ginger ale, 생강탄산, 분다버그, 칵테일재료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [307] 음료 - 대체유 (Vegan Milk)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -284,7 +284,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '오트밀크, 귀리우유, oat milk, 오트사이드, 비건우유, 대체유'),
                                                                                (307, jsonb_build_object('ko', '아몬드밀크', 'en', 'Almond Milk', 'ja', 'アーモンドミルク'),
                                                                                 jsonb_build_object('ko', '아몬드를 갈아 만든 저칼로리 식물성 음료', 'en', 'Plant milk with a watery texture and nutty flavor made from almonds.'),
-                                                                                '아몬드밀크, 아몬드브리즈, almond milk, 다이어트우유, 견과류음료');
+                                                                                '아몬드밀크, 아몬드브리즈, almond milk, 다이어트우유, 견과류음료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [401] 주류 - 맥주 (Beer)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -293,19 +293,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '라거, lager, 탄산맥주, 국산맥주, 시원한맥주, 테라, 카스'),
                                                                                (401, jsonb_build_object('ko', '에일', 'en', 'Ale', 'ja', 'エール'),
                                                                                 jsonb_build_object('ko', '상온에서 발효시켜 과일 향과 진한 풍미가 특징인 맥주', 'en', 'Beer brewed using a warm fermentation method, resulting in a fruity flavor.'),
-                                                                                '에일, ale, 수제맥주, 크래프트비어, IPA, 쌉싸름한맥주');
+                                                                                '에일, ale, 수제맥주, 크래프트비어, IPA, 쌉싸름한맥주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [403] 주류 - 전통주 (Traditional)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (403, jsonb_build_object('ko', '막걸리', 'en', 'Makgeolli', 'ja', 'マッコリ'),
      jsonb_build_object('ko', '쌀이나 밀로 빚어 만든 한국 전통 탁주', 'en', 'Korean rice wine with a milky, off-white appearance and sweet-sour taste.'),
-     '막걸리, 막걸리나, makgeolli, 전통주, 탁주, 농주, 파전친구');
+     '막걸리, 막걸리나, makgeolli, 전통주, 탁주, 농주, 파전친구') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [405] 주류 - 사이더 (Cider)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (405, jsonb_build_object('ko', '애플사이더', 'en', 'Apple Cider', 'ja', 'アップルサイダー'),
      jsonb_build_object('ko', '사과를 발효시켜 만든 과실주로 달콤하고 톡 쏘는 맛이 특징', 'en', 'Alcoholic beverage made from the fermented juice of apples.'),
-     '애플사이더, 사이더, cider, 사과주, 써머스비, 과일맥주');
+     '애플사이더, 사이더, cider, 사과주, 써머스비, 과일맥주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Snack)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -320,7 +320,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '프레첼, 프레젤, pretzel, 짭짤한과자, 매듭과자, 맥주안주'),
                                                                                (501, jsonb_build_object('ko', '포테이토칩', 'en', 'Potato Chips', 'ja', 'ポテトチップス'),
                                                                                 jsonb_build_object('ko', '감자를 얇게 썰어 기름에 튀긴 바삭한 과자', 'en', 'Thin slices of potato that have been deep fried or baked until crunchy.'),
-                                                                                '포테이토칩, 감자칩, 포카칩, 프링글스, potato chips, 짭짤한간식');
+                                                                                '포테이토칩, 감자칩, 포카칩, 프링글스, potato chips, 짭짤한간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [505] 간식 - 시리얼 (Cereal)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -332,7 +332,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '오트밀, 오트, oatmeal, 귀리죽, 아침식사, 식단관리'),
                                                                                (505, jsonb_build_object('ko', '콘플레이크', 'en', 'Cornflakes', 'ja', 'コーンフレーク'),
                                                                                 jsonb_build_object('ko', '옥수수를 주원료로 만든 가장 대중적인 아침 식사용 시리얼', 'en', 'Breakfast cereal made by toasting flakes of corn.'),
-                                                                                '콘플레이크, 콘푸로스트, 시리얼, cornflakes, 아침우유, 호랑이기운');
+                                                                                '콘플레이크, 콘푸로스트, 시리얼, cornflakes, 아침우유, 호랑이기운') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [601] 소스 - 오일 (Oil/Butter)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -341,7 +341,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '올리브유, 올리브오일, olive oil, 엑스트라버진, 압착유, 이태리요리필수'),
                                                                                (601, jsonb_build_object('ko', '버터', 'en', 'Butter', 'ja', 'バター'),
                                                                                 jsonb_build_object('ko', '우유에서 분리한 유지방을 응고시킨 고소한 맛의 식품', 'en', 'Dairy product made from the fat and protein components of churned cream.'),
-                                                                                '버터, 가염버터, 무염버터, butter, 버터구이, 빵도둑, 요리치트키');
+                                                                                '버터, 가염버터, 무염버터, butter, 버터구이, 빵도둑, 요리치트키') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Seasoning/Sauce)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -359,13 +359,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '스리라차, 쓰리라차, sriracha, 닭표소스, 다이어트소스, 0칼로리소스'),
                                                                                (604, jsonb_build_object('ko', '트러플오일', 'en', 'Truffle Oil', 'ja', 'トリュフオイル'),
                                                                                 jsonb_build_object('ko', '송이버섯의 향을 입힌 고급 오일로 소량으로도 깊은 풍미를 냄', 'en', 'Modern culinary ingredient used to impart the flavor and aroma of truffles.'),
-                                                                                '트러플오일, 트러플, truffle oil, 송로버섯오일, 풍미작렬, 짜파게티꿀조합');
+                                                                                '트러플오일, 트러플, truffle oil, 송로버섯오일, 풍미작렬, 짜파게티꿀조합') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Noodle) - 누락분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (102, jsonb_build_object('ko', '라면', 'en', 'Ramen', 'ja', 'ラーメン'),
      jsonb_build_object('ko', '꼬들꼬들한 면과 매콤하고 진한 국물이 특징인 한국의 대표 인스턴트 면 요리', 'en', 'Popular Korean instant noodles known for their spicy broth and chewy texture.'),
-     '라면, 라묜, ramen, 인스턴트라면, 컵라면, 봉지라면, 해장라면, 신라면, 불닭');
+     '라면, 라묜, ramen, 인스턴트라면, 컵라면, 봉지라면, 해장라면, 신라면, 불닭') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Bakery) - 누락분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -377,13 +377,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '치즈케이크, 치즈케익, cheesecake, 뉴욕치즈케이크, 필라델피아, 꾸덕한케이크'),
                                                                                (201, jsonb_build_object('ko', '마카롱', 'en', 'Macaron', 'ja', 'マカロン'),
                                                                                 jsonb_build_object('ko', '머랭을 이용해 만든 바삭한 꼬끄와 달콤한 필링이 조화를 이루는 프랑스식 고급 디저트', 'en', 'Sweet meringue-based confection made with egg white, icing sugar, and almond meal.'),
-                                                                                '마카롱, 마카롱롱, macaron, 뚱카롱, 달달구리, 디저트선물, 꼬끄');
+                                                                                '마카롱, 마카롱롱, macaron, 뚱카롱, 달달구리, 디저트선물, 꼬끄') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [303] 음료 - 탄산음료 (Soda) - 누락분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (303, jsonb_build_object('ko', '루트비어', 'en', 'Root Beer', 'ja', 'ルートビア'),
      jsonb_build_object('ko', '북미 지역에서 인기 있는 독특한 허브와 사사프라스 향이 가미된 탄산음료', 'en', 'Sweet North American beverage traditionally made using the root bark of the sassafras tree.'),
-     '루트비어, root beer, 물파스맛음료, 탄산음료, A&W, 독특한음료');
+     '루트비어, root beer, 물파스맛음료, 탄산음료, A&W, 독특한음료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Seasoning) - 누락분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -395,20 +395,20 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '굴소스, 굴소스요리, oyster sauce, 중식소스, 감칠맛치트키, 이금기, 볶음소스'),
                                                                                (604, jsonb_build_object('ko', '허니머스터드', 'en', 'Honey Mustard', 'ja', 'ハニーマスタード'),
                                                                                 jsonb_build_object('ko', '겨자에 꿀을 섞어 매콤함과 달콤함이 어우러진 대중적인 소스', 'en', 'Blended sauce of mustard and honey, perfect for dipping chicken and snacks.'),
-                                                                                '허니머스터드, 머스타드소스, honey mustard, 치킨소스, 달콤한소스, 딥핑소스');
+                                                                                '허니머스터드, 머스타드소스, honey mustard, 치킨소스, 달콤한소스, 딥핑소스') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 
 -- [108] 요리 - 샐러드 (Salad) - 최종 누락분
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (108, jsonb_build_object('ko', '시저샐러드', 'en', 'Caesar Salad', 'ja', 'シーザーサラダ'),
      jsonb_build_object('ko', '로메인 상추와 크루통, 파마산 치즈에 시저 드레싱을 곁들인 전 세계적으로 사랑받는 샐러드', 'en', 'Popular green salad of romaine lettuce and croutons dressed with lemon juice, olive oil, and parmesan.'),
-     '시저샐러드, 시저샐러드, caesar salad, 로메인샐러드, 닭가슴살샐러드, 식전샐러드');
+     '시저샐러드, 시저샐러드, caesar salad, 로메인샐러드, 닭가슴살샐러드, 식전샐러드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Vegetable) - 최종 누락분 (건강식/다이어트용)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (105, jsonb_build_object('ko', '포케', 'en', 'Poke', 'ja', 'ポキ'),
      jsonb_build_object('ko', '신선한 생선과 다양한 채소를 소스에 버무려 먹는 영양 가득한 하와이식 건강식', 'en', 'Healthy Hawaiian dish featuring diced raw fish mixed with fresh vegetables and flavorful sauces.'),
-     '포케, poke, 다이어트포케, 야채포케, 샐러드보울, 비건포케, 건강식단');
+     '포케, poke, 다이어트포케, 야채포케, 샐러드보울, 비건포케, 건강식단') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Soup/Stew)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -417,7 +417,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '김치찌개, 김찌, kimchi stew, soul food, 한국음식, 매콤한찌개'),
                                                                                (106, jsonb_build_object('ko', '된장찌개', 'en', 'Doenjang Jjigae', 'ja', '味噌チゲ'),
                                                                                 jsonb_build_object('ko', '된장을 풀어 두부, 채소와 함께 끓인 구수하고 담백한 찌개', 'en', 'Hearty Korean stew made with soybean paste and vegetables.'),
-                                                                                '된장찌개, 됀장찌개, soybean paste stew, 집밥, 구수한맛');
+                                                                                '된장찌개, 됀장찌개, soybean paste stew, 집밥, 구수한맛') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Korean Stews)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -429,7 +429,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '된장찌개, 됀장찌개, soybean paste stew, jjigae, 집밥, 구수한맛, 고깃집된장찌개'),
                                                                                (106, jsonb_build_object('ko', '부대찌개', 'en', 'Budae Jjigae', 'ja', '部隊チゲ'),
                                                                                 jsonb_build_object('ko', '햄, 소시지, 라면 사리 등을 넣어 끓인 얼큰한 퓨전 찌개', 'en', 'Korean fusion stew with spicy broth, ham, sausage, and ramen noodles.'),
-                                                                                '부대찌개, 부대찌게, army stew, 햄찌개, 소시지찌개, 모둠사리');
+                                                                                '부대찌개, 부대찌게, army stew, 햄찌개, 소시지찌개, 모둠사리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Street Food & Comfort Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -441,13 +441,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '맥앤치즈, 마카로니치즈, mac and cheese, macaroni, 치즈파스타, 미국가정식, 느끼한맛'),
                                                                                (102, jsonb_build_object('ko', '잡채', 'en', 'Japchae', 'ja', 'チャプチェ'),
                                                                                 jsonb_build_object('ko', '당면과 각종 채소, 고기를 간장 양념에 볶아낸 한국 전통 요리', 'en', 'Stir-fried glass noodles with vegetables, meat, and a soy-based sauce.'),
-                                                                                '잡채, 당면요리, japchae, glass noodles, 잔치음식, 한정식');
+                                                                                '잡채, 당면요리, japchae, glass noodles, 잔치음식, 한정식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Meat Favorites)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '제육볶음', 'en', 'Spicy Pork', 'ja', '豚肉炒め'),
      jsonb_build_object('ko', '돼지고기를 고추장 양념에 매콤하게 볶아낸 한국의 대중적인 반찬', 'en', 'Thinly sliced pork stir-fried in a spicy gochujang-based sauce.'),
-     '제육볶음, 제육, spicy pork, stir-fried pork, 고추장불고기, 기사식당메뉴, 밥도둑');
+     '제육볶음, 제육, spicy pork, stir-fried pork, 고추장불고기, 기사식당메뉴, 밥도둑') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [107] 요리 - 샌드위치 (Brunch Items)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -456,7 +456,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '아보카도토스트, 아보토, avocado toast, 브런치, 다이어트식단, 건강식, 오오티디푸드'),
                                                                                (107, jsonb_build_object('ko', '반미', 'en', 'Banh Mi', 'ja', 'バインミー'),
                                                                                 jsonb_build_object('ko', '바게트 빵에 고기, 채소, 고수 등을 넣어 만든 베트남식 샌드위치', 'en', 'Vietnamese sandwich consisting of a baguette filled with savory ingredients.'),
-                                                                                '반미, 바인미, banh mi, 베트남샌드위치, 고수샌드위치, 바게트샌드위치');
+                                                                                '반미, 바인미, banh mi, 베트남샌드위치, 고수샌드위치, 바게트샌드위치') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Global Classics)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -465,7 +465,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '에그베네딕트, 에그베네딕드, eggs benedict, 수란, 브런치맛집, 호텔조식'),
                                                                                (109, jsonb_build_object('ko', '치킨 커리', 'en', 'Chicken Curry', 'ja', 'チキンカレー'),
                                                                                 jsonb_build_object('ko', '다양한 향신료와 코코넛 밀크가 어우러진 진한 풍미의 카레 요리', 'en', 'Spicy and aromatic chicken dish cooked in a flavorful curry sauce.'),
-                                                                                '치킨커리, 카레, curry, 치킨마살라, 버터치킨, 인도음식, 일본카레');
+                                                                                '치킨커리, 카레, curry, 치킨마살라, 버터치킨, 인도음식, 일본카레') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Bakery)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -474,49 +474,49 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '와플, 벨기에와플, waffle, 길거리와플, 크로플, 디저트'),
                                                                                (201, jsonb_build_object('ko', '초콜릿 칩 쿠키', 'en', 'Chocolate Chip Cookies', 'ja', 'チョコチップクッキー'),
                                                                                 jsonb_build_object('ko', '초콜릿 칩이 가득 박혀 바삭하고 달콤한 전 세계적인 인기 간식', 'en', 'Classic baked treats filled with melted chocolate chips.'),
-                                                                                '초코쿠키, 초코칩쿠키, chocolate chip cookies, 달달구리, 간식, 홈베이킹');
+                                                                                '초코쿠키, 초코칩쿠키, chocolate chip cookies, 달달구리, 간식, 홈베이킹') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Trendy Drinks)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (301, jsonb_build_object('ko', '말차라떼', 'en', 'Matcha Latte', 'ja', '抹茶ラテ'),
      jsonb_build_object('ko', '진한 말차 가루와 우유가 조화를 이루는 쌉싸름하고 고소한 음료', 'en', 'Aromatic latte made with premium matcha green tea and steamed milk.'),
-     '말차라떼, 녹차라떼, matcha latte, 그린티라떼, 일본차, 건강음료');
+     '말차라떼, 녹차라떼, matcha latte, 그린티라떼, 일본차, 건강음료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [203] 디저트 - 아이스크림 (Frozen Desserts)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (203, jsonb_build_object('ko', '팥빙수', 'en', 'Bingsu', 'ja', 'かき氷'),
      jsonb_build_object('ko', '얼음을 갈아 팥과 떡, 연유 등을 올려 먹는 한국의 여름 디저트', 'en', 'Korean shaved ice dessert with sweet toppings like red beans and fruit.'),
-     '팥빙수, 빙수, bingsu, shaved ice, 설빙, 여름간식, 시원한디저트');
+     '팥빙수, 빙수, bingsu, shaved ice, 설빙, 여름간식, 시원한디저트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Global Favorite)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (106, jsonb_build_object('ko', '순두부찌개', 'en', 'Soft Tofu Stew', 'ja', '純豆腐チゲ'),
      jsonb_build_object('ko', '부드러운 순두부와 해산물, 양념장이 어우러진 얼큰한 찌개', 'en', 'Spicy Korean stew made with extra soft tofu, seafood, and vegetables.'),
-     '순두부찌개, 순두부, soft tofu stew, soondubu, 맵부심, 해장찌개, k-stew');
+     '순두부찌개, 순두부, soft tofu stew, soondubu, 맵부심, 해장찌개, k-stew') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Korean Classic & Party Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '보쌈', 'en', 'Bossam', 'ja', 'ポッサム'),
      jsonb_build_object('ko', '돼지고기를 수육으로 삶아 김치, 속재료와 함께 싸 먹는 요리', 'en', 'Boiled pork slices served with spicy radish salad and lettuce wraps.'),
-     '보쌈, 수육, bossam, boiled pork, 야식추천, 고기파티, 김장김치');
+     '보쌈, 수육, bossam, boiled pork, 야식추천, 고기파티, 김장김치') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [104] 요리 - 해산물 (Global Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (104, jsonb_build_object('ko', '피쉬 타코', 'en', 'Fish Tacos', 'ja', 'フィッシュタコス'),
      jsonb_build_object('ko', '또띠아에 튀긴 생선과 신선한 살사, 소스를 곁들인 멕시코식 요리', 'en', 'Mexican dish with fried or grilled fish, cabbage slaw, and lime in a tortilla.'),
-     '피쉬타코, 생선타코, fish tacos, 타코맛집, 멕시칸요리, 가벼운식사');
+     '피쉬타코, 생선타코, fish tacos, 타코맛집, 멕시칸요리, 가벼운식사') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Health Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '콤부차', 'en', 'Kombucha', 'ja', 'コンブチャ'),
      jsonb_build_object('ko', '차를 발효시켜 만든 톡 쏘는 탄산과 새콤한 맛의 건강 음료', 'en', 'Fermented, lightly effervescent sweetened black or green tea drink.'),
-     '콤부차, 콤부차추천, kombucha, 발효음료, 유산균음료, 다이어트차');
+     '콤부차, 콤부차추천, kombucha, 발효음료, 유산균음료, 다이어트차') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Korean Essential)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (301, jsonb_build_object('ko', '아이스 아메리카노', 'en', 'Iced Americano', 'ja', 'アイスアメーカノ'),
      jsonb_build_object('ko', '에스프레소에 찬물과 얼음을 더한 한국인이 가장 선호하는 커피', 'en', 'Espresso shots topped with cold water and ice, a daily staple in Korea.'),
-     '아이스아메리카노, 아아, 얼죽아, iced americano, 커피, 카페인충전');
+     '아이스아메리카노, 아아, 얼죽아, iced americano, 커피, 카페인충전') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Seasonal Korean Snacks)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -525,13 +525,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '붕어빵, 잉어빵, 붕어빵맛집, bungeoppang, 팥붕, 슈붕, 겨울간식'),
                                                                                (501, jsonb_build_object('ko', '호떡', 'en', 'Hotteok', 'ja', 'ホットク'),
                                                                                 jsonb_build_object('ko', '쫄깃한 반죽 안에 설탕과 견과류 시럽을 넣어 구운 달콤한 간식', 'en', 'Popular Korean street food pancake filled with brown sugar and nuts.'),
-                                                                                '호떡, 꿀호떡, 씨앗호떡, hotteok, k-dessert, 겨울길거리음식');
+                                                                                '호떡, 꿀호떡, 씨앗호떡, hotteok, k-dessert, 겨울길거리음식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [107] 요리 - 샌드위치 (Western Breakfast)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (107, jsonb_build_object('ko', '프렌치 토스트', 'en', 'French Toast', 'ja', 'フレンチトースト'),
      jsonb_build_object('ko', '달걀과 우유를 적신 식빵을 노릇하게 구워 시럽을 곁들인 요리', 'en', 'Sliced bread soaked in eggs and milk, then fried and served with syrup.'),
-     '프렌치토스트, 프토, french toast, 브런치, 아침식사, 달콤한빵');
+     '프렌치토스트, 프토, french toast, 브런치, 아침식사, 달콤한빵') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Trendy & Essential)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -540,7 +540,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '마라탕, 마라턍, malatang, maratang, 매운국수, 혈중마라농도, 꿔바로우친구, 마라'),
                                                                                (102, jsonb_build_object('ko', '냉밀면', 'en', 'Milmyeon', 'ja', 'ミルミョン'),
                                                                                 jsonb_build_object('ko', '부산의 대표 향토 음식으로 밀가루 면을 사용한 시원한 면 요리', 'en', 'Busan-style cold wheat noodles served in a savory, chilled broth.'),
-                                                                                '냉밀면, 밀면, milmyeon, 부산음식, 살얼음국수, 여름별미');
+                                                                                '냉밀면, 밀면, milmyeon, 부산음식, 살얼음국수, 여름별미') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (K-Soul Food & Global Comfort)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -552,7 +552,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '버팔로윙, 닭날개튀김, buffalo wings, 맥주안주, 윙봉, 매운닭튀김'),
                                                                                (103, jsonb_build_object('ko', '족발', 'en', 'Jokbal', 'ja', 'チョッパル'),
                                                                                 jsonb_build_object('ko', '돼지 발을 향신료를 넣은 간장 육수에 삶아내어 쫄깃한 식감을 살린 요리', 'en', 'Korean dish of pig''s trotters cooked with soy sauce and spices.'),
-                                                                                '족발, 족빨, jokbal, pig trotters, 야식추천, 콜라겐, 장충동족발');
+                                                                                '족발, 족빨, jokbal, pig trotters, 야식추천, 콜라겐, 장충동족발') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Fusion & Global Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -561,7 +561,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '샥슈카, 에그인헬, shakshuka, egg in hell, 지옥에빠진달걀, 브런치메뉴, 토마토요리'),
                                                                                (109, jsonb_build_object('ko', '퀘사디아', 'en', 'Quesadilla', 'ja', 'ケサディーヤ'),
                                                                                 jsonb_build_object('ko', '또띠아 사이에 치즈와 고기, 채소 등을 넣어 구운 멕시코 요리', 'en', 'Mexican dish consisting of a tortilla filled with cheese and other savory ingredients.'),
-                                                                                '퀘사디아, 케사디야, quesadilla, 멕시칸피자, 치즈또띠아, 간편식');
+                                                                                '퀘사디아, 케사디야, quesadilla, 멕시칸피자, 치즈또띠아, 간편식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [108] 요리 - 샐러드 (Health & Diet)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -570,28 +570,26 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '스무디볼, 스무디보울, smoothie bowl, 아사이볼, 다이어트식단, 인스타감성, 건강식'),
                                                                                (108, jsonb_build_object('ko', '카프레제', 'en', 'Caprese Salad', 'ja', 'カプレーゼ'),
                                                                                 jsonb_build_object('ko', '토마토, 모짜렐라 치즈, 바질을 곁들인 신선하고 가벼운 이탈리아식 샐러드', 'en', 'Simple Italian salad made of sliced fresh mozzarella, tomatoes, and sweet basil.'),
-                                                                                '카프레제, 카프레제샐러드, caprese, 토마토치즈샐러드, 와인안주, 이탈리아전채');
+                                                                                '카프레제, 카프레제샐러드, caprese, 토마토치즈샐러드, 와인안주, 이탈리아전채') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Professional & Modern)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (301, jsonb_build_object('ko', '콜드브루', 'en', 'Cold Brew', 'ja', 'コールドブリュー'),
      jsonb_build_object('ko', '찬물로 오랜 시간 천천히 추출하여 쓴맛이 적고 풍미가 깊은 커피', 'en', 'Coffee brewed with cold water over a long period for a smooth flavor.'),
-     '콜드브루, 콜드브루커피, cold brew, 더치커피, 쓴맛없는커피, 깔끔한커피');
+     '콜드브루, 콜드브루커피, cold brew, 더치커피, 쓴맛없는커피, 깔끔한커피') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Global Standard)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '차이 라떼', 'en', 'Chai Latte', 'ja', 'チャイラテ'),
      jsonb_build_object('ko', '인도식 홍차인 차이에 우유와 향신료를 더한 이국적인 맛의 음료', 'en', 'Tea beverage made by mixing spiced black tea with steamed milk.'),
-     '차이라떼, 차이티, chai latte, 인도홍차, 밀크티, 스파이스티');
+     '차이라떼, 차이티, chai latte, 인도홍차, 밀크티, 스파이스티') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Korean Comfort)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (101, jsonb_build_object('ko', '전복죽', 'en', 'Abalone Porridge', 'ja', '鮑粥'),
      jsonb_build_object('ko', '전복을 넣어 끓인 고소하고 영양가 높은 한국의 대표 보양죽', 'en', 'Nutritious Korean rice porridge made with fresh abalone.'),
-     '전복죽, 전복죽맛집, abalone porridge, 보양식, 아침식사, 환자식, 고소한죽');
+     '전복죽, 전복죽맛집, abalone porridge, 보양식, 아침식사, 환자식, 고소한죽') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
--- ID 시퀀스 업데이트
-SELECT setval(pg_get_serial_sequence('foods_master', 'id'), COALESCE(MAX(id), 1)) FROM foods_master;
 
 
 -- [101] 요리 - 밥 (Keto & Vegan Alternatives)
@@ -601,7 +599,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '컬리플라워라이스, 컬리라이스, cauliflower rice, 저탄고지, 키토제닉, 다이어트식단, keto, lchf'),
                                                                                (101, jsonb_build_object('ko', '퀴노아 샐러드 보울', 'en', 'Quinoa Bowl', 'ja', 'キヌアボウル'),
                                                                                 jsonb_build_object('ko', '고단백 곡물인 퀴노아와 신선한 채소를 곁들인 영양 가득한 비건 식사', 'en', 'Nutritious bowl featuring high-protein quinoa, mixed vegetables, and plant-based toppings.'),
-                                                                                '퀴노아보울, 퀴노아샐러드, quinoa, 수퍼푸드, 비건식단, vegan, 글루텐프리, gf');
+                                                                                '퀴노아보울, 퀴노아샐러드, quinoa, 수퍼푸드, 비건식단, vegan, 글루텐프리, gf') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Gluten-Free & Low-Carb)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -610,7 +608,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '주키니누들, 쥬키니누들, zoodles, 주들스, 호박면, keto, 키토파스타, 글루텐프리, 저탄고지'),
                                                                                (102, jsonb_build_object('ko', '곤약면', 'en', 'Konjac Noodles', 'ja', 'こんにゃく麺'),
                                                                                 jsonb_build_object('ko', '칼로리가 거의 없는 곤약을 면 형태로 만든 다이어트용 면 요리', 'en', 'Zero-calorie noodles made from konjac yam, popular for weight loss.'),
-                                                                                '곤약면, 곤약국수, 실곤약, konjac noodles, shirataki, 다이어트면, 0칼로리');
+                                                                                '곤약면, 곤약국수, 실곤약, konjac noodles, shirataki, 다이어트면, 0칼로리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Vegan & Middle Eastern)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -619,7 +617,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '팔라펠, 팔라펄, falafel, 병아리콩튀김, 비건치킨, vegan, 중동요리, 채식단백질'),
                                                                                (105, jsonb_build_object('ko', '라따뚜이', 'en', 'Ratatouille', 'ja', 'ラタトゥイユ'),
                                                                                 jsonb_build_object('ko', '가지, 호박, 토마토 등 각종 채소를 듬뿍 넣어 끓인 프랑스식 채소 스튜', 'en', 'Traditional French stewed vegetable dish consisting of eggplant, zucchini, and peppers.'),
-                                                                                '라따뚜이, 라타투이, ratatouille, 채소요리, 비건스튜, 프랑스가정식, vegan');
+                                                                                '라따뚜이, 라타투이, ratatouille, 채소요리, 비건스튜, 프랑스가정식, vegan') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Plant-Based Alternatives)
 -- 카테고리는 103(고기)이지만 식물성 고기를 찾는 유저들을 위해 배치
@@ -629,37 +627,37 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '두부스테이크, tofu steak, 두부구이, 비건단백질, 채식스테이크, vegan, 저칼로리'),
                                                                                (103, jsonb_build_object('ko', '템페 구이', 'en', 'Grilled Tempeh', 'ja', 'テンペ焼き'),
                                                                                 jsonb_build_object('ko', '콩을 발효시켜 만든 인도네시아식 단백질 식품인 템페를 구운 요리', 'en', 'Slices of fermented soybean cake, grilled for a nutty flavor and firm texture.'),
-                                                                                '템페구이, 템페, tempeh, 발효콩, 비건고기, vegan, 고단백식단');
+                                                                                '템페구이, 템페, tempeh, 발효콩, 비건고기, vegan, 고단백식단') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Keto & Health)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (106, jsonb_build_object('ko', '사골 곰탕', 'en', 'Bone Broth', 'ja', 'サゴルコムタン'),
      jsonb_build_object('ko', '소뼈를 오랜 시간 고아낸 진한 국물로 키토 식단의 필수 요소', 'en', 'Nutrient-rich broth made by simmering animal bones for an extended period.'),
-     '사골곰탕, 사골국, bone broth, 본브로스, 키토국물, keto, 저탄고지, 보양식');
+     '사골곰탕, 사골국, bone broth, 본브로스, 키토국물, keto, 저탄고지, 보양식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Keto Favorite)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (301, jsonb_build_object('ko', '방탄커피', 'en', 'Bulletproof Coffee', 'ja', 'バターコーヒー'),
      jsonb_build_object('ko', '에스프레소에 무염 버터와 MCT 오일을 섞어 마시는 고지방 커피', 'en', 'Coffee blended with unsalted butter and MCT oil, a staple of keto diets.'),
-     '방탄커피, 버터커피, bulletproof coffee, keto coffee, 키토커피, mct오일, 저탄고지');
+     '방탄커피, 버터커피, bulletproof coffee, keto coffee, 키토커피, mct오일, 저탄고지') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Nut-Free & Healthy)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (501, jsonb_build_object('ko', '병아리콩 스낵', 'en', 'Roasted Chickpeas', 'ja', 'ひよこ豆のスナック'),
      jsonb_build_object('ko', '병아리콩을 오븐에 구워 바삭하게 만든 너트프리 건강 간식', 'en', 'Crunchy, seasoned chickpeas roasted until golden, a nut-free snack alternative.'),
-     '병아리콩스낵, 구운병아리콩, roasted chickpeas, 너트프리, nutfree, 건강간식, 비건과자');
+     '병아리콩스낵, 구운병아리콩, roasted chickpeas, 너트프리, nutfree, 건강간식, 비건과자') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [606] 소스 - 스프레드 (Nut-Free Alternatives)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (606, jsonb_build_object('ko', '해바라기씨 버터', 'en', 'Sunflower Seed Butter', 'ja', 'ひまわりの種のバター'),
      jsonb_build_object('ko', '땅콩 알레르기가 있는 사람들을 위한 해바라기씨 베이스의 스프레드', 'en', 'Creamy spread made from roasted sunflower seeds, a safe peanut butter alternative.'),
-     '해바라기씨버터, 썬버터, sunbutter, nutfree, 너트프리, 알러지프리, 땅콩버터대체');
+     '해바라기씨버터, 썬버터, sunbutter, nutfree, 너트프리, 알러지프리, 땅콩버터대체') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [203] 디저트 - 아이스크림/기타 (Dairy-Free)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (203, jsonb_build_object('ko', '치아씨드 푸딩', 'en', 'Chia Seed Pudding', 'ja', 'チアシードプリン'),
      jsonb_build_object('ko', '치아씨드를 식물성 우유에 불려 만든 유제품 없는 건강 디저트', 'en', 'Healthy, dairy-free pudding made by soaking chia seeds in plant milk.'),
-     '치아씨드푸딩, 치아푸딩, chia pudding, 다이어트푸딩, dairyfree, 데일리프리, 비건디저트');
+     '치아씨드푸딩, 치아푸딩, chia pudding, 다이어트푸딩, dairyfree, 데일리프리, 비건디저트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Healthy Grains & Keto)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -668,13 +666,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '현미밥, 현미, brown rice, 잡곡밥, 건강식단, 다이어트밥, 복합탄수화물'),
                                                                                (101, jsonb_build_object('ko', '보리밥', 'en', 'Barley Rice', 'ja', '麦ご飯'),
                                                                                 jsonb_build_object('ko', '톡톡 터지는 식감이 특징이며 비타민과 섬유질이 풍부한 보리를 섞은 밥', 'en', 'Rice mixed with barley, known for its chewy texture and high fiber content.'),
-                                                                                '보리밥, 꽁보리밥, barley rice, 식이섬유, 소화잘되는밥, 웰빙푸드');
+                                                                                '보리밥, 꽁보리밥, barley rice, 식이섬유, 소화잘되는밥, 웰빙푸드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Gluten-Free & Vegan)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (102, jsonb_build_object('ko', '메밀면', 'en', 'Buckwheat Noodles', 'ja', 'そば'),
      jsonb_build_object('ko', '밀가루 대신 메밀을 주원료로 하여 글루텐 함량이 적고 구수한 맛이 나는 면', 'en', 'Noodles made from buckwheat flour, a gluten-friendly and earthy alternative.'),
-     '메밀면, 모밀, 소바, buckwheat noodles, soba, 글루텐프리, gf, 다이어트면, 구수한면');
+     '메밀면, 모밀, 소바, buckwheat noodles, soba, 글루텐프리, gf, 다이어트면, 구수한면') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Plant-Based Protein)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -683,25 +681,25 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '비건패티, 대체육, 콩고기, plant based patty, beyond meat, impossible burger, 비건버거, vegan'),
                                                                                (103, jsonb_build_object('ko', '밀고기', 'en', 'Seitan', 'ja', 'セイタン'),
                                                                                 jsonb_build_object('ko', '밀의 글루텐을 추출하여 만든 쫄깃한 식감의 고단백 식물성 대체육', 'en', 'Wheat gluten-based meat substitute with a savory, chewy texture.'),
-                                                                                '밀고기, 세이탄, seitan, 비건고기, 밀고기스테이크, vegan, 고단백채식');
+                                                                                '밀고기, 세이탄, seitan, 비건고기, 밀고기스테이크, vegan, 고단백채식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Vegetarian & Health)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (106, jsonb_build_object('ko', '렌틸콩 수프', 'en', 'Lentil Soup', 'ja', 'レンズ豆のスープ'),
      jsonb_build_object('ko', '단백질이 풍부한 렌틸콩을 듬뿍 넣어 끓인 든든하고 담백한 비건 수프', 'en', 'Hearty and protein-rich soup made with lentils, vegetables, and herbs.'),
-     '렌틸콩수프, 렌틸수프, lentil soup, 비건수프, vegan, 슈퍼푸드, 다이어트수프, 단백질수프');
+     '렌틸콩수프, 렌틸수프, lentil soup, 비건수프, vegan, 슈퍼푸드, 다이어트수프, 단백질수프') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [107] 요리 - 샌드위치 (Low-Carb / Keto)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (107, jsonb_build_object('ko', '상추 랩', 'en', 'Lettuce Wraps', 'ja', 'レタスラップ'),
      jsonb_build_object('ko', '빵이나 또띠아 대신 신선한 상추 잎으로 속재료를 감싼 저탄수화물 메뉴', 'en', 'Low-carb alternative using fresh lettuce leaves instead of bread or tortillas.'),
-     '상추랩, 레터스랩, lettuce wraps, 노브레드, 저탄고지, keto, 키토제닉, 다이어트샌드위치, 글루텐프리');
+     '상추랩, 레터스랩, lettuce wraps, 노브레드, 저탄고지, keto, 키토제닉, 다이어트샌드위치, 글루텐프리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Dairy-Free / Anti-Inflammatory)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '강황 라떼', 'en', 'Golden Milk', 'ja', 'ゴールデンミルク'),
      jsonb_build_object('ko', '강황과 식물성 우유를 섞어 만든 항염 효과가 뛰어난 건강 음료', 'en', 'Anti-inflammatory drink made with turmeric, spices, and plant-based milk.'),
-     '강황라떼, 골든밀크, golden milk, turmeric latte, 데일리프리, dairyfree, 면역력강화, 비건라떼');
+     '강황라떼, 골든밀크, golden milk, turmeric latte, 데일리프리, dairyfree, 면역력강화, 비건라떼') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Keto & Nut-Free)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -710,13 +708,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '돼지껍데기튀김, 돼껍튀김, 치차론, pork rinds, chicharron, 키토간식, keto, 저탄고지, 고지방간식'),
                                                                                (501, jsonb_build_object('ko', '김부각', 'en', 'Seaweed Crackers', 'ja', 'のり天'),
                                                                                 jsonb_build_object('ko', '김에 찹쌀풀을 발려 튀겨낸 바삭하고 고소한 한국 전통 채식 간식', 'en', 'Traditional Korean snack made of deep-fried seaweed coated with rice paste.'),
-                                                                                '김부각, 부각, seaweed crackers, k-snack, 비건과자, vegan, 바삭한간식');
+                                                                                '김부각, 부각, seaweed crackers, k-snack, 비건과자, vegan, 바삭한간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Vegan / Dairy-Free)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (604, jsonb_build_object('ko', '영양 효모', 'en', 'Nutritional Yeast', 'ja', 'ニュートリショナルイースト'),
      jsonb_build_object('ko', '비건 식단에서 치즈와 같은 고소한 풍미를 내기 위해 사용하는 필수 식재료', 'en', 'Deactivated yeast used in vegan cooking to provide a cheesy, nutty flavor.'),
-     '영양효모, 뉴트리셔널이스트, nutritional yeast, 비건치즈가루, 비타민보충, vegan, 데일리프리');
+     '영양효모, 뉴트리셔널이스트, nutritional yeast, 비건치즈가루, 비타민보충, vegan, 데일리프리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Halal & Middle Eastern)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -725,7 +723,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '양고기케밥, 케밥, kebab, lamb, halal, 할랄푸드, 지중해요리, 꼬치구이'),
                                                                                (103, jsonb_build_object('ko', '치킨 너겟', 'en', 'Chicken Nuggets', 'ja', 'チキンナゲット'),
                                                                                 jsonb_build_object('ko', '닭고기를 갈아 바삭하게 튀겨낸 아이들이 가장 좋아하는 대표적인 키즈 메뉴', 'en', 'Bite-sized pieces of breaded and fried chicken, a favorite for children.'),
-                                                                                '치킨너겟, 너겟, nuggets, kids menu, 어린이메뉴, 키즈식단, 핑거푸드');
+                                                                                '치킨너겟, 너겟, nuggets, kids menu, 어린이메뉴, 키즈식단, 핑거푸드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Asian Street Food & Kosher Friendly)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -734,7 +732,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '딤섬, 하가우, 샤오롱바오, dimsum, yumcha, 얌차, 중국요리, 만두'),
                                                                                (109, jsonb_build_object('ko', '마초 볼 수프', 'en', 'Matzo Ball Soup', 'ja', 'マッツァ・ボール・スープ'),
                                                                                 jsonb_build_object('ko', '유대인들이 축제 때 즐겨 먹는 무교병 가루로 만든 완자가 들어간 따뜻한 국물 요리', 'en', 'Traditional Jewish soup with dumplings made from matzo meal, a Kosher classic.'),
-                                                                                '마초볼수프, 유대인음식, kosher, 코셔푸드, matzo ball soup, 명절요리, 따뜻한수프');
+                                                                                '마초볼수프, 유대인음식, kosher, 코셔푸드, matzo ball soup, 명절요리, 따뜻한수프') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (European Tapas & Gluten-Free Alternative)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -743,19 +741,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '파타타스브라바스, 타파스, tapas, 스페인안주, 감자요리, 술안주'),
                                                                                (501, jsonb_build_object('ko', '고구마 튀김', 'en', 'Sweet Potato Fries', 'ja', 'さつまいもフライ'),
                                                                                 jsonb_build_object('ko', '감자튀김의 건강한 대안으로 글루텐프리 식단에서 자주 찾는 바삭하고 달콤한 간식', 'en', 'Sweet and crunchy alternative to potato fries, popular in gluten-free diets.'),
-                                                                                '고구마튀김, 고구마프라이, sweet potato fries, gf, 글루텐프리, 다이어트간식, 에어프라이어메뉴');
+                                                                                '고구마튀김, 고구마프라이, sweet potato fries, gf, 글루텐프리, 다이어트간식, 에어프라이어메뉴') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [108] 요리 - 샐러드 (Global Superfood)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (108, jsonb_build_object('ko', '아사이볼', 'en', 'Acai Bowl', 'ja', 'アサイーボウル'),
      jsonb_build_object('ko', '슈퍼푸드인 아사이베리 스무디에 신선한 과일과 견과류를 올린 건강식', 'en', 'Healthy breakfast bowl made of frozen and mashed acai palm fruit topped with fruit.'),
-     '아사이볼, 아사이보울, acai bowl, 슈퍼푸드, 비건브런치, vegan, 건강한아침');
+     '아사이볼, 아사이보울, acai bowl, 슈퍼푸드, 비건브런치, vegan, 건강한아침') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Global Sauce)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (604, jsonb_build_object('ko', '치미추리 소스', 'en', 'Chimichurri', 'ja', 'チミチュリ'),
      jsonb_build_object('ko', '파슬리와 마늘을 베이스로 한 아르헨티나식 소스로 고기 요리와 잘 어울림', 'en', 'Argentine uncooked sauce used for grilled meat, made of parsley and garlic.'),
-     '치미추리, chimichurri, 스테이크소스, 남미소스, 허브소스, 남미요리');
+     '치미추리, chimichurri, 스테이크소스, 남미소스, 허브소스, 남미요리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Korean & Japanese Casual)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -764,7 +762,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '유부초밥, 유부, inari, 이나리, 대왕유부초밥, 소풍도시락, 초밥'),
                                                                                (101, jsonb_build_object('ko', '회덮밥', 'en', 'Hwedupbap', 'ja', '刺身丼'),
                                                                                 jsonb_build_object('ko', '신선한 생선회와 각종 채소를 초고추장에 비벼 먹는 한국식 덮밥', 'en', 'Korean rice bowl topped with fresh raw fish, vegetables, and spicy chili sauce.'),
-                                                                                '회덮밥, 해물덮밥, hwedupbap, raw fish bowl, 초장비빔밥, 일식덮밥');
+                                                                                '회덮밥, 해물덮밥, hwedupbap, raw fish bowl, 초장비빔밥, 일식덮밥') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Trendy Italian & Thai)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -773,7 +771,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '뇨끼, 뇨끼맛집, gnocchi, 감자뇨끼, 이태리수제비, 꾸덕한소스'),
                                                                                (102, jsonb_build_object('ko', '팟씨유', 'en', 'Pad See Ew', 'ja', 'パッシー유'),
                                                                                 jsonb_build_object('ko', '넓은 쌀면을 간장 소스에 고기, 채소와 함께 볶아낸 달콤 짭짤한 태국 요리', 'en', 'Stir-fried wide rice noodles with soy sauce, Chinese broccoli, and meat.'),
-                                                                                '팟씨유, 팟시유, pad see ew, 태국볶음면, 간장쌀국수, 동남아음식');
+                                                                                '팟씨유, 팟시유, pad see ew, 태국볶음면, 간장쌀국수, 동남아음식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Korean Dessert Trends)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -782,25 +780,25 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '크로플, croffle, 크로와상와플, 홈카페, 디저트맛집, 겉바속촉'),
                                                                                (201, jsonb_build_object('ko', '소금빵', 'en', 'Salt Bread', 'ja', '塩パン'),
                                                                                 jsonb_build_object('ko', '버터 풍미가 가득한 빵 위에 소금을 뿌려 짭짤하고 고소한 맛을 낸 인기 빵', 'en', 'Soft, buttery bread roll topped with a sprinkle of sea salt.'),
-                                                                                '소금빵, 시오빵, salt bread, 버터롤, 단짠디저트, 베이커리추천');
+                                                                                '소금빵, 시오빵, salt bread, 버터롤, 단짠디저트, 베이커리추천') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [203] 디저트 - 유제품 (Health & Diet Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (203, jsonb_build_object('ko', '그릭 요거트', 'en', 'Greek Yogurt', 'ja', 'ギリシャヨーグルト'),
      jsonb_build_object('ko', '유청을 제거해 꾸덕한 식감과 높은 단백질 함량을 자랑하는 건강 요거트', 'en', 'Thick, strained yogurt with a creamy texture and high protein content.'),
-     '그릭요거트, 꾸덕요거트, greek yogurt, 다이어트식단, 요거트볼, 아침식사, 건강간식');
+     '그릭요거트, 꾸덕요거트, greek yogurt, 다이어트식단, 요거트볼, 아침식사, 건강간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [502] 간식 - 사탕/젤리 (Current Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (502, jsonb_build_object('ko', '탕후루', 'en', 'Tanghulu', 'ja', 'タンフル'),
      jsonb_build_object('ko', '신선한 과일에 설탕 시럽을 입혀 굳힌 바삭하고 달콤한 간식', 'en', 'Traditional Chinese candied fruit snack with a crunchy sugar coating.'),
-     '탕후루, 탕후루맛집, tanghulu, 과일사탕, 간식, 달달구리, MZ간식');
+     '탕후루, 탕후루맛집, tanghulu, 과일사탕, 간식, 달달구리, MZ간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Spicy Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (109, jsonb_build_object('ko', '마라샹궈', 'en', 'Mala Xiang Guo', 'ja', '麻辣香鍋'),
      jsonb_build_object('ko', '원하는 재료를 매콤한 마라 소스에 볶아낸 중식 볶음 요리', 'en', 'Spicy and numbing stir-fry dish made with various meats and vegetables.'),
-     '마라샹궈, 샹궈, malaxiangguo, 마라볶음, 술안주, 중식요리, 매운음식');
+     '마라샹궈, 샹궈, malaxiangguo, 마라볶음, 술안주, 중식요리, 매운음식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Keto & Gluten-Free)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -809,43 +807,43 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '두부면, 포두부, tofu noodles, 비건파스타, vegan, keto, 저탄고지, 글루텐프리, gf'),
                                                                                (102, jsonb_build_object('ko', '천사채', 'en', 'Kelp Noodles', 'ja', 'ケルプヌードル'),
                                                                                 jsonb_build_object('ko', '해조류 추출물로 만든 투명한 면으로 칼로리가 낮아 다이어트 및 키토 식단에 인기', 'en', 'Translucent noodles made from kelp extract, very low in calories and keto-friendly.'),
-                                                                                '천사채, 해초면, kelp noodles, 키토면, keto, 다이어트국수, 곤약대체');
+                                                                                '천사채, 해초면, kelp noodles, 키토면, keto, 다이어트국수, 곤약대체') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 피자/기타 (Low-Carb & GF)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (109, jsonb_build_object('ko', '컬리플라워 피자', 'en', 'Cauliflower Pizza', 'ja', 'カリフラワーピザ'),
      jsonb_build_object('ko', '밀가루 대신 컬리플라워로 도우를 만들어 탄수화물을 획기적으로 줄인 건강 피자', 'en', 'Pizza with a crust made from cauliflower, perfect for gluten-free and keto diets.'),
-     '컬리플라워피자, cauliflower pizza, 키토피자, keto, 글루텐프리피자, gf, 저탄수화물');
+     '컬리플라워피자, cauliflower pizza, 키토피자, keto, 글루텐프리피자, gf, 저탄수화물') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [107] 요리 - 샌드위치 (Keto & Nut-Free)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (107, jsonb_build_object('ko', '클라우드 브레드', 'en', 'Cloud Bread', 'ja', 'クラウドブレッド'),
      jsonb_build_object('ko', '밀가루 없이 달걀과 치즈로 만든 구름처럼 폭신한 저탄수화물 빵', 'en', 'Fluffy, grain-free bread made from eggs and cream cheese, a keto staple.'),
-     '클라우드브레드, 구름빵, cloud bread, 노밀가루빵, 키토빵, keto, 글루텐프리, gf');
+     '클라우드브레드, 구름빵, cloud bread, 노밀가루빵, 키토빵, keto, 글루텐프리, gf') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Vegan & High-Protein)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (101, jsonb_build_object('ko', '병아리콩 샐러드', 'en', 'Chickpea Salad', 'ja', 'ひよこ豆のサラダ'),
      jsonb_build_object('ko', '삶은 병아리콩을 메인으로 채소와 드레싱을 곁들인 든든한 식사대용 비건 메뉴', 'en', 'Filling vegan salad featuring boiled chickpeas as the main protein source.'),
-     '병아리콩샐러드, 병아리콩, chickpea salad, hummus bowl, 비건식단, vegan, 고단백채식');
+     '병아리콩샐러드, 병아리콩, chickpea salad, hummus bowl, 비건식단, vegan, 고단백채식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [307] 음료 - 대체유 (Dairy-Free & Nut-Free)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (307, jsonb_build_object('ko', '코코넛 밀크', 'en', 'Coconut Milk', 'ja', 'ココナッツミルク'),
      jsonb_build_object('ko', '코코넛 과육에서 추출한 진하고 부드러운 식물성 밀크로 유제품 대체제로 사용', 'en', 'Creamy plant-based milk extracted from coconuts, a popular dairy-free option.'),
-     '코코넛밀크, coconut milk, 데일리프리, dairyfree, 비건우유, 키토음료, keto');
+     '코코넛밀크, coconut milk, 데일리프리, dairyfree, 비건우유, 키토음료, keto') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Vegan & GF)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '비건 브라우니', 'en', 'Vegan Brownie', 'ja', 'ヴィーガンブラウニー'),
      jsonb_build_object('ko', '달걀과 버터 대신 식물성 재료를 사용하여 만든 진하고 달콤한 건강 디저트', 'en', 'Fudgy brownie made without eggs or dairy, using plant-based alternatives.'),
-     '비건브라우니, vegan brownie, 채식디저트, 건강빵, 노에그, 노버터, vegan');
+     '비건브라우니, vegan brownie, 채식디저트, 건강빵, 노에그, 노버터, vegan') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [606] 소스 - 스프레드 (Keto & Vegan)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (606, jsonb_build_object('ko', '아몬드 버터', 'en', 'Almond Butter', 'ja', 'アーモンドバター'),
      jsonb_build_object('ko', '볶은 아몬드를 그대로 갈아 만든 고소하고 건강한 지방이 풍부한 스프레드', 'en', 'Creamy spread made from roasted almonds, a high-fat favorite for keto diets.'),
-     '아몬드버터, almond butter, 키토소스, keto, 저탄고지, 건강한지방, 땅콩버터대체');
+     '아몬드버터, almond butter, 키토소스, keto, 저탄고지, 건강한지방, 땅콩버터대체') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Vegan & Modern Healthy)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -854,7 +852,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '콜리플라워윙, 비건치킨, cauliflower wings, vegan, 채식안주, 가짜치킨, 버팔로컬리플라워'),
                                                                                (105, jsonb_build_object('ko', '그릴드 아스파라거스', 'en', 'Grilled Asparagus', 'ja', 'アスパラガスのグリル'),
                                                                                 jsonb_build_object('ko', '아스파라거스를 올리브유와 소금으로 간해 그릴에 구워낸 저탄수화물 채소 요리', 'en', 'Fresh asparagus spears seasoned and grilled, a perfect low-carb side dish.'),
-                                                                                '아스파라거스구이, 구운아스파라거스, grilled asparagus, keto, 키토제닉, 다이어트가니쉬, 스테이크친구');
+                                                                                '아스파라거스구이, 구운아스파라거스, grilled asparagus, keto, 키토제닉, 다이어트가니쉬, 스테이크친구') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Comfort Food & Soul Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -863,7 +861,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '클램차우더, 조개수프, clam chowder, 크림수프, 해산물수프, 따뜻한음식'),
                                                                                (106, jsonb_build_object('ko', '순대국', 'en', 'Sundae-guk', 'ja', 'スンデク'),
                                                                                 jsonb_build_object('ko', '진한 돼지 사골 육수에 순대와 머릿고기를 넣어 끓인 한국의 대표 보양 국밥', 'en', 'Hearty Korean soup made with blood sausage and pork offal in a rich broth.'),
-                                                                                '순대국, 순대국밥, sundaeguk, 해장국, 아침식사, 소울푸드, 든든한한끼');
+                                                                                '순대국, 순대국밥, sundaeguk, 해장국, 아침식사, 소울푸드, 든든한한끼') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Regional & Dietary Variation)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -872,7 +870,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '비빔국수, 비빔면, bibimguksu, 매운면, 여름별미, 비빔국수맛집'),
                                                                                (102, jsonb_build_object('ko', '두부면 파스타', 'en', 'Tofu Pasta', 'ja', '豆腐パスタ'),
                                                                                 jsonb_build_object('ko', '밀가루 면 대신 두부면을 사용하여 단백질 함량을 높인 건강한 파스타', 'en', 'Pasta dish using tofu noodles instead of wheat, ideal for high-protein and gluten-free diets.'),
-                                                                                '두부면파스타, 두부파스타, tofu pasta, 비건파스타, vegan, keto, 글루텐프리, gf, 다이어트식단');
+                                                                                '두부면파스타, 두부파스타, tofu pasta, 비건파스타, vegan, keto, 글루텐프리, gf, 다이어트식단') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Keto & Protein Snack)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -881,13 +879,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '육포, 비프저키, beef jerky, 고단백간식, 술안주, 편의점간식, keto, 저탄고지'),
                                                                                (501, jsonb_build_object('ko', '케일 칩', 'en', 'Kale Chips', 'ja', 'ケールチップス'),
                                                                                 jsonb_build_object('ko', '케일에 올리브유와 소금을 발라 구워낸 바삭하고 가벼운 비건 스낵', 'en', 'Crispy, seasoned kale leaves baked until crunchy, a healthy vegan snack.'),
-                                                                                '케일칩, 야채칩, kale chips, 비건과자, vegan, 다이어트스낵, 글루텐프리');
+                                                                                '케일칩, 야채칩, kale chips, 비건과자, vegan, 다이어트스낵, 글루텐프리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [505] 간식 - 시리얼 (Modern Healthy Breakfast)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (505, jsonb_build_object('ko', '오버나이트 오트밀', 'en', 'Overnight Oats', 'ja', 'オーバーナイトオーツ'),
      jsonb_build_object('ko', '귀리를 우유나 요거트에 밤새 불려 과일과 함께 먹는 간편하고 건강한 아침 식사', 'en', 'Oats soaked in milk or yogurt overnight, typically topped with fruit and seeds.'),
-     '오버나이트오트밀, 오오트, overnight oats, 아침식사, 비건아침, 다이어트식단, 건강식');
+     '오버나이트오트밀, 오오트, overnight oats, 아침식사, 비건아침, 다이어트식단, 건강식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Vegan & Mediterranean)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -896,13 +894,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '바바가누쉬, 가지딥, baba ganoush, 비건소스, vegan, keto, 지중해식단, 저탄수화물'),
                                                                                (105, jsonb_build_object('ko', '에다마메', 'en', 'Edamame', 'ja', '枝豆'),
                                                                                 jsonb_build_object('ko', '덜 익은 상태의 콩을 쪄서 만든 고단백 식물성 간식으로 키토제닉 식단에 적합', 'en', 'Young soybeans in the pod, steamed and seasoned with salt, high in protein and keto-friendly.'),
-                                                                                '에다마메, 풋콩, 자숙면, edamame, 고단백간식, vegan, keto, 다이어트간식');
+                                                                                '에다마메, 풋콩, 자숙면, edamame, 고단백간식, vegan, keto, 다이어트간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Korean Soul Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (106, jsonb_build_object('ko', '감자탕', 'en', 'Gamjatang', 'ja', 'カムジャタン'),
      jsonb_build_object('ko', '돼지 등뼈와 감자, 우거지를 넣어 얼큰하게 끓인 한국의 보양 국물 요리', 'en', 'Spicy Korean pork bone soup with potatoes, dried radish greens, and aromatic perilla seeds.'),
-     '감자탕, 해장국, 뼈다귀해장국, gamjatang, pork bone soup, 소울푸드, 단백질식단, 든든한한끼');
+     '감자탕, 해장국, 뼈다귀해장국, gamjatang, pork bone soup, 소울푸드, 단백질식단, 든든한한끼') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Keto Specialist)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -911,19 +909,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '차플, 치즈와플, chaffle, keto bread, 키토빵, 저탄고지, lchf, 글루텐프리, gf'),
                                                                                (109, jsonb_build_object('ko', '사시미', 'en', 'Sashimi', 'ja', '刺身'),
                                                                                 jsonb_build_object('ko', '신선한 생선을 얇게 썰어 소스에 찍어 먹는 요리로 탄수화물이 거의 없는 순수 단백질 식단', 'en', 'Thinly sliced fresh raw seafood served with soy sauce, a perfect zero-carb protein source.'),
-                                                                                '사시미, 회, 생선회, sashimi, 생선회맛집, 고단백식단, keto, 다이어트식단');
+                                                                                '사시미, 회, 생선회, sashimi, 생선회맛집, 고단백식단, keto, 다이어트식단') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [203] 디저트 - 유제품/대체 (Dairy-Free Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (203, jsonb_build_object('ko', '코코넛 요거트', 'en', 'Coconut Yogurt', 'ja', 'ココナッツヨーグルト'),
      jsonb_build_object('ko', '코코넛 밀크를 발효시켜 만든 유제품 없는 비건 요거트', 'en', 'Creamy, dairy-free yogurt made from fermented coconut milk, a vegan and keto favorite.'),
-     '코코넛요거트, 비건요거트, coconut yogurt, dairyfree, 데일리프리, vegan, keto, 건강디저트');
+     '코코넛요거트, 비건요거트, coconut yogurt, dairyfree, 데일리프리, vegan, keto, 건강디저트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [506] 간식 - 에너지바 (Keto Fat Bomb)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (506, jsonb_build_object('ko', '팻 밤', 'en', 'Fat Bomb', 'ja', 'ファットボム'),
      jsonb_build_object('ko', '코코넛 오일, 버터, 견과류로 만든 고지방 저탄수화물 에너지 간식', 'en', 'High-fat, low-carb snacks made with healthy fats to sustain energy in keto diets.'),
-     '팻밤, 팻봄, fat bomb, 키토간식, 저탄고지에너지바, keto, 고지방다이어트');
+     '팻밤, 팻봄, fat bomb, 키토간식, 저탄고지에너지바, keto, 고지방다이어트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Korean Classic & GF Option)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -932,7 +930,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '잡채, 잡채밥, japchae, glass noodles, 잔치음식, k-food, 글루텐프리, gf'),
                                                                                (102, jsonb_build_object('ko', '쌀국수(분짜)', 'en', 'Bun Cha', 'ja', 'ブンチャー'),
                                                                                 jsonb_build_object('ko', '숯불 돼지고기와 쌀국수를 새콤달콤한 소스에 적셔 먹는 베트남의 대표 요리', 'en', 'Vietnamese dish of grilled pork and rice noodles served with a dipping sauce.'),
-                                                                                '분짜, buncha, 베트남쌀국수, 찍먹국수, 동남아요리, 쌀국수');
+                                                                                '분짜, buncha, 베트남쌀국수, 찍먹국수, 동남아요리, 쌀국수') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Probiotic & Health)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -941,7 +939,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '미소된장국, 미소국, miso soup, 미소시루, 일식국물, 발효음식, probiotic, 속편한음식'),
                                                                                (106, jsonb_build_object('ko', '가스파초', 'en', 'Gazpacho', 'ja', 'ガスパチョ'),
                                                                                 jsonb_build_object('ko', '신선한 채소를 갈아 차갑게 먹는 스페인 안달루시아 지방의 전통 수프', 'en', 'Cold Spanish soup made of raw, blended vegetables, perfect for summer.'),
-                                                                                '가스파초, 가스파쵸, gazpacho, 냉수프, 비건수프, vegan, 스페인요리, 건강수프');
+                                                                                '가스파초, 가스파쵸, gazpacho, 냉수프, 비건수프, vegan, 스페인요리, 건강수프') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Keto & Global Favorites)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -950,7 +948,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '오믈렛, 오물렛, omelette, 계란요리, 고단백, keto, 저탄고지, 브런치, 수플레오믈렛'),
                                                                                (109, jsonb_build_object('ko', '해물파전', 'en', 'Seafood Pancake', 'ja', '海鮮チヂミ'),
                                                                                 jsonb_build_object('ko', '쪽파와 각종 해산물을 듬뿍 넣어 노릇하게 구워낸 한국의 대표 전 요리', 'en', 'Savory Korean pancake made with scallions and a variety of seafood.'),
-                                                                                '해물파전, 파전, seafood pancake, pajeon, 부침개, 막걸리안주, k-pizza');
+                                                                                '해물파전, 파전, seafood pancake, pajeon, 부침개, 막걸리안주, k-pizza') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Global Sauce & Vegan Base)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -959,13 +957,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '바질페스토, pesto, 페스토, 파스타소스, 이태리양념, 허브소스, 샌드위치소스'),
                                                                                (604, jsonb_build_object('ko', '타히니 소스', 'en', 'Tahini', 'ja', 'タヒニ'),
                                                                                 jsonb_build_object('ko', '참깨를 갈아 만든 고소한 중동식 소스로 비건 요리에 널리 쓰임', 'en', 'Middle Eastern condiment made from toasted ground hulled sesame.'),
-                                                                                '타히니, 타히니소스, tahini, 참깨소스, 비건소스, vegan, 후무스재료, 중동양념');
+                                                                                '타히니, 타히니소스, tahini, 참깨소스, 비건소스, vegan, 후무스재료, 중동양념') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Global Pastry)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '바클라바', 'en', 'Baklava', 'ja', 'バクラヴァ'),
      jsonb_build_object('ko', '얇은 반죽 층 사이에 견과류와 꿀을 넣어 만든 달콤하고 바삭한 중동식 디저트', 'en', 'Sweet dessert pastry made of layers of filo filled with chopped nuts and syrup.'),
-     '바클라바, 박클라바, baklava, 터키디저트, 꿀디저트, 달달구리, 페이스트리');
+     '바클라바, 박클라바, baklava, 터키디저트, 꿀디저트, 달달구리, 페이스트리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Zero-Carb & Ancient Grains)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -974,7 +972,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '곤약밥, 곤약쌀, konjac rice, shirataki rice, 키토제닉, keto, 다이어트밥, 0칼로리식단'),
                                                                                (101, jsonb_build_object('ko', '귀리밥', 'en', 'Oat Rice', 'ja', 'オート麦ご飯'),
                                                                                 jsonb_build_object('ko', '식이섬유가 풍부한 귀리를 섞어 지은 밥으로 혈당 조절과 포만감 유지에 탁월함', 'en', 'Steamed rice mixed with whole oats, known for high fiber and steady energy release.'),
-                                                                                '귀리밥, 오트라이스, oat rice, 슈퍼푸드, 혈당조절, 건강식단, 복합탄수화물');
+                                                                                '귀리밥, 오트라이스, oat rice, 슈퍼푸드, 혈당조절, 건강식단, 복합탄수화물') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Gluten-Free Specialty)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -983,7 +981,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '글루텐프리파스타, gf pasta, glutenfree, 노밀가루면, 옥수수면, 쌀파스타'),
                                                                                (102, jsonb_build_object('ko', '해초국수', 'en', 'Seaweed Noodles', 'ja', '海藻麺'),
                                                                                 jsonb_build_object('ko', '해조류 성분으로 만든 투명하고 쫄깃한 면으로 저칼로리 비건 식단의 핵심 재료', 'en', 'Translucent, mineral-rich noodles made from seaweed extracts, popular in vegan and low-cal diets.'),
-                                                                                '해초국수, 바다국수, seaweed noodles, 비건국수, vegan, 다이어트국수, 살안찌는면');
+                                                                                '해초국수, 바다국수, seaweed noodles, 비건국수, vegan, 다이어트국수, 살안찌는면') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [307] 음료 - 대체유 (Dairy-Free Essentials)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -992,7 +990,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '두유, 소이밀크, soy milk, 비건우유, vegan, 데일리프리, dairyfree, 베지밀, 단백질음료'),
                                                                                (307, jsonb_build_object('ko', '캐슈밀크', 'en', 'Cashew Milk', 'ja', 'カシューミルク'),
                                                                                 jsonb_build_object('ko', '캐슈너트를 갈아 만든 크리미한 식감의 견과류 밀크로 요리와 커피에 잘 어울림', 'en', 'Creamy nut milk made from soaked cashews, favored for its rich texture in lattes and cooking.'),
-                                                                                '캐슈밀크, 캐슈넛우유, cashew milk, 견과류음료, 비건라떼재료, dairyfree, 데일리프리');
+                                                                                '캐슈밀크, 캐슈넛우유, cashew milk, 견과류음료, 비건라떼재료, dairyfree, 데일리프리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Keto & Clean Eating)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1001,13 +999,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '나한과, 몽크프루트, monk fruit, 키토설탕, 0칼로리당, keto, 대체당, 스테비아친구'),
                                                                                (604, jsonb_build_object('ko', '액상 아미노스', 'en', 'Liquid Aminos', 'ja', 'リ퀴드アミノ'),
                                                                                 jsonb_build_object('ko', '간장 대신 사용하는 글루텐프리 비건 조미료로 필수 아미노산을 함유함', 'en', 'Gluten-free, non-GMO soy sauce alternative rich in essential amino acids.'),
-                                                                                '액상아미노스, 리퀴드아미노스, liquid aminos, 비건간장, 글루텐프리간장, gf, 저염간장');
+                                                                                '액상아미노스, 리퀴드아미노스, liquid aminos, 비건간장, 글루텐프리간장, gf, 저염간장') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Plant-Based Hearty Meals)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '렌틸 버거', 'en', 'Lentil Burger', 'ja', 'レンズ豆バーガー'),
      jsonb_build_object('ko', '고기 대신 렌틸콩을 으깨어 만든 고단백 비건 패티가 들어간 햄버거', 'en', 'Hearty burger featuring a protein-packed patty made from mashed lentils and spices.'),
-     '렌틸버거, 렌틸콩패티, lentil burger, 비건버거, vegan, 채식버거, 건강한버거');
+     '렌틸버거, 렌틸콩패티, lentil burger, 비건버거, vegan, 채식버거, 건강한버거') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Cafe Culture & Dessert Coffee)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1016,7 +1014,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '아포가토, 아포가또, affogato, 에스프레소아이스크림, 커피디저트, 달콤쌉싸름'),
                                                                                (301, jsonb_build_object('ko', '더티 커피', 'en', 'Dirty Coffee', 'ja', 'ダー티コーヒー'),
                                                                                 jsonb_build_object('ko', '컵 주변으로 에스프레소나 초콜릿이 흘러넘치는 듯한 시각적 효과가 특징인 트렌디한 커피', 'en', 'Visual-focused coffee with overflowing espresso, cream, and chocolate powder.'),
-                                                                                '더티커피, dirty coffee, 인스타감성커피, 크림커피, 비주얼커피');
+                                                                                '더티커피, dirty coffee, 인스타감성커피, 크림커피, 비주얼커피') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Aromatic & Herbal Teas)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1025,13 +1023,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '얼그레이, earl grey, 홍차, 베르가못, 티타임, 애프터눈티, 향긋한차'),
                                                                                (302, jsonb_build_object('ko', '루이보스', 'en', 'Rooibos', 'ja', 'ルイボス'),
                                                                                 jsonb_build_object('ko', '카페인이 없어 임산부나 아이들도 마시기 좋은 남아프리카산 허브차', 'en', 'Caffeine-free herbal tea from South Africa with a naturally sweet and earthy flavor.'),
-                                                                                '루이보스, rooibos, 루이보스티, 무카페인, 허브차, 건강차, 레드티');
+                                                                                '루이보스, rooibos, 루이보스티, 무카페인, 허브차, 건강차, 레드티') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [306] 음료 - 스무디 (Healthy & Functional)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (306, jsonb_build_object('ko', '그린 스무디', 'en', 'Green Smoothie', 'ja', 'グリーンスムージー'),
      jsonb_build_object('ko', '케일, 시금치 등 녹색 채소와 과일을 함께 갈아 만든 영양 가득한 해독 음료', 'en', 'Blended drink made with green leafy vegetables and fruits, packed with nutrients.'),
-     '그린스무디, 해독주스, 디톡스, green smoothie, 비건음료, vegan, 다이어트주스, 클렌즈');
+     '그린스무디, 해독주스, 디톡스, green smoothie, 비건음료, vegan, 다이어트주스, 클렌즈') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [401] 주류 - 맥주 (Craft Beer Varieties)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1040,7 +1038,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 'IPA, 아이피에이, 인디아페일에일, 수제맥주, 홉향, 쌉싸름한맥주, 크래프트비어'),
                                                                                (401, jsonb_build_object('ko', '스타우트', 'en', 'Stout', 'ja', 'スタウト'),
                                                                                 jsonb_build_object('ko', '볶은 보리를 사용하여 검은 빛깔과 커피, 초콜릿 향이 나는 진한 흑맥주', 'en', 'Dark, top-fermented beer with a number of variations including dry stout and oatmeal stout.'),
-                                                                                '스타우트, stout, 흑맥주, 기네스, 커피향맥주, 진한맥주, 밤에마시는술');
+                                                                                '스타우트, stout, 흑맥주, 기네스, 커피향맥주, 진한맥주, 밤에마시는술') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [402] 주류 - 와인 (Trendy Wines)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1049,7 +1047,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '로제와인, 로제, rose wine, 핑크와인, 파티와인, 가벼운와인, 식전주'),
                                                                                (402, jsonb_build_object('ko', '내추럴 와인', 'en', 'Natural Wine', 'ja', 'ナチュラルワイン'),
                                                                                 jsonb_build_object('ko', '첨가물 없이 전통적인 방식으로 생산하여 개성 있는 풍미를 가진 친환경 와인', 'en', 'Wine made with minimal chemical and technological intervention in growing and making.'),
-                                                                                '내추럴와인, 내츄럴와인, natural wine, 유기농와인, 오렌지와인, 컨벤셔널와인반대');
+                                                                                '내추럴와인, 내츄럴와인, natural wine, 유기농와인, 오렌지와인, 컨벤셔널와인반대') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [404] 주류 - 칵테일 (Classic Cocktails)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1058,7 +1056,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '모히토, 모히또, mojito, 칵테일, 상쾌한술, 민트술, 몰디브한잔'),
                                                                                (404, jsonb_build_object('ko', '마가리타', 'en', 'Margarita', 'ja', 'マルガリータ'),
                                                                                 jsonb_build_object('ko', '테킬라 베이스에 라임 즙과 소금을 곁들여 마시는 멕시코풍 칵테일', 'en', 'Cocktail consisting of tequila, orange liqueur, and lime juice often served with salt on the rim.'),
-                                                                                '마가리타, 마가리따, margarita, 테킬라칵테일, 소금테두리, 혼술추천');
+                                                                                '마가리타, 마가리따, margarita, 테킬라칵테일, 소금테두리, 혼술추천') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Gourmet Pastry)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1070,7 +1068,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '휘낭시에, 피낭시에, financier, 금괴빵, 구움과자, 고소한디저트, 커피단짝'),
                                                                                (201, jsonb_build_object('ko', '당근 케이크', 'en', 'Carrot Cake', 'ja', 'キャロットケーキ'),
                                                                                 jsonb_build_object('ko', '당근과 견과류를 듬뿍 넣고 크림치즈 프로스팅을 얹은 담백하고 진한 케이크', 'en', 'Sweet cake with mashed carrots and often topped with cream cheese frosting.'),
-                                                                                '당근케이크, 당케, carrot cake, 건강한케이크, 크림치즈케익, 홈베이킹추천');
+                                                                                '당근케이크, 당케, carrot cake, 건강한케이크, 크림치즈케익, 홈베이킹추천') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [204] 디저트 - 전통/쌀떡 (Trendy Traditional Korean)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1079,13 +1077,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '약과, 약과쿠키, yakgwa, 할매니얼, 전통디저트, 달콤한간식, 집청, k-dessert'),
                                                                                (204, jsonb_build_object('ko', '인절미', 'en', 'Injeolmi', 'ja', 'インジョルミ'),
                                                                                 jsonb_build_object('ko', '쫄깃한 떡에 고소한 볶은 콩가루를 듬뿍 묻힌 한국의 대표 떡', 'en', 'Type of Korean rice cake made by steaming and pounding glutinous rice flour, coated with bean powder.'),
-                                                                                '인절미, 인절미떡, injeolmi, 콩고물떡, 고소한디저트, 쫄깃한식감');
+                                                                                '인절미, 인절미떡, injeolmi, 콩고물떡, 고소한디저트, 쫄깃한식감') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Essential Side & Probiotics)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (105, jsonb_build_object('ko', '배추김치', 'en', 'Kimchi', 'ja', 'キムチ'),
      jsonb_build_object('ko', '배추를 소금에 절여 고춧가루, 마늘 등으로 버무려 발효시킨 한국의 대표 반찬', 'en', 'Traditional Korean fermented side dish made with cabbage and various seasonings.'),
-     '김치, 배추김치, kimchi, k-food, 발효음식, 유산균, 반찬, probotics, side dish, banchan');
+     '김치, 배추김치, kimchi, k-food, 발효음식, 유산균, 반찬, probotics, side dish, banchan') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Japanese Street Food & Global Favorite)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1094,49 +1092,49 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '타코야끼, 다코야끼, takoyaki, 문어빵, 일식간식, 타코야키, street food, 겉바속촉'),
                                                                                (109, jsonb_build_object('ko', '콘치즈', 'en', 'Korean Corn Cheese', 'ja', 'コーンチーズ'),
                                                                                 jsonb_build_object('ko', '옥수수와 모짜렐라 치즈를 마요네즈와 함께 구워낸 한국식 퓨전 안주 요리', 'en', 'Creamy and cheesy Korean side dish made with sweet corn, mayonnaise, and mozzarella.'),
-                                                                                '콘치즈, corn cheese, 횟집콘치즈, 안주, 마요옥수수, k-food, 단짠');
+                                                                                '콘치즈, corn cheese, 횟집콘치즈, 안주, 마요옥수수, k-food, 단짠') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [108] 요리 - 샐러드 (Vegan & Mediterranean Middle East)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (108, jsonb_build_object('ko', '타불레', 'en', 'Tabbouleh', 'ja', 'タブレ'),
      jsonb_build_object('ko', '파슬리, 민트, 토마토, 불굴(곡물)을 잘게 썰어 레몬즙과 올리브유에 버무린 비건 샐러드', 'en', 'Levantine vegetarian salad made mostly of finely chopped parsley, tomatoes, and mint.'),
-     '타불레, 따불레, tabbouleh, 파슬리샐러드, 비건식단, vegan, 중동요리, 건강식');
+     '타불레, 따불레, tabbouleh, 파슬리샐러드, 비건식단, vegan, 중동요리, 건강식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기/대체 (Vegetarian Protein)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '할루미 구이', 'en', 'Grilled Halloumi', 'ja', 'ハルーミ焼き'),
      jsonb_build_object('ko', '구워도 녹지 않는 독특한 식감의 할루미 치즈를 구워 고기 대신 즐기는 요리', 'en', 'Slices of halloumi cheese grilled until golden, a popular vegetarian meat substitute.'),
-     '할루미구이, 할루미치즈, halloumi, 구워먹는치즈, 베지테리언스테이크, 고기대체, vegetarian');
+     '할루미구이, 할루미치즈, halloumi, 구워먹는치즈, 베지테리언스테이크, 고기대체, vegetarian') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [404] 주류 - 증류주/칵테일 (High Trend in Korea)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (404, jsonb_build_object('ko', '얼그레이 하이볼', 'en', 'Earl Grey Highball', 'ja', 'アールグレイハイボール'),
      jsonb_build_object('ko', '위스키와 탄산수에 달콤하고 향긋한 얼그레이 시럽을 더한 트렌디한 칵테일', 'en', 'Trendy highball cocktail mixed with whisky, soda water, and aromatic Earl Grey syrup.'),
-     '얼그레이하이볼, 얼하이, earl grey highball, 위스키, 트렌디한술, 박나래하이볼, 술안주');
+     '얼그레이하이볼, 얼하이, earl grey highball, 위스키, 트렌디한술, 박나래하이볼, 술안주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Keto & GF Luxury)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (102, jsonb_build_object('ko', '컬리플라워 뇨끼', 'en', 'Cauliflower Gnocchi', 'ja', 'カリフラワーニョッキ'),
      jsonb_build_object('ko', '밀가루 대신 컬리플라워를 주원료로 만든 저탄수화물 글루텐프리 뇨끼', 'en', 'Low-carb and gluten-free alternative to traditional gnocchi made primarily from cauliflower.'),
-     '컬리플라워뇨끼, 컬리뇨끼, cauliflower gnocchi, keto, 키토제닉, 글루텐프리, gf, 저탄고지');
+     '컬리플라워뇨끼, 컬리뇨끼, cauliflower gnocchi, keto, 키토제닉, 글루텐프리, gf, 저탄고지') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [307] 음료 - 대체유 (Rising Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (307, jsonb_build_object('ko', '피스타치오 밀크', 'en', 'Pistachio Milk', 'ja', 'ピスタチオミルク'),
      jsonb_build_object('ko', '피스타치오 견과류의 풍미와 영양을 그대로 담은 고소한 식물성 대체 우유', 'en', 'Nutty and creamy plant-based milk made from ground pistachios, a rising dairy-free trend.'),
-     '피스타치오밀크, 피스타치오우유, pistachio milk, 비건우유, vegan, 데일리프리, dairyfree, 견과류음료');
+     '피스타치오밀크, 피스타치오우유, pistachio milk, 비건우유, vegan, 데일리프리, dairyfree, 견과류음료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Global Classic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '크레이프', 'en', 'Crepe', 'ja', 'クレープ'),
      jsonb_build_object('ko', '얇게 구운 반죽에 과일이나 시럽, 생크림 등을 얹어 돌돌 말아 먹는 프랑스식 디저트', 'en', 'Very thin pancake, usually made from wheat flour and served with sweet or savory fillings.'),
-     '크레이프, 크레페, crepe, 프랑스디저트, 길거리간식, 달콤한빵');
+     '크레이프, 크레페, crepe, 프랑스디저트, 길거리간식, 달콤한빵') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Korean Street/Soul Snack)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (501, jsonb_build_object('ko', '김말이', 'en', 'Fried Seaweed Rolls', 'ja', 'キムマリ'),
      jsonb_build_object('ko', '당면으로 채운 김을 튀김옷을 입혀 바삭하게 튀겨낸 한국의 대표 분식', 'en', 'Seaweed rolls stuffed with glass noodles and deep-fried until crispy.'),
-     '김말이, 김마리, fried seaweed rolls, k-snack, 분식, 떡볶이친구, 튀김');
+     '김말이, 김마리, fried seaweed rolls, k-snack, 분식, 떡볶이친구, 튀김') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Essential Kimchi Varieties & Vegan Side)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1148,7 +1146,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '파김치, 쪽파김치, pa-kimchi, green onion kimchi, 짜파게티꿀조합, k-food, 알싸한맛, 밥도둑'),
                                                                                (105, jsonb_build_object('ko', '미역줄기무침', 'en', 'Seaweed Salad', 'ja', '茎わかめの和え物'),
                                                                                 jsonb_build_object('ko', '미역줄기를 소금기를 빼고 기름에 볶아 만든 오독오독한 식감의 건강 반찬', 'en', 'Stir-fried seaweed stems seasoned with garlic and sesame oil, a high-fiber vegan side dish.'),
-                                                                                '미역줄기무침, 미역샐러드, seaweed salad, chuka wakame, 비건식단, vegan, 일식샐러드, gf, 오독오독');
+                                                                                '미역줄기무침, 미역샐러드, seaweed salad, chuka wakame, 비건식단, vegan, 일식샐러드, gf, 오독오독') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Cultural & Festive Soup)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1157,13 +1155,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '떡국, 떡국맛집, tteokguk, rice cake soup, 설날음식, 새해음식, 나이한살, k-food, 명절요리'),
                                                                                (106, jsonb_build_object('ko', '계란찜', 'en', 'Steamed Egg', 'ja', 'ケランチム'),
                                                                                 jsonb_build_object('ko', '달걀을 풀어 육수와 함께 뚝배기에 부드럽게 쪄낸 한국식 달걀 요리', 'en', 'Fluffy Korean steamed egg custard served in a hot earthenware pot.'),
-                                                                                '계란찜, 달걀찜, gyeran-jjim, steamed egg, 폭탄계란찜, 매운음식짝꿍, 단백질반찬');
+                                                                                '계란찜, 달걀찜, gyeran-jjim, steamed egg, 폭탄계란찜, 매운음식짝꿍, 단백질반찬') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Festive & High-Protein)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '갈비찜', 'en', 'Galbi-jjim', 'ja', 'カルビチム'),
      jsonb_build_object('ko', '소갈비나 돼지갈비를 간장 양념에 각종 채소와 함께 달콤하게 쪄낸 명절 요리', 'en', 'Braised short ribs cooked with root vegetables in a sweet and savory soy-based sauce.'),
-     '갈비찜, 소갈비찜, 돼지갈비찜, galbi-jjim, braised short ribs, 명절음식, 잔치음식, k-food, 단짠');
+     '갈비찜, 소갈비찜, 돼지갈비찜, galbi-jjim, braised short ribs, 명절음식, 잔치음식, k-food, 단짠') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Street Food & Trendy)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1172,7 +1170,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '순대, 피순대, 찰순대, sundae, blood sausage, 분식, 간허파, 떡튀순, 길거리음식'),
                                                                                (109, jsonb_build_object('ko', '계란말이', 'en', 'Gyeran-mari', 'ja', '卵焼き'),
                                                                                 jsonb_build_object('ko', '달걀을 얇게 펴서 여러 번 말아 만든 대중적인 도시락 반찬이자 술안주', 'en', 'Korean-style rolled omelet often filled with finely chopped vegetables.'),
-                                                                                '계란말이, 달걀말이, gyeran-mari, rolled omelet, 반찬, 도시락반찬, 술안주, 집밥');
+                                                                                '계란말이, 달걀말이, gyeran-mari, rolled omelet, 반찬, 도시락반찬, 술안주, 집밥') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [108] 요리 - 샐러드 (Gourmet & Healthy Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1181,67 +1179,67 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '부라타샐러드, 부라타치즈, burrata salad, 치즈샐러드, 인스타감성, 브런치, 고급디저트, 와인안주'),
                                                                                (105, jsonb_build_object('ko', '컬리플라워 스테이크', 'en', 'Cauliflower Steak', 'ja', 'カリフラワーステーキ'),
                                                                                 jsonb_build_object('ko', '컬리플라워를 통째로 구워 고기 스테이크처럼 즐기는 저탄수화물 비건 메인 요리', 'en', 'Thick slices of cauliflower roasted or grilled, served as a vegan and keto main dish.'),
-                                                                                '컬리플라워스테이크, cauliflower steak, 비건스테이크, vegan, keto, 저탄고지, 다이어트메인, 글루텐프리, gf');
+                                                                                '컬리플라워스테이크, cauliflower steak, 비건스테이크, vegan, keto, 저탄고지, 다이어트메인, 글루텐프리, gf') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Traditional Ritual)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '전통 말차', 'en', 'Matcha', 'ja', '抹茶'),
      jsonb_build_object('ko', '찻잎을 곱게 갈아 물에 풀어 마시는 진한 풍미의 고단백 항산화 차', 'en', 'Finely ground powder of specially grown and processed green tea leaves.'),
-     '말차, 가루녹차, matcha, 일본차, 다도, 건강차, superfood, 항산화, 그린티');
+     '말차, 가루녹차, matcha, 일본차, 다도, 건강차, superfood, 항산화, 그린티') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (National Snacks & Anju)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
-                                                                               (501, json_build_object('ko', '새우깡', 'en', 'Shrimp Crackers', 'ja', 'かっぱえびせん'),
-                                                                                json_build_object('ko', '실제 새우를 갈아 넣어 고소하고 짭짤한 맛이 특징인 한국의 국민 과자', 'en', 'Korea''s representative shrimp-flavored snack, loved for its savory and salty taste.'),
+                                                                               (501, jsonb_build_object('ko', '새우깡', 'en', 'Shrimp Crackers', 'ja', 'かっぱえびせん'),
+                                                                                jsonb_build_object('ko', '실제 새우를 갈아 넣어 고소하고 짭짤한 맛이 특징인 한국의 국민 과자', 'en', 'Korea''s representative shrimp-flavored snack, loved for its savory and salty taste.'),
                                                                                 '새우깡, 새우과자, shrimp crackers, 국민과자, 손이가요, 맥주안주, k-snack'),
-                                                                               (501, json_build_object('ko', '초코파이', 'en', 'Choco Pie', 'ja', 'チョコパイ'),
+                                                                               (501, jsonb_build_object('ko', '초코파이', 'en', 'Choco Pie', 'ja', 'チョコパイ'),
                                                                                 jsonb_build_object('ko', '폭신한 비스킷 사이에 마시멜로를 넣고 초콜릿을 입힌 한국의 대표 간식', 'en', 'Famous Korean snack consisting of two small round layers of cake with marshmallow filling and a chocolate covering.'),
                                                                                 '초코파이, 초코파이정, chocopie, 국민간식, 마시멜로, k-dessert, 군대간식'),
-                                                                               (501, json_build_object('ko', '쥐포', 'en', 'Dried Filefish', 'ja', 'カワハギの干物'),
+                                                                               (501, jsonb_build_object('ko', '쥐포', 'en', 'Dried Filefish', 'ja', 'カワハギの干物'),
                                                                                 jsonb_build_object('ko', '쥐치 살을 말려 구워낸 짭짤하고 쫄깃한 한국의 대표적인 마른 안주', 'en', 'Sweet and salty dried filefish fillet, a popular chewy snack often paired with beer.'),
                                                                                 '쥐포, 쥐포구이, dried filefish, 마른안주, 맥주도둑, 캠핑간식, 쫄깃한맛'),
-                                                                               (501, json_build_object('ko', '빼빼로', 'en', 'Pepero', 'ja', 'ペペロ'),
+                                                                               (501, jsonb_build_object('ko', '빼빼로', 'en', 'Pepero', 'ja', 'ペペロ'),
                                                                                 jsonb_build_object('ko', '가늘고 긴 과자에 초콜릿을 입힌 스틱형 과자', 'en', 'Thin cookie stick dipped in chocolate, famous for its celebratory day in Korea.'),
-                                                                                '빼빼로, 포키, pepero, pocky, 스틱과자, 빼빼로데이, 초코스틱');
+                                                                                '빼빼로, 포키, pepero, pocky, 스틱과자, 빼빼로데이, 초코스틱') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [303] 음료 - 탄산/기능성 (Trends & Energy)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
-                                                                               (303, json_build_object('ko', '에너지 드링크', 'en', 'Energy Drink', 'ja', 'エナジードリンク'),
+                                                                               (303, jsonb_build_object('ko', '에너지 드링크', 'en', 'Energy Drink', 'ja', 'エナジードリンク'),
                                                                                 jsonb_build_object('ko', '고카페인과 타우린이 함유되어 피로 회복과 집중력 향상을 돕는 음료', 'en', 'High-caffeine beverage designed to provide a physical and mental boost.'),
                                                                                 '에너지드링크, 레드불, 몬스터, 핫식스, energy drink, 카페인수혈, 밤샘공부, 수험생음료'),
-                                                                               (303, json_build_object('ko', '스포츠 음료', 'en', 'Sports Drink', 'ja', 'スポーツ飲料'),
+                                                                               (303, jsonb_build_object('ko', '스포츠 음료', 'en', 'Sports Drink', 'ja', 'スポーツ飲料'),
                                                                                 jsonb_build_object('ko', '운동 후 체내에 수분과 전해질을 빠르게 보충해 주는 이온 음료', 'en', 'Beverage designed to help athletes replace water, electrolytes, and energy after training.'),
                                                                                 '스포츠음료, 이온음료, 포카리스웨트, 게토레이, sports drink, 수분보충, 탈수예방, 오운완'),
-                                                                               (303, json_build_object('ko', '제로 탄산음료', 'en', 'Zero Sugar Soda', 'ja', 'ゼロ炭酸飲料'),
+                                                                               (303, jsonb_build_object('ko', '제로 탄산음료', 'en', 'Zero Sugar Soda', 'ja', 'ゼロ炭酸飲料'),
                                                                                 jsonb_build_object('ko', '설탕 대신 대체 감미료를 사용하여 칼로리를 낮춘 탄산음료', 'en', 'Carbonated soft drink that uses artificial sweeteners instead of sugar.'),
-                                                                                '제로콜라, 제로사이다, zero sugar, 다이어트콜라, 펩시제로, 헬시플레저, 0칼로리');
+                                                                                '제로콜라, 제로사이다, zero sugar, 다이어트콜라, 펩시제로, 헬시플레저, 0칼로리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [304] 음료 - 유제품 (Iconic K-Milk)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
-    (304, json_build_object('ko', '바나나맛 우유', 'en', 'Banana Flavored Milk', 'ja', 'バナナ味牛乳'),
+    (304, jsonb_build_object('ko', '바나나맛 우유', 'en', 'Banana Flavored Milk', 'ja', 'バナナ味牛乳'),
      jsonb_build_object('ko', '단지 모양 용기로 유명한 한국의 대표적인 가공유', 'en', 'Iconic Korean banana-flavored milk known for its unique jar-shaped bottle.'),
-     '바나나맛우유, 바나나우유, 단지우유, 뚱바, banana milk, k-drink, 목욕후필수, 편의점꿀템');
+     '바나나맛우유, 바나나우유, 단지우유, 뚱바, banana milk, k-drink, 목욕후필수, 편의점꿀템') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Specialty & Boba)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
-    (302, json_build_object('ko', '버블티', 'en', 'Bubble Tea', 'ja', 'タピオカティー'),
+    (302, jsonb_build_object('ko', '버블티', 'en', 'Bubble Tea', 'ja', 'タピオカティー'),
      jsonb_build_object('ko', '밀크티에 쫄깃한 타피오카 펄을 넣어 마시는 대만식 음료', 'en', 'Tea-based drink from Taiwan mixed with milk and chewy tapioca pearls.'),
-     '버블티, 밀크티, bubble tea, boba, 보바, 타피오카펄, 공차, 타로버블티, 쫀득쫀득');
+     '버블티, 밀크티, bubble tea, boba, 보바, 타피오카펄, 공차, 타로버블티, 쫀득쫀득') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [401] 주류 - 맥주 (Modern Trends)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
-    (401, json_build_object('ko', '무알코올 맥주', 'en', 'Non-alcoholic Beer', 'ja', 'ノンアルコールビール'),
+    (401, jsonb_build_object('ko', '무알코올 맥주', 'en', 'Non-alcoholic Beer', 'ja', 'ノンアルコールビール'),
      jsonb_build_object('ko', '맥주의 맛과 향은 살리되 알코올 함량을 0%에 가깝게 낮춘 음료', 'en', 'Beer with little or no alcohol content, designed to taste like real beer.'),
-     '무알콜맥주, 논알콜맥주, non-alcoholic beer, 임산부맥주, 술기분만, 혼술, 다이어트맥주');
+     '무알콜맥주, 논알콜맥주, non-alcoholic beer, 임산부맥주, 술기분만, 혼술, 다이어트맥주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [203] 디저트 - 아이스크림 (K-Ice Cream Icons)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
-                                                                               (203, json_build_object('ko', '메로나', 'en', 'Melona', 'ja', 'メローナ'),
+                                                                               (203, jsonb_build_object('ko', '메로나', 'en', 'Melona', 'ja', 'メローナ'),
                                                                                 jsonb_build_object('ko', '부드럽고 쫀득한 식감의 한국 대표 멜론 맛 아이스크림 바', 'en', 'Popular Korean melon-flavored ice pop known for its creamy and chewy texture.'),
                                                                                 '메로나, 멜론아이스크림, melona, 올때메로나, k-icecream, 달콤한간식'),
-                                                                               (203, json_build_object('ko', '소프트 서브', 'en', 'Soft Serve', 'ja', 'ソフトクリーム'),
+                                                                               (203, jsonb_build_object('ko', '소프트 서브', 'en', 'Soft Serve', 'ja', 'ソフトクリーム'),
                                                                                 jsonb_build_object('ko', '공기 함량이 높아 질감이 매우 부드러운 우유 맛 아이스크림', 'en', 'Type of ice cream that is softer and less dense than regular ice creams.'),
-                                                                                '소프트아이스크림, 소프트서브, soft serve, 우유아이스크림, 상하목장, 디저트');
+                                                                                '소프트아이스크림, 소프트서브, soft serve, 우유아이스크림, 상하목장, 디저트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [403] 주류 - 전통주/소주 (Korean Soul Liquor)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1250,7 +1248,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '소주, 참이슬, 처음처럼, 진로, soju, 초록병, 삼겹살짝꿍, 회식 필수, 소맥, 혼술'),
                                                                                (403, jsonb_build_object('ko', '과일 소주', 'en', 'Fruit Soju', 'ja', 'フルーツ焼酎'),
                                                                                 jsonb_build_object('ko', '소주에 과일 향과 단맛을 더해 가볍고 상큼하게 즐길 수 있는 저도수 주류', 'en', 'Flavored soju with fruit extracts, offering a sweet and refreshing taste with lower alcohol content.'),
-                                                                                '과일소주, 자몽에이슬, 청포도에이슬, 순하리, fruit soju, 달달한술, 술찌추천, 파티주');
+                                                                                '과일소주, 자몽에이슬, 청포도에이슬, 순하리, fruit soju, 달달한술, 술찌추천, 파티주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 피자/버거 (Global Standard)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1262,37 +1260,37 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '페퍼로니피자, 페페로니피자, pepperoni, 미제피자, 짭짤한맛, 맥주안주'),
                                                                                (109, jsonb_build_object('ko', '치즈버거', 'en', 'Cheeseburger', 'ja', 'チーズバーガー'),
                                                                                 jsonb_build_object('ko', '육즙 가득한 패티와 녹아내린 치즈가 완벽한 조화를 이루는 클래식 버거', 'en', 'Classic beef burger topped with melted cheese, lettuce, tomato, and pickles.'),
-                                                                                '치즈버거, 수제버거, cheeseburger, 쿼터파운더, 육즙가득, 버거맛집, 패스트푸드');
+                                                                                '치즈버거, 수제버거, cheeseburger, 쿼터파운더, 육즙가득, 버거맛집, 패스트푸드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Global Specialty)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (102, jsonb_build_object('ko', '오코노미야끼', 'en', 'Okonomiyaki', 'ja', 'お好み焼き'),
      jsonb_build_object('ko', '양배추와 다양한 해산물, 고기를 반죽해 구운 뒤 소스를 얹은 일본식 부침개', 'en', 'Savory Japanese pancake made with shredded cabbage and various toppings.'),
-     '오코노미야끼, 오코노미야키, okonomiyaki, 일식부침개, 가쓰오부시, 맥주안주, 철판요리');
+     '오코노미야끼, 오코노미야키, okonomiyaki, 일식부침개, 가쓰오부시, 맥주안주, 철판요리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Trendy Cafe Items)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (301, jsonb_build_object('ko', '플랫 화이트', 'en', 'Flat White', 'ja', 'フラットホワイト'),
      jsonb_build_object('ko', '카페라떼보다 우유 양이 적어 에스프레소의 진한 풍미를 느낄 수 있는 부드러운 커피', 'en', 'Coffee drink consisting of espresso with a thin layer of microfoam, originating from Oceania.'),
-     '플랫화이트, flatwhite, 진한라떼, 호주커피, 카페투어, 라떼아트');
+     '플랫화이트, flatwhite, 진한라떼, 호주커피, 카페투어, 라떼아트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Herbal & Aesthetic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '히비스커스 차', 'en', 'Hibiscus Tea', 'ja', 'ハイビスカスティー'),
      jsonb_build_object('ko', '붉은 빛깔과 새콤한 맛이 특징이며 다이어트와 미용에 좋은 카페인 없는 차', 'en', 'Vibrant red herbal tea with a tart flavor, rich in vitamin C and caffeine-free.'),
-     '히비스커스, 히비스커스티, hibiscus, 빨간차, 다이어트차, 무카페인, 상큼한차');
+     '히비스커스, 히비스커스티, hibiscus, 빨간차, 다이어트차, 무카페인, 상큼한차') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Refined Pastry)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '마들렌', 'en', 'Madeleine', 'ja', 'マドレーヌ'),
      jsonb_build_object('ko', '조개 모양의 폭신하고 고소한 프랑스식 구움과자', 'en', 'Small French sponge cake with a distinctive shell-like shape.'),
-     '마들렌, 구움과자, madeleine, 홈베이킹, 프랑스디저트, 커피단짝, 달콤한빵');
+     '마들렌, 구움과자, madeleine, 홈베이킹, 프랑스디저트, 커피단짝, 달콤한빵') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (K-Daily Side Dish)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (105, jsonb_build_object('ko', '조미김', 'en', 'Seasoned Seaweed', 'ja', '韓国のり'),
      jsonb_build_object('ko', '들기름이나 참기름을 발라 구워 짭짤하고 고소한 한국의 대표 밑반찬', 'en', 'Toasted seaweed seasoned with sesame oil and salt, a staple side dish in Korea.'),
-     '조미김, 도시락김, gim, seasoned seaweed, 한국김, 밥도둑, 맥주안주, k-food');
+     '조미김, 도시락김, gim, seasoned seaweed, 한국김, 밥도둑, 맥주안주, k-food') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Specialty Ingredients)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1301,7 +1299,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '아보카도, 아보카도슬라이스, avocado, 숲의버터, 건강식재료, 샌드위치재료'),
                                                                                (105, jsonb_build_object('ko', '올리브', 'en', 'Olives', 'ja', 'オリーブ'),
                                                                                 jsonb_build_object('ko', '특유의 풍미와 짭조름한 맛이 특징인 지중해 식재료로 피자나 파스타에 활용됨', 'en', 'Small oval fruit of the olive tree, used for oil or eaten as a savory snack/topping.'),
-                                                                                '올리브, 블랙올리브, 그린올리브, olives, 지중해식단, 피자토핑, 파스타재료');
+                                                                                '올리브, 블랙올리브, 그린올리브, olives, 지중해식단, 피자토핑, 파스타재료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Cheese Varieties)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1316,7 +1314,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '파마산, 파마산가루, 파마산치즈, parmesan, 가루치즈, 풍미작렬'),
                                                                                (109, jsonb_build_object('ko', '리코타 치즈', 'en', 'Ricotta', 'ja', 'リコッタチーズ'),
                                                                                 jsonb_build_object('ko', '입자가 고우면서도 부드럽고 담백한 맛이 특징인 샐러드용 치즈', 'en', 'Italian whey cheese with a mild, slightly sweet flavor and creamy texture.'),
-                                                                                '리코타치즈, 리코타, ricotta, 샐러드치즈, 부드러운치즈, 브런치재료');
+                                                                                '리코타치즈, 리코타, ricotta, 샐러드치즈, 부드러운치즈, 브런치재료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Detailed Delivery Chicken)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1328,7 +1326,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '양념치킨, 양념통닭, seasoned chicken, k-chicken, 맵단, 배달음식, 반반치킨'),
                                                                                (103, jsonb_build_object('ko', '간장 치킨', 'en', 'Soy Sauce Chicken', 'ja', '醤油チキン'),
                                                                                 jsonb_build_object('ko', '짭조름하고 달콤한 간장 소스를 입혀 남녀노소 즐기기 좋은 치킨', 'en', 'Fried chicken glazed with a savory and sweet soy-based sauce.'),
-                                                                                '간장치킨, 소이치킨, soy sauce chicken, 짭짤한맛, 교촌치킨스타일, 단짠치킨');
+                                                                                '간장치킨, 소이치킨, soy sauce chicken, 짭짤한맛, 교촌치킨스타일, 단짠치킨') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Detailed Delivery Pizza)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1337,7 +1335,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '하와이안피자, 파인애플피자, hawaiian pizza, 호불호음식, 단짠피자, 열대과일피자'),
                                                                                (109, jsonb_build_object('ko', '고구마 피자', 'en', 'Sweet Potato Pizza', 'ja', 'サツマイモピザ'),
                                                                                 jsonb_build_object('ko', '달콤한 고구마 무스가 듬뿍 올라가 한국에서 특히 인기 있는 부드러운 피자', 'en', 'Popular Korean-style pizza topped with sweet potato mousse.'),
-                                                                                '고구마피자, 고구마무스, sweet potato pizza, k-pizza, 달콤한피자, 아이들간식');
+                                                                                '고구마피자, 고구마무스, sweet potato pizza, k-pizza, 달콤한피자, 아이들간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Delivery Chinese Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1346,7 +1344,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '짜장면, 자장면, jajangmyeon, 블랙데이, 이삿날음식, 중식배달, 짜장면맛집'),
                                                                                (102, jsonb_build_object('ko', '짬뽕', 'en', 'Jjamppong', 'ja', 'チャンポン'),
                                                                                 jsonb_build_object('ko', '해산물과 채소가 가득 들어간 얼큰하고 시원한 국물의 한국식 중화 면 요리', 'en', 'Spicy Korean-Chinese seafood noodle soup with a rich, smoky broth.'),
-                                                                                '짬뽕, 짬뽕국물, jjamppong, 얼큰한음식, 해장메뉴, 불맛, 중식배달');
+                                                                                '짬뽕, 짬뽕국물, jjamppong, 얼큰한음식, 해장메뉴, 불맛, 중식배달') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Convenience & Quick Meal)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1355,7 +1353,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '삼각김밥, 삼김, triangle gimbap, 편의점음식, 참치마요, 전주비빔, 간편식'),
                                                                                (101, jsonb_build_object('ko', '컵밥', 'en', 'Cup Rice', 'ja', 'カップご飯'),
                                                                                 jsonb_build_object('ko', '컵 모양 용기에 밥과 토핑을 담아 간편하게 비벼 먹는 한 끼 식사', 'en', 'Convenient rice bowl served in a cup with various toppings and sauces.'),
-                                                                                '컵밥, 노량진컵밥, cup rice, 간편도시락, 편의점꿀템, 혼밥메뉴');
+                                                                                '컵밥, 노량진컵밥, cup rice, 간편도시락, 편의점꿀템, 혼밥메뉴') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (K-Street Food Sensation)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1364,7 +1362,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '핫도그, 감자핫도그, corn dog, k-hotdog, 명랑핫도그, 설탕뿌린핫도그, 길거리음식'),
                                                                                (109, jsonb_build_object('ko', '소떡소떡', 'en', 'Sotteok Sotteok', 'ja', 'ソトクソトク'),
                                                                                 jsonb_build_object('ko', '소시지와 가래떡을 번갈아 끼워 구운 뒤 매콤달콤한 소스를 바른 간식', 'en', 'Popular street food skewer with alternating rice cakes and sausages.'),
-                                                                                '소떡소떡, 소떡, sotteok, 휴게소음식, 이영자맛집, 떡꼬치, 맵단간식');
+                                                                                '소떡소떡, 소떡, sotteok, 휴게소음식, 이영자맛집, 떡꼬치, 맵단간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Global & Traditional Condiments)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1376,13 +1374,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '굴소스, oyster sauce, 이금기, 중식양념, 볶음요리치트키, 감칠맛'),
                                                                                (604, jsonb_build_object('ko', '발사믹 식초', 'en', 'Balsamic Vinegar', 'ja', 'バルサミコ酢'),
                                                                                 jsonb_build_object('ko', '포도즙을 숙성시켜 만든 깊은 풍미와 산미가 특징인 이탈리아 전통 식초', 'en', 'Dark, concentrated, and intensely flavored vinegar made from grapes.'),
-                                                                                '발사믹, 발사믹식초, balsamic, 샐러드소스, 올리브유짝꿍, 고급식재료');
+                                                                                '발사믹, 발사믹식초, balsamic, 샐러드소스, 올리브유짝꿍, 고급식재료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [404] 주류 - 칵테일 (Modern Highball Culture)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (404, jsonb_build_object('ko', '하이볼', 'en', 'Highball', 'ja', 'ハイボール'),
      jsonb_build_object('ko', '위스키에 탄산수나 토닉워터를 섞어 레몬을 곁들인 청량한 칵테일', 'en', 'Refreshing cocktail made with whisky and carbonated water or ginger ale.'),
-     '하이볼, 산토리하이볼, highball, 위스키소다, 레몬하이볼, 이자카야술, 술안주');
+     '하이볼, 산토리하이볼, highball, 위스키소다, 레몬하이볼, 이자카야술, 술안주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Global Treats)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1391,13 +1389,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '도넛, 도너츠, donuts, 노티드, 던킨, 달콤한디저트, 빵순이, 간식'),
                                                                                (201, jsonb_build_object('ko', '바게트', 'en', 'Baguette', 'ja', 'バゲット'),
                                                                                 jsonb_build_object('ko', '겉은 바삭하고 속은 쫄깃한 긴 막대 모양의 프랑스 대표 빵', 'en', 'Long, thin loaf of French bread known for its crisp crust and airy inside.'),
-                                                                                '바게트, 프랑스빵, baguette, 마늘바게트재료, 식사빵, 겉바속촉');
+                                                                                '바게트, 프랑스빵, baguette, 마늘바게트재료, 식사빵, 겉바속촉') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Charcuterie & Wine Pairing)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (501, jsonb_build_object('ko', '살라미', 'en', 'Salami', 'ja', 'サラミ'),
      jsonb_build_object('ko', '양념한 돼지고기를 건조시켜 만든 이탈리아식 소시지로 와인 안주로 인기', 'en', 'Cured sausage consisting of fermented and air-dried meat.'),
-     '살라미, salami, 샤퀴테리, 와인안주, 짭조름한맛, 샌드위치햄');
+     '살라미, salami, 샤퀴테리, 와인안주, 짭조름한맛, 샌드위치햄') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 
 -- [101] 요리 - 밥 (Korean Rice Thief & Healthy)
@@ -1407,43 +1405,43 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '간장게장, 양념게장, 게장, ganjang gejang, soy marinated crab, 밥도둑, 해산물요리, 밥비빔'),
                                                                                (101, jsonb_build_object('ko', '쌈밥', 'en', 'Ssam-bap', 'ja', 'サンパプ'),
                                                                                 jsonb_build_object('ko', '다양한 쌈 채소에 밥과 강된장, 고기 등을 싸서 먹는 신선하고 건강한 한국식 식사', 'en', 'Fresh leafy vegetable wraps served with rice and savory dipping sauces.'),
-                                                                                '쌈밥, 쌈밥정식, ssambap, 유기농식단, 건강식, vegan, 웰빙푸드, 쌈채소');
+                                                                                '쌈밥, 쌈밥정식, ssambap, 유기농식단, 건강식, vegan, 웰빙푸드, 쌈채소') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Stamina & Health)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '장어구이', 'en', 'Grilled Eel', 'ja', 'うなぎの蒲焼'),
      jsonb_build_object('ko', '특유의 고소한 맛과 풍부한 영양으로 기력 회복에 좋은 최고의 보양 요리', 'en', 'Grilled eel seasoned with savory or spicy sauce, known for its high nutritional value.'),
-     '장어구이, 민물장어, 바다장어, grilled eel, unagi, jangeo, 보양식, 기력회복, 스테미너');
+     '장어구이, 민물장어, 바다장어, grilled eel, unagi, jangeo, 보양식, 기력회복, 스테미너') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (K-Healthy Jelly)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (105, jsonb_build_object('ko', '도토리묵', 'en', 'Acorn Jelly', 'ja', 'どんぐりムク'),
      jsonb_build_object('ko', '도토리 가루를 쑤어 만든 탱글탱글한 식감의 저칼로리 건강 채소 요리', 'en', 'Jelly made from acorn starch, a popular low-calorie and vegan-friendly side dish.'),
-     '도토리묵, 묵무침, acorn jelly, dotorimuk, 다이어트음식, vegan, 건강반찬, 저칼로리간식');
+     '도토리묵, 묵무침, acorn jelly, dotorimuk, 다이어트음식, vegan, 건강반찬, 저칼로리간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [306] 음료 - 스무디/기능성 (Fitness & Protein)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (306, jsonb_build_object('ko', '단백질 쉐이크', 'en', 'Protein Shake', 'ja', 'プロテインシェイク'),
      jsonb_build_object('ko', '운동 전후 근육 합성을 돕기 위해 마시는 고단백 기능성 음료', 'en', 'Beverage made with protein powder, milk, or water, essential for muscle recovery.'),
-     '단백질쉐이크, 프로틴쉐이크, protein shake, 오운완, 헬스음료, 근성장, 식단관리, 고단백');
+     '단백질쉐이크, 프로틴쉐이크, protein shake, 오운완, 헬스음료, 근성장, 식단관리, 고단백') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [601] 소스 - 오일 (Luxury Ingredients)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (601, jsonb_build_object('ko', '트러플 오일', 'en', 'Truffle Oil', 'ja', 'トリュフオイル'),
      jsonb_build_object('ko', '세계 3대 진미인 송로버섯의 향을 담아 요리의 품격을 높여주는 고급 오일', 'en', 'High-quality oil infused with the aroma of truffles, used to enhance gourmet dishes.'),
-     '트러플오일, 송로버섯, truffle oil, 풍미작렬, 고급식재료, 요리치트키, 트러플파스타');
+     '트러플오일, 송로버섯, truffle oil, 풍미작렬, 고급식재료, 요리치트키, 트러플파스타') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [404] 주류 - 칵테일 (Professional Mixology)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (404, jsonb_build_object('ko', '에스프레소 마티니', 'en', 'Espresso Martini', 'ja', 'エスプレッソマティーニ'),
      jsonb_build_object('ko', '에스프레소와 보드카를 섞어 만든 세련되고 각성 효과가 있는 클래식 칵테일', 'en', 'Cold, coffee-flavored cocktail made with vodka, espresso, and coffee liqueur.'),
-     '에스프레소마티니, espressomartini, 커피술, 칵테일바, 혼술, 세련된술');
+     '에스프레소마티니, espressomartini, 커피술, 칵테일바, 혼술, 세련된술') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Global Trendy Sweet)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '수플레 팬케이크', 'en', 'Souffle Pancake', 'ja', 'スフレパンケーキ'),
      jsonb_build_object('ko', '머랭을 이용해 구름처럼 폭신하고 부드러운 식감이 특징인 디저트', 'en', 'Extra fluffy, airy, and jiggly Japanese-style pancakes made with egg whites.'),
-     '수플레팬케이크, 수플레, souffle pancake, 푹신한빵, 디저트맛집, 인스타감성');
+     '수플레팬케이크, 수플레, souffle pancake, 푹신한빵, 디저트맛집, 인스타감성') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (K-Street/Pub Classic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1452,13 +1450,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '어묵탕, 오뎅탕, eomuktang, fish cake soup, 소주안주, 길거리음식, 겨울국물, 포장마차'),
                                                                                (106, jsonb_build_object('ko', '마라전골', 'en', 'Mala Hot Pot', 'ja', '麻辣火鍋'),
                                                                                 jsonb_build_object('ko', '화끈한 마라 육수에 고기와 채소를 듬뿍 넣어 끓여 먹는 사천식 전골 요리', 'en', 'Spicy Sichuan-style hot pot with various meats and vegetables in a numbing broth.'),
-                                                                                '마라전골, 훠궈, hotpot, mala, 마라탕친구, 술안주, 얼큰한음식, 중식전골');
+                                                                                '마라전골, 훠궈, hotpot, mala, 마라탕친구, 술안주, 얼큰한음식, 중식전골') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (K-Night Snack/Anju)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '닭발', 'en', 'Chicken Feet', 'ja', '鶏足'),
      jsonb_build_object('ko', '매콤한 양념에 버무려 구워낸 콜라겐 가득한 한국의 대표적인 야식 메뉴', 'en', 'Spicy marinated chicken feet, a popular chewy and spicy late-night snack in Korea.'),
-     '닭발, 무뼈닭발, 국물닭발, dakbal, chicken feet, 매운음식, 야식, 콜라겐, 소주안주');
+     '닭발, 무뼈닭발, 국물닭발, dakbal, chicken feet, 매운음식, 야식, 콜라겐, 소주안주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Gourmet Brunch & Asian Roll)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1467,31 +1465,31 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '키슈, 키쉬, quiche, 프랑스요리, 브런치메뉴, 달걀타르트, 고급조식'),
                                                                                (109, jsonb_build_object('ko', '스프링 롤', 'en', 'Spring Rolls', 'ja', '春巻き'),
                                                                                 jsonb_build_object('ko', '채소나 고기를 얇은 피에 말아 튀기거나 신선하게 먹는 아시아식 전채 요리', 'en', 'Variety of filled, rolled appetizers found in East Asian and Southeast Asian cuisine.'),
-                                                                                '스프링롤, 짜조, 춘권, spring rolls, 베트남요리, 중식만두, 튀김간식, 에피타이저');
+                                                                                '스프링롤, 짜조, 춘권, spring rolls, 베트남요리, 중식만두, 튀김간식, 에피타이저') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [403] 주류 - 전통주/사케 (Asian Spirits)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (403, jsonb_build_object('ko', '사케', 'en', 'Sake', 'ja', '日本酒'),
      jsonb_build_object('ko', '쌀을 발효시켜 만든 일본의 전통 증류주로 깔끔하고 깊은 풍미가 특징', 'en', 'Traditional Japanese rice wine, known for its clean and complex flavor profiles.'),
-     '사케, 정종, 니혼슈, sake, 일본술, 이자카야, 도쿠리, 따뜻한술, 차가운술');
+     '사케, 정종, 니혼슈, sake, 일본술, 이자카야, 도쿠리, 따뜻한술, 차가운술') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차 (Japanese Specialty)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '호지차', 'en', 'Hojicha', 'ja', 'ほうじ茶'),
      jsonb_build_object('ko', '녹차 잎을 볶아서 만들어 떫은맛이 적고 구수한 풍미가 일품인 차', 'en', 'Japanese green tea that is roasted in a porcelain pot over charcoal, offering a nutty flavor.'),
-     '호지차, 호지티, hojicha, 볶은녹차, 구수한차, 저카페인, 티타임');
+     '호지차, 호지티, hojicha, 볶은녹차, 구수한차, 저카페인, 티타임') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [203] 디저트 - 아이스크림 (Italian Premium)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (203, jsonb_build_object('ko', '젤라또', 'en', 'Gelato', 'ja', 'ジェラート'),
      jsonb_build_object('ko', '일반 아이스크림보다 공기 함량이 적어 쫀득하고 진한 맛이 특징인 이탈리아식 빙과', 'en', 'Italian frozen dessert known for its dense texture and intense flavors.'),
-     '젤라또, 젤라토, gelato, 이탈리아아이스크림, 쫀득한아이스크림, 수제디저트');
+     '젤라또, 젤라토, gelato, 이탈리아아이스크림, 쫀득한아이스크림, 수제디저트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Global Specialty - Thailand)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (106, jsonb_build_object('ko', '똠양꿍', 'en', 'Tom Yum Goong', 'ja', 'トムヤムクン'),
      jsonb_build_object('ko', '새우와 향신료를 넣어 끓인 태국의 대표적인 매콤새콤한 수프', 'en', 'Classic Thai spicy and sour soup with shrimp, lemongrass, and galangal.'),
-     '똠양꿍, 똠양궁, tomyumgoong, 태국요리, 세계3대수프, 매콤새콤, 고수요리');
+     '똠양꿍, 똠양궁, tomyumgoong, 태국요리, 세계3대수프, 매콤새콤, 고수요리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (SE Asia & Thailand)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1500,7 +1498,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '나시고랭, 나시고렝, nasigoreng, 인도네시아음식, 동남아볶음밥, 세계에서가장맛있는음식'),
                                                                                (101, jsonb_build_object('ko', '가파오 라이스', 'en', 'Gapao Rice', 'ja', 'ガパオライス'),
                                                                                 jsonb_build_object('ko', '다진 돼지고기와 바질을 볶아 밥 위에 얹어 먹는 태국의 인기 덮밥', 'en', 'Thai basil stir-fry with minced meat, served over rice with a fried egg.'),
-                                                                                '가파오라이스, 카우팟가파오, gapaorice, 태국덮밥, 바질볶음밥, 태국음식');
+                                                                                '가파오라이스, 카우팟가파오, gapaorice, 태국덮밥, 바질볶음밥, 태국음식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Mexico, India, S.America Specialty)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1512,7 +1510,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '난, 인도난, 갈릭난, 허니난, naan, 인도음식, 커리짝꿍, 화덕빵'),
                                                                                (109, jsonb_build_object('ko', '엠파나다', 'en', 'Empanada', 'ja', 'エンパナーダ'),
                                                                                 jsonb_build_object('ko', '고기, 치즈, 채소 등으로 속을 채워 구운 남미의 전통 파이', 'en', 'Baked or fried turnover consisting of pastry and filling, common in Latin America.'),
-                                                                                '엠파나다, 엠파나따, empanada, 남미간식, 스페인파이, 미트파이');
+                                                                                '엠파나다, 엠파나따, empanada, 남미간식, 스페인파이, 미트파이') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Gourmet Toppings & Cheese)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1527,7 +1525,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '프로슈토, 프레슈토, prosciutto, 하몽친구, 생햄, 와인안주, 멜론프로슈토'),
                                                                                (109, jsonb_build_object('ko', '송로버섯', 'en', 'Truffle', 'ja', 'トリュフ'),
                                                                                 jsonb_build_object('ko', '세계 3대 진미 중 하나로 독특하고 깊은 풍미를 가진 값비싼 버섯', 'en', 'Edible fungus highly prized as a delicacy for its strong, earthy aroma.'),
-                                                                                '트러플, 송로버섯, truffle, 블랙트러플, 화이트트러플, 고급식재료, 요리치트키');
+                                                                                '트러플, 송로버섯, truffle, 블랙트러플, 화이트트러플, 고급식재료, 요리치트키') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (CVS New & Best Ramen)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1539,7 +1537,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '신라면, 신라면컵, shinramyun, 국민라면, 얼큰한라면, k-food, 편의점라면'),
                                                                                (102, jsonb_build_object('ko', '육개장 사발면', 'en', 'Yukgaejang Cup', 'ja', 'ユッケジャンサバル麺'),
                                                                                 jsonb_build_object('ko', '얇은 면발과 익숙한 육개장 맛으로 오랫동안 사랑받은 컵라면', 'en', 'Legendary Korean cup noodle featuring thin noodles and a savory beef soup base.'),
-                                                                                '육개장, 육개장사발면, yukgaejang, 컵라면, 얇은면, 추억의맛, 캠핑라면');
+                                                                                '육개장, 육개장사발면, yukgaejang, 컵라면, 얇은면, 추억의맛, 캠핑라면') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Korean Soul Food & Global Visual)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1548,19 +1546,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '참치김밥, 참마김밥, tunagimbap, 소풍도시락, 분식맛집, 참치마요, k-roll'),
                                                                                (101, jsonb_build_object('ko', '지라시 스시', 'en', 'Chirashi Sushi', 'ja', 'ちらし寿司'),
                                                                                 jsonb_build_object('ko', '초밥용 밥 위에 신선한 생선회와 채소, 달걀지단을 흩뿌리듯 얹어낸 화려한 일본식 덮밥', 'en', 'Colorful Japanese bowl of sushi rice topped with scattered raw fish and garnishes.'),
-                                                                                '지라시스시, 치라시스시, chirashi, 일식덮밥, 꽃초밥, 홈파티메뉴');
+                                                                                '지라시스시, 치라시스시, chirashi, 일식덮밥, 꽃초밥, 홈파티메뉴') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Global Spicy & Exotic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (102, jsonb_build_object('ko', '락사', 'en', 'Laksa', 'ja', 'ラクサ'),
      jsonb_build_object('ko', '코코넛 밀크와 매콤한 커리 베이스의 국물에 해산물을 곁들인 동남아식 면 요리', 'en', 'Spicy noodle soup popular in Southeast Asia, consisting of rice noodles with chicken, prawn or fish.'),
-     '락사, laksa, 싱가포르음식, 말레이시아음식, 코코넛쌀국수, 동남아요리, 이색음식');
+     '락사, laksa, 싱가포르음식, 말레이시아음식, 코코넛쌀국수, 동남아요리, 이색음식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소/반찬 (K-Traditional & Healthy)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (105, jsonb_build_object('ko', '무생채', 'en', 'Radish Salad', 'ja', '무생채'),
      jsonb_build_object('ko', '무를 채 썰어 고춧가루와 식초로 새콤달콤하게 버무린 아삭한 한국식 반찬', 'en', 'Crispy and tangy Korean radish salad seasoned with chili flakes and vinegar.'),
-     '무생채, 무채무침, k-side dish, 비빔밥재료, 아삭한반찬, 소화잘되는음식, vegan');
+     '무생채, 무채무침, k-side dish, 비빔밥재료, 아삭한반찬, 소화잘되는음식, vegan') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Luxury Spices & Flavor Boosters)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1572,25 +1570,25 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '사프란, 샤프란, saffron, 고급향신료, 파에야재료, 리조또재료, 노란꽃가루'),
                                                                                (604, jsonb_build_object('ko', '고춧가루', 'en', 'Chili Flakes', 'ja', '粉唐辛子'),
                                                                                 jsonb_build_object('ko', '잘 말린 고추를 갈아 만든 한국 요리의 매운맛을 책임지는 필수 양념', 'en', 'Essential Korean seasoning made from dried red chilies, the base for kimchi and stews.'),
-                                                                                '고춧가루, 고추가루, gochugaru, chili flakes, k-spice, 매운양념, 요리필수템');
+                                                                                '고춧가루, 고추가루, gochugaru, chili flakes, k-spice, 매운양념, 요리필수템') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Healthy Toppings)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (109, jsonb_build_object('ko', '카카오 닙스', 'en', 'Cacao Nibs', 'ja', 'カカオニブ'),
      jsonb_build_object('ko', '카카오빈을 부수어 만든 쌉싸름한 맛의 수퍼푸드로 요거트나 스무디 토핑으로 인기', 'en', 'Crushed cacao beans with a bitter, chocolatey flavor, rich in antioxidants.'),
-     '카카오닙스, cacaonibs, 다이어트토핑, 항산화푸드, 초코릿원료, 수퍼푸드, 요거트재료');
+     '카카오닙스, cacaonibs, 다이어트토핑, 항산화푸드, 초코릿원료, 수퍼푸드, 요거트재료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Refined Pastry)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '다쿠아즈', 'en', 'Dacquoise', 'ja', 'ダックワーズ'),
      jsonb_build_object('ko', '겉은 바삭하고 속은 폭신한 머랭 반죽 사이에 크림을 채운 프랑스식 디저트', 'en', 'Dessert cake made with layers of almond and hazelnut meringue and whipped cream.'),
-     '다쿠아즈, 다쿠아즈맛집, dacquoise, 머랭디저트, 겉바속촉, 고급구움과자, 프랑스과자');
+     '다쿠아즈, 다쿠아즈맛집, dacquoise, 머랭디저트, 겉바속촉, 고급구움과자, 프랑스과자') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [303] 음료 - 탄산/주류 대체 (Trendy Non-Alcoholic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (303, jsonb_build_object('ko', '무알코올 하이볼', 'en', 'Non-alcoholic Highball', 'ja', 'ノンアルハイボール'),
      jsonb_build_object('ko', '위스키의 향은 살리되 알코올은 제거하여 부담 없이 분위기를 즐길 수 있는 음료', 'en', 'A mocktail version of the highball, offering the aroma of spirits without the alcohol.'),
-     '무알콜하이볼, 논알콜하이볼, non-alcoholic, 헬시플레저, 임산부음료, 기분만내기, 제로하이볼');
+     '무알콜하이볼, 논알콜하이볼, non-alcoholic, 헬시플레저, 임산부음료, 기분만내기, 제로하이볼') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Global Iconic Dishes)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1602,7 +1600,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '푸틴, poutine, 캐나다음식, 감자튀김요리, 치즈커드, 그레이비소스, 살찌는맛'),
                                                                                (109, jsonb_build_object('ko', '반세오', 'en', 'Banh Xeo', 'ja', 'バインセオ'),
                                                                                 jsonb_build_object('ko', '쌀가루 반죽에 해산물과 채소를 넣어 반달 모양으로 부쳐낸 베트남식 부침개', 'en', 'Crispy, stuffed Vietnamese rice pancake filled with shrimp, pork, and bean sprouts.'),
-                                                                                '반세오, 바인세오, banhxeo, 베트남부침개, 베트남요리, 동남아음식, 겉바속촉');
+                                                                                '반세오, 바인세오, banhxeo, 베트남부침개, 베트남요리, 동남아음식, 겉바속촉') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Casual Japanese & Essential Fried Rice)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1611,7 +1609,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '가츠동, 돈가스덮밥, katsudon, 일식덮밥, 한그릇요리, 돈카츠덮밥, 혼밥메뉴'),
                                                                                (101, jsonb_build_object('ko', '계란 볶음밥', 'en', 'Egg Fried Rice', 'ja', '卵炒飯'),
                                                                                 jsonb_build_object('ko', '달걀과 밥을 고슬고슬하게 볶아내어 담백하고 고소한 맛을 낸 가장 기본적인 볶음밥', 'en', 'Simple and savory stir-fried rice with scrambled eggs, a universal comfort food.'),
-                                                                                '계란볶음밥, 달걀볶음밥, eggfriedrice, 간단요리, 자취요리, 아이들식단, 고슬고슬');
+                                                                                '계란볶음밥, 달걀볶음밥, eggfriedrice, 간단요리, 자취요리, 아이들식단, 고슬고슬') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [601] 소스 - 오일/유제품 (Healthy Fats & Dairy)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1620,25 +1618,25 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '기버터, ghee, 키토버터, keto, 저탄고지, 방탄커피재료, 무유당버터, 건강한지방'),
                                                                                (604, jsonb_build_object('ko', '메이플 시럽', 'en', 'Maple Syrup', 'ja', '메이플시럽'),
                                                                                 jsonb_build_object('ko', '단풍나무 수액을 졸여 만든 천연 감미료로 팬케이크나 요거트에 곁들여 먹는 시럽', 'en', 'Natural sweetener made from the sap of maple trees, a classic topping for breakfast.'),
-                                                                                '메이플시럽, maplesyrup, 천연시럽, 팬케이크시럽, 캐나다특산품, 비건설탕대체, vegan');
+                                                                                '메이플시럽, maplesyrup, 천연시럽, 팬케이크시럽, 캐나다특산품, 비건설탕대체, vegan') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [501] 간식 - 과자 (Delivery & Pub Side)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (501, jsonb_build_object('ko', '칠리 치즈 프라이', 'en', 'Chili Cheese Fries', 'ja', 'チリチーズフライ'),
      jsonb_build_object('ko', '바삭한 감자튀김 위에 매콤한 칠리 소스와 녹은 치즈를 가득 얹은 요리', 'en', 'Crispy french fries topped with spicy chili con carne and melted cheese.'),
-     '칠리치즈프라이, 칠리프라이, chilicheesefries, 맥주안주, 미국식간식, 칼로리폭탄, 배달사이드');
+     '칠리치즈프라이, 칠리프라이, chilicheesefries, 맥주안주, 미국식간식, 칼로리폭탄, 배달사이드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Gourmet French Dessert)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '몽블랑', 'en', 'Mont Blanc', 'ja', 'モンブラン'),
      jsonb_build_object('ko', '밤 페이스트를 국수 모양으로 짜 올려 산 모양을 만든 우아하고 달콤한 디저트', 'en', 'Classic dessert of sweetened chestnut purée topped with whipped cream, shaped like a mountain.'),
-     '몽블랑, 몽블랑케이크, montblanc, 밤디저트, 고급베이커리, 가을디저트, 프랑스케이크');
+     '몽블랑, 몽블랑케이크, montblanc, 밤디저트, 고급베이커리, 가을디저트, 프랑스케이크') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Flavor Extract)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (604, jsonb_build_object('ko', '유자청', 'en', 'Yuzu Marmalade', 'ja', '柚子茶'),
      jsonb_build_object('ko', '향긋한 유자를 설탕에 재워 만든 청으로 차나 드레싱, 요리 소스로 다양하게 활용됨', 'en', 'Fragrant citron preserve used for tea, dressings, and various gourmet sauces.'),
-     '유자청, 유자차, yuzu, 유자드레싱, 상큼한소스, 비타민보충, k-tea');
+     '유자청, 유자차, yuzu, 유자드레싱, 상큼한소스, 비타민보충, k-tea') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Winter & Global Classic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1647,7 +1645,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '어니언수프, 양파스프, frenchonionsoup, 프랑스요리, 겨울음식, 해장수프, 치즈듬뿍'),
                                                                                (106, jsonb_build_object('ko', '굴국밥', 'en', 'Oyster Rice Soup', 'ja', 'カキ雑炊'),
                                                                                 jsonb_build_object('ko', '바다의 우유라 불리는 신선한 굴을 넣어 끓인 시원하고 영양 가득한 겨울 보양 국밥', 'en', 'Korean rice soup made with fresh oysters and vegetables, a seasonal winter specialty.'),
-                                                                                '굴국밥, 굴요리, oystersoup, 제철음식, 겨울보양식, 시원한국물, 바다의우유');
+                                                                                '굴국밥, 굴요리, oystersoup, 제철음식, 겨울보양식, 시원한국물, 바다의우유') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Festive & Brunch)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1656,13 +1654,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '모둠전, 모듬전, jeon, 명절음식, 추석음식, 설날음식, 막걸리안주, 비오는날음식'),
                                                                                (109, jsonb_build_object('ko', '크로크무슈', 'en', 'Croque Monsieur', 'ja', 'クロックムッシュ'),
                                                                                 jsonb_build_object('ko', '빵 사이에 햄과 치즈를 넣고 베샤멜 소스를 얹어 구워낸 프랑스식 샌드위치', 'en', 'Hot sandwich made with ham and cheese, topped with creamy béchamel sauce.'),
-                                                                                '크로크무슈, 크로크마담, croquemonsieur, 프랑스샌드위치, 브런치메뉴, 치즈토스트');
+                                                                                '크로크무슈, 크로크마담, croquemonsieur, 프랑스샌드위치, 브런치메뉴, 치즈토스트') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [101] 요리 - 밥 (Italian Gourmet)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (101, jsonb_build_object('ko', '버섯 리조또', 'en', 'Mushroom Risotto', 'ja', 'きのこリゾット'),
      jsonb_build_object('ko', '다양한 버섯의 풍미와 크림의 고소함이 쌀알에 녹아든 이탈리아식 쌀 요리', 'en', 'Creamy Italian rice dish cooked with broth and a variety of sautéed mushrooms.'),
-     '버섯리조또, 크림리조또, risotto, 이탈리아음식, 풍미작렬, 트러플리조또, 고급식사');
+     '버섯리조또, 크림리조또, risotto, 이탈리아음식, 풍미작렬, 트러플리조또, 고급식사') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Artisan & Holiday)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1671,19 +1669,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '사워도우, 천연발효빵, sourdough, 건강빵, 비건빵, vegan, 담백한빵, 식사빵'),
                                                                                (201, jsonb_build_object('ko', '슈톨렌', 'en', 'Stollen', 'ja', 'シュトーレン'),
                                                                                 jsonb_build_object('ko', '말린 과일과 견과류를 넣고 설탕 가루를 입힌 독일의 전통 크리스마스 케이크', 'en', 'Traditional German fruit bread eaten during the Christmas season.'),
-                                                                                '슈톨렌, stollen, 크리스마스케이크, 독일디저트, 연말파티, 겨울간식');
+                                                                                '슈톨렌, stollen, 크리스마스케이크, 독일디저트, 연말파티, 겨울간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [402] 주류 - 와인 (Seasonal Warmth)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (402, jsonb_build_object('ko', '뱅쇼', 'en', 'Vin Chaud', 'ja', 'ヴァン・ショー'),
      jsonb_build_object('ko', '와인에 과일과 시나몬을 넣어 따뜻하게 끓여낸 겨울철 대표 음료', 'en', 'Warm mulled wine flavored with spices and fruit, popular during winter.'),
-     '뱅쇼, 뱅쇼만들기, vinchaud, mulledwine, 글뤼바인, 겨울와인, 감기예방, 파티음료');
+     '뱅쇼, 뱅쇼만들기, vinchaud, mulledwine, 글뤼바인, 겨울와인, 감기예방, 파티음료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Global Roast)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '베이징 덕', 'en', 'Peking Duck', 'ja', '北京ダック'),
      jsonb_build_object('ko', '바삭하게 구운 오리 껍질의 식감이 일품인 중국 북경의 대표 요리', 'en', 'Famous Chinese dish featuring crispy roasted duck skin and tender meat.'),
-     '베이징덕, 북경오리, pekingduck, 중식요리, 고급요리, 가족외식, 오리구이');
+     '베이징덕, 북경오리, pekingduck, 중식요리, 고급요리, 가족외식, 오리구이') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (Global Comfort Soup)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1692,7 +1690,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '쌀국수, 포, pho, 베트남요리, 해장음식, 고수요리, 담백한국물, 동남아음식'),
                                                                                (106, jsonb_build_object('ko', '육개장', 'en', 'Yukgaejang', 'ja', 'ユッケジャン'),
                                                                                 jsonb_build_object('ko', '소고기와 고사리, 숙주 등을 넣고 얼큰하게 끓여낸 한국의 대표적인 매운 국물 요리', 'en', 'Spicy Korean beef soup with scallions, bean sprouts, and gosari.'),
-                                                                                '육개장, 육계장, yukgaejang, 얼큰한맛, 이열치열, 보양식, k-food, 해장국');
+                                                                                '육개장, 육계장, yukgaejang, 얼큰한맛, 이열치열, 보양식, k-food, 해장국') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소 (Vegan Essentials & Seasonal Street Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1704,7 +1702,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '붕어빵, 잉어빵, 팥붕, 슈붕, bungeoppang, 가슴속3천원, 겨울간식, k-snack, 길거리음식'),
                                                                                (105, jsonb_build_object('ko', '라따뚜이', 'en', 'Ratatouille', 'ja', 'ラタトゥイユ'),
                                                                                 jsonb_build_object('ko', '가지, 호박, 토마토 등 각종 채소를 허브와 함께 뭉근하게 익힌 프랑스 프로방스풍 요리', 'en', 'Traditional French Provençal stewed vegetable dish, originating in Nice.'),
-                                                                                '라따뚜이, 라따뚜이요리, ratatouille, 프랑스요리, 비건요리, vegan, 채소찜, 건강식');
+                                                                                '라따뚜이, 라따뚜이요리, ratatouille, 프랑스요리, 비건요리, vegan, 채소찜, 건강식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Latin & Professional Toppings)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1716,19 +1714,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '초리조, 초리소, chorizo, 스페인소시지, 매콤한햄, 타파스재료, 와인안주'),
                                                                                (105, jsonb_build_object('ko', '고수', 'en', 'Cilantro', 'ja', 'パクチー'),
                                                                                 jsonb_build_object('ko', '특유의 강한 향으로 호불호가 갈리지만 전 세계 요리에서 널리 쓰이는 향신 채소', 'en', 'Also known as coriander, an essential herb for Mexican, Asian, and Middle Eastern cuisines.'),
-                                                                                '고수, 고수추가, cilantro, coriander, 샹차이, 팍치, 향신료, 동남아요리필수');
+                                                                                '고수, 고수추가, cilantro, coriander, 샹차이, 팍치, 향신료, 동남아요리필수') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리/간식 (Global Sweet & Crunchy)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '츄러스', 'en', 'Churros', 'ja', 'チュロス'),
      jsonb_build_object('ko', '반죽을 별 모양으로 짜내어 튀긴 후 시나몬 설탕을 뿌려 먹는 스페인 전통 간식', 'en', 'Fried-dough pastry, predominantly Spanish and Portuguese, often coated in cinnamon sugar.'),
-     '츄러스, 추로스, churros, 스페인간식, 시나몬설탕, 놀이공원간식, 디저트맛집, 달콤한맛');
+     '츄러스, 추로스, churros, 스페인간식, 시나몬설탕, 놀이공원간식, 디저트맛집, 달콤한맛') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [303] 음료 - 에이드/탄산 (CVS & Cafe Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (303, jsonb_build_object('ko', '청포도 에이드', 'en', 'Green Grape Ade', 'ja', 'マスカットエ이드'),
      jsonb_build_object('ko', '상큼한 청포도 베이스에 탄산수를 섞어 청량감을 극대화한 시원한 음료', 'en', 'Refreshing carbonated drink made with green grape base and sparkling water.'),
-     '청포도에이드, 머스캣에이드, greengrapeade, 시원한음료, 카페음료, 상큼한맛, 청량감');
+     '청포도에이드, 머스캣에이드, greengrapeade, 시원한음료, 카페음료, 상큼한맛, 청량감') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (High-end Seafood & Flex)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1737,7 +1735,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '우니, 성게알, seaurchin, 오마카세, 고급식재료, 감태싸먹는우유, 바다의맛, flex'),
                                                                                (109, jsonb_build_object('ko', '캐비아', 'en', 'Caviar', 'ja', 'キャビア'),
                                                                                 jsonb_build_object('ko', '철갑상어의 알을 소금에 절인 것으로 세계 3대 진미 중 하나인 최고급 식재료', 'en', 'Salt-cured roe of sturgeon, one of the world''s most expensive and prestigious delicacies.'),
-                                                                                '캐비아, 캐비어, caviar, 세계3대진미, 파인다이닝, 플렉스, 고품격식사');
+                                                                                '캐비아, 캐비어, caviar, 세계3대진미, 파인다이닝, 플렉스, 고품격식사') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Trendy K-Delivery)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1746,7 +1744,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '로제떡볶이, 로제떡볶이추천, rosetteokbokki, 맵단부드러움, 배달음식, 배떡, 신전로제, k-food'),
                                                                                (109, jsonb_build_object('ko', '감바스 알 아히요', 'en', 'Gambas al Ajillo', 'ja', 'ガンバス・アル・アヒージョ'),
                                                                                 jsonb_build_object('ko', '올리브유에 마늘과 새우를 넣어 익힌 스페인식 안주로 빵과 함께 먹는 요리', 'en', 'Spanish dish of shrimp sautéed in olive oil with garlic and chili peppers.'),
-                                                                                '감바스, 감바스알아히요, gambasalajillo, 새우요리, 와인안주, 맥주안주, 홈파티요리, 스페인요리');
+                                                                                '감바스, 감바스알아히요, gambasalajillo, 새우요리, 와인안주, 맥주안주, 홈파티요리, 스페인요리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Global Popular Noodles)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1755,7 +1753,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '돈코츠라멘, 돈코츠, tonkotsuramen, 일본라멘, 진한국물, 일식맛집, 해장라면'),
                                                                                (102, jsonb_build_object('ko', '팟타이', 'en', 'Pad Thai', 'ja', 'パッタイ'),
                                                                                 jsonb_build_object('ko', '새우, 두부, 숙주 등을 넣고 새콤달콤한 소스에 볶아낸 태국의 대표 쌀국수 요리', 'en', 'Stir-fried rice noodle dish commonly served as street food in Thailand.'),
-                                                                                '팟타이, 팟타이맛집, padthai, 태국볶음면, 동남아요리, 새콤달콤면, 세계의맛');
+                                                                                '팟타이, 팟타이맛집, padthai, 태국볶음면, 동남아요리, 새콤달콤면, 세계의맛') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [303] 음료 - 기능성/탄산 (Healthy Fermented & Soda)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1764,19 +1762,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '콤부차, kombucha, 발효음료, 디톡스음료, 유산균음료, 헬시플레저, 다이어트음료, 탄산대체'),
                                                                                (303, jsonb_build_object('ko', '밀키스', 'en', 'Milkis', 'ja', 'ミルキス'),
                                                                                 jsonb_build_object('ko', '우유의 부드러움과 탄산의 청량감이 어우러진 한국의 대표적인 유성 탄산음료', 'en', 'Popular Korean soft drink that combines carbonation with a milky flavor.'),
-                                                                                '밀키스, milkis, 우유탄산, 부드러운탄산, k-drink, 추억의음료, 외국인인기음료');
+                                                                                '밀키스, milkis, 우유탄산, 부드러운탄산, k-drink, 추억의음료, 외국인인기음료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [203] 디저트 - 빙과 (Summer Premium)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (203, jsonb_build_object('ko', '망고 빙수', 'en', 'Mango Bingsu', 'ja', 'マンゴーかき氷'),
      jsonb_build_object('ko', '부드러운 눈꽃 우유 얼음 위에 신선한 망고를 듬뿍 올린 여름철 프리미엄 디저트', 'en', 'Premium Korean shaved ice dessert topped with fresh ripe mango slices.'),
-     '망고빙수, 망빙, mangobingsu, 호텔빙수, 여름디저트, 눈꽃빙수, 달콤한간식, flex');
+     '망고빙수, 망빙, mangobingsu, 호텔빙수, 여름디저트, 눈꽃빙수, 달콤한간식, flex') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Essential Condiments)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (604, jsonb_build_object('ko', '스리라차 소스', 'en', 'Sriracha', 'ja', 'シラチャー・ソース'),
      jsonb_build_object('ko', '태국식 매운 소스로 칼로리가 낮아 다이어트 식단에 자주 활용되는 만능 소스', 'en', 'Type of chili sauce or hot sauce made from a paste of chili peppers and vinegar.'),
-     '스리라차, 스리라차소스, sriracha, 다이어트소스, 0칼로리소스, 매운소스, 닭표소스');
+     '스리라차, 스리라차소스, sriracha, 다이어트소스, 0칼로리소스, 매운소스, 닭표소스') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [108] 요리 - 샐러드 (Healthy & Diet Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1785,7 +1783,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '포케, poke, 연어포케, 참치포케, 하와이안샐러드, 다이어트식단, 건강식, 오운완'),
                                                                                (108, jsonb_build_object('ko', '코울슬로', 'en', 'Coleslaw', 'ja', 'コールスロー'),
                                                                                 jsonb_build_object('ko', '잘게 썬 양배추에 마요네즈 드레싱을 버무린 상큼하고 아삭한 샐러드', 'en', 'Finely shredded raw cabbage with a salad dressing, commonly mayonnaise.'),
-                                                                                '코울슬로, 양배추샐러드, coleslaw, 치킨친구, 버거사이드, 아삭한맛');
+                                                                                '코울슬로, 양배추샐러드, coleslaw, 치킨친구, 버거사이드, 아삭한맛') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [107] 요리 - 샌드위치 (Global Street Sandwich)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1794,7 +1792,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '반미, banhmi, 베트남샌드위치, 고수샌드위치, 쌀바게트, 동남아음식, 길거리음식'),
                                                                                (107, jsonb_build_object('ko', '타코', 'en', 'Tacos', 'ja', 'タコス'),
                                                                                 jsonb_build_object('ko', '또띠아에 고기, 채소, 살사 소스를 얹어 먹는 멕시코의 대표적인 국민 요리', 'en', 'Traditional Mexican dish consisting of a small hand-sized corn or wheat tortilla topped with a filling.'),
-                                                                                '타코, taco, 멕시칸푸드, 혼술안주, 간단한식사, 비프타코, 치킨타코');
+                                                                                '타코, taco, 멕시칸푸드, 혼술안주, 간단한식사, 비프타코, 치킨타코') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (2024-2025 Mega Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1803,13 +1801,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '두바이초콜릿, dubaichocolate, 피스타치오초콜릿, 카다이프, SNS화제, 디저트오픈런, 편의점두바이'),
                                                                                (201, jsonb_build_object('ko', '베이글', 'en', 'Bagel', 'ja', 'ベーグル'),
                                                                                 jsonb_build_object('ko', '달걀, 우유, 버터 없이 구워 쫄깃하고 담백한 도넛 모양의 빵', 'en', 'Ring-shaped bread roll, boiled before baking, resulting in a dense, chewy interior.'),
-                                                                                '베이글, 런던베이글, bagel, 크림치즈베이글, 식사빵, 빵지순례, 쫄깃한빵');
+                                                                                '베이글, 런던베이글, bagel, 크림치즈베이글, 식사빵, 빵지순례, 쫄깃한빵') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [301] 음료 - 커피 (Cafe Specialty)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (301, jsonb_build_object('ko', '아인슈페너', 'en', 'Einspänner', 'ja', 'アインシュペナー'),
      jsonb_build_object('ko', '진한 아메리카노 위에 차갑고 부드러운 휘핑크림을 듬뿍 얹은 오스트리아식 커피', 'en', 'Classic Viennese coffee drink made by topping a double shot of espresso with whipped cream.'),
-     '아인슈페너, 비엔나커피, einspanner, 크림커피, 인생커피, 단쓴단쓴, 카페투어');
+     '아인슈페너, 비엔나커피, einspanner, 크림커피, 인생커피, 단쓴단쓴, 카페투어') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기/대체 (Vegan Protein Deep Cuts)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1818,7 +1816,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '템페, tempeh, 비건단백질, vegan, 발효콩, 다이어트식단, 고기대체, 인도네시아음식'),
                                                                                (103, jsonb_build_object('ko', '세이탄', 'en', 'Seitan', 'ja', 'セイタン'),
                                                                                 jsonb_build_object('ko', '밀가루의 글루텐 성분을 추출해 만든 고기 대용식으로 육질과 유사한 식감을 가짐', 'en', 'Wheat gluten used as a meat substitute, known for its remarkably meat-like texture.'),
-                                                                                '세이탄, seitan, 밀고기, 비건고기, vegan, 고단백비건, 고기대체제');
+                                                                                '세이탄, seitan, 밀고기, 비건고기, vegan, 고단백비건, 고기대체제') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [606] 소스 - 스프레드/양념 (Korean Essential Condiment)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1827,13 +1825,13 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '쌈장, ssamjang, 고기소스, 찍어먹는장, k-sauce, 고기친구, 삼겹살양념'),
                                                                                (604, jsonb_build_object('ko', '멸치액젓', 'en', 'Fish Sauce', 'ja', '魚醤'),
                                                                                 jsonb_build_object('ko', '멸치를 소금에 절여 발효시킨 한국의 전통 조미료로 깊은 감칠맛을 냄', 'en', 'Amber-colored liquid condiment made from fermented anchovies and salt.'),
-                                                                                '멸치액젓, 피쉬소스, fishsauce, 김치양념, 요리감칠맛, 국물비법, k-flavor');
+                                                                                '멸치액젓, 피쉬소스, fishsauce, 김치양념, 요리감칠맛, 국물비법, k-flavor') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [106] 요리 - 국물요리 (K-Regional Specialty)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (106, jsonb_build_object('ko', '돼지국밥', 'en', 'Pork Rice Soup', 'ja', 'テジクッパ'),
      jsonb_build_object('ko', '돼지 뼈를 진하게 우린 육수에 수육과 밥을 말아 먹는 부산의 대표 향토 음식', 'en', 'Busan''s iconic pork soup served with sliced pork and rice in a rich, milky broth.'),
-     '돼지국밥, 정각국밥, pork ricesoup, 부산맛집, 부산음식, 해장국, 든든한한끼, 소울푸드');
+     '돼지국밥, 정각국밥, pork ricesoup, 부산맛집, 부산음식, 해장국, 든든한한끼, 소울푸드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Global Specialty - Dim Sum & Mexican)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1842,7 +1840,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '소롱포, 샤오롱바오, xiaolongbao, 딤섬, 육즙만두, 중식요리, 홍콩딤섬'),
                                                                                (109, jsonb_build_object('ko', '브리또', 'en', 'Burrito', 'ja', 'ブリトー'),
                                                                                 jsonb_build_object('ko', '또띠아에 고기, 콩, 밥, 치즈 등을 넣어 큼직하게 말아낸 멕시코식 식사 요리', 'en', 'Large flour tortilla rolled around a filling of meat, beans, rice, and cheese.'),
-                                                                                '브리또, 부리또, burrito, 멕시코요리, 든든한간식, 멕시칸푸드, 한끼식사');
+                                                                                '브리또, 부리또, burrito, 멕시코요리, 든든한간식, 멕시칸푸드, 한끼식사') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Mediterranean & Gourmet Cheese)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1851,43 +1849,43 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '페타치즈, feta, 그리스치즈, 샐러드치즈, 지중해식단, 짭조름한치즈, keto'),
                                                                                (109, jsonb_build_object('ko', '마스카포네', 'en', 'Mascarpone', 'ja', 'マスカルポーネ'),
                                                                                 jsonb_build_object('ko', '입자가 매우 고우며 크림처럼 부드럽고 달콤한 풍미를 가진 이탈리아산 크림치즈', 'en', 'Italian cream cheese known for its exceptionally smooth texture and sweet, milky flavor.'),
-                                                                                '마스카포네, 마스카포네치즈, mascarpone, 티라미수재료, 디저트치즈, 크림치즈, 고급식재료');
+                                                                                '마스카포네, 마스카포네치즈, mascarpone, 티라미수재료, 디저트치즈, 크림치즈, 고급식재료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [403] 주류 - 전통주 (K-Traditional Rice Wine)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (403, jsonb_build_object('ko', '막걸리', 'en', 'Makgeolli', 'ja', 'マッコリ'),
      jsonb_build_object('ko', '쌀을 발효시켜 만든 한국의 전통 탁주로 부드럽고 톡 쏘는 탄산감이 특징인 술', 'en', 'Traditional Korean rice wine with a milky appearance and a sweet, tangy flavor.'),
-     '막걸리, 탁주, makgeolli, 전통주, 파전친구, 비오는날주인공, k-alcohol, 혼술');
+     '막걸리, 탁주, makgeolli, 전통주, 파전친구, 비오는날주인공, k-alcohol, 혼술') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [307] 음료 - 대체유 (Trendy Plant-based Milk)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (307, jsonb_build_object('ko', '오트 밀크', 'en', 'Oat Milk', 'ja', 'オーツミルク'),
      jsonb_build_object('ko', '귀리를 갈아 만든 식물성 우유로 고소한 맛이 특징이며 라떼와 잘 어울리는 대체유', 'en', 'Creamy plant-based milk made from oats, a popular dairy-free choice for coffee.'),
-     '오트밀크, 귀리우유, oatmilk, 비건라떼, vegan, 데일리프리, dairyfree, 오트사이드');
+     '오트밀크, 귀리우유, oatmilk, 비건라떼, vegan, 데일리프리, dairyfree, 오트사이드') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Modern Bakery Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '프레첼', 'en', 'Pretzel', 'ja', 'プレッツェル'),
      jsonb_build_object('ko', '매듭 모양으로 구워낸 쫄깃하고 짭짤한 빵으로 최근 카페에서 매우 인기 있는 메뉴', 'en', 'Baked pastry shaped into a knot, known for its salty crust and chewy texture.'),
-     '프레첼, 프렛즐, pretzel, 빵지순례, 짭짤한빵, 간식맛집, 독일빵');
+     '프레첼, 프렛즐, pretzel, 빵지순례, 짭짤한빵, 간식맛집, 독일빵') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차/전통음료 (K-Traditional Dessert Drink)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '식혜', 'en', 'Sikhye', 'ja', 'シッケ'),
      jsonb_build_object('ko', '엿기름을 우린 물에 밥을 넣어 삭힌 한국의 전통 달콤한 쌀 음료', 'en', 'Traditional Korean sweet rice beverage, often served as a dessert.'),
-     '식혜, 단술, 감주, sikhye, 전통간식, 명절음식, 찜질방필수템, k-drink');
+     '식혜, 단술, 감주, sikhye, 전통간식, 명절음식, 찜질방필수템, k-drink') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (Summer Essentials)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (102, jsonb_build_object('ko', '물냉면', 'en', 'Mul-Naengmyeon', 'ja', '水冷麺'),
      jsonb_build_object('ko', '살얼음이 낀 시원한 육수에 메밀면을 말아 먹는 한국의 대표적인 여름 면 요리', 'en', 'Cold buckwheat noodles served in a chilled, refreshing broth, a summer staple.'),
-     '물냉면, 냉면, naengmyeon, 시원한음식, 여름별미, 평양냉면, 함흥냉면, 고기먹고후식');
+     '물냉면, 냉면, naengmyeon, 시원한음식, 여름별미, 평양냉면, 함흥냉면, 고기먹고후식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (K-Gourmet Specialty)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (103, jsonb_build_object('ko', '육회', 'en', 'Beef Tartare', 'ja', 'ユッケ'),
      jsonb_build_object('ko', '신선한 소고기를 얇게 썰어 배, 달걀노른자와 함께 고소하게 양념한 요리', 'en', 'Korean-style beef tartare seasoned with sesame oil and served with pear.'),
-     '육회, yukhoe, 소고기요리, 고단백, 술안주, 광장시장육회, 신선한맛, flex');
+     '육회, yukhoe, 소고기요리, 고단백, 술안주, 광장시장육회, 신선한맛, flex') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Mediterranean & Middle East Favorite)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1899,31 +1897,31 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '팔라펠, falafel, 비건고기, vegan, 중동음식, 건강식단, 병아리콩요리, 고단백비건'),
                                                                                (109, jsonb_build_object('ko', '라자냐', 'en', 'Lasagna', 'ja', 'ラザニア'),
                                                                                 jsonb_build_object('ko', '넓적한 파스타 면 사이에 라구 소스와 치즈를 겹겹이 쌓아 구워낸 이탈리아 요리', 'en', 'Italian dish made of stacked layers of thin flat pasta alternating with fillings.'),
-                                                                                '라자냐, lasagna, 라구파스타, 치즈듬뿍, 이탈리안가정식, 오븐요리, 꾸덕한맛');
+                                                                                '라자냐, lasagna, 라구파스타, 치즈듬뿍, 이탈리안가정식, 오븐요리, 꾸덕한맛') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Tea Time Classic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '스콘', 'en', 'Scone', 'ja', 'スコーン'),
      jsonb_build_object('ko', '영국에서 유래한 구움과자로 겉은 바삭하고 속은 포슬포슬한 식감이 특징', 'en', 'British baked good, usually made of wheat or oatmeal with baking powder.'),
-     '스콘, scone, 카페디저트, 애프터눈티, 클로티드크림, 겉바속촉, 빵지순례');
+     '스콘, scone, 카페디저트, 애프터눈티, 클로티드크림, 겉바속촉, 빵지순례') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [204] 디저트 - 전통/길거리 (K-Winter Warmth)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (204, jsonb_build_object('ko', '호떡', 'en', 'Hotteok', 'ja', 'ホットク'),
      jsonb_build_object('ko', '반죽 안에 꿀, 설탕, 견과류를 넣어 노릇하게 구워낸 한국의 대표 길거리 간식', 'en', 'Popular Korean street snack consisting of a pancake filled with brown sugar and cinnamon.'),
-     '호떡, 꿀호떡, hotteok, 겨울길거리음식, 달콤한간식, 꿀맛, k-dessert');
+     '호떡, 꿀호떡, hotteok, 겨울길거리음식, 달콤한간식, 꿀맛, k-dessert') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [108] 요리 - 샐러드 (Superfood Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (108, jsonb_build_object('ko', '치아씨드 푸딩', 'en', 'Chia Seed Pudding', 'ja', 'チアシードプリン'),
      jsonb_build_object('ko', '치아씨드를 우유나 요거트에 불려 만든 식이섬유가 풍부한 건강 디저트', 'en', 'Healthy breakfast or dessert made by soaking chia seeds in liquid until gel-like.'),
-     '치아씨드푸딩, chiaseed, 수퍼푸드, 다이어트식단, vegan, 식이섬유, 아침대용');
+     '치아씨드푸딩, chiaseed, 수퍼푸드, 다이어트식단, vegan, 식이섬유, 아침대용') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [404] 주류 - 칵테일/파티 (Global Party Drink)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (404, jsonb_build_object('ko', '상그리아', 'en', 'Sangria', 'ja', 'サングリア'),
      jsonb_build_object('ko', '와인에 신선한 과일과 탄산수를 넣어 시원하게 즐기는 스페인식 파티 음료', 'en', 'Spanish alcoholic beverage made of red wine and chopped fruit, often with spirits.'),
-     '상그리아, 샹그리아, sangria, 파티술, 여름와인, 달콤한술, 스페인칵테일');
+     '상그리아, 샹그리아, sangria, 파티술, 여름와인, 달콤한술, 스페인칵테일') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [102] 요리 - 면 (The Complete Naengmyeon Lineup)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1938,7 +1936,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '칼국수, 손칼국수, kalguksu, 바지락칼국수, 닭칼국수, 비오는날음식, 뜨끈한국물'),
                                                                                (102, jsonb_build_object('ko', '함흥냉면', 'en', 'Hamhung-Naengmyeon', 'ja', '咸興冷麺'),
                                                                                 jsonb_build_object('ko', '고구마 전분을 사용하여 쫄깃함이 강한 면에 매운 양념이나 회무침을 곁들인 냉면', 'en', 'Chewy potato starch noodles served with spicy sauce or raw fish topping.'),
-                                                                                '함흥냉면, 회냉면, hamhungnaengmyeon, 쫄깃한냉면, 오장동냉면, 매운냉면');
+                                                                                '함흥냉면, 회냉면, hamhungnaengmyeon, 쫄깃한냉면, 오장동냉면, 매운냉면') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (The Lunch King & Soul Stew)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1947,7 +1945,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '제육볶음, 제육, jeyukbokkeum, 돼지불고기, 밥도둑, 점심메뉴1위, 쌈밥짝꿍, 기사식당메뉴'),
                                                                                (106, jsonb_build_object('ko', '부대찌개', 'en', 'Budae-Jjigae', 'ja', '部隊チゲ'),
                                                                                 jsonb_build_object('ko', '햄, 소시지, 김치 등을 넣고 얼큰하게 끓여낸 한국의 퓨전 국물 요리', 'en', 'Spicy Korean fusion stew made with ham, sausages, kimchi, and ramyeon noodles.'),
-                                                                                '부대찌개, 부대찌개맛집, budaejjigae, armystew, 햄찌개, 라면사리필수, 얼큰한음식');
+                                                                                '부대찌개, 부대찌개맛집, budaejjigae, armystew, 햄찌개, 라면사리필수, 얼큰한음식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Global Dips & Exotic Classics)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1956,19 +1954,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '과카몰리, 과카몰레, guacamole, 아보카도요리, 나초칩소스, 멕시칸푸드, 비건딥, vegan'),
                                                                                (109, jsonb_build_object('ko', '굴라쉬', 'en', 'Goulash', 'ja', 'グヤーシュ'),
                                                                                 jsonb_build_object('ko', '소고기와 채소에 파프리카 가루를 넣어 매콤하게 끓인 헝가리식 전통 스튜', 'en', 'Hungarian stew of meat and vegetables, seasoned with paprika and other spices.'),
-                                                                                '굴라쉬, 굴라시, goulash, 동유럽요리, 헝가리스튜, 매콤한수프, 따뜻한요리');
+                                                                                '굴라쉬, 굴라시, goulash, 동유럽요리, 헝가리스튜, 매콤한수프, 따뜻한요리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [302] 음료 - 차/전통음료 (Traditional Korean Refresher)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (302, jsonb_build_object('ko', '수정과', 'en', 'Sujeonggwa', 'ja', 'スジョングァ'),
      jsonb_build_object('ko', '생강과 계피를 달인 물에 설탕이나 꿀을 넣고 차갑게 식혀 곶감을 띄워 마시는 음료', 'en', 'Traditional Korean cinnamon-ginger punch garnished with dried persimmons.'),
-     '수정과, sujeonggwa, 계피차, 명절음식, 식후음료, 소화돕는차, k-drink, 전통음료');
+     '수정과, sujeonggwa, 계피차, 명절음식, 식후음료, 소화돕는차, k-drink, 전통음료') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (The Base of Korean Flavor)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (604, jsonb_build_object('ko', '간장', 'en', 'Soy Sauce', 'ja', '醤油'),
      jsonb_build_object('ko', '콩을 발효시켜 만든 한국 요리의 가장 기본적인 조미료', 'en', 'Traditional liquid condiment made from fermented soybeans, salt, and water.'),
-     '간장, 진간장, 국간장, soysauce, 요리필수템, 감칠맛, k-sauce');
+     '간장, 진간장, 국간장, soysauce, 요리필수템, 감칠맛, k-sauce') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (K-Night Delivery Kings)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1980,7 +1978,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '보쌈, 수육, bossam, 쌈밥, 고기요리, 김장김치짝꿍, 야식, 배달음식'),
                                                                                (103, jsonb_build_object('ko', '곱창 구이', 'en', 'Grilled Tripe', 'ja', 'コプチャン焼き'),
                                                                                 jsonb_build_object('ko', '소나 돼지의 곱창을 그릴에 구워 고소한 풍미와 쫄깃한 식감을 즐기는 요리', 'en', 'Grilled beef or pork tripe, a popular high-protein snack often paired with alcohol.'),
-                                                                                '곱창, 대창, 막창, 소곱창, 돼지곱창, gopchang, 곱창맛집, 술안주, 고소한맛');
+                                                                                '곱창, 대창, 막창, 소곱창, 돼지곱창, gopchang, 곱창맛집, 술안주, 고소한맛') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Chinese-Korean Favorites)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -1989,7 +1987,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '꿔바로우, 꿔바로우맛집, guobaorou, 찹쌀탕수육, 겉바속촉, 마라탕친구, 중식요리'),
                                                                                (103, jsonb_build_object('ko', '마파두부', 'en', 'Mapo Tofu', 'ja', '麻婆豆腐'),
                                                                                 jsonb_build_object('ko', '두부와 다진 고기를 매콤한 두반장 소스에 볶아낸 사천 지방의 대표 요리', 'en', 'Popular Sichuan dish consisting of tofu set in a spicy, oily, and bright red sauce.'),
-                                                                                '마파두부, 마파두부덮밥, mapotofu, 사천요리, 중식밥요리, 매콤한두부, 혼밥메뉴');
+                                                                                '마파두부, 마파두부덮밥, mapotofu, 사천요리, 중식밥요리, 매콤한두부, 혼밥메뉴') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Gourmet Ingredients & Global Classics)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -2001,19 +1999,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '카망베르, 카망베르치즈, camembert, 프랑스치즈, 구운치즈, 와인짝꿍, 부드러운치즈'),
                                                                                (103, jsonb_build_object('ko', '탄두리 치킨', 'en', 'Tandoori Chicken', 'ja', 'タンドリーチキン'),
                                                                                 jsonb_build_object('ko', '향신료와 요거트에 재운 닭고기를 화덕(탄두르)에서 구워낸 인도의 대표 요리', 'en', 'Indian dish consisting of roasted chicken prepared with yogurt and spices in a tandoor.'),
-                                                                                '탄두리치킨, tandoori, 인도요리, 화덕치킨, 향신료요리, 다이어트치킨, 고단백');
+                                                                                '탄두리치킨, tandoori, 인도요리, 화덕치킨, 향신료요리, 다이어트치킨, 고단백') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [502] 간식 - 사탕/젤리 (Low-Calorie Trend)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (502, jsonb_build_object('ko', '곤약 젤리', 'en', 'Konjac Jelly', 'ja', 'こんにゃくゼリー'),
      jsonb_build_object('ko', '칼로리가 매우 낮고 포만감을 주는 곤약으로 만든 다이어트용 건강 젤리', 'en', 'Low-calorie jelly snack made from konjac, popular for weight management.'),
-     '곤약젤리, konjacjelly, 다이어트간식, 0칼로리간식, 헬시플레저, 일본간식, 곤약간식');
+     '곤약젤리, konjacjelly, 다이어트간식, 0칼로리간식, 헬시플레저, 일본간식, 곤약간식') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Global Seafood Classic)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (109, jsonb_build_object('ko', '피쉬 앤 칩스', 'en', 'Fish and Chips', 'ja', 'フィッシュ・アンド・チップス'),
      jsonb_build_object('ko', '흰살생선 튀김과 감자튀김을 곁들여 먹는 영국의 대표적인 컴포트 푸드', 'en', 'Hot dish consisting of fried fish in batter served with main-course-sized chips.'),
-     '피쉬앤칩스, fishandchips, 영국요리, 생선튀김, 맥주안주, 펍안주, 바삭한요리');
+     '피쉬앤칩스, fishandchips, 영국요리, 생선튀김, 맥주안주, 펍안주, 바삭한요리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [103] 요리 - 고기 (Camping Visual Kings)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -2022,19 +2020,19 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '토마호크, 토마호크스테이크, tomahawk, 캠핑고기, 바베큐, BBQ, 돈마호크, 고기파티, 캠핑감성'),
                                                                                (103, jsonb_build_object('ko', '양갈비 구이', 'en', 'Grilled Lamb Chops', 'ja', 'ラムチョップ'),
                                                                                 jsonb_build_object('ko', '특유의 고소한 풍미와 부드러운 육질을 가진 양갈비를 그릴에 구워낸 캠핑 인기 메뉴', 'en', 'Tender lamb chops seasoned and grilled over an open flame, a trendy camping favorite.'),
-                                                                                '양갈비, 숄더랙, 프렌치랙, lambchops, 양고기구이, 캠핑바베큐, 쯔란, 고기요리');
+                                                                                '양갈비, 숄더랙, 프렌치랙, lambchops, 양고기구이, 캠핑바베큐, 쯔란, 고기요리') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리/간식 (Camping Sweet Finish)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (201, jsonb_build_object('ko', '마시멜로 구이', 'en', 'Grilled Marshmallows', 'ja', '焼きマシュマロ'),
      jsonb_build_object('ko', '불에 구워 겉은 바삭하고 속은 녹아내리는 달콤한 간식으로 스모어를 만들 때 필수적임', 'en', 'Sweet marshmallows roasted over a campfire until golden brown and gooey.'),
-     '마시멜로구이, 마시멜로우, 스모어, smores, 캠핑간식, 불멍, 디저트, 달콤한맛');
+     '마시멜로구이, 마시멜로우, 스모어, smores, 캠핑간식, 불멍, 디저트, 달콤한맛') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Camping Special Side)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (109, jsonb_build_object('ko', '모둠 꼬치구이', 'en', 'Assorted Skewers', 'ja', '串焼き盛り合わせ'),
      jsonb_build_object('ko', '고기, 대파, 버섯 등을 번갈아 끼워 구워 먹는 재미가 있는 캠핑 단골 메뉴', 'en', 'Skewers of meat and vegetables grilled over charcoal, a fun and easy camping snack.'),
-     '꼬치구이, 캠핑꼬치, 야키토리, skewers, 모둠꼬치, 캠핑음식, 바베큐안주');
+     '꼬치구이, 캠핑꼬치, 야키토리, skewers, 모둠꼬치, 캠핑음식, 바베큐안주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [604] 소스 - 양념 (Global Exotic Sauces)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -2055,7 +2053,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '발사믹글레이즈, 발사믹소스, balsamicglaze, 샐러드드레싱, 스테이크소스, 데코레이션소스'),
                                                                                (604, jsonb_build_object('ko', '라오간마 고추기름', 'en', 'Chili Oil (Lao Gan Ma)', 'ja', '老干媽'),
                                                                                 jsonb_build_object('ko', '볶은 고추와 다양한 재료가 들어간 중국의 대표적인 감칠맛 강한 고추기름', 'en', 'Savory and spicy Chinese chili oil, famous for its deep umami flavor and versatility.'),
-                                                                                '라오간마, 고추기름, chilioil, 중식양념, 마법의소스, 감칠맛, 볶음요리치트키');
+                                                                                '라오간마, 고추기름, chilioil, 중식양념, 마법의소스, 감칠맛, 볶음요리치트키') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Bar Snacks Part 2 - Soul Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -2070,7 +2068,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '골뱅이무침, 골뱅이소면, golbaengimuchim, 새콤달콤안주, 맥주짝꿍, 을지로골뱅이, 소면사리'),
                                                                                (109, jsonb_build_object('ko', '두부김치', 'en', 'Tofu with Stir-fried Kimchi', 'ja', '豆腐キムチ'),
                                                                                 jsonb_build_object('ko', '따끈한 두부와 매콤하게 볶은 김치를 곁들여 먹는 한국의 대표적인 막걸리 안주', 'en', 'Warm tofu served with savory stir-fried kimchi and pork, a classic pairing for Makgeolli.'),
-                                                                                '두부김치, dubukimchi, 막걸리안주, 전통안주, 건강한안주, 볶음김치, 집안주');
+                                                                                '두부김치, dubukimchi, 막걸리안주, 전통안주, 건강한안주, 볶음김치, 집안주') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [201] 디저트 - 베이커리 (Regional Bakery Pilgrimage)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -2082,7 +2080,7 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '단팥빵, 크림단팥빵, daegu-bakery, 대구명물, 빵지순례, 근대골목, 추억의맛'),
                                                                                (201, jsonb_build_object('ko', '통영 꿀빵', 'en', 'Tongyeong Honey Bread', 'ja', '統営蜜パン'),
                                                                                 jsonb_build_object('ko', '튀긴 도넛 반죽에 달콤한 조청을 입히고 깨를 뿌린 통영의 대표 간식', 'en', 'Fried dough balls coated in sweet syrup and sesame seeds, a specialty of Tongyeong.'),
-                                                                                '꿀빵, 통영꿀빵, k-dessert, 통영기념품, 달콤한빵, 꿀맛, 전국유명빵집');
+                                                                                '꿀빵, 통영꿀빵, k-dessert, 통영기념품, 달콤한빵, 꿀맛, 전국유명빵집') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [109] 요리 - 기타 (Parent-Friendly & Baby Food)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
@@ -2094,14 +2092,14 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
                                                                                 '멸치볶음, 잔멸치볶음, myeolchibokkeum, 밑반찬, 도시락반찬, 아이들식단, 칼슘왕, 뼈건강'),
                                                                                (105, jsonb_build_object('ko', '메추리알 장조림', 'en', 'Soy-braised Quail Eggs', 'ja', ' 우ずらの卵の醤油煮'),
                                                                                 jsonb_build_object('ko', '메추리알을 간장에 짭조름하게 졸여 만든 아이들이 가장 좋아하는 인기 반찬', 'en', 'Quail eggs braised in a savory soy-based sauce, a favorite side dish for children.'),
-                                                                                '메추리알장조림, 장조림, jjangjorim, 아이들반찬, 밑반찬, 밥도둑, 짭짤한맛, 도시락메뉴');
+                                                                                '메추리알장조림, 장조림, jjangjorim, 아이들반찬, 밑반찬, 밥도둑, 짭짤한맛, 도시락메뉴') ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 -- [105] 요리 - 채소/반찬 (The King of Korean Side Dishes)
 INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
     (105, jsonb_build_object('ko', '김', 'en', 'Gim', 'ja', '海苔'),
      jsonb_build_object('ko', '바삭하게 구워 소금과 들기름으로 맛을 낸 한국인의 필수 밑반찬이자 바다의 채소', 'en', 'Toasted seaweed seasoned with salt and oil, a must-have Korean side dish known as "sea vegetable".'),
      '김, 조미김, 김구이, gim, seaweed, seaweed paper, 밥도둑, k-food, 도시락김, 마른김')
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT ((name ->> 'ko')) DO NOTHING;
 
 
 
@@ -2112,3 +2110,57 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
 
 
 SELECT setval(pg_get_serial_sequence('foods_master', 'id'), COALESCE(MAX(id), 1)) FROM foods_master;
+
+
+INSERT INTO users (username, locale, role, is_bot, status) VALUES
+    ('빵지순례자', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('홈카페수민', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('소금빵이조아', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('오늘의무드', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('달콤한기록', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('브런치타임', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('망고무드', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('베이글러버', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('소소한식탁', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('아보카도러버', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('카페투어리스트', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('민트초코공주', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('휘낭시에덕후', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('올리브오일', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('바닐라라떼', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('햇살정원', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('식탁위의우주', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('오늘의빵', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('감성요정', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('라떼는말이야', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('마카롱달인', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('비건라이프', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('샐러드공주', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('요거트볼', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('블루베리즘', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('코지홈', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('화이트린넨', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('우드앤키친', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('심플리쿡', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('나만의식탁', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('향기로운오후', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('봄날의식사', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('별헤는밤', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('초록빛식탁', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('페어링마스터', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('냠냠박사', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('맛집지도', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('먹방요정', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('숲속의주방', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('새벽공기', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('레시피연구소', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('미니멀키친', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('든든한한끼', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('치즈케이크', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('와인한잔', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('주말브런치', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('꼬마요리사', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('부엌데기', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('소소한요리', 'ko', 'USER', TRUE, 'ACTIVE'),
+    ('우유식빵언니', 'ko', 'USER', TRUE, 'ACTIVE')
+    ON CONFLICT (username) DO NOTHING;

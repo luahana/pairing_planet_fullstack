@@ -59,7 +59,8 @@ public class AutocompleteScheduler {
 
         // 1) 이름으로 저장 (로케일별)
         Map<String, String> names = c.getName(); // JSONB -> Map
-        if (names != null) {
+        if (names == null) return;
+        else {
             names.forEach((locale, name) -> {
                 if (SUPPORTED_LOCALES.contains(locale)) {
                     autocompleteService.add(locale, name, "CATEGORY", c.getId(), baseScore);

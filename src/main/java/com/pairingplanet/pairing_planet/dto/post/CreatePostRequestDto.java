@@ -18,7 +18,6 @@ public record CreatePostRequestDto(
         UUID whenContextId,
         UUID dietaryContextId,
 
-        @NotEmpty(message = "At least one image is required")
         @Size(max = 3, message = "Max 3 images allowed")
         List<String> imageUrls,
 
@@ -26,10 +25,9 @@ public record CreatePostRequestDto(
         Boolean isPrivate,
         Boolean commentsEnabled, // 댓글 허용 여부 추가
 
-        // --- [Review] 리뷰 전용 ---
-        String reviewTitle,      // 리뷰 제목
+        // --- [discussion] 리뷰 전용 ---
+        String discussionTitle,      // 리뷰 제목
         Boolean verdictEnabled,  // 판결 기능 여부
-        Integer pickyCount,      // (선택) 초기값
 
         // --- [Recipe] 레시피 전용 ---
         String recipeTitle,             // 레시피 제목

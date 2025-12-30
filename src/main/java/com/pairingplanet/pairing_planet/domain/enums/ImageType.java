@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ImageType {
     PROFILE("profiles"),
     POST_DAILY("posts/daily"),
-    POST_REVIEW("posts/review"),
+    POST_DISCUSSION("posts/discussion"),
     POST_RECIPE("posts/recipe");
 
     private final String path; // S3 내 저장될 폴더 경로

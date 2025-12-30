@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PostType {
     DAILY("daily_logs"),
-    REVIEW("reviews"),
+    DISCUSSION("discussion"),
     RECIPE("recipes");
 
     private final String description;

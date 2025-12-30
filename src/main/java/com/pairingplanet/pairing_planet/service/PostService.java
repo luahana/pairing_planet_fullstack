@@ -85,7 +85,7 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
-        handleImageActivation(savedPost, request.imageUrls());
+        handleImageActivation(savedPost, request.imageUrls(), true);
 
         if (idempotencyKey != null) {
             redisTemplate.opsForValue().set(
@@ -99,7 +99,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createReviewPost(UUID userId, CreatePostRequestDto request, String idempotencyKey) { // [변경] Long -> UUID
+    public PostResponseDto createDiscussionPost(UUID userId, CreatePostRequestDto request, String idempotencyKey) { // [변경] Long -> UUID
         if (idempotencyKey != null) {
             String redisKey = "idempotency:post:" + idempotencyKey;
             String existingPostId = redisTemplate.opsForValue().get(redisKey);
@@ -118,19 +118,19 @@ public class PostService {
         boolean isVerdictEnabled = !isPrivate && (request.verdictEnabled() == null || request.verdictEnabled());
         boolean isCommentsEnabled = !isPrivate && isVerdictEnabled;
 
-        ReviewPost post = ReviewPost.builder()
+        DiscussionPost post = DiscussionPost.builder()
                 .creator(user)
                 .pairing(pairing)
                 .locale(user.getLocale() != null ? user.getLocale() : "en")
                 .content(request.content())
                 .isPrivate(isPrivate)
                 .commentsEnabled(isCommentsEnabled)
-                .title(request.reviewTitle())
+                .title(request.discussionTitle())
                 .verdictEnabled(isVerdictEnabled)
                 .build();
 
         Post savedPost = postRepository.save(post);
-        handleImageActivation(savedPost, request.imageUrls());
+        handleImageActivation(savedPost, request.imageUrls(), false);
 
         if (idempotencyKey != null) {
             redisTemplate.opsForValue().set(
@@ -177,7 +177,7 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
-        handleImageActivation(savedPost, request.imageUrls());
+        handleImageActivation(savedPost, request.imageUrls(), true);
 
         if (idempotencyKey != null) {
             redisTemplate.opsForValue().set(
@@ -209,9 +209,9 @@ public class PostService {
         if (request.isPrivate() != null) post.setPrivate(request.isPrivate());
 
         // 타입별 필드 업데이트
-        if (post instanceof ReviewPost review) {
-            if (request.reviewTitle() != null) review.setTitle(request.reviewTitle());
-            if (request.verdictEnabled() != null) review.setVerdictEnabled(request.verdictEnabled());
+        if (post instanceof DiscussionPost discussion) {
+            if (request.discussionTitle() != null) discussion.setTitle(request.discussionTitle());
+            if (request.verdictEnabled() != null) discussion.setVerdictEnabled(request.verdictEnabled());
         }
         else if (post instanceof RecipePost recipe) {
             if (request.recipeTitle() != null) recipe.setTitle(request.recipeTitle());
@@ -261,19 +261,18 @@ public class PostService {
                 ? getOrCreateFood(request.food2(), user)
                 : null;
 
-        // 2. Context Tags 처리 (UUID 기반)
-        // [변경] UUID는 DB 생성 값이므로 상수로 관리 불가 -> Request에서 받거나 DB 조회 필요
-        // 여기서는 Request에 값이 필수라고 가정하거나, 없다면 예외 발생
-        if (request.whenContextId() == null || request.dietaryContextId() == null) {
-            throw new IllegalArgumentException("Context IDs are required.");
-        }
+        ContextTag whenTag = (request.whenContextId() != null)
+                ? contextTagRepository.findByPublicId(request.whenContextId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid When Tag"))
+                : contextTagRepository.findFirstByTagName("none")
+                .orElseThrow(() -> new IllegalArgumentException("Default 'NONE' tag not found"));
 
-        // [변경] findById -> findByPublicId
-        ContextTag whenTag = contextTagRepository.findByPublicId(request.whenContextId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid When Tag"));
-        ContextTag dietaryTag = contextTagRepository.findByPublicId(request.dietaryContextId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Dietary Tag"));
-
+        // [수정] dietaryContextId가 없으면 tag_name="NONE" 조회
+        ContextTag dietaryTag = (request.dietaryContextId() != null)
+                ? contextTagRepository.findByPublicId(request.dietaryContextId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Dietary Tag"))
+                : contextTagRepository.findFirstByTagName("none")
+                .orElseThrow(() -> new IllegalArgumentException("Default 'NONE' tag not found"));
         // 3. PairingMap 찾기 또는 생성
         return getOrCreatePairing(food1, food2, whenTag, dietaryTag);
     }
@@ -321,9 +320,12 @@ public class PostService {
                 ));
     }
 
-    private void handleImageActivation(Post post, List<String> imageUrls) {
+    private void handleImageActivation(Post post, List<String> imageUrls, boolean isRequired) {
         if (imageUrls == null || imageUrls.isEmpty()) {
-            throw new IllegalArgumentException("Image is required for posting.");
+            if (isRequired) {
+                throw new IllegalArgumentException("Image is required for posting.");
+            }
+            return; // 필수가 아니면 그냥 종료 (Discussion 등)
         }
 
         imageService.activateImages(imageUrls);

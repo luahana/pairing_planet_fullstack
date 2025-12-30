@@ -30,7 +30,7 @@ public class FoodScoreScheduler {
         // 알고리즘: (PairingMap 등장 횟수 * 10) + (추가 로직 가능)
         String sql = """
             UPDATE foods_master f 
-            SET popularity_score = COALESCE(stats.usage_count, 0) * 10.0
+            SET food_score = COALESCE(stats.usage_count, 0) * 10.0
             FROM (
                 SELECT food_id, COUNT(*) as usage_count
                 FROM (

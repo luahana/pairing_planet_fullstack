@@ -21,12 +21,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable())
+
+                // 2. HTTP 기본 인증 및 폼 로그인 비활성화 (필요 시)
+                .httpBasic(basic -> basic.disable())
+                .formLogin(form -> form.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll() // [중요] reissue 포함 인증 API는 전체 허용
                         .requestMatchers("/api/v1/contexts/**").permitAll()
-                        .requestMatchers("/api/v1/images/upload").authenticated() // 업로드는 인증 필수
+                        .requestMatchers("/api/v1/autocomplete/**").permitAll()
+                        .requestMatchers("/api/v1/posts/feed").permitAll()
+                        .requestMatchers("/internal/api/**").permitAll()
+
+                        .requestMatchers("/api/v1/images/upload").authenticated()
+                        .requestMatchers("/api/v1/images/posts").authenticated()
+                        .requestMatchers("/api/v1/comments").authenticated()
+                        .requestMatchers("/api/v1/me/posts").authenticated()
+                        .requestMatchers("/api/v1/saved-posts/**").authenticated()
+                        .requestMatchers("/api/v1/search/**").authenticated()
+                        .requestMatchers("/api/v1/users/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,11 +1,10 @@
 package com.pairingplanet.pairing_planet.dto.post;
 
-import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.post.DailyPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
-import com.pairingplanet.pairing_planet.domain.entity.post.ReviewPost;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -19,7 +18,7 @@ public record PostResponseDto(
         // --- [Common] 모든 포스트 공통 필드 ---
         UUID id,
         UUID creatorId,         // [추가] 작성자 식별자 (UUID)
-        String type,            // "DAILY", "REVIEW", "RECIPE"
+        String type,            // "DAILY", "DISCUSSION", "RECIPE"
         String content,
         List<String> imageUrls,
         Instant createdAt,
@@ -38,8 +37,8 @@ public record PostResponseDto(
         int savedCount,
         int commentCount,
 
-        // --- [Review] 전용 필드 ---
-        String reviewTitle,
+        // --- [Discussion] 전용 필드 ---
+        String discussionTitle,
         Boolean verdictEnabled,
 
         // --- [Recipe] 전용 필드 ---
@@ -77,10 +76,10 @@ public record PostResponseDto(
         // 3. 타입별 분기 처리
         if (post instanceof DailyPost) {
             builder.type("DAILY");
-        } else if (post instanceof ReviewPost review) {
-            builder.type("REVIEW")
-                    .reviewTitle(review.getTitle())
-                    .verdictEnabled(review.isVerdictEnabled());
+        } else if (post instanceof DiscussionPost discussion) {
+            builder.type("DISCUSSION")
+                    .discussionTitle(discussion.getTitle())
+                    .verdictEnabled(discussion.isVerdictEnabled());
         } else if (post instanceof RecipePost recipe) {
             builder.type("RECIPE")
                     .recipeTitle(recipe.getTitle())

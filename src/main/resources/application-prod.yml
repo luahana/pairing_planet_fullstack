@@ -30,6 +30,15 @@ spring:
     validate-on-migrate: true
     clean-disabled: true # (핵심 ⭐) 실수로 flyway clean 명령어가 실행되어 DB가 싹 날아가는 것을 원천 봉쇄
 
+internal:
+  api:
+    key: ${INTERNAL_API_KEY} # 환경 변수에서 주입 (필수)
+
+file:
+  upload:
+    # 운영 환경의 이미지 서버 주소 (CDN 또는 API 도메인)
+    url-prefix: ${FILE_UPLOAD_URL_PREFIX:https://api.pairingplanet.com/storage}
+    
   # 로깅 설정 (운영은 에러 위주로)
   logging:
     level:

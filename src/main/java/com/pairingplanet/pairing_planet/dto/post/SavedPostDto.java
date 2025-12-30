@@ -1,20 +1,18 @@
 package com.pairingplanet.pairing_planet.dto.post;
 
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
-import com.pairingplanet.pairing_planet.domain.entity.post.DailyPost;
-import com.pairingplanet.pairing_planet.domain.entity.post.ReviewPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
 import lombok.Builder;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Builder
 public record SavedPostDto(
         UUID id,
-        String type,        // DAILY, REVIEW, RECIPE
+        String type,        // DAILY, DISCUSSION, RECIPE
         String title,       // 리뷰/레시피 제목 또는 food1Name
         String content,
         List<ImageResponse> images, // [{ "url": "..." }] 구조
@@ -35,9 +33,9 @@ public record SavedPostDto(
         String type = "DAILY";
         String title = f1; // 기본값은 food1Name
 
-        if (post instanceof ReviewPost review) {
-            type = "REVIEW";
-            title = review.getTitle();
+        if (post instanceof DiscussionPost discussion) {
+            type = "DISCUSSION";
+            title = discussion.getTitle();
         } else if (post instanceof RecipePost recipe) {
             type = "RECIPE";
             title = recipe.getTitle();

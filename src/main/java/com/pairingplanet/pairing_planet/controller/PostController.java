@@ -31,13 +31,13 @@ public class PostController {
         return ResponseEntity.ok(postService.createDailyPost(userId, request, idempotencyKey));
     }
 
-    @PostMapping("/reviews")
-    public ResponseEntity<PostResponseDto> createReviewPost(
+    @PostMapping("/discussions")
+    public ResponseEntity<PostResponseDto> createDiscussionPost(
             @AuthenticationPrincipal UUID userId,
             @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CreatePostRequestDto request
     ) {
-        return ResponseEntity.ok(postService.createReviewPost(userId, request, idempotencyKey));
+        return ResponseEntity.ok(postService.createDiscussionPost(userId, request, idempotencyKey));
     }
 
     @PostMapping("/recipes")
