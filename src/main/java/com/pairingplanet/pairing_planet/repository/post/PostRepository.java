@@ -15,8 +15,10 @@ import java.util.UUID;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+    @EntityGraph(attributePaths = {
+            "pairing", "images", "hashtags" // [추가] 유저 입력 태그도 함께 가져오기
+    })
     Optional<Post> findByPublicId(UUID publicId);
-
 
     // 1. Fresh (최신순) + Type + Dietary Filter
     @Query("""

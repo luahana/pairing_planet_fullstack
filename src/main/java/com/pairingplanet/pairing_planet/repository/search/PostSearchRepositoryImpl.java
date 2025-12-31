@@ -3,7 +3,6 @@ package com.pairingplanet.pairing_planet.repository.search;
 import com.pairingplanet.pairing_planet.domain.entity.food.FoodMaster;
 import com.pairingplanet.pairing_planet.domain.entity.food.QFoodMaster;
 import com.pairingplanet.pairing_planet.domain.entity.context.QContextTag;
-import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.dto.search.PairingSearchRequestDto;
 import com.pairingplanet.pairing_planet.dto.search.PostSearchResultDto;
 import com.pairingplanet.pairing_planet.dto.search.SearchCursorDto;
@@ -28,11 +27,10 @@ import static com.pairingplanet.pairing_planet.domain.entity.user.QUser.user;
 @RequiredArgsConstructor
 public class PostSearchRepositoryImpl implements PostSearchRepositoryCustom {
     private final JPAQueryFactory queryFactory;
-
     private final FoodMasterRepository foodMasterRepository;
 
     @Value("${file.upload.url-prefix}")
-    private String urlPrefix; // 이미지 전체 URL 생성을 위한 Prefix
+    private String urlPrefix;
 
     private static final QFoodMaster f1 = new QFoodMaster("f1");
     private static final QFoodMaster f2 = new QFoodMaster("f2");
@@ -65,7 +63,6 @@ public class PostSearchRepositoryImpl implements PostSearchRepositoryCustom {
                         buildFilterConditions(request, ignoreWhenTag),
                         buildCursorCondition(cursor)
                 )
-                // 인기 점수 -> 최신순 -> ID순으로 정렬하여 커서 페이징 보장
                 .orderBy(post.popularityScore.desc(), post.createdAt.desc(), post.id.desc())
                 .limit(limit)
                 .fetch()
@@ -76,14 +73,10 @@ public class PostSearchRepositoryImpl implements PostSearchRepositoryCustom {
 
     private BooleanBuilder buildFilterConditions(PairingSearchRequestDto request, boolean ignoreWhenTag) {
         BooleanBuilder builder = new BooleanBuilder();
-        // 음식 ID 기반 필터링 (순서 무관 교차 검색)
-
-        List<Long> internalFoodIds = Collections.emptyList();
-
         if (request.foodIds() != null && !request.foodIds().isEmpty()) {
-            internalFoodIds = foodMasterRepository.findByPublicIdIn(request.foodIds())
+            List<Long> internalFoodIds = foodMasterRepository.findByPublicIdIn(request.foodIds())
                     .stream()
-                    .map(FoodMaster::getId) // 엔티티에서 내부 Long ID 추출
+                    .map(FoodMaster::getId)
                     .toList();
             if (internalFoodIds.size() == 1) {
                 Long id = internalFoodIds.get(0);
@@ -96,9 +89,7 @@ public class PostSearchRepositoryImpl implements PostSearchRepositoryCustom {
                                 .or(pairingMap.food1.id.eq(id2).and(pairingMap.food2.id.eq(id1)))
                 );
             }
-
         }
-
         if (request.dietaryContextId() != null) builder.and(pairingMap.dietaryContext.id.eq(request.dietaryContextId()));
         if (!ignoreWhenTag && request.whenContextId() != null) builder.and(pairingMap.whenContext.id.eq(request.whenContextId()));
         return builder;
@@ -106,13 +97,10 @@ public class PostSearchRepositoryImpl implements PostSearchRepositoryCustom {
 
     private BooleanBuilder buildCursorCondition(SearchCursorDto cursor) {
         if (cursor == null || cursor.lastScore() == null) return new BooleanBuilder();
-
-        // 1970년 이전 날짜를 보정하여 PostgreSQL 범위 오류 방지
         Instant safeCreatedAt = cursor.lastCreatedAt();
         if (safeCreatedAt == null || safeCreatedAt.isBefore(Instant.parse("1970-01-01T00:00:00Z"))) {
             safeCreatedAt = Instant.parse("1970-01-01T00:00:00Z");
         }
-
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(
                 post.popularityScore.lt(cursor.lastScore())
@@ -132,21 +120,22 @@ public class PostSearchRepositoryImpl implements PostSearchRepositoryCustom {
 
         return new PostSearchResultDto(
                 p.getId(), p.getPublicId(), p.getContent(),
-                // DB의 storedFilename에 urlPrefix를 결합하여 반환
                 p.getImages() != null ? p.getImages().stream().map(img -> urlPrefix + "/" + img.getStoredFilename()).collect(Collectors.toList()) : Collections.emptyList(),
                 p.getCreatedAt(),
                 u.getUsername(), u.getPublicId(),
                 getLocalizedName(food1, locale), food1.getPublicId(),
                 getLocalizedName(food2, locale), food2 != null ? food2.getPublicId() : null,
-                when != null ? when.getDisplayName() : null,
-                diet != null ? diet.getDisplayName() : null,
+                // [수정] getDisplayName() -> getDisplayNameByLocale(locale)
+                when != null ? when.getDisplayNameByLocale(locale) : null,
+                diet != null ? diet.getDisplayNameByLocale(locale) : null,
                 p.getGeniusCount(), p.getDaringCount(), p.getPickyCount(), p.getCommentCount(), p.getSavedCount(), p.getPopularityScore(),
                 isFallback
         );
     }
 
-    private String getLocalizedName(com.pairingplanet.pairing_planet.domain.entity.food.FoodMaster food, String locale) {
-        if (food == null || food.getName() == null) return "Unknown Food";
-        return food.getName().getOrDefault(locale, food.getName().getOrDefault("en", "Unknown Food"));
+    private String getLocalizedName(FoodMaster food, String locale) {
+        if (food == null) return "Unknown Food";
+        // [수정] FoodMaster 엔티티의 다국어 지원 메서드 호출
+        return food.getNameByLocale(locale);
     }
 }

@@ -5,8 +5,8 @@ import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
-import com.pairingplanet.pairing_planet.dto.post.CursorResponseTotalCount;
-import com.pairingplanet.pairing_planet.dto.post.MyPostResponseDto;
+import com.pairingplanet.pairing_planet.dto.post.CursorResponse; // [변경]
+import com.pairingplanet.pairing_planet.dto.post.PostResponseDto;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static com.pairingplanet.pairing_planet.dto.search.SearchCursorDto.SAFE_MIN_DATE;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -30,38 +32,43 @@ public class MyPostService {
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
 
-    public CursorResponseTotalCount<MyPostResponseDto> getMyPosts(UUID userId, String type, String cursor, int size) {
+    public CursorResponse<PostResponseDto> getMyPosts(UUID userId, String type, String cursor, int size) {
         User user = userRepository.findByPublicId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // 1. 문자열 타입을 엔티티 클래스로 매핑
         Class<? extends Post> entityType = getEntityType(type);
         PageRequest pageRequest = PageRequest.of(0, size);
         Slice<Post> slice;
 
-        // 2. 쿼리 실행 (기존 커서 파싱 로직 포함)
         if (cursor == null || cursor.isBlank()) {
             slice = postRepository.findMyPostsByTypeFirstPage(user.getId(), entityType, pageRequest);
         } else {
-            String[] parts = cursor.split("_");
-            Instant cursorTime = Instant.parse(parts[0]);
-            UUID cursorPublicId = UUID.fromString(parts[1]);
-            Long cursorInternalId = postRepository.findByPublicId(cursorPublicId).map(Post::getId).orElse(0L);
+            try {
+                String[] parts = cursor.split("_");
+                Instant cursorTime = Instant.parse(parts[0]);
+                if (cursorTime.isBefore(SAFE_MIN_DATE)) cursorTime = SAFE_MIN_DATE;
 
-            slice = postRepository.findMyPostsByTypeWithCursor(user.getId(), entityType, cursorTime, cursorInternalId, pageRequest);
+                UUID cursorPublicId = UUID.fromString(parts[1]);
+                Long cursorInternalId = postRepository.findByPublicId(cursorPublicId).map(Post::getId).orElse(0L);
+                slice = postRepository.findMyPostsByTypeWithCursor(user.getId(), entityType, cursorTime, cursorInternalId, pageRequest);
+            } catch (Exception e) {
+                slice = postRepository.findMyPostsByTypeFirstPage(user.getId(), entityType, pageRequest);
+            }
         }
 
-        // 3. DTO 변환 및 결과 구성
-        List<MyPostResponseDto> dtos = slice.getContent().stream()
-                .map(post -> {
-                    String nextCursor = post.getCreatedAt().toString() + "_" + post.getPublicId();
-                    return MyPostResponseDto.from(post, nextCursor, urlPrefix);
-                }).toList();
+        List<PostResponseDto> dtos = slice.getContent().stream()
+                .map(post -> PostResponseDto.from(post, urlPrefix))
+                .toList();
+
+        String nextCursor = null;
+        if (slice.hasNext() && !dtos.isEmpty()) {
+            Post lastPost = slice.getContent().get(slice.getContent().size() - 1);
+            nextCursor = lastPost.getCreatedAt().toString() + "_" + lastPost.getPublicId();
+        }
 
         long totalCount = postRepository.countMyPostsByType(user.getId(), entityType);
-        String nextCursor = slice.hasNext() ? dtos.get(dtos.size() - 1).cursor() : null;
 
-        return new CursorResponseTotalCount<>(dtos, nextCursor, totalCount); // totalCount 포함 구조
+        return new CursorResponse<>(dtos, nextCursor, slice.hasNext(), totalCount);
     }
 
     private Class<? extends Post> getEntityType(String type) {
@@ -70,7 +77,7 @@ public class MyPostService {
             case "DAILY" -> DailyPost.class;
             case "DISCUSSION" -> DiscussionPost.class;
             case "RECIPE" -> RecipePost.class;
-            default -> null; // ALL
+            default -> null;
         };
     }
 }

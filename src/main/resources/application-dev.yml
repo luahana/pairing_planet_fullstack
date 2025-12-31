@@ -1,4 +1,7 @@
 spring:
+  mvc:
+    # 1. 요청 파라미터 및 헤더의 상세 정보를 생략 없이 로그에 기록
+    log-request-details: true
   config:
     activate:
       on-profile: dev
@@ -21,8 +24,8 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        format_sql: true
-        show_sql: true
+        format_sql: false
+        show_sql: false
 
   # MinIO (S3) 설정
   cloud:
@@ -50,15 +53,20 @@ spring:
     init:
       mode: never
 
-  logging:
-    level:
-      root: INFO
-      com.pairingplanet: DEBUG
-      org.hibernate.SQL: DEBUG
-      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-      org.flywaydb: DEBUG
-      software.amazon.awssdk: INFO
-      org.springframework.security: DEBUG
+logging:
+  level:
+    root: INFO
+    com.pairingplanet: DEBUG
+    # 추가: 어떤 URL이 어떤 Controller 메서드에 연결되어 있는지(Mapping) 보여줍니다.
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+    # 추가: HTTP 요청(Request)과 응답(Response)의 전체적인 흐름을 보여줍니다.
+    org.springframework.web: DEBUG
+    # 추가: 시큐리티 필터를 통과하는 과정을 더 상세히 보고 싶을 때 유용합니다.
+    org.springframework.security: DEBUG
+
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.flywaydb: DEBUG
+    software.amazon.awssdk: INFO
 
 jwt:
   secret: ${JWT_SECRET:cmVtZW1iZXJpdHJpc2luZ2JlbnRmcmFtZWluZGVwZW5kZW50Y3VyaW91c3Nob3J0ZXI=}
@@ -74,4 +82,10 @@ internal:
 file:
   upload:
     bucket: pairing-planet-local # MinIO에 생성될 버킷 이름
-    url-prefix: http://localhost:9000/${file.upload.bucket}
+    url-prefix: http://10.0.2.2:9000/${file.upload.bucket}
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: pairing-planet-local

@@ -1,9 +1,8 @@
 package com.pairingplanet.pairing_planet.controller;
 
 import com.pairingplanet.pairing_planet.domain.enums.ImageType;
-import com.pairingplanet.pairing_planet.domain.enums.VerdictType;
 import com.pairingplanet.pairing_planet.dto.comment.CommentRequestDto;
-import com.pairingplanet.pairing_planet.dto.feed.FeedResponseDto;
+import com.pairingplanet.pairing_planet.dto.post.CursorResponse; // [변경]
 import com.pairingplanet.pairing_planet.dto.image.ImageUploadResponseDto;
 import com.pairingplanet.pairing_planet.dto.post.CreatePostRequestDto;
 import com.pairingplanet.pairing_planet.dto.post.PostResponseDto;
@@ -53,12 +52,14 @@ public class InternalBotController {
         return ResponseEntity.ok().build();
     }
 
-    // 3. 봇 피드 조회 (댓글 대상 탐색용)
+    /**
+     * 3. 봇 피드 조회 (통합 규격 CursorResponse 적용)
+     */
     @GetMapping("/feed")
-    public ResponseEntity<FeedResponseDto> botGetFeed(
-            @RequestParam UUID botId,
-            @RequestParam(defaultValue = "0") int cursor) {
-        // 봇의 선호도에 따른 피드 제공
+    public ResponseEntity<CursorResponse<PostResponseDto>> botGetFeed( // [변경]
+                                                                       @RequestParam UUID botId,
+                                                                       @RequestParam(defaultValue = "0") int cursor) {
+        // FeedService에서 변경된 반환 타입을 그대로 반환합니다.
         return ResponseEntity.ok(feedService.getMixedFeed(botId, cursor));
     }
 
@@ -68,7 +69,6 @@ public class InternalBotController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("type") ImageType type) {
 
-        // ImageService의 기존 로직을 재사용하여 DB에 기록하고 파일을 저장합니다.
         ImageUploadResponseDto response = imageService.uploadImage(file, type, botId);
         return ResponseEntity.ok(response);
     }

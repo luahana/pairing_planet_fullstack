@@ -2,8 +2,8 @@ package com.pairingplanet.pairing_planet.service;
 
 import com.pairingplanet.pairing_planet.domain.entity.post.*;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
-import com.pairingplanet.pairing_planet.dto.feed.FeedResponseDto;
-import com.pairingplanet.pairing_planet.dto.post.PostDto;
+import com.pairingplanet.pairing_planet.dto.post.CursorResponse; // [변경]
+import com.pairingplanet.pairing_planet.dto.post.PostResponseDto; // [변경]
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,6 @@ public class FeedService {
     private final UserRepository userRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // 타입별 Redis Key (4:4:2 비율 유지용)
     private static final String KEY_DAILY = "feed:daily";
     private static final String KEY_DISCUSSION = "feed:discussion";
     private static final String KEY_RECIPE = "feed:recipe";
@@ -35,25 +34,21 @@ public class FeedService {
     private static final int PAGE_SIZE = 10;
     private static final long HISTORY_TTL_DAYS = 1;
 
-    @Value("${file.upload.url-prefix:http://localhost:9000/pairing-planet-local}")
+    @Value("${file.upload.url-prefix}") // 하드코딩 제거
     private String urlPrefix;
 
     /**
-     * 메인 피드 진입점: 취향 필터링 여부에 따라 로직 분기
+     * 메인 피드 진입점: CursorResponse<PostResponseDto>로 반환 타입 통일
      */
-    public FeedResponseDto getMixedFeed(UUID userPublicId, int offset) {
-        // 1. 유저의 식이 취향(Dietary) 정보 가져오기
+    public CursorResponse<PostResponseDto> getMixedFeed(UUID userPublicId, int offset) {
         User user = (userPublicId != null) ?
                 userRepository.findByPublicId(userPublicId).orElse(null) : null;
         Long preferredDietaryId = (user != null) ? user.getPreferredDietaryId() : null;
 
         try {
-            // 2. 사용자의 식이 취향 설정이 있다면 DB에서 필터링된 피드 제공 (개인화)
             if (preferredDietaryId != null) {
                 return getPersonalizedFeedFromDb(preferredDietaryId, offset);
             }
-
-            // 3. 설정이 없다면 글로벌 Redis 피드 시도
             return getFeedFromRedis(userPublicId, offset);
         } catch (Exception e) {
             log.error("Feed error, switching to Global DB Fallback: {}", e.getMessage());
@@ -61,70 +56,47 @@ public class FeedService {
         }
     }
 
-    /**
-     * 개인화 피드 (DB 기반, 식이 취향 필터 적용)
-     */
-    private FeedResponseDto getPersonalizedFeedFromDb(Long dietaryId, int offset) {
-        List<PostDto> combinedPosts = new ArrayList<>();
+    private CursorResponse<PostResponseDto> getPersonalizedFeedFromDb(Long dietaryId, int offset) {
+        List<PostResponseDto> combinedPosts = new ArrayList<>();
 
-        // 4:4:2 비율로 DB 필터링 조회
         combinedPosts.addAll(fetchFromDbWithFilter(DailyPost.class, dietaryId, 4, offset));
         combinedPosts.addAll(fetchFromDbWithFilter(DiscussionPost.class, dietaryId, 4, offset));
         combinedPosts.addAll(fetchFromDbWithFilter(RecipePost.class, dietaryId, 2, offset));
 
         Collections.shuffle(combinedPosts);
 
-        return FeedResponseDto.builder()
-                .posts(combinedPosts)
-                .nextCursor(String.valueOf(offset + 1))
-                .hasNext(combinedPosts.size() >= PAGE_SIZE)
-                .build();
+        return new CursorResponse<>(combinedPosts, String.valueOf(offset + 1), combinedPosts.size() >= PAGE_SIZE);
     }
 
-    /**
-     * 일반 피드 (Redis 기반, 중복 제거 적용)
-     */
-    private FeedResponseDto getFeedFromRedis(UUID userId, int offset) {
+    private CursorResponse<PostResponseDto> getFeedFromRedis(UUID userId, int offset) {
         Long internalUserId = (userId != null) ?
                 userRepository.findByPublicId(userId).map(User::getId).orElse(null) : null;
         String historyKey = (internalUserId != null) ? "user:" + internalUserId + ":seen" : "user:anon:seen";
 
-        List<PostDto> finalPosts = new ArrayList<>();
+        List<PostResponseDto> finalPosts = new ArrayList<>();
 
-        // 4:4:2 비율로 Redis에서 데이터 추출
         finalPosts.addAll(fetchAndFilterFromRedis(KEY_DAILY, 4, offset, historyKey));
         finalPosts.addAll(fetchAndFilterFromRedis(KEY_DISCUSSION, 4, offset, historyKey));
         finalPosts.addAll(fetchAndFilterFromRedis(KEY_RECIPE, 2, offset, historyKey));
 
         Collections.shuffle(finalPosts);
 
-        return FeedResponseDto.builder()
-                .posts(finalPosts)
-                .nextCursor(String.valueOf(offset + 1))
-                .hasNext(finalPosts.size() >= PAGE_SIZE)
-                .build();
+        return new CursorResponse<>(finalPosts, String.valueOf(offset + 1), finalPosts.size() >= PAGE_SIZE);
     }
 
-    /**
-     * 장애 대응 피드 (DB 기반, 글로벌 최신순)
-     */
-    private FeedResponseDto getFeedFallback(int offset) {
-        List<PostDto> combinedPosts = new ArrayList<>();
+    private CursorResponse<PostResponseDto> getFeedFallback(int offset) {
+        List<PostResponseDto> combinedPosts = new ArrayList<>();
 
         combinedPosts.addAll(fetchFromDbWithFilter(DailyPost.class, null, 4, offset));
         combinedPosts.addAll(fetchFromDbWithFilter(DiscussionPost.class, null, 4, offset));
         combinedPosts.addAll(fetchFromDbWithFilter(RecipePost.class, null, 2, offset));
 
-        return FeedResponseDto.builder()
-                .posts(combinedPosts)
-                .nextCursor(String.valueOf(offset + 1))
-                .hasNext(combinedPosts.size() >= PAGE_SIZE)
-                .build();
+        return new CursorResponse<>(combinedPosts, String.valueOf(offset + 1), combinedPosts.size() >= PAGE_SIZE);
     }
 
     // --- Helper Methods ---
 
-    private List<PostDto> fetchAndFilterFromRedis(String key, int count, int offset, String historyKey) {
+    private List<PostResponseDto> fetchAndFilterFromRedis(String key, int count, int offset, String historyKey) {
         int start = offset * count;
         List<Object> rawIds = redisTemplate.opsForList().range(key, start, start + (count * 2));
         if (rawIds == null || rawIds.isEmpty()) return new ArrayList<>();
@@ -144,21 +116,14 @@ public class FeedService {
         redisTemplate.expire(historyKey, HISTORY_TTL_DAYS, TimeUnit.DAYS);
 
         return postRepository.findAllWithDetailsByIdIn(filteredIds).stream()
-                .map(p -> PostDto.from(p, resolveDietaryLabel(p), urlPrefix))
+                .map(p -> PostResponseDto.from(p, urlPrefix)) // [수정] 인자 2개 버전 사용
                 .toList();
     }
 
-    private List<PostDto> fetchFromDbWithFilter(Class<? extends Post> type, Long dietaryId, int limit, int offset) {
+    private List<PostResponseDto> fetchFromDbWithFilter(Class<? extends Post> type, Long dietaryId, int limit, int offset) {
         return postRepository.findPublicPostsWithPreference(type, dietaryId, PageRequest.of(offset, limit))
                 .getContent().stream()
-                .map(p -> PostDto.from(p, resolveDietaryLabel(p), urlPrefix))
+                .map(p -> PostResponseDto.from(p, urlPrefix)) // [수정] 인자 2개 버전 사용
                 .toList();
-    }
-
-    private String resolveDietaryLabel(Post post) {
-        if (post.getPairing() != null && post.getPairing().getDietaryContext() != null) {
-            return post.getPairing().getDietaryContext().getDisplayName(); // Dietary Context만 반환
-        }
-        return "";
     }
 }

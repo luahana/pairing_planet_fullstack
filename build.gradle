@@ -58,6 +58,7 @@ dependencies {
     // AWS S3 SDK (MinIO 호환)
     implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0') // 버전은 최신에 맞게 조정 가능
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+    implementation 'io.minio:minio:8.5.7'
 }
 
 tasks.named('test') {

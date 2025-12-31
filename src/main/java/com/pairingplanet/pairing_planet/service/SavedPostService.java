@@ -4,9 +4,8 @@ import com.pairingplanet.pairing_planet.domain.entity.post.SavedPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.SavedPost.SavedPostId;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
-import com.pairingplanet.pairing_planet.dto.post.CursorResponse;
-import com.pairingplanet.pairing_planet.dto.post.CursorResponseTotalCount;
-import com.pairingplanet.pairing_planet.dto.post.SavedPostDto;
+import com.pairingplanet.pairing_planet.dto.post.CursorResponse; // [변경]
+import com.pairingplanet.pairing_planet.dto.post.PostResponseDto;
 import com.pairingplanet.pairing_planet.repository.post.SavedPostRepository;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +34,6 @@ public class SavedPostService {
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
 
-    // FR-90: 저장 토글 (Save / Unsave)
     @Transactional
     public boolean toggleSave(UUID userPublicId, UUID postPublicId) {
         User user = userRepository.findByPublicId(userPublicId)
@@ -56,8 +53,7 @@ public class SavedPostService {
         }
     }
 
-    // FR-90, FR-91: 저장 목록 조회 (Ghost Card + Cursor Pagination)
-    public CursorResponseTotalCount<SavedPostDto> getSavedPosts(UUID userPublicId, String cursor, int size) {
+    public CursorResponse<PostResponseDto> getSavedPosts(UUID userPublicId, String cursor, int size) { // [변경]
         User user = userRepository.findByPublicId(userPublicId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Long userId = user.getId();
@@ -65,35 +61,35 @@ public class SavedPostService {
         PageRequest pageRequest = PageRequest.of(0, size);
         Slice<SavedPost> slice;
 
-        // 1. 페이징 조회 로직 (기존과 동일)
         try {
             if (cursor == null || cursor.isBlank()) {
                 slice = savedPostRepository.findAllByUserIdFirstPage(userId, pageRequest);
             } else {
                 String[] parts = cursor.split("_");
                 Instant cursorTime = Instant.parse(parts[0]);
+                if (cursorTime.isBefore(SAFE_MIN_DATE)) cursorTime = SAFE_MIN_DATE;
+
                 UUID postPublicId = UUID.fromString(parts[1]);
                 Long internalPostId = postRepository.findByPublicId(postPublicId).map(Post::getId).orElse(0L);
                 slice = savedPostRepository.findAllByUserIdWithCursor(userId, cursorTime, internalPostId, pageRequest);
             }
         } catch (Exception e) {
-            // [추가] 커서 파싱 실패 시 첫 페이지 반환 (500 에러 방지)
             slice = savedPostRepository.findAllByUserIdFirstPage(userId, pageRequest);
         }
 
-        // 2. DTO 변환
-        List<SavedPostDto> dtos = slice.getContent().stream()
-                .map(sp -> {
-                    String nextCursorItem = sp.getCreatedAt().toString() + "_" + sp.getPost().getPublicId();
-                    return SavedPostDto.from(sp.getPost(), sp.getCreatedAt(), nextCursorItem, urlPrefix);
-                })
+        List<PostResponseDto> dtos = slice.getContent().stream()
+                .map(sp -> PostResponseDto.from(sp.getPost(), urlPrefix))
                 .toList();
 
-        // 3. 전체 개수 조회 (요구사항 반영)
-        long totalCount = savedPostRepository.countByUserId(userId);
-        String nextCursor = slice.hasNext() && !dtos.isEmpty() ? dtos.get(dtos.size() - 1).cursor() : null;
+        String nextCursor = null;
+        if (slice.hasNext() && !slice.getContent().isEmpty()) {
+            SavedPost lastItem = slice.getContent().get(slice.getContent().size() - 1);
+            nextCursor = lastItem.getCreatedAt().toString() + "_" + lastItem.getPost().getPublicId();
+        }
 
-        // CursorResponse 구조: { data: [...], nextCursor: "...", totalCount: ... }
-        return new CursorResponseTotalCount<>(dtos, nextCursor, totalCount);
+        long totalCount = savedPostRepository.countByUserId(userId);
+
+        // [변경] 통합된 생성자 사용
+        return new CursorResponse<>(dtos, nextCursor, slice.hasNext(), totalCount);
     }
 }

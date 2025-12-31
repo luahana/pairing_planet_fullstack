@@ -43,7 +43,7 @@ public class ContextController {
     // 전체 태그 조회 (Locale 필터)
     @GetMapping("/tags")
     public ResponseEntity<List<TagResponse>> getTags(
-            @RequestParam(defaultValue = "en") String locale
+            @RequestHeader(value = "Accept-Language", defaultValue = "ko-KR") String locale
     ) {
         return ResponseEntity.ok(contextService.getTagsByLocale(locale));
     }
@@ -52,7 +52,7 @@ public class ContextController {
     @GetMapping("/dimensions/{dimensionId}/tags")
     public ResponseEntity<List<TagResponse>> getTagsByDimension(
             @PathVariable UUID dimensionId,
-            @RequestParam(defaultValue = "en") String locale
+            @RequestHeader(value = "Accept-Language", defaultValue = "ko-KR") String locale
     ) {
         return ResponseEntity.ok(contextService.getTagsByDimensionAndLocale(dimensionId, locale));
     }

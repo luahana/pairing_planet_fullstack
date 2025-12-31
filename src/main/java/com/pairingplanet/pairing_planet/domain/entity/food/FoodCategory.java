@@ -28,7 +28,6 @@ public class FoodCategory extends BaseEntity {
     @Builder.Default
     private Integer depth = 1;
 
-    // JSONB 매핑: {"ko": "면", "en": "Noodle"}
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
     @Builder.Default

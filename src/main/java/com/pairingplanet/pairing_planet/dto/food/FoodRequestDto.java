@@ -13,7 +13,6 @@ public record FoodRequestDto(
     // "qwer" 같은 단일 문자열을 객체로 변환할 수 있습니다.
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static FoodRequestDto fromString(String name) {
-        // 서비스 로직과의 일관성을 위해 기본 로케일을 "ko"로 설정하는 것을 추천합니다.
-        return new FoodRequestDto(null, name, "ko");
+        return new FoodRequestDto(null, name, "ko-KR");
     }
 }

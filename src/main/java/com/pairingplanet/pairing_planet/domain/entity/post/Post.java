@@ -1,6 +1,7 @@
 package com.pairingplanet.pairing_planet.domain.entity.post;
 
 import com.pairingplanet.pairing_planet.domain.entity.common.BaseEntity;
+import com.pairingplanet.pairing_planet.domain.entity.hashtag.Hashtag;
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
@@ -85,6 +86,19 @@ public class Post extends BaseEntity {
     @Column(name = "is_private", nullable = false)
     @Builder.Default
     private boolean isPrivate = false;
+
+    @ManyToMany
+    @JoinTable(
+            name = "post_hashtag_map",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    @Builder.Default
+    private List<Hashtag> hashtags = new ArrayList<>();
+
+    public void setHashtags(List<Hashtag> hashtags) {
+        this.hashtags = hashtags;
+    }
 
     public void softDelete() {
         this.isDeleted = true;

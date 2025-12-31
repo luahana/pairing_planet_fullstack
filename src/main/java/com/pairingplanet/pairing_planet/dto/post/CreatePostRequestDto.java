@@ -22,6 +22,7 @@ public record CreatePostRequestDto(
         List<String> imageUrls,
 
         String content,
+        List<String> hashtags,
         Boolean isPrivate,
         Boolean commentsEnabled, // 댓글 허용 여부 추가
 

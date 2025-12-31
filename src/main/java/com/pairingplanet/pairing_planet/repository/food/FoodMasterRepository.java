@@ -21,6 +21,9 @@ public interface FoodMasterRepository extends JpaRepository<FoodMaster, Long> {
     @Query("SELECT f FROM FoodMaster f WHERE f.isVerified = true")
     List<FoodMaster> findAllVerified();
 
+    @Query(value = "SELECT * FROM foods_master WHERE name ->> :locale = :name LIMIT 1", nativeQuery = true)
+    Optional<FoodMaster> findByNameAndLocale(@Param("locale") String locale, @Param("name") String name);
+
     // FR-86: Fuzzy Matching (오타 보정)
     // 1순위: 정확/부분 일치 (ILIKE)
     // 2순위: 유사도(SIMILARITY) 0.3 이상

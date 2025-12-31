@@ -29,15 +29,19 @@ public class AuthService {
     @Transactional
     public AuthResponseDto socialLogin(SocialLoginRequestDto req) {
         // 1. 소셜 계정 조회 혹은 신규 생성
-        // DTO에서 넘어온 String을 Enum으로 변환
         Provider providerEnum = req.provider();
 
-        // Repository 메서드 인자 타입에 맞춰 provider 전달
         SocialAccount socialAccount = socialAccountRepository
                 .findByProviderAndProviderUserId(providerEnum, req.providerUserId())
                 .orElseGet(() -> registerNewUser(req));
 
         User user = socialAccount.getUser();
+
+        // [추가] 로그인 시점에 앱의 시스템 언어로 유저 설정 동기화
+        // 사용자가 휴대폰 언어 설정을 바꿨을 경우를 대비해 로그인할 때마다 업데이트합니다.
+        if (req.locale() != null && !req.locale().isBlank()) {
+            user.setLocale(req.locale());
+        }
 
         // 2. 소셜 토큰 업데이트
         socialAccount.setAccessToken(req.socialAccessToken());
@@ -85,20 +89,21 @@ public class AuthService {
             username = "user_" + UUID.randomUUID().toString().substring(0, 8);
         }
 
+        String initialLocale = (req.locale() != null && !req.locale().isBlank()) ? req.locale() : "ko-KR";
+
         User user = User.builder()
                 .username(username)
                 .email(req.email())
                 .profileImageUrl(req.profileImageUrl())
                 .role(Role.USER)
                 .status(AccountStatus.ACTIVE)
-                .locale("ko")
+                .locale(initialLocale) // 시스템 언어 반영
                 .build();
         userRepository.save(user);
 
-
         SocialAccount account = SocialAccount.builder()
                 .user(user)
-                .provider(req.provider()) // 엔티티 필드가 String인 경우 .name(), Enum인 경우 객체 전달
+                .provider(req.provider())
                 .providerUserId(req.providerUserId())
                 .build();
         return socialAccountRepository.save(account);

@@ -98,7 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_foods_master_category ON foods_master (category_i
 CREATE INDEX IF NOT EXISTS idx_foods_master_name_gin ON foods_master USING GIN (name);
 CREATE INDEX IF NOT EXISTS idx_foods_master_search_gin ON foods_master USING GIN (search_keywords gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_food_popularity ON foods_master (food_score DESC);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_food_name_ko ON foods_master ((name ->> 'ko'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_food_name_ko_kr ON foods_master ((name ->> 'ko-KR'));
 
 CREATE TABLE IF NOT EXISTS food_tags (
                                          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -154,21 +154,26 @@ CREATE TABLE IF NOT EXISTS context_dimensions (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
     );
 
+
 CREATE TABLE IF NOT EXISTS context_tags (
                                             id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                                             public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
 
     dimension_id BIGINT NOT NULL REFERENCES context_dimensions(id) ON DELETE CASCADE,
-    tag_name VARCHAR(50) NOT NULL,
-    display_name VARCHAR(50) NOT NULL,
-    locale VARCHAR(10) NOT NULL,
-    display_order INTEGER NOT NULL DEFAULT 0,
+    tag_name VARCHAR(50) NOT NULL, -- 시스템 내부 코드 (예: "vegan")
+
+    display_names JSONB NOT NULL DEFAULT '{}',
+
+    display_orders JSONB NOT NULL DEFAULT '{}',
 
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT unique_tag_locale UNIQUE (dimension_id, tag_name, locale)
+    -- 한 디멘션 내에서 동일한 내부 태그명 중복 방지
+    CONSTRAINT unique_tag_per_dimension UNIQUE (dimension_id, tag_name)
     );
+
+CREATE INDEX IF NOT EXISTS idx_context_tags_names_gin ON context_tags USING GIN (display_names);
 
 CREATE TABLE IF NOT EXISTS pairing_map (
                                            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -451,6 +456,24 @@ CREATE TABLE IF NOT EXISTS images (
 CREATE INDEX IF NOT EXISTS idx_images_status_created_at ON images (status, created_at);
 CREATE INDEX IF NOT EXISTS idx_images_type ON images (type);
 CREATE INDEX IF NOT EXISTS idx_images_post_id ON images (post_id);
+
+CREATE TABLE IF NOT EXISTS hashtags (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    name VARCHAR(50) NOT NULL UNIQUE, -- 중복 방지를 위해 UNIQUE 설정
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+-- 2. 포스트와 커스텀 태그를 연결하는 다대다 매핑 테이블
+CREATE TABLE IF NOT EXISTS post_hashtag_map (
+    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    hashtag_id BIGINT NOT NULL REFERENCES hashtags(id) ON DELETE CASCADE,
+    PRIMARY KEY (post_id, hashtag_id)
+    );
+
+CREATE INDEX IF NOT EXISTS idx_hashtag_name ON hashtags (name);
+CREATE INDEX IF NOT EXISTS idx_post_hashtag_map_hashtag ON post_hashtag_map (hashtag_id);
+
 
 ALTER TABLE users
     ADD CONSTRAINT fk_users_preferred_dietary

@@ -24,7 +24,7 @@ public class AutocompleteScheduler {
     private final AutocompleteService autocompleteService;
 
     // 지원하는 로케일 목록 (상수 관리 추천)
-    private static final List<String> SUPPORTED_LOCALES = List.of("en", "ko", "ja");
+    private static final List<String> SUPPORTED_LOCALES = List.of("en-US", "ko-KR", "ja-JP");
 
     @Scheduled(fixedRate = 3600000) // 1시간
     @Transactional(readOnly = true)

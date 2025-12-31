@@ -9,7 +9,7 @@ public record PairingSearchRequestDto(
         String rawQuery,             // 음식 선택 없이 텍스트로 검색할 때 사용 (Fallback)
         Long whenContextId,          // FR-84: 시간/상황 태그 (Soft Filter)
         Long dietaryContextId,       // FR-83: 식이요법 태그 (Hard Filter)
-        String locale,                // 유저의 언어/지역 코드 (예: "ko", "en")
+        String locale,                // 유저의 언어/지역 코드 (예: "ko-KR", "en-US")
 
         String cursor
 ) {}

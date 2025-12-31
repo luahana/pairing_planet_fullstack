@@ -2,16 +2,14 @@ package com.pairingplanet.pairing_planet.domain.entity.context;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "context_tags", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"dimension_id", "tag_name", "locale"})
-})
+@Table(name = "context_tags")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -31,23 +29,26 @@ public class ContextTag {
     private ContextDimension dimension;
 
     @Column(name = "tag_name", nullable = false, length = 50)
-    private String tagName;       // 시스템 내부 코드용 (예: "christmas")
+    private String tagName; // 시스템 코드
 
-    @Column(name = "display_name", nullable = false, length = 50)
-    private String displayName;   // 사용자 표시용 (예: "Christmas" or "크리스마스")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "display_names", nullable = false)
+    private Map<String, String> displayNames;
 
-    @Column(nullable = false, length = 10)
-    private String locale;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "display_orders", nullable = false)
+    private Map<String, Integer> displayOrders;
 
-    @Column(name = "display_order", nullable = false)
     @Builder.Default
-    private Integer displayOrder = 0; // 기본값 0
+    private Instant createdAt = Instant.now();
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private Instant createdAt;
+    // 특정 로케일의 표시 이름을 가져오는 편의 메서드
+    public String getDisplayNameByLocale(String locale) {
+        return displayNames.getOrDefault(locale, displayNames.get("en-US"));
+    }
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private Instant updatedAt;
+    // 특정 로케일의 순서를 가져오는 편의 메서드
+    public Integer getOrderByLocale(String locale) {
+        return displayOrders.getOrDefault(locale, 0);
+    }
 }

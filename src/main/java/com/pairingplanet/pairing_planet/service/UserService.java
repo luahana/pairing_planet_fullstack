@@ -4,7 +4,7 @@ import com.pairingplanet.pairing_planet.domain.entity.context.ContextTag;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.post.CursorResponse;
-import com.pairingplanet.pairing_planet.dto.post.MyPostResponseDto;
+import com.pairingplanet.pairing_planet.dto.post.PostResponseDto;
 import com.pairingplanet.pairing_planet.dto.user.UpdateProfileRequestDto;
 import com.pairingplanet.pairing_planet.dto.user.UserDto;
 import com.pairingplanet.pairing_planet.repository.context.ContextTagRepository;
@@ -38,13 +38,11 @@ public class UserService {
 
     /**
      * 사용자 상세 정보 조회 (공통)
-     * @param userId 조회 대상의 Public ID
      */
     public UserDto getUserProfile(UUID userId) {
         User user = userRepository.findByPublicId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // 1. 유저의 preferredDietaryId(Long)를 이용해 ContextTag의 UUID 조회
         UUID dietaryUuid = null;
         if (user.getPreferredDietaryId() != null) {
             dietaryUuid = contextTagRepository.findById(user.getPreferredDietaryId())
@@ -52,8 +50,7 @@ public class UserService {
                     .orElse(null);
         }
 
-        // 2. 조회된 UUID를 포함하여 UserDto 생성
-        return UserDto.from(user, urlPrefix, dietaryUuid); //를 통해 이미지 URL 및 이니셜 처리
+        return UserDto.from(user, urlPrefix, dietaryUuid);
     }
 
     /**
@@ -78,19 +75,17 @@ public class UserService {
         }
 
         if (request.preferredDietaryId() != null) {
-            // ContextTagRepository를 통해 해당 UUID를 가진 태그의 내부 Long ID를 가져옴
             Long internalId = contextTagRepository.findByPublicId(request.preferredDietaryId())
                     .map(ContextTag::getId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Dietary ID"));
 
-            user.setPreferredDietaryId(internalId); //
+            user.setPreferredDietaryId(internalId);
         }
 
         if (request.gender() != null) user.setGender(request.gender());
         if (request.birthDate() != null) user.setBirthDate(request.birthDate());
         if (request.marketingAgreed() != null) user.setMarketingAgreed(request.marketingAgreed());
 
-        // [수정] 반환 시에도 식이 취향 UUID를 조회하여 전달해야 합니다.
         UUID dietaryUuid = null;
         if (user.getPreferredDietaryId() != null) {
             dietaryUuid = contextTagRepository.findById(user.getPreferredDietaryId())
@@ -104,7 +99,7 @@ public class UserService {
     /**
      * 특정 사용자의 게시글 조회 (커서 기반 페이징)
      */
-    public CursorResponse<MyPostResponseDto> getUserPosts(UUID targetUserId, String cursor, int size) {
+    public CursorResponse<PostResponseDto> getUserPosts(UUID targetUserId, String cursor, int size) {
         User targetUser = userRepository.findByPublicId(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -129,13 +124,18 @@ public class UserService {
             slice = postRepository.findPublicPostsByCreatorWithCursor(targetUser.getId(), cursorTime, cursorInternalId, pageRequest);
         }
 
-        List<MyPostResponseDto> dtos = slice.getContent().stream()
-                .map(post -> {
-                    String nextCursor = post.getCreatedAt().toString() + "_" + post.getPublicId();
-                    return MyPostResponseDto.from(post, nextCursor, urlPrefix);
-                }).toList();
+        // [수정 1] PostResponseDto.from 호출 시 인자를 2개만 전달합니다.
+        List<PostResponseDto> dtos = slice.getContent().stream()
+                .map(post -> PostResponseDto.from(post, urlPrefix))
+                .toList();
 
-        String nextCursor = dtos.isEmpty() ? null : dtos.get(dtos.size() - 1).cursor();
+        // [수정 2] PostResponseDto에 cursor 필드가 없으므로, 마지막 포스트의 정보를 이용해 직접 커서를 생성합니다.
+        String nextCursor = null;
+        if (slice.hasNext() && !dtos.isEmpty()) {
+            Post lastPost = slice.getContent().get(slice.getContent().size() - 1);
+            nextCursor = lastPost.getCreatedAt().toString() + "_" + lastPost.getPublicId();
+        }
+
         return new CursorResponse<>(dtos, nextCursor, slice.hasNext());
     }
 }

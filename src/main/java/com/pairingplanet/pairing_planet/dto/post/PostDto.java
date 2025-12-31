@@ -1,11 +1,13 @@
 package com.pairingplanet.pairing_planet.dto.post;
 
+import com.pairingplanet.pairing_planet.domain.entity.hashtag.Hashtag;
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
 import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
 import lombok.Builder;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Builder
@@ -23,7 +25,8 @@ public record PostDto(
         Integer savedCount,
 
         Instant createdAt,
-        String categoryTag     // [수정] PairingMap의 컨텍스트 라벨 (예: "저녁식사 · 비건")
+        String categoryTag,
+        List<String> hashtags// [수정] PairingMap의 컨텍스트 라벨 (예: "저녁식사 · 비건")
 ) {
     /**
      * Entity를 DTO로 변환합니다.
@@ -59,7 +62,10 @@ public record PostDto(
                 .commentCount(post.getCommentCount())
                 .savedCount(post.getSavedCount())
                 .createdAt(post.getCreatedAt())
-                .categoryTag(contextLabel) // "When · Dietary" 라벨 저장
+                .categoryTag(contextLabel)
+                .hashtags(post.getHashtags().stream()
+                        .map(Hashtag::getName)
+                        .toList())// "When · Dietary" 라벨 저장
                 .build();
     }
 }

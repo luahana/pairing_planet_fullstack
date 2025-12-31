@@ -3,6 +3,7 @@ package com.pairingplanet.pairing_planet.service;
 import com.pairingplanet.pairing_planet.domain.entity.context.ContextTag;
 import com.pairingplanet.pairing_planet.domain.entity.food.FoodMaster;
 import com.pairingplanet.pairing_planet.domain.entity.food.UserSuggestedFood;
+import com.pairingplanet.pairing_planet.domain.entity.hashtag.Hashtag;
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.post.*;
@@ -13,6 +14,7 @@ import com.pairingplanet.pairing_planet.dto.post.PostResponseDto;
 import com.pairingplanet.pairing_planet.repository.context.ContextTagRepository;
 import com.pairingplanet.pairing_planet.repository.food.FoodMasterRepository;
 import com.pairingplanet.pairing_planet.repository.food.UserSuggestedFoodRepository;
+import com.pairingplanet.pairing_planet.repository.hashtag.HashtagRepository;
 import com.pairingplanet.pairing_planet.repository.image.ImageRepository;
 import com.pairingplanet.pairing_planet.repository.pairing.PairingMapRepository;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
@@ -26,9 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,13 +45,10 @@ public class PostService {
     private final UserRepository userRepository;
     private final ImageRepository  imageRepository;
     private final ImageService imageService;
+    private final HashtagRepository hashtagRepository;
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
-
-    // [변경] UUID 환경에서는 DB 생성 시 ID를 알 수 없으므로,
-    // 클라이언트가 필수 값을 보내도록 강제하거나, DB에서 이름으로 'Default' 태그를 찾는 로직이 필요합니다.
-    // 여기서는 요청에 값이 없을 경우 예외를 던지도록 처리하거나, 필요 시 이름으로 조회하는 로직을 추가해야 합니다.
 
     // ==========================================
     // 1. Create Methods
@@ -61,10 +59,7 @@ public class PostService {
         if (idempotencyKey != null) {
             String redisKey = "idempotency:post:" + idempotencyKey;
             String existingPostId = redisTemplate.opsForValue().get(redisKey);
-
             if (existingPostId != null) {
-                log.info("Duplicate request detected for key: {}", idempotencyKey);
-                // 이미 저장된 포스트 정보를 조회해서 반환하거나, 중복 에러 대신 성공 응답을 보냄
                 return getPostResponseByPublicId(UUID.fromString(existingPostId));
             }
         }
@@ -76,37 +71,31 @@ public class PostService {
         boolean isCommentsEnabled = !isPrivate && (request.commentsEnabled() == null || request.commentsEnabled());
 
         DailyPost post = DailyPost.builder()
-                .creator(user) // 내부는 User(Long id) 엔티티가 연결됨 (성능 OK)
+                .creator(user)
                 .pairing(pairing)
                 .locale(user.getLocale() != null ? user.getLocale() : "en")
                 .content(request.content())
                 .isPrivate(isPrivate)
                 .commentsEnabled(isCommentsEnabled)
+                .hashtags(getOrCreateHashtags(request.hashtags())) // [추가] 유저 직접 입력 태그 연결
                 .build();
 
         Post savedPost = postRepository.save(post);
         handleImageActivation(savedPost, request.imageUrls(), true);
 
         if (idempotencyKey != null) {
-            redisTemplate.opsForValue().set(
-                    "idempotency:post:" + idempotencyKey,
-                    savedPost.getPublicId().toString(),
-                    Duration.ofHours(1)
-            );
+            redisTemplate.opsForValue().set("idempotency:post:" + idempotencyKey, savedPost.getPublicId().toString(), Duration.ofHours(1));
         }
 
         return PostResponseDto.from(savedPost, urlPrefix);
     }
 
     @Transactional
-    public PostResponseDto createDiscussionPost(UUID userId, CreatePostRequestDto request, String idempotencyKey) { // [변경] Long -> UUID
+    public PostResponseDto createDiscussionPost(UUID userId, CreatePostRequestDto request, String idempotencyKey) {
         if (idempotencyKey != null) {
             String redisKey = "idempotency:post:" + idempotencyKey;
             String existingPostId = redisTemplate.opsForValue().get(redisKey);
-
             if (existingPostId != null) {
-                log.info("Duplicate request detected for key: {}", idempotencyKey);
-                // 이미 저장된 포스트 정보를 조회해서 반환하거나, 중복 에러 대신 성공 응답을 보냄
                 return getPostResponseByPublicId(UUID.fromString(existingPostId));
             }
         }
@@ -127,31 +116,25 @@ public class PostService {
                 .commentsEnabled(isCommentsEnabled)
                 .title(request.discussionTitle())
                 .verdictEnabled(isVerdictEnabled)
+                .hashtags(getOrCreateHashtags(request.hashtags())) // [추가] 유저 직접 입력 태그 연결
                 .build();
 
         Post savedPost = postRepository.save(post);
         handleImageActivation(savedPost, request.imageUrls(), false);
 
         if (idempotencyKey != null) {
-            redisTemplate.opsForValue().set(
-                    "idempotency:post:" + idempotencyKey,
-                    savedPost.getPublicId().toString(),
-                    Duration.ofHours(1)
-            );
+            redisTemplate.opsForValue().set("idempotency:post:" + idempotencyKey, savedPost.getPublicId().toString(), Duration.ofHours(1));
         }
 
         return PostResponseDto.from(savedPost, urlPrefix);
     }
 
     @Transactional
-    public PostResponseDto createRecipePost(UUID userId, CreatePostRequestDto request, String idempotencyKey) { // [변경] Long -> UUID
+    public PostResponseDto createRecipePost(UUID userId, CreatePostRequestDto request, String idempotencyKey) {
         if (idempotencyKey != null) {
             String redisKey = "idempotency:post:" + idempotencyKey;
             String existingPostId = redisTemplate.opsForValue().get(redisKey);
-
             if (existingPostId != null) {
-                log.info("Duplicate request detected for key: {}", idempotencyKey);
-                // 이미 저장된 포스트 정보를 조회해서 반환하거나, 중복 에러 대신 성공 응답을 보냄
                 return getPostResponseByPublicId(UUID.fromString(existingPostId));
             }
         }
@@ -174,17 +157,14 @@ public class PostService {
                 .cookingTime(request.cookingTime() != null ? request.cookingTime() : 0)
                 .difficulty(request.difficulty() != null ? request.difficulty() : 1)
                 .recipeData(request.recipeData())
+                .hashtags(getOrCreateHashtags(request.hashtags())) // [추가] 유저 직접 입력 태그 연결
                 .build();
 
         Post savedPost = postRepository.save(post);
         handleImageActivation(savedPost, request.imageUrls(), true);
 
         if (idempotencyKey != null) {
-            redisTemplate.opsForValue().set(
-                    "idempotency:post:" + idempotencyKey,
-                    savedPost.getPublicId().toString(),
-                    Duration.ofHours(1)
-            );
+            redisTemplate.opsForValue().set("idempotency:post:" + idempotencyKey, savedPost.getPublicId().toString(), Duration.ofHours(1));
         }
 
         return PostResponseDto.from(savedPost, urlPrefix);
@@ -199,7 +179,6 @@ public class PostService {
         Post post = postRepository.findByPublicId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
 
-        // 작성자 검증 (User 엔티티끼리 비교 or PublicId 비교)
         if (!post.getCreator().getPublicId().equals(userId)) {
             throw new IllegalArgumentException("Unauthorized: You are not the creator of this post.");
         }
@@ -207,6 +186,11 @@ public class PostService {
         // 공통 필드 업데이트
         if (request.content() != null) post.updateContent(request.content());
         if (request.isPrivate() != null) post.setPrivate(request.isPrivate());
+
+        // [추가] 해시태그 업데이트 로직
+        if (request.hashtags() != null) {
+            post.setHashtags(getOrCreateHashtags(request.hashtags()));
+        }
 
         // 타입별 필드 업데이트
         if (post instanceof DiscussionPost discussion) {
@@ -229,8 +213,7 @@ public class PostService {
     // ==========================================
 
     @Transactional
-    public void deletePost(UUID userId, UUID postId) { // [변경] Long -> UUID
-        // [변경] findByPublicId 사용
+    public void deletePost(UUID userId, UUID postId) {
         Post post = postRepository.findByPublicId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
 
@@ -246,16 +229,11 @@ public class PostService {
     // ==========================================
 
     private User getUser(UUID userId) {
-        // [변경] findByPublicId 사용
         return userRepository.findByPublicId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    /**
-     * 포스트 생성에 필요한 PairingMap을 준비하는 공통 로직
-     */
     private PairingMap processPairingLogic(User user, CreatePostRequestDto request) {
-        // 1. Food 처리 (UUID 기반)
         FoodMaster food1 = getOrCreateFood(request.food1(), user);
         FoodMaster food2 = (request.food2() != null && request.food2().name() != null)
                 ? getOrCreateFood(request.food2(), user)
@@ -267,24 +245,27 @@ public class PostService {
                 : contextTagRepository.findFirstByTagName("none")
                 .orElseThrow(() -> new IllegalArgumentException("Default 'NONE' tag not found"));
 
-        // [수정] dietaryContextId가 없으면 tag_name="NONE" 조회
         ContextTag dietaryTag = (request.dietaryContextId() != null)
                 ? contextTagRepository.findByPublicId(request.dietaryContextId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Dietary Tag"))
                 : contextTagRepository.findFirstByTagName("none")
                 .orElseThrow(() -> new IllegalArgumentException("Default 'NONE' tag not found"));
-        // 3. PairingMap 찾기 또는 생성
+
         return getOrCreatePairing(food1, food2, whenTag, dietaryTag);
     }
 
     private FoodMaster getOrCreateFood(FoodRequestDto foodReq, User user) {
-        // [변경] id가 있다면 UUID일 것이므로 findByPublicId 사용
         if (foodReq.id() != null) {
             return foodMasterRepository.findByPublicId(foodReq.id())
                     .orElseThrow(() -> new IllegalArgumentException("Food not found: " + foodReq.id()));
         }
 
         String locale = foodReq.localeCode() != null ? foodReq.localeCode() : "en";
+
+        Optional<FoodMaster> existingFood = foodMasterRepository.findByNameAndLocale(locale, foodReq.name());
+        if (existingFood.isPresent()) {
+            return existingFood.get(); // 이미 있다면 해당 엔티티 반환
+        }
 
         UserSuggestedFood suggested = UserSuggestedFood.builder()
                 .suggestedName(foodReq.name())
@@ -294,26 +275,43 @@ public class PostService {
                 .build();
         userSuggestedFoodRepository.save(suggested);
 
-        // 3. 포스트 등록을 위해 임시 FoodMaster 생성
-        // DB에서 category_id의 NOT NULL이 제거되었으므로, category를 세팅하지 않아도 저장 가능합니다.
         FoodMaster tempFood = FoodMaster.builder()
                 .name(Map.of(locale, foodReq.name()))
-                .isVerified(false) // 관리자 승인 전이므로 false
+                .isVerified(false)
                 .build();
 
         return foodMasterRepository.save(tempFood);
     }
 
     private PairingMap getOrCreatePairing(FoodMaster f1, FoodMaster f2, ContextTag when, ContextTag dietary) {
-        // Pairing 조회 로직은 내부적으로 Join이 많으므로 성능을 위해 내부 ID(Long)를 사용해도 무방
-        // 이미 위에서 f1, f2, when, dietary 엔티티를 찾아왔으므로 getId() (Long) 호출 가능
-        Long food2Id = (f2 != null) ? f2.getId() : null;
+        Long id1 = f1.getId();
+        Long id2 = (f2 != null) ? f2.getId() : null;
 
-        return pairingMapRepository.findExistingPairing(f1.getId(), food2Id, when.getId(), dietary.getId())
+        // 1. 실제 저장에 사용할 변수를 미리 선언 (람다 밖에서 결정)
+        final FoodMaster finalF1;
+        final FoodMaster finalF2;
+        final Long finalId1;
+        final Long finalId2;
+
+        // 2. 조건에 따라 단 한 번만 값을 할당 (Effectively Final 상태 유지)
+        if (id2 != null && id1 > id2) {
+            finalF1 = f2;
+            finalF2 = f1;
+            finalId1 = id2;
+            finalId2 = id1;
+        } else {
+            finalF1 = f1;
+            finalF2 = f2;
+            finalId1 = id1;
+            finalId2 = id2;
+        }
+
+        // 3. 이제 람다 내부에서 final 변수들을 안전하게 사용 가능
+        return pairingMapRepository.findExistingPairing(finalId1, finalId2, when.getId(), dietary.getId())
                 .orElseGet(() -> pairingMapRepository.save(
                         PairingMap.builder()
-                                .food1(f1)
-                                .food2(f2)
+                                .food1(finalF1)
+                                .food2(finalF2)
                                 .whenContext(when)
                                 .dietaryContext(dietary)
                                 .build()
@@ -325,7 +323,7 @@ public class PostService {
             if (isRequired) {
                 throw new IllegalArgumentException("Image is required for posting.");
             }
-            return; // 필수가 아니면 그냥 종료 (Discussion 등)
+            return;
         }
 
         imageService.activateImages(imageUrls);
@@ -349,5 +347,25 @@ public class PostService {
         Post post = postRepository.findByPublicId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         return PostResponseDto.from(post, urlPrefix);
+    }
+
+    /**
+     * 유저가 입력한 문자열 태그를 Hashtag 엔티티 리스트로 변환 (중복 처리 포함)
+     */
+    private List<Hashtag> getOrCreateHashtags(List<String> names) {
+        if (names == null || names.isEmpty()) return new ArrayList<>();
+
+        // 1. 공백 제거 및 중복 입력 방지
+        List<String> cleanNames = names.stream()
+                .map(String::trim)
+                .filter(name -> !name.isEmpty())
+                .distinct()
+                .toList();
+
+        // 2. DB 조회 또는 생성하여 반환
+        return cleanNames.stream()
+                .map(name -> hashtagRepository.findByName(name)
+                        .orElseGet(() -> hashtagRepository.save(Hashtag.builder().name(name).build())))
+                .collect(Collectors.toCollection(ArrayList::new)); // 변경 가능한 리스트로 반환
     }
 }

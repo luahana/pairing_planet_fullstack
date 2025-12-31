@@ -11,6 +11,7 @@ public record SocialLoginRequestDto(
         String email,
         String username,
         String profileImageUrl,
+        @NotBlank String locale,
         @NotBlank String socialAccessToken, // 암호화되어 저장될 값
         String socialRefreshToken
 ) {}

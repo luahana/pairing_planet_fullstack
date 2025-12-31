@@ -179,17 +179,26 @@ public class SearchService {
         User user = userRepository.findByPublicId(userPublicId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // 유저의 선호 언어 정보를 가져옵니다.
+        String userLocale = user.getLocale();
+
         return searchHistoryRepository.findTop10ByUserIdOrderByUpdatedAtDesc(user.getId())
                 .stream()
-                .map(sh -> new SearchHistoryDto(
-                        sh.getPublicId(),
-                        sh.getPairing().getPublicId(),
-                        sh.getPairing().getFood1().getNameByLocale("ko"),
-                        sh.getPairing().getFood2() != null ? sh.getPairing().getFood2().getNameByLocale("ko") : null,
-                        sh.getPairing().getWhenContext() != null ? sh.getPairing().getWhenContext().getDisplayName() : null,
-                        sh.getPairing().getDietaryContext() != null ? sh.getPairing().getDietaryContext().getDisplayName() : null,
-                        sh.getUpdatedAt()
-                )).toList();
+                .map(sh -> {
+                    PairingMap pairing = sh.getPairing();
+                    return new SearchHistoryDto(
+                            sh.getPublicId(),
+                            pairing.getPublicId(),
+                            // [수정] JSONB 필드에서 유저 언어에 맞는 이름을 추출합니다.
+                            pairing.getFood1().getNameByLocale(userLocale),
+                            pairing.getFood2() != null ? pairing.getFood2().getNameByLocale(userLocale) : null,
+                            pairing.getWhenContext() != null ?
+                                    pairing.getWhenContext().getDisplayNameByLocale(userLocale) : null,
+                            pairing.getDietaryContext() != null ?
+                                    pairing.getDietaryContext().getDisplayNameByLocale(userLocale) : null,
+                            sh.getUpdatedAt()
+                    );
+                }).toList();
     }
 
     /**

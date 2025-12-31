@@ -46,14 +46,12 @@ public class FoodMaster extends BaseEntity {
             return "Unknown Food";
         }
 
-        // 1. 요청된 로케일(예: "ko")이 존재하는지 확인
         if (name.containsKey(locale)) {
             return name.get(locale);
         }
 
-        // 2. 요청한 언어가 없을 경우 기본값으로 영어("en") 반환
-        if (name.containsKey("en")) {
-            return name.get("en");
+        if (name.containsKey("en-US")) {
+            return name.get("en-US");
         }
 
         // 3. 영어도 없을 경우 맵에 저장된 첫 번째 이름을 반환
