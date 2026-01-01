@@ -40,14 +40,6 @@ public class PostController {
         return ResponseEntity.ok(postService.createDiscussionPost(userId, request, idempotencyKey));
     }
 
-    @PostMapping("/recipes")
-    public ResponseEntity<PostResponseDto> createRecipePost(
-            @AuthenticationPrincipal UUID userId,
-            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
-            @Valid @RequestBody CreatePostRequestDto request
-    ) {
-        return ResponseEntity.ok(postService.createRecipePost(userId, request, idempotencyKey));
-    }
 
     // ==========================================
     // 2. Update & Delete (통합)

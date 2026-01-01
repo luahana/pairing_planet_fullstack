@@ -7,6 +7,8 @@ import com.pairingplanet.pairing_planet.domain.entity.hashtag.Hashtag;
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.post.*;
+import com.pairingplanet.pairing_planet.domain.entity.post.daily_log.DailyPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.discussion.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.food.FoodRequestDto;
 import com.pairingplanet.pairing_planet.dto.post.CreatePostRequestDto;
@@ -128,48 +130,6 @@ public class PostService {
 
         return PostResponseDto.from(savedPost, urlPrefix);
     }
-
-    @Transactional
-    public PostResponseDto createRecipePost(UUID userId, CreatePostRequestDto request, String idempotencyKey) {
-        if (idempotencyKey != null) {
-            String redisKey = "idempotency:post:" + idempotencyKey;
-            String existingPostId = redisTemplate.opsForValue().get(redisKey);
-            if (existingPostId != null) {
-                return getPostResponseByPublicId(UUID.fromString(existingPostId));
-            }
-        }
-
-        User user = getUser(userId);
-        PairingMap pairing = processPairingLogic(user, request);
-
-        boolean isPrivate = Boolean.TRUE.equals(request.isPrivate());
-        boolean isCommentsEnabled = !isPrivate && (request.commentsEnabled() == null || request.commentsEnabled());
-
-        RecipePost post = RecipePost.builder()
-                .creator(user)
-                .pairing(pairing)
-                .locale(user.getLocale() != null ? user.getLocale() : "en")
-                .content(request.content())
-                .isPrivate(isPrivate)
-                .commentsEnabled(isCommentsEnabled)
-                .title(request.recipeTitle())
-                .ingredients(request.ingredients())
-                .cookingTime(request.cookingTime() != null ? request.cookingTime() : 0)
-                .difficulty(request.difficulty() != null ? request.difficulty() : 1)
-                .recipeData(request.recipeData())
-                .hashtags(getOrCreateHashtags(request.hashtags())) // [추가] 유저 직접 입력 태그 연결
-                .build();
-
-        Post savedPost = postRepository.save(post);
-        handleImageActivation(savedPost, request.imageUrls(), true);
-
-        if (idempotencyKey != null) {
-            redisTemplate.opsForValue().set("idempotency:post:" + idempotencyKey, savedPost.getPublicId().toString(), Duration.ofHours(1));
-        }
-
-        return PostResponseDto.from(savedPost, urlPrefix);
-    }
-
     // ==========================================
     // 2. Update Method
     // ==========================================
@@ -196,13 +156,6 @@ public class PostService {
         if (post instanceof DiscussionPost discussion) {
             if (request.discussionTitle() != null) discussion.setTitle(request.discussionTitle());
             if (request.verdictEnabled() != null) discussion.setVerdictEnabled(request.verdictEnabled());
-        }
-        else if (post instanceof RecipePost recipe) {
-            if (request.recipeTitle() != null) recipe.setTitle(request.recipeTitle());
-            if (request.ingredients() != null) recipe.setIngredients(request.ingredients());
-            if (request.cookingTime() != null) recipe.setCookingTime(request.cookingTime());
-            if (request.difficulty() != null) recipe.setDifficulty(request.difficulty());
-            if (request.recipeData() != null) recipe.setRecipeData(request.recipeData());
         }
 
         return PostResponseDto.from(post, urlPrefix);

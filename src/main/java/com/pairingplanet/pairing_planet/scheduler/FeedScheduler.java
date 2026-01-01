@@ -1,6 +1,9 @@
 package com.pairingplanet.pairing_planet.scheduler;
 
 import com.pairingplanet.pairing_planet.domain.entity.post.*;
+import com.pairingplanet.pairing_planet.domain.entity.post.daily_log.DailyPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.discussion.DiscussionPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.recipe.RecipePost;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

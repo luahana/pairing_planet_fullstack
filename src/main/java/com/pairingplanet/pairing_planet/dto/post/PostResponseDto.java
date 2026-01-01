@@ -2,10 +2,9 @@ package com.pairingplanet.pairing_planet.dto.post;
 
 import com.pairingplanet.pairing_planet.domain.entity.hashtag.Hashtag;
 import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
-import com.pairingplanet.pairing_planet.domain.entity.post.DailyPost;
-import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.daily_log.DailyPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.discussion.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
-import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -81,12 +80,6 @@ public record PostResponseDto(
             builder.type("DISCUSSION")
                     .discussionTitle(discussion.getTitle())
                     .verdictEnabled(discussion.isVerdictEnabled());
-        } else if (post instanceof RecipePost recipe) {
-            builder.type("RECIPE")
-                    .recipeTitle(recipe.getTitle())
-                    .ingredients(recipe.getIngredients())
-                    .cookingTime(recipe.getCookingTime())
-                    .difficulty(recipe.getDifficulty());
         }
 
         return builder.build();

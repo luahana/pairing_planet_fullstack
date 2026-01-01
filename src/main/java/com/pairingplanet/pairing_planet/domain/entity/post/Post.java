@@ -21,9 +21,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "posts")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // [핵심] 단일 테이블 전략
+@Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "dtype")
 @Getter
+@Setter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -35,6 +36,9 @@ public class Post extends BaseEntity {
 
     @Column(nullable = false)
     private String locale;
+
+    @Column(name = "title")
+    private String title;
 
     @Column(columnDefinition = "TEXT")
     private String content;

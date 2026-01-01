@@ -3,7 +3,7 @@ package com.pairingplanet.pairing_planet.service;
 import com.pairingplanet.pairing_planet.domain.entity.comment.Comment;
 import com.pairingplanet.pairing_planet.domain.entity.context.ContextTag;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
-import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.discussion.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.domain.entity.verdict.PostVerdict;
 import com.pairingplanet.pairing_planet.domain.entity.verdict.PostVerdictId;

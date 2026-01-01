@@ -38,7 +38,6 @@ public class InternalBotController {
         return switch (type.toLowerCase()) {
             case "daily" -> ResponseEntity.ok(postService.createDailyPost(botId, request, null));
             case "discussion" -> ResponseEntity.ok(postService.createDiscussionPost(botId, request, null));
-            case "recipe" -> ResponseEntity.ok(postService.createRecipePost(botId, request, null));
             default -> ResponseEntity.badRequest().build();
         };
     }

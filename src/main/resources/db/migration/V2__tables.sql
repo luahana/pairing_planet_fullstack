@@ -285,11 +285,6 @@ CREATE TABLE IF NOT EXISTS posts (
     saved_count     INT DEFAULT 0,
     comment_count   INT DEFAULT 0,
 
-    cooking_time INTEGER,
-    difficulty INTEGER, -- [수정] 단순 INTEGER 타입 선언만 해야 합니다.
-    ingredients TEXT,
-    recipe_data JSONB,
-
     is_private       BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted       BOOLEAN NOT NULL DEFAULT FALSE,
 
@@ -316,7 +311,6 @@ CREATE TABLE IF NOT EXISTS posts (
     ) STORED,
 
     creator_id BIGINT NOT NULL REFERENCES users(id),
-    verdict_enabled BOOLEAN NOT NULL DEFAULT TRUE,
     comments_enabled BOOLEAN NOT NULL DEFAULT TRUE,
 
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -327,7 +321,78 @@ CREATE INDEX IF NOT EXISTS idx_posts_creator_created ON posts (creator_id, creat
 CREATE INDEX IF NOT EXISTS idx_posts_locale_created_at ON posts (locale, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_locale_controversy ON posts (locale, controversy_score DESC);
 CREATE INDEX IF NOT EXISTS idx_post_locale_popularity ON posts (locale, popularity_score DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_recipe_data ON posts USING GIN (recipe_data);
+
+CREATE TABLE IF NOT EXISTS daily_posts (
+    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS recipe_posts (
+    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS discussion_posts (
+    verdict_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE
+);
+
+-- 1. 레시피 상세 테이블 (버전별 불변 데이터 저장)
+CREATE TABLE IF NOT EXISTS recipes (
+    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    version INTEGER NOT NULL DEFAULT 1,
+    root_recipe_id BIGINT REFERENCES posts(id),   -- 오리지널 레시피 (Direct Child 관리용)
+    parent_recipe_id BIGINT REFERENCES posts(id), -- 직전 부모 레시피 (계보 기록용)
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    cooking_time INTEGER, -- 분 단위
+    difficulty VARCHAR(20), -- EASY, NORMAL, HARD
+    version_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (post_id, version) -- 복합 PK로 버전 관리
+);
+
+-- 2. 레시피 재료 테이블
+CREATE TABLE IF NOT EXISTS recipe_ingredients (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    version INTEGER NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    amount VARCHAR(50),
+    type VARCHAR(20), -- MAIN, SEASONING 등
+    display_order INTEGER DEFAULT 0,
+    FOREIGN KEY (post_id, version) REFERENCES recipes(post_id, version) ON DELETE CASCADE
+);
+
+-- 3. 레시피 조리 단계 테이블
+CREATE TABLE IF NOT EXISTS recipe_steps (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    version INTEGER NOT NULL,
+    step_number INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    image_url TEXT,
+    FOREIGN KEY (post_id, version) REFERENCES recipes(post_id, version) ON DELETE CASCADE
+);
+
+-- 4. 레시피 수정 이력 로그
+CREATE TABLE IF NOT EXISTS recipe_edit_logs (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    version INTEGER NOT NULL,
+    editor_id BIGINT NOT NULL REFERENCES users(id),
+    edit_summary TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id, version) REFERENCES recipes(post_id, version)
+);
+
+-- 5. 레시피 로그 (인증샷/후기)
+CREATE TABLE IF NOT EXISTS recipe_logs (
+    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE,
+    target_recipe_id BIGINT NOT NULL REFERENCES posts(id),
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5)
+);
+
+-- 조회 성능을 위한 인덱스
+CREATE INDEX IF NOT EXISTS idx_recipes_root ON recipes(root_recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_logs_target ON recipe_logs(target_recipe_id);
 
 CREATE TABLE IF NOT EXISTS post_verdicts (
                                              user_id BIGINT REFERENCES users(id),

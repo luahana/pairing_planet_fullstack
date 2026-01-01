@@ -3,8 +3,9 @@ package com.pairingplanet.pairing_planet.dto.post;
 import com.pairingplanet.pairing_planet.domain.entity.hashtag.Hashtag;
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
-import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
-import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
+
+import com.pairingplanet.pairing_planet.domain.entity.post.discussion.DiscussionPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.recipe.RecipePost;
 import lombok.Builder;
 import java.time.Instant;
 import java.util.List;

@@ -1,12 +1,13 @@
-package com.pairingplanet.pairing_planet.domain.entity.post;
+package com.pairingplanet.pairing_planet.domain.entity.post.discussion;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
+import com.pairingplanet.pairing_planet.domain.entity.post.Post;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
+@Table(name = "discussion_posts") // SQL 테이블 이름과 일치시킵니다.
+@PrimaryKeyJoinColumn(name = "post_id")
 @DiscriminatorValue("DISCUSSION")
 @Getter
 @Setter
@@ -14,8 +15,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA 필수
 @AllArgsConstructor
 public class DiscussionPost extends Post {
-    @Column(name = "title")
-    private String title;
 
     @Column(name = "verdict_enabled")
     private boolean verdictEnabled;

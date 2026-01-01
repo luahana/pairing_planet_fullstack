@@ -1,9 +1,9 @@
 package com.pairingplanet.pairing_planet.service;
 
-import com.pairingplanet.pairing_planet.domain.entity.post.DailyPost;
-import com.pairingplanet.pairing_planet.domain.entity.post.DiscussionPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.daily_log.DailyPost;
+import com.pairingplanet.pairing_planet.domain.entity.post.discussion.DiscussionPost;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
-import com.pairingplanet.pairing_planet.domain.entity.post.RecipePost;
+import com.pairingplanet.pairing_planet.domain.entity.post.recipe.RecipePost;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.post.CursorResponse; // [변경]
 import com.pairingplanet.pairing_planet.dto.post.PostResponseDto;
