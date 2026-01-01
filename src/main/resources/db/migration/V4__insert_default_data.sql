@@ -15,7 +15,7 @@ SELECT id INTO v_diet_id FROM context_dimensions WHERE name = 'dietary';
 -- [WHEN] 상황 데이터
 INSERT INTO context_tags (dimension_id, tag_name, display_names, display_orders)
 VALUES
-    (v_when_id, 'SIT_DAILY', '{"ko-KR": "🏠 일상", "en-US": "🏠 Daily", "ja-JP": "🏠 日常"}'::jsonb,
+    (v_when_id, 'none', '{"ko-KR": "🏠 일상", "en-US": "🏠 Daily", "ja-JP": "🏠 日常"}'::jsonb,
      '{"ko-KR": 0, "en-US": 0, "ja-JP": 0}'::jsonb),
     (v_when_id, 'SIT_SOLO', '{"ko-KR": "👤 혼밥", "en-US": "👤 Solo Dining", "ja-JP": "👤 おひとりさま"}'::jsonb,
      '{"ko-KR": 1, "en-US": 4, "ja-JP": 1}'::jsonb),
@@ -31,7 +31,7 @@ VALUES
      '{"ko-KR": 6, "en-US": 3, "ja-JP": 6}'::jsonb),
 
     -- [DIETARY] 식단 데이터 (일본어 정정 반영)
-    (v_diet_id, 'DIET_GENERAL', '{"ko-KR": "🍽️ 일반식", "en-US": "🍽️ Regular Diet", "ja-JP": "🍽️ 一般食"}'::jsonb,
+    (v_diet_id, 'none', '{"ko-KR": "🍽️ 일반식", "en-US": "🍽️ Regular Diet", "ja-JP": "🍽️ 一般食"}'::jsonb,
      '{"ko-KR": 0, "en-US": 0, "ja-JP": 0}'::jsonb),
     (v_diet_id, 'DIET_HIGH_PROTEIN', '{"ko-KR": "💪 고단백", "en-US": "💪 High Protein", "ja-JP": "💪 高タンパク"}'::jsonb,
      '{"ko-KR": 1, "en-US": 1, "ja-JP": 2}'::jsonb),

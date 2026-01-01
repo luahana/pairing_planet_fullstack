@@ -7,12 +7,14 @@ import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "recipe_posts")
 @PrimaryKeyJoinColumn(name = "post_id")
 @DiscriminatorValue("RECIPE")
 @Getter @Setter
+@SuperBuilder
 public class RecipePost extends Post {
     // 공통 필드(publicId, creator 등)는 Post에서 상속받습니다.
 }

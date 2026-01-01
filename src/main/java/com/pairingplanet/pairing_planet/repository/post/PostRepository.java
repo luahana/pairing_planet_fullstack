@@ -16,7 +16,7 @@ import java.util.UUID;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     @EntityGraph(attributePaths = {
-            "pairing", "images", "hashtags" // [추가] 유저 입력 태그도 함께 가져오기
+            "pairing"
     })
     Optional<Post> findByPublicId(UUID publicId);
 
@@ -154,7 +154,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // ID 기반 벌크 페치 (Redis에서 꺼내온 ID 목록용)
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {
             "pairing", "pairing.food1", "pairing.food2",
-            "pairing.whenContext", "pairing.dietaryContext", "images"
+            "pairing.whenContext", "pairing.dietaryContext"
     })
     List<Post> findAllWithDetailsByIdIn(List<Long> ids);
 

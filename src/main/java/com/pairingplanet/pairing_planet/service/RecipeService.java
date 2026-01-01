@@ -1,12 +1,13 @@
 package com.pairingplanet.pairing_planet.service;
 
+import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.post.Post;
 import com.pairingplanet.pairing_planet.domain.entity.post.recipe.*;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.domain.enums.IngredientType;
 import com.pairingplanet.pairing_planet.dto.post.recipe.IngredientRequestDto;
 import com.pairingplanet.pairing_planet.dto.post.recipe.RecipeDetailResponseDto;
-import com.pairingplanet.pairing_planet.dto.post.recipe.RecipeRequestDto;
+import com.pairingplanet.pairing_planet.dto.post.recipe.CreateRecipeRequestDto;
 import com.pairingplanet.pairing_planet.dto.post.recipe.StepRequestDto;
 import com.pairingplanet.pairing_planet.repository.post.PostRepository;
 import com.pairingplanet.pairing_planet.repository.post.recipe.RecipeEditLogRepository;
@@ -15,6 +16,7 @@ import com.pairingplanet.pairing_planet.repository.post.recipe.RecipeRepository;
 import com.pairingplanet.pairing_planet.repository.post.recipe.RecipeStepRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,17 +33,33 @@ public class RecipeService {
     private final RecipeStepRepository stepRepository;
     private final RecipeEditLogRepository editLogRepository;
     private final UserRepository userRepository;
+    private final PostManager postManager;
+
+    @Value("${file.upload.url-prefix}")
+    private String urlPrefix;
 
     // 1. 레시피 생성 (신규 또는 변형)
-    public RecipeDetailResponseDto saveRecipe(UUID userPublicId, RecipeRequestDto req, UUID sourcePublicId) {
+    public RecipeDetailResponseDto saveRecipe(UUID userPublicId, CreateRecipeRequestDto req, UUID sourcePublicId) {
         User user = userRepository.findByPublicId(userPublicId).orElseThrow();
 
-        // Post(게시글) 엔티티 생성
-        RecipePost post = new RecipePost();
-        post.setCreator(user);
-        post.setLocale(user.getLocale()); // 시스템 로케일 반영
-        post.setContent(req.description());
-        postRepository.save(post);
+        PairingMap pairing = postManager.processPairingLogic(user, req.food1(), req.food2(),
+                req.whenContextId(), req.dietaryContextId());
+
+        boolean isPrivate = Boolean.TRUE.equals(req.isPrivate());
+        boolean isCommentsEnabled = !isPrivate && (req.commentsEnabled() == null || req.commentsEnabled());
+
+        RecipePost post = RecipePost.builder()
+                .creator(user)
+                .pairing(pairing)
+                .locale(user.getLocale() != null ? user.getLocale() : "en")
+                .content(req.description())
+                .isPrivate(isPrivate)
+                .commentsEnabled(isCommentsEnabled)
+                .hashtags(postManager.getOrCreateHashtags(req.hashtags())) // [추가] 유저 직접 입력 태그 연결
+                .build();
+
+        Post savedPost = postRepository.save(post);
+        postManager.handleImageActivation(savedPost, req.imageUrls(), true, urlPrefix);
 
         Long rootId = null;
         Long parentId = null;
@@ -61,7 +79,7 @@ public class RecipeService {
     }
 
     // 2. 새로운 버전 추가 (수정 시 호출)
-    public void createNewVersion(UUID postPublicId, UUID userPublicId, RecipeRequestDto req) {
+    public void createNewVersion(UUID postPublicId, UUID userPublicId, CreateRecipeRequestDto req) {
         Post post = postRepository.findByPublicId(postPublicId).orElseThrow();
         User editor = userRepository.findByPublicId(userPublicId).orElseThrow();
 
@@ -73,7 +91,7 @@ public class RecipeService {
                 latestRecipe.getParentRecipeId(), req, editor.getId());
     }
 
-    private void saveVersion(Long postId, int version, Long rootId, Long parentId, RecipeRequestDto req, Long editorId) {
+    private void saveVersion(Long postId, int version, Long rootId, Long parentId, CreateRecipeRequestDto req, Long editorId) {
         // Recipe 정보 저장
         Recipe recipe = Recipe.builder()
                 .postId(postId)

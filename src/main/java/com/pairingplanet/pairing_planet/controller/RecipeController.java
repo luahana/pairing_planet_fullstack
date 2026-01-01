@@ -1,7 +1,7 @@
 package com.pairingplanet.pairing_planet.controller;
 
 import com.pairingplanet.pairing_planet.dto.post.recipe.RecipeDetailResponseDto;
-import com.pairingplanet.pairing_planet.dto.post.recipe.RecipeRequestDto;
+import com.pairingplanet.pairing_planet.dto.post.recipe.CreateRecipeRequestDto;
 import com.pairingplanet.pairing_planet.service.RecipeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class RecipeController {
     @PostMapping
     public ResponseEntity<RecipeDetailResponseDto> create(
             @AuthenticationPrincipal UUID userId,
-            @RequestBody @Valid RecipeRequestDto request) {
+            @RequestBody @Valid CreateRecipeRequestDto request) {
         return ResponseEntity.ok(recipeService.saveRecipe(userId, request, null));
     }
 
@@ -31,7 +31,7 @@ public class RecipeController {
     public ResponseEntity<RecipeDetailResponseDto> derive(
             @AuthenticationPrincipal UUID userId,
             @PathVariable UUID sourcePublicId,
-            @RequestBody @Valid RecipeRequestDto request) {
+            @RequestBody @Valid CreateRecipeRequestDto request) {
         return ResponseEntity.ok(recipeService.saveRecipe(userId, request, sourcePublicId));
     }
 
@@ -40,7 +40,7 @@ public class RecipeController {
     public ResponseEntity<Void> addNewVersion(
             @PathVariable UUID publicId,
             @AuthenticationPrincipal UUID userId,
-            @RequestBody @Valid RecipeRequestDto request) {
+            @RequestBody @Valid CreateRecipeRequestDto request) {
         recipeService.createNewVersion(publicId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

@@ -7,16 +7,18 @@ import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenerationTime;
+import org.hibernate.annotations.*;
 import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -44,6 +46,7 @@ public class Post extends BaseEntity {
     private String content;
 
     @Builder.Default
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
@@ -98,9 +101,10 @@ public class Post extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
     @Builder.Default
-    private List<Hashtag> hashtags = new ArrayList<>();
+    @BatchSize(size = 100)
+    private Set<Hashtag> hashtags = new LinkedHashSet<>();
 
-    public void setHashtags(List<Hashtag> hashtags) {
+    public void setHashtags(Set<Hashtag> hashtags) {
         this.hashtags = hashtags;
     }
 

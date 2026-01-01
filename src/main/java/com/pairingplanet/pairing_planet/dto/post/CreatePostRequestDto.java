@@ -28,12 +28,5 @@ public record CreatePostRequestDto(
 
         // --- [discussion] 리뷰 전용 ---
         String discussionTitle,      // 리뷰 제목
-        Boolean verdictEnabled,  // 판결 기능 여부
-
-        // --- [Recipe] 레시피 전용 ---
-        String recipeTitle,             // 레시피 제목
-        String ingredients,             // 텍스트 재료 목록
-        Integer cookingTime,            // 조리 시간(분)
-        Integer difficulty,             // 난이도 (1:쉬움 ~ 3:어려움)
-        Map<String, Object> recipeData  // 상세 단계 JSON (Step, Timer 등)
+        Boolean verdictEnabled  // 판결 기능 여부
 ) {}
