@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
 import '../../../domain/entities/recipe/recipe_summary.dart';
 
 class RecipeListNotifier extends AsyncNotifier<List<RecipeSummary>> {

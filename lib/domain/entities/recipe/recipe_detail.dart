@@ -1,7 +1,7 @@
 import 'ingredient.dart';
 import 'recipe_step.dart';
 import 'recipe_summary.dart';
-import 'log_post_summary.dart';
+import '../log_post/log_post_summary.dart';
 
 class RecipeDetail {
   final String id;

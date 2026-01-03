@@ -1,4 +1,4 @@
-import 'package:pairing_planet2_frontend/domain/entities/ingredient.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/ingredient.dart';
 
 class IngredientDto {
   final String name;

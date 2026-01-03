@@ -1,4 +1,4 @@
-import 'package:pairing_planet2_frontend/domain/entities/recipe_step.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_step.dart';
 
 class StepDto {
   final int stepNumber;

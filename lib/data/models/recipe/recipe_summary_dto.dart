@@ -1,3 +1,5 @@
+import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
+
 class RecipeSummaryDto {
   final String publicId;
   final String title;
