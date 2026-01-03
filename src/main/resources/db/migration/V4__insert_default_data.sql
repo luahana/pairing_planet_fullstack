@@ -1,63 +1,63 @@
--- 1. 디멘션 생성
-INSERT INTO context_dimensions (name)
-VALUES ('when'), ('dietary')
-    ON CONFLICT (name) DO NOTHING;
-
--- 2. 통합 태그 데이터 삽입 (일본어 번역 및 이모지/순서 최적화)
-DO $$
-DECLARE
-v_when_id BIGINT;
-    v_diet_id BIGINT;
-BEGIN
-SELECT id INTO v_when_id FROM context_dimensions WHERE name = 'when';
-SELECT id INTO v_diet_id FROM context_dimensions WHERE name = 'dietary';
-
--- [WHEN] 상황 데이터
-INSERT INTO context_tags (dimension_id, tag_name, display_names, display_orders)
-VALUES
-    (v_when_id, 'none', '{"ko-KR": "🏠 일상", "en-US": "🏠 Daily", "ja-JP": "🏠 日常"}'::jsonb,
-     '{"ko-KR": 0, "en-US": 0, "ja-JP": 0}'::jsonb),
-    (v_when_id, 'SIT_SOLO', '{"ko-KR": "👤 혼밥", "en-US": "👤 Solo Dining", "ja-JP": "👤 おひとりさま"}'::jsonb,
-     '{"ko-KR": 1, "en-US": 4, "ja-JP": 1}'::jsonb),
-    (v_when_id, 'SIT_LATE_NIGHT', '{"ko-KR": "🌙 야식", "en-US": "🌙 Late-night", "ja-JP": "🌙 夜食"}'::jsonb,
-     '{"ko-KR": 2, "en-US": 6, "ja-JP": 5}'::jsonb),
-    (v_when_id, 'SIT_BUDGET', '{"ko-KR": "💡 갓성비", "en-US": "💡 Budget", "ja-JP": "💡 コスパ"}'::jsonb,
-     '{"ko-KR": 3, "en-US": 5, "ja-JP": 4}'::jsonb),
-    (v_when_id, 'SIT_MEAL_PREP', '{"ko-KR": "🍱 밀프랩·도시락", "en-US": "🍱 Meal Prep", "ja-JP": "🍱 作り置き·弁当"}'::jsonb,
-     '{"ko-KR": 4, "en-US": 1, "ja-JP": 3}'::jsonb),
-    (v_when_id, 'SIT_DATE', '{"ko-KR": "🕯️ 데이트", "en-US": "🕯️ Date Night", "ja-JP": "🕯️ デート"}'::jsonb,
-     '{"ko-KR": 5, "en-US": 2, "ja-JP": 2}'::jsonb),
-    (v_when_id, 'SIT_PARTY', '{"ko-KR": "🥳 모임·파티", "en-US": "🥳 Party·Social", "ja-JP": "🥳 集まり·パーティ"}'::jsonb,
-     '{"ko-KR": 6, "en-US": 3, "ja-JP": 6}'::jsonb),
-
-    -- [DIETARY] 식단 데이터 (일본어 정정 반영)
-    (v_diet_id, 'none', '{"ko-KR": "🍽️ 일반식", "en-US": "🍽️ Regular Diet", "ja-JP": "🍽️ 一般食"}'::jsonb,
-     '{"ko-KR": 0, "en-US": 0, "ja-JP": 0}'::jsonb),
-    (v_diet_id, 'DIET_HIGH_PROTEIN', '{"ko-KR": "💪 고단백", "en-US": "💪 High Protein", "ja-JP": "💪 高タンパク"}'::jsonb,
-     '{"ko-KR": 1, "en-US": 1, "ja-JP": 2}'::jsonb),
-    -- [수정] ja-JP: 🥗 로카보 -> 🥗 ロカボ
-    (v_diet_id, 'DIET_LOW_CARB_EASY', '{"ko-KR": "🥗 저당식", "en-US": "🥗 Low Carb", "ja-JP": "🥗 ロカボ"}'::jsonb,
-     '{"ko-KR": 2, "en-US": 4, "ja-JP": 1}'::jsonb),
-    -- [수정] ja-JP: 🥑 糖질제한 -> 🥑 糖質制限
-    (v_diet_id, 'DIET_LOW_CARB_STRICT', '{"ko-KR": "🥑 저탄고지", "en-US": "🥑 Keto", "ja-JP": "🥑 糖質制限"}'::jsonb,
-     '{"ko-KR": 3, "en-US": 5, "ja-JP": 3}'::jsonb),
-    -- [수정] ja-JP: 🌿 유연한 채식 -> 🌿 ゆるベジ
-    (v_diet_id, 'DIET_VEGAN_FLEX', '{"ko-KR": "🌿 채식", "en-US": "🌿 Plant-based", "ja-JP": "🌿 ゆるベジ"}'::jsonb,
-     '{"ko-KR": 4, "en-US": 2, "ja-JP": 4}'::jsonb),
-    -- [수정] ja-JP: 🌽 글루텐프리 -> 🌽 グルテンフリー
-    (v_diet_id, 'DIET_GLUTEN_FREE', '{"ko-KR": "🌽 글루텐프리", "en-US": "🌽 Gluten-Free", "ja-JP": "🌽 グルテンフリー"}'::jsonb,
-     '{"ko-KR": 5, "en-US": 3, "ja-JP": 8}'::jsonb),
-    -- [수정] ja-JP: ✨ 무첨가/자연식 -> ✨ 無添加/自然食
-    (v_diet_id, 'DIET_CLEAN_BASIC', '{"ko-KR": "✨ 클린식", "en-US": "✨ Clean Eating", "ja-JP": "✨ 無添加/自然食"}'::jsonb,
-     '{"ko-KR": 6, "en-US": 6, "ja-JP": 5}'::jsonb),
-    -- [수정] ja-JP: 🍎 정진요리 -> 🍎 精進料理
-    (v_diet_id, 'DIET_CLEAN_STRICT', '{"ko-KR": "🍎 자연식", "en-US": "🍎 Paleo", "ja-JP": "🍎 精進料理"}'::jsonb,
-     '{"ko-KR": 7, "en-US": 8, "ja-JP": 6}'::jsonb),
-    -- [수정] ja-JP: 🥦 비건 -> 🥦 ヴィーガン
-    (v_diet_id, 'DIET_VEGAN_STRICT', '{"ko-KR": "🥦 비건", "en-US": "🥦 Vegan", "ja-JP": "🥦 ヴィーガン"}'::jsonb,
-     '{"ko-KR": 8, "en-US": 7, "ja-JP": 7}'::jsonb)
-
-    ON CONFLICT (dimension_id, tag_name) DO UPDATE
-                                                SET display_names = EXCLUDED.display_names,
-                                                display_orders = EXCLUDED.display_orders;
-END $$;
+-- -- 1. 디멘션 생성
+-- INSERT INTO context_dimensions (name)
+-- VALUES ('when'), ('dietary')
+--     ON CONFLICT (name) DO NOTHING;
+--
+-- -- 2. 통합 태그 데이터 삽입 (일본어 번역 및 이모지/순서 최적화)
+-- DO $$
+-- DECLARE
+-- v_when_id BIGINT;
+--     v_diet_id BIGINT;
+-- BEGIN
+-- SELECT id INTO v_when_id FROM context_dimensions WHERE name = 'when';
+-- SELECT id INTO v_diet_id FROM context_dimensions WHERE name = 'dietary';
+--
+-- -- [WHEN] 상황 데이터
+-- INSERT INTO context_tags (dimension_id, tag_name, display_names, display_orders)
+-- VALUES
+--     (v_when_id, 'none', '{"ko-KR": "🏠 일상", "en-US": "🏠 Daily", "ja-JP": "🏠 日常"}'::jsonb,
+--      '{"ko-KR": 0, "en-US": 0, "ja-JP": 0}'::jsonb),
+--     (v_when_id, 'SIT_SOLO', '{"ko-KR": "👤 혼밥", "en-US": "👤 Solo Dining", "ja-JP": "👤 おひとりさま"}'::jsonb,
+--      '{"ko-KR": 1, "en-US": 4, "ja-JP": 1}'::jsonb),
+--     (v_when_id, 'SIT_LATE_NIGHT', '{"ko-KR": "🌙 야식", "en-US": "🌙 Late-night", "ja-JP": "🌙 夜食"}'::jsonb,
+--      '{"ko-KR": 2, "en-US": 6, "ja-JP": 5}'::jsonb),
+--     (v_when_id, 'SIT_BUDGET', '{"ko-KR": "💡 갓성비", "en-US": "💡 Budget", "ja-JP": "💡 コスパ"}'::jsonb,
+--      '{"ko-KR": 3, "en-US": 5, "ja-JP": 4}'::jsonb),
+--     (v_when_id, 'SIT_MEAL_PREP', '{"ko-KR": "🍱 밀프랩·도시락", "en-US": "🍱 Meal Prep", "ja-JP": "🍱 作り置き·弁当"}'::jsonb,
+--      '{"ko-KR": 4, "en-US": 1, "ja-JP": 3}'::jsonb),
+--     (v_when_id, 'SIT_DATE', '{"ko-KR": "🕯️ 데이트", "en-US": "🕯️ Date Night", "ja-JP": "🕯️ デート"}'::jsonb,
+--      '{"ko-KR": 5, "en-US": 2, "ja-JP": 2}'::jsonb),
+--     (v_when_id, 'SIT_PARTY', '{"ko-KR": "🥳 모임·파티", "en-US": "🥳 Party·Social", "ja-JP": "🥳 集まり·パーティ"}'::jsonb,
+--      '{"ko-KR": 6, "en-US": 3, "ja-JP": 6}'::jsonb),
+--
+--     -- [DIETARY] 식단 데이터 (일본어 정정 반영)
+--     (v_diet_id, 'none', '{"ko-KR": "🍽️ 일반식", "en-US": "🍽️ Regular Diet", "ja-JP": "🍽️ 一般食"}'::jsonb,
+--      '{"ko-KR": 0, "en-US": 0, "ja-JP": 0}'::jsonb),
+--     (v_diet_id, 'DIET_HIGH_PROTEIN', '{"ko-KR": "💪 고단백", "en-US": "💪 High Protein", "ja-JP": "💪 高タンパク"}'::jsonb,
+--      '{"ko-KR": 1, "en-US": 1, "ja-JP": 2}'::jsonb),
+--     -- [수정] ja-JP: 🥗 로카보 -> 🥗 ロカボ
+--     (v_diet_id, 'DIET_LOW_CARB_EASY', '{"ko-KR": "🥗 저당식", "en-US": "🥗 Low Carb", "ja-JP": "🥗 ロカボ"}'::jsonb,
+--      '{"ko-KR": 2, "en-US": 4, "ja-JP": 1}'::jsonb),
+--     -- [수정] ja-JP: 🥑 糖질제한 -> 🥑 糖質制限
+--     (v_diet_id, 'DIET_LOW_CARB_STRICT', '{"ko-KR": "🥑 저탄고지", "en-US": "🥑 Keto", "ja-JP": "🥑 糖質制限"}'::jsonb,
+--      '{"ko-KR": 3, "en-US": 5, "ja-JP": 3}'::jsonb),
+--     -- [수정] ja-JP: 🌿 유연한 채식 -> 🌿 ゆるベジ
+--     (v_diet_id, 'DIET_VEGAN_FLEX', '{"ko-KR": "🌿 채식", "en-US": "🌿 Plant-based", "ja-JP": "🌿 ゆるベジ"}'::jsonb,
+--      '{"ko-KR": 4, "en-US": 2, "ja-JP": 4}'::jsonb),
+--     -- [수정] ja-JP: 🌽 글루텐프리 -> 🌽 グルテンフリー
+--     (v_diet_id, 'DIET_GLUTEN_FREE', '{"ko-KR": "🌽 글루텐프리", "en-US": "🌽 Gluten-Free", "ja-JP": "🌽 グルテンフリー"}'::jsonb,
+--      '{"ko-KR": 5, "en-US": 3, "ja-JP": 8}'::jsonb),
+--     -- [수정] ja-JP: ✨ 무첨가/자연식 -> ✨ 無添加/自然食
+--     (v_diet_id, 'DIET_CLEAN_BASIC', '{"ko-KR": "✨ 클린식", "en-US": "✨ Clean Eating", "ja-JP": "✨ 無添加/自然食"}'::jsonb,
+--      '{"ko-KR": 6, "en-US": 6, "ja-JP": 5}'::jsonb),
+--     -- [수정] ja-JP: 🍎 정진요리 -> 🍎 精進料理
+--     (v_diet_id, 'DIET_CLEAN_STRICT', '{"ko-KR": "🍎 자연식", "en-US": "🍎 Paleo", "ja-JP": "🍎 精進料理"}'::jsonb,
+--      '{"ko-KR": 7, "en-US": 8, "ja-JP": 6}'::jsonb),
+--     -- [수정] ja-JP: 🥦 비건 -> 🥦 ヴィーガン
+--     (v_diet_id, 'DIET_VEGAN_STRICT', '{"ko-KR": "🥦 비건", "en-US": "🥦 Vegan", "ja-JP": "🥦 ヴィーガン"}'::jsonb,
+--      '{"ko-KR": 8, "en-US": 7, "ja-JP": 7}'::jsonb)
+--
+--     ON CONFLICT (dimension_id, tag_name) DO UPDATE
+--                                                 SET display_names = EXCLUDED.display_names,
+--                                                 display_orders = EXCLUDED.display_orders;
+-- END $$;

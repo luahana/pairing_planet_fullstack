@@ -3,6 +3,7 @@ package com.pairingplanet.pairing_planet.domain.entity.food;
 import com.pairingplanet.pairing_planet.domain.entity.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class FoodCategory extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -15,16 +15,14 @@ public record UserDto(
         String username,
         String profileImageUrl,
         Gender gender,          // [추가] 성별
-        LocalDate birthDate,    // [추가] 생년월일
-        UUID preferredDietaryId // [추가] 식이 취향 Public ID (UUID)
+        LocalDate birthDate    // [추가] 생년월일
 ) {
     /**
      * User 엔티티를 UserDto로 변환합니다.
      * @param user 변환할 유저 엔티티
      * @param urlPrefix 프로필 이미지 경로 구성을 위한 프리픽스
-     * @param dietaryPublicId 식이 취향의 내부 Long ID를 변환한 UUID (Service에서 조회 후 전달 권장)
      */
-    public static UserDto from(User user, String urlPrefix, UUID dietaryPublicId) {
+    public static UserDto from(User user, String urlPrefix) {
         if (user == null) return null;
 
         String username = user.getUsername();
@@ -47,7 +45,6 @@ public record UserDto(
                 .profileImageUrl(profileUrl)
                 .gender(user.getGender())       // [매핑] 성별
                 .birthDate(user.getBirthDate()) // [매핑] 생년월일
-                .preferredDietaryId(dietaryPublicId) // [매핑] 변환된 UUID 적용
                 .build();
     }
 }

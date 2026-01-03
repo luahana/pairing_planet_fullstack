@@ -1,7 +1,5 @@
 package com.pairingplanet.pairing_planet.controller;
 
-import com.pairingplanet.pairing_planet.dto.post.CursorResponse;
-import com.pairingplanet.pairing_planet.dto.post.PostResponseDto;
 import com.pairingplanet.pairing_planet.dto.user.UpdateProfileRequestDto;
 import com.pairingplanet.pairing_planet.dto.user.UserDto;
 import com.pairingplanet.pairing_planet.service.UserService;
@@ -46,16 +44,4 @@ public class UserController { // 통합된 이름으로 사용 권장
     }
 
 
-
-    /**
-     * 특정 사용자의 게시글 리스트 조회
-     */
-    @GetMapping("/{userId}/posts")
-    public ResponseEntity<CursorResponse<PostResponseDto>> getUserPosts( // [기존 유지 및 확인]
-         @PathVariable UUID userId,
-         @RequestParam(required = false) String cursor,
-         @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(userService.getUserPosts(userId, cursor, size));
-    }
 }

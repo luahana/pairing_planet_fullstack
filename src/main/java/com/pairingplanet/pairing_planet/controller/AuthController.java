@@ -1,8 +1,8 @@
 package com.pairingplanet.pairing_planet.controller;
 
-import com.pairingplanet.pairing_planet.dto.Auth.AuthResponseDto;
-import com.pairingplanet.pairing_planet.dto.Auth.SocialLoginRequestDto;
-import com.pairingplanet.pairing_planet.dto.Auth.TokenReissueRequestDto;
+import com.pairingplanet.pairing_planet.dto.auth.AuthResponseDto;
+import com.pairingplanet.pairing_planet.dto.auth.SocialLoginRequestDto;
+import com.pairingplanet.pairing_planet.dto.auth.TokenReissueRequestDto;
 import com.pairingplanet.pairing_planet.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

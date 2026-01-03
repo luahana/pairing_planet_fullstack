@@ -144,402 +144,422 @@ CREATE TABLE IF NOT EXISTS user_suggested_foods (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
     );
 CREATE INDEX IF NOT EXISTS idx_user_suggested_status ON user_suggested_foods (status, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS context_dimensions (
-                                                  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                                  public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-    name VARCHAR(50) NOT NULL UNIQUE,
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-    );
-
-
-CREATE TABLE IF NOT EXISTS context_tags (
-                                            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                            public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    dimension_id BIGINT NOT NULL REFERENCES context_dimensions(id) ON DELETE CASCADE,
-    tag_name VARCHAR(50) NOT NULL, -- 시스템 내부 코드 (예: "vegan")
-
-    display_names JSONB NOT NULL DEFAULT '{}',
-
-    display_orders JSONB NOT NULL DEFAULT '{}',
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-
-    -- 한 디멘션 내에서 동일한 내부 태그명 중복 방지
-    CONSTRAINT unique_tag_per_dimension UNIQUE (dimension_id, tag_name)
-    );
-
-CREATE INDEX IF NOT EXISTS idx_context_tags_names_gin ON context_tags USING GIN (display_names);
-
-CREATE TABLE IF NOT EXISTS pairing_map (
-                                           id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                           public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    food1_master_id BIGINT NOT NULL REFERENCES foods_master(id) ON DELETE CASCADE,
-    food2_master_id BIGINT REFERENCES foods_master(id) ON DELETE CASCADE,
-
-    when_context_id BIGINT REFERENCES context_tags(id),
-    dietary_context_id BIGINT REFERENCES context_tags(id),
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT chk_food_order CHECK (food1_master_id < food2_master_id),
-    CONSTRAINT chk_food_not_same CHECK (food1_master_id <> food2_master_id)
-    );
-CREATE UNIQUE INDEX IF NOT EXISTS uq_pairing_def_safe ON pairing_map (
-    food1_master_id,
-    food2_master_id,
-    COALESCE(when_context_id, -1),
-    COALESCE(dietary_context_id, -1)
-    );
-CREATE INDEX IF NOT EXISTS idx_pairing_food2 ON pairing_map (food2_master_id);
-CREATE INDEX IF NOT EXISTS idx_pairing_when ON pairing_map (when_context_id);
-CREATE INDEX IF NOT EXISTS idx_pairing_dietary ON pairing_map (dietary_context_id);
-
-CREATE TABLE IF NOT EXISTS pairing_locale_stats (
-                                                    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                                    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    pairing_id BIGINT NOT NULL REFERENCES pairing_map(id) ON DELETE CASCADE,
-    locale VARCHAR(10) NOT NULL,
-
-    genius_count INT DEFAULT 0,
-    daring_count INT DEFAULT 0,
-    picky_count  INT DEFAULT 0,
-    saved_count INT DEFAULT 0,
-    comment_count INT DEFAULT 0,
-
-    popularity_score DOUBLE PRECISION GENERATED ALWAYS AS (
-                                                              CASE
-                                                              WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
-    ELSE (
-(genius_count * 1.0) +
-(comment_count * 3.0) +
-(saved_count * 5.0)
-    )
-    * (
-    (genius_count + (picky_count * 0.5))::DOUBLE PRECISION / (genius_count + daring_count + picky_count)
-    )
-    END
-    ) STORED,
-
-    controversy_score DOUBLE PRECISION GENERATED ALWAYS AS (
-                                                               CASE
-                                                               WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
-    ELSE
-(genius_count + daring_count + picky_count)::DOUBLE PRECISION / (ABS(genius_count - daring_count) + 1)
-    END
-    ) STORED,
-
-    trending_score DOUBLE PRECISION DEFAULT 0.0,
-    score_updated_at TIMESTAMP WITH TIME ZONE,
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT uk_pairing_locale UNIQUE (pairing_id, locale),
-    CONSTRAINT uk_pairing_locale_public_id UNIQUE (public_id)
-    );
-CREATE INDEX IF NOT EXISTS idx_stats_locale_trending ON pairing_locale_stats (locale, trending_score DESC);
-CREATE INDEX IF NOT EXISTS idx_stats_locale_popular ON pairing_locale_stats (locale, popularity_score DESC);
-CREATE INDEX IF NOT EXISTS idx_stats_locale_controversial ON pairing_locale_stats (locale, controversy_score DESC);
-CREATE INDEX IF NOT EXISTS idx_trending_controversial_filtered ON pairing_locale_stats (locale, trending_score DESC) WHERE controversy_score >= 2.0;
-
-CREATE TABLE IF NOT EXISTS search_histories (
-                                                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                                public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    pairing_id BIGINT NOT NULL REFERENCES pairing_map(id) ON DELETE CASCADE,
-
-    -- 같은 유저가 동일한 조합을 검색할 경우 하나만 유지하기 위한 유니크 제약
-    CONSTRAINT uq_user_pairing UNIQUE (user_id, pairing_id),
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-    );
-
-CREATE INDEX IF NOT EXISTS idx_search_history_user ON search_histories (user_id, updated_at DESC);
-
--- [수정된 부분] posts 테이블 (USING 구문 제거)
-CREATE TABLE IF NOT EXISTS posts (
-                                     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    dtype VARCHAR(31) NOT NULL,
-
-    pairing_id BIGINT NOT NULL REFERENCES pairing_map(id),
-    locale VARCHAR(10) NOT NULL,
-
-    title           TEXT,
-    content         TEXT,
-
-    genius_count    INT DEFAULT 0,
-    daring_count    INT DEFAULT 0,
-    picky_count     INT DEFAULT 0,
-    saved_count     INT DEFAULT 0,
-    comment_count   INT DEFAULT 0,
-
-    is_private       BOOLEAN NOT NULL DEFAULT FALSE,
-    is_deleted       BOOLEAN NOT NULL DEFAULT FALSE,
-
-    popularity_score DOUBLE PRECISION GENERATED ALWAYS AS (
-                                                              CASE
-                                                              WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
-    ELSE (
-(genius_count * 1.0) +
-(comment_count * 3.0) +
-(saved_count * 5.0)
-    )
-    * (
-    (genius_count + (picky_count * 0.5))::DOUBLE PRECISION / (genius_count + daring_count + picky_count)
-    )
-    END
-    ) STORED,
-
-    controversy_score DOUBLE PRECISION GENERATED ALWAYS AS (
-                                                               CASE
-                                                               WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
-    ELSE
-(genius_count + daring_count + picky_count)::DOUBLE PRECISION / (ABS(genius_count - daring_count) + 1)
-    END
-    ) STORED,
-
-    creator_id BIGINT NOT NULL REFERENCES users(id),
-    comments_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-    );
-CREATE INDEX IF NOT EXISTS idx_posts_cursor ON posts (pairing_id, created_at DESC, id DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_creator_created ON posts (creator_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_locale_created_at ON posts (locale, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_locale_controversy ON posts (locale, controversy_score DESC);
-CREATE INDEX IF NOT EXISTS idx_post_locale_popularity ON posts (locale, popularity_score DESC);
-
-CREATE TABLE IF NOT EXISTS daily_posts (
-    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS recipe_posts (
-    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS discussion_posts (
-    verdict_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE
-);
-
--- 1. 레시피 상세 테이블 (버전별 불변 데이터 저장)
-CREATE TABLE IF NOT EXISTS recipes (
-    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    version INTEGER NOT NULL DEFAULT 1,
-    root_recipe_id BIGINT REFERENCES posts(id),   -- 오리지널 레시피 (Direct Child 관리용)
-    parent_recipe_id BIGINT REFERENCES posts(id), -- 직전 부모 레시피 (계보 기록용)
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    cooking_time INTEGER, -- 분 단위
-    difficulty VARCHAR(20), -- EASY, NORMAL, HARD
-    version_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (post_id, version) -- 복합 PK로 버전 관리
-);
-
--- 2. 레시피 재료 테이블
-CREATE TABLE IF NOT EXISTS recipe_ingredients (
-    id BIGSERIAL PRIMARY KEY,
-    post_id BIGINT NOT NULL,
-    version INTEGER NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    amount VARCHAR(50),
-    type VARCHAR(20), -- MAIN, SEASONING 등
-    display_order INTEGER DEFAULT 0,
-    FOREIGN KEY (post_id, version) REFERENCES recipes(post_id, version) ON DELETE CASCADE
-);
-
--- 3. 레시피 조리 단계 테이블
-CREATE TABLE IF NOT EXISTS recipe_steps (
-    id BIGSERIAL PRIMARY KEY,
-    post_id BIGINT NOT NULL,
-    version INTEGER NOT NULL,
-    step_number INTEGER NOT NULL,
-    description TEXT NOT NULL,
-    image_url TEXT,
-    FOREIGN KEY (post_id, version) REFERENCES recipes(post_id, version) ON DELETE CASCADE
-);
-
--- 4. 레시피 수정 이력 로그
-CREATE TABLE IF NOT EXISTS recipe_edit_logs (
-    id BIGSERIAL PRIMARY KEY,
-    post_id BIGINT NOT NULL,
-    version INTEGER NOT NULL,
-    editor_id BIGINT NOT NULL REFERENCES users(id),
-    edit_summary TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id, version) REFERENCES recipes(post_id, version)
-);
-
--- 5. 레시피 로그 (인증샷/후기)
-CREATE TABLE IF NOT EXISTS recipe_logs (
-    post_id BIGINT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE,
-    target_recipe_id BIGINT NOT NULL REFERENCES posts(id),
-    rating INTEGER CHECK (rating >= 1 AND rating <= 5)
-);
-
--- 조회 성능을 위한 인덱스
-CREATE INDEX IF NOT EXISTS idx_recipes_root ON recipes(root_recipe_id);
-CREATE INDEX IF NOT EXISTS idx_recipe_logs_target ON recipe_logs(target_recipe_id);
-
-CREATE TABLE IF NOT EXISTS post_verdicts (
-                                             user_id BIGINT REFERENCES users(id),
-    post_id BIGINT REFERENCES posts(id),
-
-    verdict_type VARCHAR(10) CHECK (verdict_type IN ('GENIUS', 'DARING', 'PICKY')),
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-
-    PRIMARY KEY (user_id, post_id)
-    );
-CREATE INDEX IF NOT EXISTS idx_post_verdicts_post_id ON post_verdicts (post_id);
-
-CREATE TABLE IF NOT EXISTS comments (
-                                        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                        public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    post_id BIGINT REFERENCES posts(id),
-    user_id BIGINT REFERENCES users(id),
-    parent_id BIGINT REFERENCES comments(id),
-
-    content TEXT NOT NULL,
-
-    initial_verdict VARCHAR(10) CHECK (initial_verdict IN ('GENIUS', 'DARING', 'PICKY')),
-    current_verdict VARCHAR(10) CHECK (current_verdict IN ('GENIUS', 'DARING', 'PICKY')),
-
-    like_count INT DEFAULT 0,
-    is_deleted BOOLEAN DEFAULT FALSE,
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-    );
-CREATE INDEX IF NOT EXISTS idx_comments_default ON comments (post_id, parent_id, created_at DESC, id DESC);
-CREATE INDEX IF NOT EXISTS idx_comments_filter ON comments (post_id, parent_id, current_verdict, created_at DESC, id DESC);
-CREATE INDEX IF NOT EXISTS idx_comments_best ON comments (post_id, parent_id, like_count DESC);
-
-CREATE TABLE IF NOT EXISTS comment_likes (
-                                             user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-    comment_id BIGINT REFERENCES comments(id) ON DELETE CASCADE,
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-
-    PRIMARY KEY (user_id, comment_id)
-    );
-
-CREATE TABLE IF NOT EXISTS saved_posts (
-                                           user_id BIGINT REFERENCES users(id),
-    post_id BIGINT REFERENCES posts(id),
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-
-    PRIMARY KEY (user_id, post_id)
-    );
-
-CREATE TABLE IF NOT EXISTS search_index (
-                                            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                            public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    target_id BIGINT NOT NULL,
-    target_type VARCHAR(20) NOT NULL,
-
-    keyword TEXT NOT NULL,
-    locale_code VARCHAR(10) NOT NULL,
-
-    icon_url TEXT,
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT uq_search_target UNIQUE (target_id, target_type, keyword, locale_code)
-    );
-CREATE INDEX IF NOT EXISTS idx_search_keyword ON search_index USING GIN (keyword gin_trgm_ops);
-
-CREATE TABLE IF NOT EXISTS notifications (
-                                             id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                             public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    recipient_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    sender_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-
-    type VARCHAR(50) NOT NULL,
-    reference_id BIGINT,
-    is_read BOOLEAN DEFAULT FALSE,
-
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-    );
-CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications (recipient_id) WHERE is_read = FALSE;
-
-CREATE TABLE IF NOT EXISTS pairing_stats_snapshot (
-                                                      pairing_id BIGINT NOT NULL,
-                                                      locale VARCHAR(10) NOT NULL,
-
-    last_genius_count INT DEFAULT 0,
-    last_picky_count INT DEFAULT 0,
-    last_comment_count INT DEFAULT 0,
-    last_saved_count INT DEFAULT 0,
-
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    PRIMARY KEY (pairing_id, locale)
-    );
-
--- [추가됨] images 테이블
-CREATE TABLE IF NOT EXISTS images (
-                                      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                      public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-
-    stored_filename VARCHAR(255) NOT NULL,
-    original_filename VARCHAR(255) NOT NULL,
-
-    status VARCHAR(50) NOT NULL,
-    type VARCHAR(50) NOT NULL,
-
-    uploader_id BIGINT NOT NULL,
-    post_id BIGINT,
-
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-
-    CONSTRAINT fk_images_post FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE SET NULL
-    );
-
-CREATE INDEX IF NOT EXISTS idx_images_status_created_at ON images (status, created_at);
-CREATE INDEX IF NOT EXISTS idx_images_type ON images (type);
-CREATE INDEX IF NOT EXISTS idx_images_post_id ON images (post_id);
-
+--
+-- CREATE TABLE IF NOT EXISTS context_dimensions (
+--                                                   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                                   public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--     name VARCHAR(50) NOT NULL UNIQUE,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+--     );
+--
+--
+-- CREATE TABLE IF NOT EXISTS context_tags (
+--                                             id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                             public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     dimension_id BIGINT NOT NULL REFERENCES context_dimensions(id) ON DELETE CASCADE,
+--     tag_name VARCHAR(50) NOT NULL, -- 시스템 내부 코드 (예: "vegan")
+--
+--     display_names JSONB NOT NULL DEFAULT '{}',
+--
+--     display_orders JSONB NOT NULL DEFAULT '{}',
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--
+--     -- 한 디멘션 내에서 동일한 내부 태그명 중복 방지
+--     CONSTRAINT unique_tag_per_dimension UNIQUE (dimension_id, tag_name)
+--     );
+--
+-- CREATE INDEX IF NOT EXISTS idx_context_tags_names_gin ON context_tags USING GIN (display_names);
+--
+-- CREATE TABLE IF NOT EXISTS pairing_map (
+--                                            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                            public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     food1_master_id BIGINT NOT NULL REFERENCES foods_master(id) ON DELETE CASCADE,
+--     food2_master_id BIGINT REFERENCES foods_master(id) ON DELETE CASCADE,
+--
+--     when_context_id BIGINT REFERENCES context_tags(id),
+--     dietary_context_id BIGINT REFERENCES context_tags(id),
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--
+--     CONSTRAINT chk_food_order CHECK (food1_master_id < food2_master_id),
+--     CONSTRAINT chk_food_not_same CHECK (food1_master_id <> food2_master_id)
+--     );
+-- CREATE UNIQUE INDEX IF NOT EXISTS uq_pairing_def_safe ON pairing_map (
+--     food1_master_id,
+--     food2_master_id,
+--     COALESCE(when_context_id, -1),
+--     COALESCE(dietary_context_id, -1)
+--     );
+-- CREATE INDEX IF NOT EXISTS idx_pairing_food2 ON pairing_map (food2_master_id);
+-- CREATE INDEX IF NOT EXISTS idx_pairing_when ON pairing_map (when_context_id);
+-- CREATE INDEX IF NOT EXISTS idx_pairing_dietary ON pairing_map (dietary_context_id);
+--
+-- CREATE TABLE IF NOT EXISTS pairing_locale_stats (
+--                                                     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                                     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     pairing_id BIGINT NOT NULL REFERENCES pairing_map(id) ON DELETE CASCADE,
+--     locale VARCHAR(10) NOT NULL,
+--
+--     genius_count INT DEFAULT 0,
+--     daring_count INT DEFAULT 0,
+--     picky_count  INT DEFAULT 0,
+--     saved_count INT DEFAULT 0,
+--     comment_count INT DEFAULT 0,
+--
+--     popularity_score DOUBLE PRECISION GENERATED ALWAYS AS (
+--                                                               CASE
+--                                                               WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
+--     ELSE (
+-- (genius_count * 1.0) +
+-- (comment_count * 3.0) +
+-- (saved_count * 5.0)
+--     )
+--     * (
+--     (genius_count + (picky_count * 0.5))::DOUBLE PRECISION / (genius_count + daring_count + picky_count)
+--     )
+--     END
+--     ) STORED,
+--
+--     controversy_score DOUBLE PRECISION GENERATED ALWAYS AS (
+--                                                                CASE
+--                                                                WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
+--     ELSE
+-- (genius_count + daring_count + picky_count)::DOUBLE PRECISION / (ABS(genius_count - daring_count) + 1)
+--     END
+--     ) STORED,
+--
+--     trending_score DOUBLE PRECISION DEFAULT 0.0,
+--     score_updated_at TIMESTAMP WITH TIME ZONE,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--
+--     CONSTRAINT uk_pairing_locale UNIQUE (pairing_id, locale),
+--     CONSTRAINT uk_pairing_locale_public_id UNIQUE (public_id)
+--     );
+-- CREATE INDEX IF NOT EXISTS idx_stats_locale_trending ON pairing_locale_stats (locale, trending_score DESC);
+-- CREATE INDEX IF NOT EXISTS idx_stats_locale_popular ON pairing_locale_stats (locale, popularity_score DESC);
+-- CREATE INDEX IF NOT EXISTS idx_stats_locale_controversial ON pairing_locale_stats (locale, controversy_score DESC);
+-- CREATE INDEX IF NOT EXISTS idx_trending_controversial_filtered ON pairing_locale_stats (locale, trending_score DESC) WHERE controversy_score >= 2.0;
+--
+-- CREATE TABLE IF NOT EXISTS search_histories (
+--                                                 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                                 public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--     pairing_id BIGINT NOT NULL REFERENCES pairing_map(id) ON DELETE CASCADE,
+--
+--     -- 같은 유저가 동일한 조합을 검색할 경우 하나만 유지하기 위한 유니크 제약
+--     CONSTRAINT uq_user_pairing UNIQUE (user_id, pairing_id),
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+--     );
+--
+-- CREATE INDEX IF NOT EXISTS idx_search_history_user ON search_histories (user_id, updated_at DESC);
+--
+--
+-- CREATE TABLE IF NOT EXISTS posts (
+--                                      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                      public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     dtype VARCHAR(31) NOT NULL,
+--
+--     pairing_id BIGINT NOT NULL REFERENCES pairing_map(id),
+--     locale VARCHAR(10) NOT NULL,
+--
+--     title           TEXT,
+--     content         TEXT,
+--
+--     genius_count    INT DEFAULT 0,
+--     daring_count    INT DEFAULT 0,
+--     picky_count     INT DEFAULT 0,
+--     saved_count     INT DEFAULT 0,
+--     comment_count   INT DEFAULT 0,
+--
+--     is_private       BOOLEAN NOT NULL DEFAULT FALSE,
+--     is_deleted       BOOLEAN NOT NULL DEFAULT FALSE,
+--
+--     popularity_score DOUBLE PRECISION GENERATED ALWAYS AS (
+--                                                               CASE
+--                                                               WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
+--     ELSE (
+-- (genius_count * 1.0) +
+-- (comment_count * 3.0) +
+-- (saved_count * 5.0)
+--     )
+--     * (
+--     (genius_count + (picky_count * 0.5))::DOUBLE PRECISION / (genius_count + daring_count + picky_count)
+--     )
+--     END
+--     ) STORED,
+--
+--     controversy_score DOUBLE PRECISION GENERATED ALWAYS AS (
+--                                                                CASE
+--                                                                WHEN (genius_count + daring_count + picky_count) = 0 THEN 0.0
+--     ELSE
+-- (genius_count + daring_count + picky_count)::DOUBLE PRECISION / (ABS(genius_count - daring_count) + 1)
+--     END
+--     ) STORED,
+--
+--     creator_id BIGINT NOT NULL REFERENCES users(id),
+--     comments_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+--     );
+-- CREATE INDEX IF NOT EXISTS idx_posts_cursor ON posts (pairing_id, created_at DESC, id DESC);
+-- CREATE INDEX IF NOT EXISTS idx_posts_creator_created ON posts (creator_id, created_at DESC);
+-- CREATE INDEX IF NOT EXISTS idx_posts_locale_created_at ON posts (locale, created_at DESC);
+-- CREATE INDEX IF NOT EXISTS idx_posts_locale_controversy ON posts (locale, controversy_score DESC);
+-- CREATE INDEX IF NOT EXISTS idx_post_locale_popularity ON posts (locale, popularity_score DESC);
+
+DO $$ BEGIN
+CREATE TYPE image_status AS ENUM ('ACTIVE', 'DELETED', 'PROCESSING');
+CREATE TYPE image_type AS ENUM ('THUMBNAIL', 'STEP', 'LOG', 'COVER');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- 1. 해시태그 마스터
 CREATE TABLE IF NOT EXISTS hashtags (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-    name VARCHAR(50) NOT NULL UNIQUE, -- 중복 방지를 위해 UNIQUE 설정
+    name VARCHAR(50) NOT NULL UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
     );
 
--- 2. 포스트와 커스텀 태그를 연결하는 다대다 매핑 테이블
-CREATE TABLE IF NOT EXISTS post_hashtag_map (
-    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    hashtag_id BIGINT NOT NULL REFERENCES hashtags(id) ON DELETE CASCADE,
-    PRIMARY KEY (post_id, hashtag_id)
+-- 2. 로그 포스트 (일상/후기 기본 테이블)
+CREATE TABLE IF NOT EXISTS log_posts (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    locale VARCHAR(10) NOT NULL,
+    title TEXT,
+    content TEXT,
+    saved_count INT DEFAULT 0,
+    comment_count INT DEFAULT 0,
+    is_private BOOLEAN NOT NULL DEFAULT FALSE,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    creator_id BIGINT NOT NULL REFERENCES users(id),
+    comments_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
     );
 
-CREATE INDEX IF NOT EXISTS idx_hashtag_name ON hashtags (name);
-CREATE INDEX IF NOT EXISTS idx_post_hashtag_map_hashtag ON post_hashtag_map (hashtag_id);
+-- 3. 레시피 상세 (버전 관리 제거, 단일 행 구조)
+CREATE TABLE IF NOT EXISTS recipes (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    food1_master_id BIGINT NOT NULL REFERENCES foods_master(id),
+    culinary_locale VARCHAR(10) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    cooking_time INTEGER,
+    difficulty VARCHAR(20),
+    saved_count INT DEFAULT 0,
+    is_private BOOLEAN NOT NULL DEFAULT FALSE,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
 
+    -- 계보 관리 (단일 ID 참조)
+    root_recipe_id BIGINT REFERENCES recipes(id),
+    parent_recipe_id BIGINT REFERENCES recipes(id),
+    change_category VARCHAR(50),
 
-ALTER TABLE users
-    ADD CONSTRAINT fk_users_preferred_dietary
-        FOREIGN KEY (preferred_dietary_id) REFERENCES context_tags(id);
+    creator_id BIGINT NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+-- 4. 이미지 (통합 관리)
+CREATE TABLE IF NOT EXISTS images (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    stored_filename VARCHAR(255) NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    log_post_id BIGINT REFERENCES log_posts(id) ON DELETE SET NULL,
+    recipe_id BIGINT REFERENCES recipes(id) ON DELETE SET NULL,
+    status image_status NOT NULL DEFAULT 'PROCESSING', -- [개선] Enum 사용
+    type image_type NOT NULL,                           -- [개선] Enum 사용
+    display_order INTEGER NOT NULL DEFAULT 0,           -- [추가] 정렬용 필드
+    uploader_id BIGINT NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_image_target CHECK (
+        (log_post_id IS NOT NULL AND recipe_id IS NULL) OR
+        (log_post_id IS NULL AND recipe_id IS NOT NULL)
+    )
+    );
+
+-- 5. 매핑 테이블 (해시태그)
+CREATE TABLE IF NOT EXISTS recipe_hashtag_map (
+    recipe_id BIGINT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    hashtag_id BIGINT NOT NULL REFERENCES hashtags(id) ON DELETE CASCADE,
+    PRIMARY KEY (recipe_id, hashtag_id) -- [수정] 끝에 있던 잘못된 쉼표 제거
+    );
+
+CREATE TABLE IF NOT EXISTS log_post_hashtag_map (
+    log_post_id BIGINT NOT NULL REFERENCES log_posts(id) ON DELETE CASCADE,
+    hashtag_id BIGINT NOT NULL REFERENCES hashtags(id) ON DELETE CASCADE,
+    PRIMARY KEY (log_post_id, hashtag_id)
+    );
+
+-- 6. 레시피 하위 요소 (재료/단계)
+CREATE TABLE IF NOT EXISTS recipe_ingredients (
+    id BIGSERIAL PRIMARY KEY,
+    recipe_id BIGINT REFERENCES recipes(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    amount VARCHAR(50),
+    type VARCHAR(20),
+    display_order INTEGER DEFAULT 0
+    );
+
+CREATE TABLE IF NOT EXISTS recipe_steps (
+    id BIGSERIAL PRIMARY KEY,
+    recipe_id BIGINT REFERENCES recipes(id) ON DELETE CASCADE,
+    -- [수정] version 컬럼 제거 (사용하지 않기로 함)
+    step_number INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    image_id BIGINT REFERENCES images(id) ON DELETE SET NULL
+    );
+
+-- 7. 레시피 로그 (연결)
+CREATE TABLE IF NOT EXISTS recipe_logs (
+    log_post_id BIGINT PRIMARY KEY REFERENCES log_posts(id) ON DELETE CASCADE,
+    recipe_id BIGINT NOT NULL REFERENCES recipes(id),
+    rating INTEGER CHECK (rating BETWEEN 1 AND 5)
+    );
+
+-- 조회 성능을 위한 인덱스
+CREATE INDEX IF NOT EXISTS idx_recipes_root ON recipes(root_recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipes_parent ON recipes(parent_recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_logs_target ON recipe_logs(recipe_id);
+
+CREATE INDEX IF NOT EXISTS idx_recipes_creator ON recipes(creator_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_recipes_locale ON recipes(culinary_locale);
+
+CREATE INDEX IF NOT EXISTS idx_log_posts_creator ON log_posts(creator_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_log_posts_locale ON log_posts(locale);
+
+CREATE INDEX IF NOT EXISTS idx_recipe_hashtag_tag ON recipe_hashtag_map(hashtag_id);
+
+CREATE INDEX IF NOT EXISTS idx_recipes_discovery ON recipes(is_deleted, is_private, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_images_recipe_order ON images(recipe_id, display_order) WHERE recipe_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_images_log_order ON images(log_post_id, display_order) WHERE log_post_id IS NOT NULL;
+
+-- CREATE TABLE IF NOT EXISTS post_verdicts (
+--                                              user_id BIGINT REFERENCES users(id),
+--     post_id BIGINT REFERENCES posts(id),
+--
+--     verdict_type VARCHAR(10) CHECK (verdict_type IN ('GENIUS', 'DARING', 'PICKY')),
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--
+--     PRIMARY KEY (user_id, post_id)
+--     );
+-- CREATE INDEX IF NOT EXISTS idx_post_verdicts_post_id ON post_verdicts (post_id);
+--
+-- CREATE TABLE IF NOT EXISTS comments (
+--                                         id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                         public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     post_id BIGINT REFERENCES posts(id),
+--     user_id BIGINT REFERENCES users(id),
+--     parent_id BIGINT REFERENCES comments(id),
+--
+--     content TEXT NOT NULL,
+--
+--     initial_verdict VARCHAR(10) CHECK (initial_verdict IN ('GENIUS', 'DARING', 'PICKY')),
+--     current_verdict VARCHAR(10) CHECK (current_verdict IN ('GENIUS', 'DARING', 'PICKY')),
+--
+--     like_count INT DEFAULT 0,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+--     );
+-- CREATE INDEX IF NOT EXISTS idx_comments_default ON comments (post_id, parent_id, created_at DESC, id DESC);
+-- CREATE INDEX IF NOT EXISTS idx_comments_filter ON comments (post_id, parent_id, current_verdict, created_at DESC, id DESC);
+-- CREATE INDEX IF NOT EXISTS idx_comments_best ON comments (post_id, parent_id, like_count DESC);
+--
+-- CREATE TABLE IF NOT EXISTS comment_likes (
+--                                              user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+--     comment_id BIGINT REFERENCES comments(id) ON DELETE CASCADE,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--
+--     PRIMARY KEY (user_id, comment_id)
+--     );
+--
+-- CREATE TABLE IF NOT EXISTS saved_posts (
+--                                            user_id BIGINT REFERENCES users(id),
+--     post_id BIGINT REFERENCES posts(id),
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--
+--     PRIMARY KEY (user_id, post_id)
+--     );
+--
+-- CREATE TABLE IF NOT EXISTS search_index (
+--                                             id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                             public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     target_id BIGINT NOT NULL,
+--     target_type VARCHAR(20) NOT NULL,
+--
+--     keyword TEXT NOT NULL,
+--     locale_code VARCHAR(10) NOT NULL,
+--
+--     icon_url TEXT,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--
+--     CONSTRAINT uq_search_target UNIQUE (target_id, target_type, keyword, locale_code)
+--     );
+-- CREATE INDEX IF NOT EXISTS idx_search_keyword ON search_index USING GIN (keyword gin_trgm_ops);
+--
+-- CREATE TABLE IF NOT EXISTS notifications (
+--                                              id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+--                                              public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+--
+--     recipient_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--     sender_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+--
+--     type VARCHAR(50) NOT NULL,
+--     reference_id BIGINT,
+--     is_read BOOLEAN DEFAULT FALSE,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+--     );
+-- CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications (recipient_id) WHERE is_read = FALSE;
+--
+-- CREATE TABLE IF NOT EXISTS pairing_stats_snapshot (
+--                                                       pairing_id BIGINT NOT NULL,
+--                                                       locale VARCHAR(10) NOT NULL,
+--
+--     last_genius_count INT DEFAULT 0,
+--     last_picky_count INT DEFAULT 0,
+--     last_comment_count INT DEFAULT 0,
+--     last_saved_count INT DEFAULT 0,
+--
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+--     PRIMARY KEY (pairing_id, locale)
+--     );
+
+-- ALTER TABLE users
+--     ADD CONSTRAINT fk_users_preferred_dietary
+--         FOREIGN KEY (preferred_dietary_id) REFERENCES context_tags(id);

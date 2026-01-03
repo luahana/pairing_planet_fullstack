@@ -1,201 +1,222 @@
 package com.pairingplanet.pairing_planet.service;
 
-import com.pairingplanet.pairing_planet.domain.entity.pairing.PairingMap;
-import com.pairingplanet.pairing_planet.domain.entity.post.Post;
-import com.pairingplanet.pairing_planet.domain.entity.post.recipe.*;
+import com.pairingplanet.pairing_planet.domain.entity.image.Image;
+import com.pairingplanet.pairing_planet.domain.entity.recipe.Recipe;
+import com.pairingplanet.pairing_planet.domain.entity.recipe.RecipeIngredient;
+import com.pairingplanet.pairing_planet.domain.entity.recipe.RecipeStep;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
-import com.pairingplanet.pairing_planet.domain.enums.IngredientType;
-import com.pairingplanet.pairing_planet.dto.post.recipe.IngredientRequestDto;
-import com.pairingplanet.pairing_planet.dto.post.recipe.RecipeDetailResponseDto;
-import com.pairingplanet.pairing_planet.dto.post.recipe.CreateRecipeRequestDto;
-import com.pairingplanet.pairing_planet.dto.post.recipe.StepRequestDto;
-import com.pairingplanet.pairing_planet.repository.post.PostRepository;
-import com.pairingplanet.pairing_planet.repository.post.recipe.RecipeEditLogRepository;
-import com.pairingplanet.pairing_planet.repository.post.recipe.RecipeIngredientRepository;
-import com.pairingplanet.pairing_planet.repository.post.recipe.RecipeRepository;
-import com.pairingplanet.pairing_planet.repository.post.recipe.RecipeStepRepository;
+import com.pairingplanet.pairing_planet.dto.log_post.LogPostSummaryDto;
+import com.pairingplanet.pairing_planet.dto.recipe.*;
+import com.pairingplanet.pairing_planet.repository.image.ImageRepository;
+import com.pairingplanet.pairing_planet.repository.recipe.*;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
+import com.pairingplanet.pairing_planet.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class RecipeService {
-    private final PostRepository postRepository;
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository ingredientRepository;
     private final RecipeStepRepository stepRepository;
-    private final RecipeEditLogRepository editLogRepository;
+    private final RecipeLogRepository recipeLogRepository; // [수정] 누락된 주입 추가
+    private final ImageService imageService;
+    private final ImageRepository imageRepository;
     private final UserRepository userRepository;
-    private final PostManager postManager;
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
 
-    // 1. 레시피 생성 (신규 또는 변형)
-    public RecipeDetailResponseDto saveRecipe(UUID userPublicId, CreateRecipeRequestDto req, UUID sourcePublicId) {
-        User user = userRepository.findByPublicId(userPublicId).orElseThrow();
+    /**
+     * 새 레시피 생성 및 이미지/재료/단계 활성화
+     */
+    @Transactional
+    public RecipeDetailResponseDto createRecipe(CreateRecipeRequestDto req, UserPrincipal principal) {
+        Long creatorId = principal.getId();
+        Recipe parent = null;
+        Recipe root = null;
 
-        PairingMap pairing = postManager.processPairingLogic(user, req.food1(), req.food2(),
-                req.whenContextId(), req.dietaryContextId());
-
-        boolean isPrivate = Boolean.TRUE.equals(req.isPrivate());
-        boolean isCommentsEnabled = !isPrivate && (req.commentsEnabled() == null || req.commentsEnabled());
-
-        RecipePost post = RecipePost.builder()
-                .creator(user)
-                .pairing(pairing)
-                .locale(user.getLocale() != null ? user.getLocale() : "en")
-                .content(req.description())
-                .isPrivate(isPrivate)
-                .commentsEnabled(isCommentsEnabled)
-                .hashtags(postManager.getOrCreateHashtags(req.hashtags())) // [추가] 유저 직접 입력 태그 연결
-                .build();
-
-        Post savedPost = postRepository.save(post);
-        postManager.handleImageActivation(savedPost, req.imageUrls(), true, urlPrefix);
-
-        Long rootId = null;
-        Long parentId = null;
-
-        // 변형 레시피인 경우 계층 구조 계산
-        if (sourcePublicId != null) {
-            Post sourcePost = postRepository.findByPublicId(sourcePublicId).orElseThrow();
-            Recipe sourceRecipe = recipeRepository.findLatestByPostId(sourcePost.getId()).orElseThrow();
-
-            // 변형의 변형이라도 root는 오리지널을 가리킴 (Direct Child 구조)
-            rootId = (sourceRecipe.getRootRecipeId() == null) ? sourcePost.getId() : sourceRecipe.getRootRecipeId();
-            parentId = sourcePost.getId();
+        // 변형(Variant) 생성인 경우 계보 설정
+        if (req.parentPublicId() != null) {
+            parent = recipeRepository.findByPublicId(req.parentPublicId())
+                    .orElseThrow(() -> new IllegalArgumentException("Parent recipe not found"));
+            root = (parent.getRootRecipe() != null) ? parent.getRootRecipe() : parent;
         }
 
-        saveVersion(post.getId(), 1, rootId, parentId, req, user.getId());
-        return getRecipeDetail(post.getPublicId());
-    }
-
-    // 2. 새로운 버전 추가 (수정 시 호출)
-    public void createNewVersion(UUID postPublicId, UUID userPublicId, CreateRecipeRequestDto req) {
-        Post post = postRepository.findByPublicId(postPublicId).orElseThrow();
-        User editor = userRepository.findByPublicId(userPublicId).orElseThrow();
-
-        // 최신 버전 확인 후 +1
-        int latestVersion = recipeRepository.findMaxVersionByPostId(post.getId());
-        Recipe latestRecipe = recipeRepository.findLatestByPostId(post.getId()).orElseThrow();
-
-        saveVersion(post.getId(), latestVersion + 1, latestRecipe.getRootRecipeId(),
-                latestRecipe.getParentRecipeId(), req, editor.getId());
-    }
-
-    private void saveVersion(Long postId, int version, Long rootId, Long parentId, CreateRecipeRequestDto req, Long editorId) {
-        // Recipe 정보 저장
         Recipe recipe = Recipe.builder()
-                .postId(postId)
-                .version(version)
-                .rootRecipeId(rootId)
-                .parentRecipeId(parentId)
-                .title(req.recipeTitle())
+                .title(req.title())
                 .description(req.description())
-                .cookingTime(req.cookingTime())
-                .difficulty(req.difficulty().name())
+                .culinaryLocale(req.culinaryLocale() != null ? req.culinaryLocale() : (parent != null ? parent.getCulinaryLocale() : "ko-KR"))
+                .food1MasterId(req.food1MasterId())
+                .creatorId(creatorId)
+                .parentRecipe(parent)
+                .rootRecipe(root)
+                .changeCategory(req.changeCategory())
                 .build();
+
         recipeRepository.save(recipe);
 
-        // 재료 및 단계 저장
-        for (int i = 0; i < req.ingredients().size(); i++) {
-            IngredientRequestDto iDto = req.ingredients().get(i);
+        // 하위 요소 저장 (재료, 단계)
+        saveIngredientsAndSteps(recipe, req);
 
-            RecipeIngredient ingredient = RecipeIngredient.builder()
-                    .postId(postId)
-                    .version(version)
-                    .name(iDto.name())    // DTO에서 직접 값을 꺼냄
-                    .amount(iDto.amount())
-                    .type(iDto.type().name()) // Enum을 String으로 변환
-                    .displayOrder(i)
-                    .build();
-            ingredientRepository.save(ingredient);
-        }
+        // 이미지 활성화 (대표 이미지들)
+        imageService.activateImages(req.imageUrls(), recipe);
 
-        // 2. [에러 해결] 조리 단계 저장 로직
-        for (StepRequestDto sDto : req.steps()) {
-            RecipeStep step = RecipeStep.builder()
-                    .postId(postId)
-                    .version(version)
-                    .stepNumber(sDto.stepNumber()) // DTO에서 직접 값을 꺼냄
-                    .description(sDto.description())
-                    .imageUrl(sDto.imageUrl())
-                    .build();
-            stepRepository.save(step);
-        }
-
-        RecipeEditLog log = RecipeEditLog.builder()
-                .postId(postId)
-                .version(version)
-                .editorId(editorId)
-                .editSummary(req.editSummary())
-                .build();
-
-        editLogRepository.save(log);
+        return getRecipeDetail(recipe.getPublicId());
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * 레시피 상세 조회 (기획 원칙 1 반영: 상단 루트 고정)
+     */
     public RecipeDetailResponseDto getRecipeDetail(UUID publicId) {
-        Post post = postRepository.findByPublicId(publicId)
+        Recipe recipe = recipeRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
 
-        Recipe recipe = recipeRepository.findLatestByPostId(post.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Recipe details not found"));
+        // [원칙 1] 어디서든 루트 레시피 정보 포함
+        Recipe root = (recipe.getRootRecipe() != null) ? recipe.getRootRecipe() : recipe;
 
-        RecipeEditLog log = editLogRepository.findByPostIdAndVersion(post.getId(), recipe.getVersion())
-                .orElse(null);
+        // 변형 및 로그 리스트 조회
+        List<RecipeSummaryDto> variants = recipeRepository.findByParentRecipeIdAndIsDeletedFalse(recipe.getId())
+                .stream().map(this::convertToSummary).toList();
 
-        return assembleDetailDto(post, recipe, log);
+        List<LogPostSummaryDto> logs = recipeLogRepository.findAllByRecipeId(recipe.getId())
+                .stream().map(rl -> new LogPostSummaryDto(
+                        rl.getLogPost().getPublicId(),
+                        rl.getLogPost().getTitle(),
+                        rl.getRating(),
+                        null, // 대표이미지 생략
+                        null  // 작성자 생략
+                )).toList();
+
+        return RecipeDetailResponseDto.builder()
+                .publicId(recipe.getPublicId())
+                .title(recipe.getTitle())
+                .description(recipe.getDescription())
+                .culinaryLocale(recipe.getCulinaryLocale())
+                .changeCategory(recipe.getChangeCategory())
+                .rootInfo(convertToSummary(root))
+                .ingredients(convertToIngredientDtos(recipe.getIngredients()))
+                .steps(convertToStepDtos(recipe.getSteps()))
+                .variants(variants)
+                .logs(logs)
+                .build();
     }
 
-    private RecipeDetailResponseDto assembleDetailDto(Post post, Recipe recipe, RecipeEditLog log) {
-        // 재료 리스트 조회 및 변환
-        List<IngredientRequestDto> ingredients = ingredientRepository
-                .findAllByPostIdAndVersionOrderByDisplayOrderAsc(recipe.getPostId(), recipe.getVersion())
-                .stream()
-                .map(i -> new IngredientRequestDto(i.getName(), i.getAmount(), IngredientType.valueOf(i.getType())))
-                .toList();
+    // --- 내부 헬퍼 메서드 (에러 해결 핵심) ---
 
-        // 조리 단계 조회 및 변환
-        List<StepRequestDto> steps = stepRepository
-                .findAllByPostIdAndVersionOrderByStepNumberAsc(recipe.getPostId(), recipe.getVersion())
-                .stream()
-                .map(s -> new StepRequestDto(s.getStepNumber(), s.getDescription(), s.getImageUrl()))
-                .toList();
+    private void saveIngredientsAndSteps(Recipe recipe, CreateRecipeRequestDto req) {
+        // 1. 재료 저장
+        if (req.ingredients() != null) {
+            List<RecipeIngredient> ingredients = req.ingredients().stream()
+                    .map(dto -> RecipeIngredient.builder()
+                            .recipe(recipe)
+                            .name(dto.name())
+                            .amount(dto.amount())
+                            .type(dto.type())
+                            .build())
+                    .toList();
+            ingredientRepository.saveAll(ingredients);
+        }
 
-        // 계층 구조를 위한 PublicId 역조회 (보안 정책 준수)
-        UUID rootPublicId = getPublicIdOrNull(recipe.getRootRecipeId());
-        UUID parentPublicId = getPublicIdOrNull(recipe.getParentRecipeId());
+        // 2. 단계 저장 및 단계 이미지 연결
+        if (req.steps() != null) {
+            for (StepDto stepDto : req.steps()) {
+                Image stepImage = null;
+                if (stepDto.imageUrl() != null) {
+                    String filename = stepDto.imageUrl().replace(urlPrefix + "/", "");
+                    stepImage = imageRepository.findByStoredFilename(filename).orElse(null);
+                }
 
-        return new RecipeDetailResponseDto(
-                post.getPublicId(),
-                rootPublicId,
-                parentPublicId,
-                recipe.getVersion(),
+                RecipeStep step = RecipeStep.builder()
+                        .recipe(recipe)
+                        .stepNumber(stepDto.stepNumber())
+                        .description(stepDto.description())
+                        .image(stepImage)
+                        .build();
+                stepRepository.save(step);
+
+                // 단계 이미지 상태도 ACTIVE로 변경
+                if (stepImage != null) {
+                    stepImage.setStatus(com.pairingplanet.pairing_planet.domain.enums.ImageStatus.ACTIVE);
+                }
+            }
+        }
+    }
+
+    private RecipeSummaryDto convertToSummary(Recipe recipe) {
+        return new RecipeSummaryDto(
+                recipe.getPublicId(),
                 recipe.getTitle(),
-                recipe.getDescription(),
-                ingredients,
-                steps,
-                recipe.getCookingTime(),
-                recipe.getDifficulty(),
-                log != null ? log.getEditSummary() : "Initial Version",
-                recipe.getVersionCreatedAt()
+                recipe.getCulinaryLocale(),
+                null, // 작성자명은 필요시 조회
+                null  // 썸네일 경로
         );
     }
 
-    // 내부 ID를 보안용 PublicId로 변환해주는 헬퍼 메서드
-    private UUID getPublicIdOrNull(Long internalId) {
-        if (internalId == null) return null;
-        return postRepository.findById(internalId)
-                .map(Post::getPublicId)
-                .orElse(null);
+    private List<IngredientDto> convertToIngredientDtos(List<RecipeIngredient> ingredients) {
+        return ingredients.stream()
+                .map(i -> new IngredientDto(i.getName(), i.getAmount(), i.getType()))
+                .collect(Collectors.toList());
+    }
+
+    private List<StepDto> convertToStepDtos(List<RecipeStep> steps) {
+        return steps.stream()
+                .map(s -> new StepDto(
+                        s.getStepNumber(),
+                        s.getDescription(),
+                        s.getImage() != null ? urlPrefix + "/" + s.getImage().getStoredFilename() : null
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public HomeFeedResponseDto getHomeFeed() {
+        // 1. 최근 레시피 조회
+        List<RecipeSummaryDto> recent = recipeRepository.findTop5ByIsDeletedFalseOrderByCreatedAtDesc()
+                .stream().map(this::convertToSummary).toList();
+
+        // 2. 활발한 변형 트리 조회 (기획서: "이 레시피, 이렇게 바뀌고 있어요")
+        List<TrendingTreeDto> trending = recipeRepository.findTrendingOriginals(PageRequest.of(0, 3))
+                .stream().map(root -> {
+                    long variants = recipeRepository.countByRootRecipeIdAndIsDeletedFalse(root.getId());
+                    long logs = recipeLogRepository.countByRecipeId(root.getId()); // 혹은 계보 전체 로그 합산
+
+                    return TrendingTreeDto.builder()
+                            .rootRecipeId(root.getPublicId())
+                            .title(root.getTitle())
+                            .culinaryLocale(root.getCulinaryLocale())
+                            .variantCount(variants)
+                            .logCount(logs)
+                            .latestChangeSummary(root.getDescription()) // 예시 데이터
+                            .build();
+                }).toList();
+
+        return new HomeFeedResponseDto(recent, trending);
+    }
+
+    /**
+     * [해결] Cannot resolve method 'findRootRecipes'
+     * Recipes 탭의 기본 뷰: 오리지널 레시피 카드 리스트
+     */
+    @Transactional(readOnly = true)
+    public Slice<RecipeSummaryDto> findRootRecipes(String locale, Pageable pageable) {
+        return recipeRepository.findRootRecipesByLocale(locale, pageable)
+                .map(this::convertToSummary);
+    }
+
+    private Long findUserId(UUID publicId) {
+        return userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found")).getId();
     }
 }

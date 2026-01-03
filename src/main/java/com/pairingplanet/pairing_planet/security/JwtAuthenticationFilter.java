@@ -1,5 +1,7 @@
 package com.pairingplanet.pairing_planet.security;
 
+import com.pairingplanet.pairing_planet.domain.entity.user.User;
+import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import java.util.UUID;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -28,16 +31,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Access Token 유효성 검증
         if (token != null && tokenProvider.validateToken(token)) {
-            String subject = tokenProvider.getSubject(token);
-            UUID userId = UUID.fromString(subject);
-            String role = tokenProvider.getRole(token);
+            UUID publicId = UUID.fromString(tokenProvider.getSubject(token));
+
+            // [수정] DB 조회를 통해 UserPrincipal 생성
+            User user = userRepository.findByPublicId(publicId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            UserPrincipal principal = new UserPrincipal(user);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                    principal, null, principal.getAuthorities()
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-
         filterChain.doFilter(request, response);
     }
 

@@ -4,13 +4,14 @@ import com.pairingplanet.pairing_planet.domain.entity.common.BaseEntity;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "user_suggested_foods")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class UserSuggestedFood extends BaseEntity {
 
     @Column(name = "suggested_name", nullable = false, length = 100)
