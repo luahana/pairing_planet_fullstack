@@ -1,20 +1,23 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:pairing_planet2_frontend/data/models/log_post/log_post_summary_dto.dart';
-import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
+import 'recipe_summary_dto.dart';
+import 'ingredient_request_dto.dart';
+import 'step_request_dto.dart';
 
-import 'ingredient_dto.dart';
-import 'step_dto.dart';
+part 'recipe_detail_response_dto.g.dart';
 
+@JsonSerializable()
 class RecipeDetailResponseDto {
   final String publicId;
   final String title;
   final String description;
   final String culinaryLocale;
   final String? changeCategory;
-  final RecipeSummaryDto? rootInfo; // [원칙 1] 상단 고정 루트 레시피
-  final RecipeSummaryDto? parentInfo; // Inspired by 정보
-  final List<IngredientDto> ingredients;
-  final List<StepDto> steps;
+  final RecipeSummaryDto? rootInfo;
+  final RecipeSummaryDto? parentInfo;
+  final List<IngredientRequestDto> ingredients;
+  final List<StepRequestDto> steps;
   final List<String> imageUrls;
   final List<RecipeSummaryDto> variants;
   final List<LogPostSummaryDto> logs;
@@ -35,60 +38,21 @@ class RecipeDetailResponseDto {
   });
 
   factory RecipeDetailResponseDto.fromJson(Map<String, dynamic> json) =>
-      RecipeDetailResponseDto(
-        publicId: json['publicId'],
-        title: json['title'],
-        description: json['description'],
-        culinaryLocale: json['culinaryLocale'],
-        changeCategory: json['changeCategory'],
-        rootInfo: json['rootInfo'] != null
-            ? RecipeSummaryDto.fromJson(json['rootInfo'])
-            : null,
-        parentInfo: json['parentInfo'] != null
-            ? RecipeSummaryDto.fromJson(json['parentInfo'])
-            : null,
-        ingredients: (json['ingredients'] as List)
-            .map((e) => IngredientDto.fromJson(e))
-            .toList(),
-        steps: (json['steps'] as List).map((e) => StepDto.fromJson(e)).toList(),
-        imageUrls: List<String>.from(json['imageUrls']),
-        variants: (json['variants'] as List)
-            .map((e) => RecipeSummaryDto.fromJson(e))
-            .toList(),
-        logs: (json['logs'] as List)
-            .map((e) => LogPostSummaryDto.fromJson(e))
-            .toList(),
-      );
+      _$RecipeDetailResponseDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$RecipeDetailResponseDtoToJson(this);
 
-  Map<String, dynamic> toJson() => {
-    'publicId': publicId,
-    'title': title,
-    'description': description,
-    'culinaryLocale': culinaryLocale,
-    'ingredients': ingredients.map((e) => e.toJson()).toList(),
-    'steps': steps.map((e) => e.toJson()).toList(),
-    'variants': variants.map((e) => e.toJson()).toList(),
-    'logs': logs.map((e) => e.toJson()).toList(),
-    'imageUrls': imageUrls,
-    'rootInfo': rootInfo?.toJson(),
-    'parentInfo': parentInfo?.toJson(),
-  };
-
-  RecipeDetail toEntity() {
-    return RecipeDetail(
-      id: publicId,
-      title: title,
-      description: description,
-      culinaryLocale: culinaryLocale,
-      changeCategory: changeCategory,
-      // 하위 DTO들도 각각 toEntity()를 호출하여 변환
-      rootInfo: rootInfo?.toEntity(),
-      parentInfo: parentInfo?.toEntity(),
-      ingredients: ingredients.map((i) => i.toEntity()).toList(),
-      steps: steps.map((s) => s.toEntity()).toList(),
-      imageUrls: imageUrls,
-      variants: variants.map((v) => v.toEntity()).toList(),
-      logs: logs.map((l) => l.toEntity()).toList(),
-    );
-  }
+  RecipeDetail toEntity() => RecipeDetail(
+    id: publicId,
+    title: title,
+    description: description,
+    culinaryLocale: culinaryLocale,
+    changeCategory: changeCategory,
+    rootInfo: rootInfo?.toEntity(),
+    parentInfo: parentInfo?.toEntity(),
+    ingredients: ingredients.map((e) => e.toEntity()).toList(),
+    steps: steps.map((e) => e.toEntity()).toList(),
+    imageUrls: imageUrls,
+    variants: variants.map((e) => e.toEntity()).toList(),
+    logs: logs.map((e) => e.toEntity()).toList(),
+  );
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
-import '../providers/recipe_providers.dart';
+import '../../providers/recipe_providers.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
   final String recipeId;

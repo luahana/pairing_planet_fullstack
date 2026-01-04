@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pairing_planet2_frontend/core/network/dio_provider.dart';
 import 'package:pairing_planet2_frontend/core/services/storage_service.dart';
+import 'package:pairing_planet2_frontend/data/repositories/auth_repository_impl.dart';
+import 'package:pairing_planet2_frontend/domain/repositories/auth_repository.dart';
 
 enum AuthStatus { authenticated, unauthenticated, initial }
 
@@ -15,6 +18,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   AuthNotifier(this._storage) : super(AuthState(status: AuthStatus.initial)) {
     checkAuthStatus();
+  }
+
+  void loginSuccess() {
+    if (!mounted) return;
+
+    state = AuthState(status: AuthStatus.authenticated);
   }
 
   Future<void> checkAuthStatus() async {
@@ -35,4 +44,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 // 💡 전역 프로바이더 등록
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(StorageService());
+});
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  // dioProvider를 감시하여 Dio 인스턴스를 가져옵니다.
+  final dio = ref.watch(dioProvider);
+  // storageServiceProvider를 통해 저장소를 가져옵니다.
+  final storage = ref.watch(storageServiceProvider);
+
+  return AuthRepositoryImpl(dio, storage, ref);
 });

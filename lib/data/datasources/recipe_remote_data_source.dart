@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:pairing_planet2_frontend/data/models/common/paged_response_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_detail_response_dto.dart';
+import 'package:pairing_planet2_frontend/data/models/recipe/create_recipe_request_dtos.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
 import '../../core/constants/api_constants.dart';
 import '../../core/error/exceptions.dart';
@@ -10,6 +11,24 @@ class RecipeRemoteDataSource {
   final Dio _dio;
 
   RecipeRemoteDataSource(this._dio);
+
+  Future<void> createRecipe(CreateRecipeRequestDto recipe) async {
+    try {
+      final response = await _dio.post(
+        ApiEndpoints.recipes, // 보통 조회와 등록 엔드포인트는 동일(POST)합니다.
+        data: recipe.toJson(),
+      );
+
+      if (response.statusCode != HttpStatus.ok &&
+          response.statusCode != HttpStatus.created) {
+        throw ServerException();
+      }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "서버 응답 에러");
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
 
   /// 레시피 상세 조회
   Future<RecipeDetailResponseDto> getRecipeDetail(String publicId) async {

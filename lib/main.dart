@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
 import 'package:pairing_planet2_frontend/core/router/app_router.dart';
 import 'package:pairing_planet2_frontend/core/services/toast_service.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_theme.dart';
 import 'package:pairing_planet2_frontend/core/utils/logger.dart';
+import 'package:pairing_planet2_frontend/firebase_options.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -19,11 +21,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 1. Firebase 초기화
-  await Firebase.initializeApp(
-    // options: DefaultFirebaseOptions.currentPlatform, // flutterfire로 생성된 옵션
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await GoogleSignIn.instance.initialize();
+  await GoogleSignIn.instance.initialize(
+    serverClientId:
+        "223256199574-lv408agbeo87e21ucvmfj0qlg836jqet.apps.googleusercontent.com",
+  );
 
   // 2. Flutter 프레임워크 내 에러 캡처
   FlutterError.onError = (errorDetails) {
@@ -47,9 +50,9 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('ko'), Locale('en')],
+      supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
       path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
+      fallbackLocale: const Locale('ko', 'KR'),
       // 3. ProviderScope를 그 아래에 배치
       child: ProviderScope(
         observers: [
@@ -74,6 +77,13 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentLocale = context.locale;
+      final formatted =
+          "${currentLocale.languageCode}-${currentLocale.countryCode}";
+      ref.read(localeProvider.notifier).state = formatted;
+    });
 
     return ScreenUtilInit(
       designSize: const Size(360, 690),

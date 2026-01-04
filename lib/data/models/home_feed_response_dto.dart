@@ -1,7 +1,10 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
-
 import 'recipe/trending_tree_dto.dart';
 
+part 'home_feed_response_dto.g.dart';
+
+@JsonSerializable()
 class HomeFeedResponseDto {
   final List<RecipeSummaryDto> recentRecipes;
   final List<TrendingTreeDto> trendingTrees;
@@ -12,12 +15,6 @@ class HomeFeedResponseDto {
   });
 
   factory HomeFeedResponseDto.fromJson(Map<String, dynamic> json) =>
-      HomeFeedResponseDto(
-        recentRecipes: (json['recentRecipes'] as List)
-            .map((e) => RecipeSummaryDto.fromJson(e))
-            .toList(),
-        trendingTrees: (json['trendingTrees'] as List)
-            .map((e) => TrendingTreeDto.fromJson(e))
-            .toList(),
-      );
+      _$HomeFeedResponseDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$HomeFeedResponseDtoToJson(this);
 }

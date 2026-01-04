@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>223256199574-89h4k9ve076uofsn6dfqriri3o9kk39n.apps.googleusercontent.com</string>
+	<string>223256199574-tml2ekiekjqi5e7vb1sj8ragu327k2dg.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.223256199574-89h4k9ve076uofsn6dfqriri3o9kk39n</string>
+	<string>com.googleusercontent.apps.223256199574-tml2ekiekjqi5e7vb1sj8ragu327k2dg</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>223256199574-73a5u2jh66kl4tgsfbcvnjm33csou69m.apps.googleusercontent.com</string>
+	<string>223256199574-2df9qhloe95tkfup5d5kt7u8qc3bs17m.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCcGoTEz1wYvRv-xuFATq--zIZTfXnyhCc</string>
 	<key>GCM_SENDER_ID</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.pp.test</string>
+	<string>com.pairingplanet.pairingplanetfrontend</string>
 	<key>PROJECT_ID</key>
 	<string>pptest-b5da0</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:223256199574:ios:7739f2324111fac2341db7</string>
+	<string>1:223256199574:ios:6dea0406ca02c63c341db7</string>
 </dict>
 </plist>

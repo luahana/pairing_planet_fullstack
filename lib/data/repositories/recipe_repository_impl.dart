@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:pairing_planet2_frontend/core/constants/api_constants.dart';
 import 'package:pairing_planet2_frontend/core/error/failures.dart';
 import 'package:pairing_planet2_frontend/data/models/common/paged_response_dto.dart';
+import 'package:pairing_planet2_frontend/data/models/recipe/create_recipe_request_dtos.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import '../../core/network/network_info.dart'; // 네트워크 상태 확인용 (추가 필요)
@@ -20,6 +21,30 @@ class RecipeRepositoryImpl implements RecipeRepository {
     required this.localDataSource,
     required this.networkInfo,
   });
+
+  @override
+  Future<Either<Failure, Unit>> createRecipe(
+    CreateRecipeRequestDto recipe,
+  ) async {
+    // 1. 네트워크 연결 상태 확인
+    if (await networkInfo.isConnected) {
+      try {
+        // 2. 서버에 레시피 생성 요청 (RemoteDataSource에 해당 메서드 추가 필요)
+        await remoteDataSource.createRecipe(recipe);
+
+        // 3. 성공 시 Unit 반환 (dartz 패키지의 성공 신호)
+        return const Right(unit);
+      } on DioException catch (e) {
+        // 4. 에러 발생 시 기존 헬퍼 메서드로 Failure 매핑
+        return Left(_mapDioExceptionToFailure(e));
+      } catch (e) {
+        return Left(UnknownFailure(e.toString()));
+      }
+    } else {
+      // 5. 오프라인 상태 에러 반환
+      return Left(ConnectionFailure('네트워크 연결이 없어 레시피를 등록할 수 없습니다.'));
+    }
+  }
 
   @override
   Future<Either<Failure, RecipeDetail>> getRecipeDetail(String id) async {

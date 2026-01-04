@@ -1,11 +1,15 @@
+import 'package:json_annotation/json_annotation.dart'; // 💡 필수 임포트
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 
+part 'recipe_summary_dto.g.dart'; // 💡 필수 선언
+
+@JsonSerializable()
 class RecipeSummaryDto {
   final String publicId;
   final String title;
   final String culinaryLocale;
   final String? creatorName;
-  final String? thumbnail; // display_order = 0인 이미지
+  final String? thumbnail;
 
   RecipeSummaryDto({
     required this.publicId,
@@ -16,21 +20,8 @@ class RecipeSummaryDto {
   });
 
   factory RecipeSummaryDto.fromJson(Map<String, dynamic> json) =>
-      RecipeSummaryDto(
-        publicId: json['publicId'],
-        title: json['title'],
-        culinaryLocale: json['culinaryLocale'],
-        creatorName: json['creatorName'],
-        thumbnail: json['thumbnail'],
-      );
-
-  Map<String, dynamic> toJson() => {
-    'publicId': publicId,
-    'title': title,
-    'culinaryLocale': culinaryLocale,
-    'creatorName': creatorName,
-    'thumbnail': thumbnail,
-  };
+      _$RecipeSummaryDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$RecipeSummaryDtoToJson(this);
 
   RecipeSummary toEntity() => RecipeSummary(
     id: publicId,

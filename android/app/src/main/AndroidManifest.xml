@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.pairingplanet.pairing_planet_frontend"> <application
+    package="com.pairingplanet.pairingplanetfrontend"> <application
         android:label="pairing_planet_frontend" android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

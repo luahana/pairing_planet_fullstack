@@ -37,11 +37,10 @@ class AuthInterceptor extends Interceptor {
     }
 
     // 💡 갱신 요청 자체가 401이 난 경우 (리프레시 토큰 만료) 즉시 에러 처리
-    if (err.requestOptions.path == '/auth/refresh') {
+    if (err.requestOptions.path.contains('/auth/reissue')) {
       _isRefreshing = false;
       return handler.next(err);
     }
-
     if (_isRefreshing) {
       talker.info("이미 토큰 갱신 중입니다. 대기열 진입.");
       final newToken = await _refreshCompleter?.future;
@@ -57,9 +56,20 @@ class AuthInterceptor extends Interceptor {
       talker.info("토큰 만료 감지: 갱신 시작");
       final refreshToken = await _storageService.getRefreshToken();
 
+      // 💡 1. 리프레시 토큰이 null인지 먼저 확인합니다.
+      if (refreshToken == null || refreshToken.isEmpty) {
+        talker.error("리프레시 토큰이 저장소에 없습니다. 재발급 중단.");
+        _isRefreshing = false;
+        // 토큰이 없으면 재발급이 불가능하므로 저장소를 비우고 종료합니다.
+        await _storageService.clearTokens();
+        return handler.next(err);
+      }
+
+      talker.info("서버로 전송할 리프레시 토큰: $refreshToken");
+
       // 💡 별도의 _refreshDio를 사용하여 인터셉터 중복 실행 방지
       final response = await _refreshDio.post(
-        '/auth/refresh',
+        '/auth/reissue',
         data: {'refreshToken': refreshToken},
       );
 
@@ -77,6 +87,7 @@ class AuthInterceptor extends Interceptor {
       _refreshCompleter?.complete(null);
       _isRefreshing = false;
       // 여기서 로그아웃 이벤트를 브로드캐스트하거나 Provider를 통해 상태 변경 가능
+      await _storageService.clearTokens();
       return handler.next(err);
     }
   }

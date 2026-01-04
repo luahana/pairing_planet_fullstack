@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/core/config/app_config.dart';
 import 'package:pairing_planet2_frontend/core/constants/api_constants.dart';
 import 'package:pairing_planet2_frontend/core/network/auth_interceptor.dart';
+import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
 import 'package:pairing_planet2_frontend/core/services/storage_service.dart';
 import 'package:pairing_planet2_frontend/core/services/toast_service.dart'; // 💡 추가
 import 'package:pairing_planet2_frontend/core/utils/logger.dart'; // 💡 talker 인스턴스 임포트
@@ -16,6 +17,7 @@ final storageServiceProvider = Provider<StorageService>(
 );
 
 final dioProvider = Provider<Dio>((ref) {
+  final currentLocale = ref.watch(localeProvider);
   final storageService = ref.watch(storageServiceProvider);
 
   final dio = Dio(
@@ -47,8 +49,7 @@ final dioProvider = Provider<Dio>((ref) {
       onRequest: (options, handler) {
         // 💡 현재 앱의 언어 코드를 가져와 헤더에 삽입 (예: 'ko', 'en')
         // context가 없는 환경이라면 별도의 LanguageService를 만들어 관리해야 합니다.
-        options.headers['Accept-Language'] =
-            'ko'; // 실제로는 현재 설정된 locale 값을 넣습니다.
+        options.headers['Accept-Language'] = currentLocale;
         return handler.next(options);
       },
     ),

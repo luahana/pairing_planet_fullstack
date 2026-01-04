@@ -1,5 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_summary.dart';
 
+part 'log_post_summary_dto.g.dart';
+
+@JsonSerializable()
 class LogPostSummaryDto {
   final String publicId;
   final String title;
@@ -16,26 +20,12 @@ class LogPostSummaryDto {
   });
 
   factory LogPostSummaryDto.fromJson(Map<String, dynamic> json) =>
-      LogPostSummaryDto(
-        publicId: json['publicId'],
-        title: json['title'],
-        rating: json['rating'],
-        thumbnail: json['thumbnail'],
-        creatorName: json['creatorName'],
-      );
+      _$LogPostSummaryDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$LogPostSummaryDtoToJson(this);
 
-  Map<String, dynamic> toJson() => {
-    'publicId': publicId,
-    'title': title,
-    'rating': rating,
-    'thumbnail': thumbnail,
-    'creatorName': creatorName,
-  };
-
-  /// 💡 에러를 해결하는 핵심 매퍼 메서드
   LogPostSummary toEntity() {
     return LogPostSummary(
-      id: publicId, // publicId를 엔티티의 id로 매핑
+      id: publicId,
       title: title,
       rating: rating,
       thumbnail: thumbnail,

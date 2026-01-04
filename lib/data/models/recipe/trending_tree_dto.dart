@@ -1,5 +1,10 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'trending_tree_dto.g.dart';
+
+@JsonSerializable()
 class TrendingTreeDto {
-  final String rootRecipeId; // UUID는 String으로 처리
+  final String rootRecipeId;
   final String title;
   final String culinaryLocale;
   final int variantCount;
@@ -16,12 +21,6 @@ class TrendingTreeDto {
   });
 
   factory TrendingTreeDto.fromJson(Map<String, dynamic> json) =>
-      TrendingTreeDto(
-        rootRecipeId: json['rootRecipeId'],
-        title: json['title'],
-        culinaryLocale: json['culinaryLocale'],
-        variantCount: json['variantCount'],
-        logCount: json['logCount'],
-        latestChangeSummary: json['latestChangeSummary'],
-      );
+      _$TrendingTreeDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$TrendingTreeDtoToJson(this);
 }

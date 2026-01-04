@@ -1,5 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
 
+part 'log_post_detail_response_dto.g.dart';
+
+@JsonSerializable()
 class LogPostDetailResponseDto {
   final String publicId;
   final String title;
@@ -18,23 +22,7 @@ class LogPostDetailResponseDto {
   });
 
   factory LogPostDetailResponseDto.fromJson(Map<String, dynamic> json) =>
-      LogPostDetailResponseDto(
-        publicId: json['publicId'],
-        title: json['title'],
-        content: json['content'],
-        rating: json['rating'],
-        imageUrls: List<String>.from(json['imageUrls']),
-        linkedRecipe: RecipeSummaryDto.fromJson(json['linkedRecipe']),
-      );
+      _$LogPostDetailResponseDtoFromJson(json);
 
-  // 💡 아래 toJson 메서드를 추가했습니다.
-  Map<String, dynamic> toJson() => {
-    'publicId': publicId,
-    'title': title,
-    'content': content,
-    'rating': rating,
-    'imageUrls': imageUrls,
-    // 중첩된 DTO도 toJson()을 호출하여 Map으로 변환합니다.
-    'linkedRecipe': linkedRecipe.toJson(),
-  };
+  Map<String, dynamic> toJson() => _$LogPostDetailResponseDtoToJson(this);
 }
