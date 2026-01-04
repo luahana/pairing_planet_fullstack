@@ -2,11 +2,12 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info_impl.dart';
-import 'package:pairing_planet2_frontend/core/usecase/get_recipe_detail.dart';
-import 'package:pairing_planet2_frontend/data/datasources/recipe_local_data_source.dart';
+import 'package:pairing_planet2_frontend/domain/usecases/recipe/create_recipe_usecase.dart';
+import 'package:pairing_planet2_frontend/domain/usecases/recipe/get_recipe_detail.dart';
+import 'package:pairing_planet2_frontend/data/datasources/recipe/recipe_local_data_source.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import '../../../core/network/dio_provider.dart';
-import '../../../data/datasources/recipe_remote_data_source.dart';
+import '../../../data/datasources/recipe/recipe_remote_data_source.dart';
 import '../../../data/repositories/recipe_repository_impl.dart';
 import '../../../domain/repositories/recipe_repository.dart';
 
@@ -33,14 +34,14 @@ final recipeLocalDataSourceProvider = Provider<RecipeLocalDataSource>((ref) {
 // ----------------------------------------------------------------
 
 // 백엔드 API와 직접 통신하는 리모트 데이터 소스
-final recipeDataSourceProvider = Provider<RecipeRemoteDataSource>((ref) {
+final recipeRemoteDataSourceProvider = Provider<RecipeRemoteDataSource>((ref) {
   final dio = ref.watch(dioProvider);
   return RecipeRemoteDataSource(dio);
 });
 
 // 리포지토리 구현체: Remote, Local, NetworkInfo를 모두 조합하여 데이터 흐름 제어
 final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
-  final remoteDataSource = ref.watch(recipeDataSourceProvider);
+  final remoteDataSource = ref.watch(recipeRemoteDataSourceProvider);
   final localDataSource = ref.watch(recipeLocalDataSourceProvider);
   final networkInfo = ref.watch(networkInfoProvider);
 
@@ -75,4 +76,9 @@ final recipeDetailProvider = FutureProvider.family<RecipeDetail, String>((
 
   // Either 타입을 폴드(fold)하여 실패 시 에러를 던지고, 성공 시 데이터를 반환
   return result.fold((failure) => throw failure.message, (recipe) => recipe);
+});
+
+final createRecipeUseCaseProvider = Provider<CreateRecipeUseCase>((ref) {
+  final repository = ref.watch(recipeRepositoryProvider);
+  return CreateRecipeUseCase(repository);
 });

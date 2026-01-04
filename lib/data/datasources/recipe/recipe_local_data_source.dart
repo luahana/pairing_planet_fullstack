@@ -7,7 +7,6 @@ class RecipeLocalDataSource {
 
   Future<void> cacheRecipeDetail(RecipeDetailResponseDto recipe) async {
     final box = await Hive.openBox(_recipeBoxName);
-    // 이제 recipe.toJson()을 인식합니다.
     await box.put(recipe.publicId, jsonEncode(recipe.toJson()));
   }
 

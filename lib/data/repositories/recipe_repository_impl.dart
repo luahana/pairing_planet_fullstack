@@ -7,9 +7,9 @@ import 'package:pairing_planet2_frontend/data/models/recipe/create_recipe_reques
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import '../../core/network/network_info.dart'; // 네트워크 상태 확인용 (추가 필요)
-import '../datasources/recipe_local_data_source.dart'; // 로컬 데이터 소스 (추가 필요)
+import '../datasources/recipe/recipe_local_data_source.dart'; // 로컬 데이터 소스 (추가 필요)
 import '../../domain/repositories/recipe_repository.dart';
-import '../datasources/recipe_remote_data_source.dart';
+import '../datasources/recipe/recipe_remote_data_source.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final RecipeRemoteDataSource remoteDataSource;

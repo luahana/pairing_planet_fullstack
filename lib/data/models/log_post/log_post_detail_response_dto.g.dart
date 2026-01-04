@@ -12,13 +12,13 @@ LogPostDetailResponseDto _$LogPostDetailResponseDtoFromJson(
   publicId: json['publicId'] as String,
   title: json['title'] as String,
   content: json['content'] as String,
-  rating: (json['rating'] as num?)?.toInt(),
-  imageUrls: (json['imageUrls'] as List<dynamic>)
-      .map((e) => e as String)
+  rating: (json['rating'] as num).toInt(),
+  images: (json['images'] as List<dynamic>)
+      .map((e) => ImageResponseDto.fromJson(e as Map<String, dynamic>))
       .toList(),
-  linkedRecipe: RecipeSummaryDto.fromJson(
-    json['linkedRecipe'] as Map<String, dynamic>,
-  ),
+  linkedRecipe: json['linkedRecipe'] == null
+      ? null
+      : RecipeSummaryDto.fromJson(json['linkedRecipe'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
@@ -28,6 +28,6 @@ Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
   'title': instance.title,
   'content': instance.content,
   'rating': instance.rating,
-  'imageUrls': instance.imageUrls,
+  'images': instance.images,
   'linkedRecipe': instance.linkedRecipe,
 };

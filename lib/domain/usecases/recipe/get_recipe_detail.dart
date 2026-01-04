@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/domain/repositories/recipe_repository.dart';
-import '../../core/error/failures.dart';
-import '../../core/usecase/usecase.dart';
+import '../../../core/error/failures.dart';
+import '../../../core/usecase/usecase.dart';
 
 class GetRecipeDetailUseCase implements UseCase<RecipeDetail, String> {
   final RecipeRepository repository;

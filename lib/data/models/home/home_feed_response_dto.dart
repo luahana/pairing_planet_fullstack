@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
-import 'recipe/trending_tree_dto.dart';
+import '../recipe/trending_tree_dto.dart';
 
 part 'home_feed_response_dto.g.dart';
 

@@ -14,4 +14,6 @@ abstract class AuthRepository {
 
   /// 토큰을 갱신합니다.
   Future<Either<Failure, Unit>> reissueToken();
+
+  Future<Either<Failure, Unit>> logout();
 }

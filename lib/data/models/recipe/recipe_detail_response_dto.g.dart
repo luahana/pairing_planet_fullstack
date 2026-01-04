@@ -21,13 +21,13 @@ RecipeDetailResponseDto _$RecipeDetailResponseDtoFromJson(
       ? null
       : RecipeSummaryDto.fromJson(json['parentInfo'] as Map<String, dynamic>),
   ingredients: (json['ingredients'] as List<dynamic>)
-      .map((e) => IngredientRequestDto.fromJson(e as Map<String, dynamic>))
+      .map((e) => IngredientDto.fromJson(e as Map<String, dynamic>))
       .toList(),
   steps: (json['steps'] as List<dynamic>)
-      .map((e) => StepRequestDto.fromJson(e as Map<String, dynamic>))
+      .map((e) => StepDto.fromJson(e as Map<String, dynamic>))
       .toList(),
-  imageUrls: (json['imageUrls'] as List<dynamic>)
-      .map((e) => e as String)
+  images: (json['images'] as List<dynamic>)
+      .map((e) => ImageResponseDto.fromJson(e as Map<String, dynamic>))
       .toList(),
   variants: (json['variants'] as List<dynamic>)
       .map((e) => RecipeSummaryDto.fromJson(e as Map<String, dynamic>))
@@ -49,7 +49,7 @@ Map<String, dynamic> _$RecipeDetailResponseDtoToJson(
   'parentInfo': instance.parentInfo,
   'ingredients': instance.ingredients,
   'steps': instance.steps,
-  'imageUrls': instance.imageUrls,
+  'images': instance.images,
   'variants': instance.variants,
   'logs': instance.logs,
 };

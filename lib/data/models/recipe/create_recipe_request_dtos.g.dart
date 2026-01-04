@@ -14,12 +14,12 @@ CreateRecipeRequestDto _$CreateRecipeRequestDtoFromJson(
   culinaryLocale: json['culinaryLocale'] as String,
   food1MasterId: (json['food1MasterId'] as num?)?.toInt(),
   ingredients: (json['ingredients'] as List<dynamic>)
-      .map((e) => IngredientRequestDto.fromJson(e as Map<String, dynamic>))
+      .map((e) => IngredientDto.fromJson(e as Map<String, dynamic>))
       .toList(),
   steps: (json['steps'] as List<dynamic>)
-      .map((e) => StepRequestDto.fromJson(e as Map<String, dynamic>))
+      .map((e) => StepDto.fromJson(e as Map<String, dynamic>))
       .toList(),
-  imageUrls: (json['imageUrls'] as List<dynamic>)
+  imagePublicIds: (json['imagePublicIds'] as List<dynamic>)
       .map((e) => e as String)
       .toList(),
   changeCategory: json['changeCategory'] as String?,
@@ -35,7 +35,7 @@ Map<String, dynamic> _$CreateRecipeRequestDtoToJson(
   'food1MasterId': instance.food1MasterId,
   'ingredients': instance.ingredients,
   'steps': instance.steps,
-  'imageUrls': instance.imageUrls,
+  'imagePublicIds': instance.imagePublicIds,
   'changeCategory': instance.changeCategory,
   'parentPublicId': instance.parentPublicId,
 };

@@ -4,24 +4,27 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_step.dart
 part 'step_dto.g.dart';
 
 @JsonSerializable()
-class StepRequestDto {
+class StepDto {
   final int stepNumber;
   final String description;
-  final String? imageUrl;
+  final String? imagePublicId; // [추가] 식별용 UUID
+  final String? imageUrl; // [유지] 표시용 URL
 
-  StepRequestDto({
+  StepDto({
     required this.stepNumber,
     required this.description,
+    this.imagePublicId,
     this.imageUrl,
   });
 
-  factory StepRequestDto.fromJson(Map<String, dynamic> json) =>
-      _$StepRequestDtoFromJson(json);
-  Map<String, dynamic> toJson() => _$StepRequestDtoToJson(this);
+  factory StepDto.fromJson(Map<String, dynamic> json) =>
+      _$StepDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$StepDtoToJson(this);
 
   RecipeStep toEntity() => RecipeStep(
     stepNumber: stepNumber,
     description: description,
-    imageUrl: imageUrl,
+    imagePublicId: imagePublicId, // [추가됨]
+    imageUrl: imageUrl, // [유지됨]
   );
 }

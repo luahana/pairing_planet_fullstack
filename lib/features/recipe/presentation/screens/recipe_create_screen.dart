@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pairing_planet2_frontend/data/models/recipe/ingredient_request_dto.dart';
+import 'package:pairing_planet2_frontend/data/models/recipe/ingredient_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/create_recipe_request_dtos.dart';
-import 'package:pairing_planet2_frontend/data/models/recipe/step_request_dto.dart';
+import 'package:pairing_planet2_frontend/data/models/recipe/step_dto.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
-// 추후 이미지 기능 구현 시 UploadItem import
-// import '../../../post/data/models/upload_item_model.dart';
+import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 import '../widgets/hook_section.dart';
 import '../widgets/ingredient_section.dart';
 import '../widgets/step_section.dart';
@@ -20,20 +19,22 @@ class RecipeCreateScreen extends ConsumerStatefulWidget {
 
 class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
   final _titleController = TextEditingController();
+  final _foodNameController = TextEditingController(); // 💡 추가
   final _descriptionController = TextEditingController();
   final _localeController = TextEditingController();
 
   final List<Map<String, dynamic>> _ingredients = [];
   final List<Map<String, dynamic>> _steps = [];
-  // final List<UploadItem> _finishedImages = []; // 추후 이미지 구현 시 사용
+  final List<UploadItem> _finishedImages = []; // 💡 이미지 리스트 활성화
 
+  int? _food1MasterId; // 💡 서버 전송용 음식 ID
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _addIngredient(); // 초기 재료 1개 추가
-    _addStep(); // 초기 단계 1개 추가
+    _addIngredient();
+    _addStep();
   }
 
   void _addIngredient() {
@@ -47,21 +48,30 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
       _steps.add({
         'stepNumber': _steps.length + 1,
         'description': '',
-        'imageUrl': '', // 추후 이미지 구현 시 사용
+        'imageUrl': '',
       });
     });
   }
 
   Future<void> _handleSubmit() async {
+    // 💡 업로드 중인 이미지가 있는지 확인
+    if (_finishedImages.any((img) => img.status == UploadStatus.uploading)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('이미지 업로드가 완료될 때까지 기다려주세요.')));
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       final requestDto = CreateRecipeRequestDto(
         title: _titleController.text,
         description: _descriptionController.text,
         culinaryLocale: _localeController.text,
+        food1MasterId: _food1MasterId, // 💡 자동완성으로 받은 ID 할당
         ingredients: _ingredients
             .map(
-              (i) => IngredientRequestDto(
+              (i) => IngredientDto(
                 name: i['name'],
                 amount: i['amount'],
                 type: i['type'],
@@ -70,13 +80,20 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
             .toList(),
         steps: _steps
             .map(
-              (s) => StepRequestDto(
+              (s) => StepDto(
                 stepNumber: s['stepNumber'],
                 description: s['description'],
               ),
             )
             .toList(),
-        imageUrls: [], // 추후 이미지 구현 시 _finishedImages에서 추출
+        // 💡 성공한 이미지들의 publicId만 추출하여 전송
+        imagePublicIds: _finishedImages
+            .where(
+              (img) =>
+                  img.status == UploadStatus.success && img.publicId != null,
+            )
+            .map((img) => img.publicId!)
+            .toList(),
       );
 
       final result = await ref
@@ -123,12 +140,14 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // 💡 수정된 HookSection 호출부
                     HookSection(
                       titleController: _titleController,
+                      foodNameController: _foodNameController,
                       descriptionController: _descriptionController,
-                      localeController: _localeController,
-                      // finishedImages: _finishedImages,
-                      // onAddImage: () {}, // 추후 이미지 picker 구현
+                      finishedImages: _finishedImages,
+                      onFoodIdSelected: (id) => _food1MasterId = id,
+                      onStateChanged: () => setState(() {}),
                     ),
                     const SizedBox(height: 32),
                     IngredientSection(

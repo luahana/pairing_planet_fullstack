@@ -10,9 +10,9 @@ LogPostSummaryDto _$LogPostSummaryDtoFromJson(Map<String, dynamic> json) =>
     LogPostSummaryDto(
       publicId: json['publicId'] as String,
       title: json['title'] as String,
-      rating: (json['rating'] as num?)?.toInt(),
-      thumbnail: json['thumbnail'] as String?,
-      creatorName: json['creatorName'] as String?,
+      rating: (json['rating'] as num).toInt(),
+      thumbnailUrl: json['thumbnailUrl'] as String?,
+      creatorName: json['creatorName'] as String,
     );
 
 Map<String, dynamic> _$LogPostSummaryDtoToJson(LogPostSummaryDto instance) =>
@@ -20,6 +20,6 @@ Map<String, dynamic> _$LogPostSummaryDtoToJson(LogPostSummaryDto instance) =>
       'publicId': instance.publicId,
       'title': instance.title,
       'rating': instance.rating,
-      'thumbnail': instance.thumbnail,
+      'thumbnailUrl': instance.thumbnailUrl,
       'creatorName': instance.creatorName,
     };
