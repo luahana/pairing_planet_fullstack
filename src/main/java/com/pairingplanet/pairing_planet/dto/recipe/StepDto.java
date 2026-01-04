@@ -1,3 +1,9 @@
 package com.pairingplanet.pairing_planet.dto.recipe;
 
-public record StepDto(Integer stepNumber, String description, String imageUrl) {}
+import java.util.UUID;
+public record StepDto(
+        Integer stepNumber,
+        String description,
+        UUID imagePublicId, // [추가] 식별용 UUID
+        String imageUrl     // [유지] 표시용 URL
+) {}

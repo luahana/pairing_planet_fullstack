@@ -35,8 +35,6 @@ public class FoodScoreScheduler {
                 SELECT food_id, COUNT(*) as usage_count
                 FROM (
                     SELECT food1_master_id as food_id FROM pairing_map
-                    UNION ALL
-                    SELECT food2_master_id as food_id FROM pairing_map WHERE food2_master_id IS NOT NULL
                 ) combined_foods
                 GROUP BY food_id
             ) stats

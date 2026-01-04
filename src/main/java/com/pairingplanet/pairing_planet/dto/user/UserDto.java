@@ -11,40 +11,36 @@ import java.util.UUID;
 
 @Builder
 public record UserDto(
-        UUID id,
+        UUID id,                 // 유저 고유 ID
         String username,
-        String profileImageUrl,
-        Gender gender,          // [추가] 성별
-        LocalDate birthDate    // [추가] 생년월일
+        UUID profileImageId,     // [추가] 프로필 이미지의 UUID
+        String profileImageUrl,  // [유지] 화면 표시용 전체 URL
+        Gender gender,
+        LocalDate birthDate
 ) {
-    /**
-     * User 엔티티를 UserDto로 변환합니다.
-     * @param user 변환할 유저 엔티티
-     * @param urlPrefix 프로필 이미지 경로 구성을 위한 프리픽스
-     */
     public static UserDto from(User user, String urlPrefix) {
         if (user == null) return null;
 
-        String username = user.getUsername();
         String profileUrl = user.getProfileImageUrl();
+        // [추가] 실제 이미지 엔티티의 UUID 정보는 필요시 DB에서 가져오거나
+        // User 엔티티가 Image 엔티티를 참조하게 설계했다면 바로 매핑 가능합니다.
+        // 현재는 파일명 기반이므로 URL 처리 로직을 유지합니다.
 
-        // 1. 프로필 이미지 URL 처리
         if (profileUrl != null && !profileUrl.isEmpty()) {
             if (!profileUrl.startsWith("http") && urlPrefix != null) {
                 profileUrl = urlPrefix + "/" + profileUrl;
             }
         } else {
-            // 이미지가 없을 경우 이니셜 아바타 생성
-            String encodedName = URLEncoder.encode(username, StandardCharsets.UTF_8);
+            String encodedName = URLEncoder.encode(user.getUsername(), StandardCharsets.UTF_8);
             profileUrl = "https://ui-avatars.com/api/?name=" + encodedName + "&background=random&color=fff";
         }
 
         return UserDto.builder()
                 .id(user.getPublicId())
-                .username(username)
+                .username(user.getUsername())
                 .profileImageUrl(profileUrl)
-                .gender(user.getGender())       // [매핑] 성별
-                .birthDate(user.getBirthDate()) // [매핑] 생년월일
+                .gender(user.getGender())
+                .birthDate(user.getBirthDate())
                 .build();
     }
 }

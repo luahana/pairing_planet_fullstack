@@ -6,6 +6,6 @@ public record LogPostSummaryDto(
         UUID publicId,
         String title,
         Integer rating,
-        String thumbnail,
+        String thumbnailUrl, // [수정] thumbnail -> thumbnailUrl
         String creatorName
 ) {}

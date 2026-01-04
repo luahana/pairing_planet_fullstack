@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
     // 1. 레시피/로그별 이미지 목록 (정렬 순서 준수)
@@ -25,4 +26,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     // [수정] 가비지 컬렉션용 (TEMP 대신 PROCESSING 사용)
     List<Image> findByStatusAndCreatedAtBefore(ImageStatus status, Instant dateTime);
+
+    Optional<Image> findByPublicId(UUID publicId);
 }

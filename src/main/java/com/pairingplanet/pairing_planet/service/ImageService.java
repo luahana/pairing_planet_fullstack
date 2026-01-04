@@ -3,6 +3,7 @@ package com.pairingplanet.pairing_planet.service;
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
 import com.pairingplanet.pairing_planet.domain.entity.log_post.LogPost;
 import com.pairingplanet.pairing_planet.domain.entity.recipe.Recipe;
+import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.domain.enums.ImageStatus;
 import com.pairingplanet.pairing_planet.domain.enums.ImageType;
 import com.pairingplanet.pairing_planet.dto.image.ImageUploadResponseDto;
@@ -70,12 +71,13 @@ public class ImageService {
                     .storedFilename(key)
                     .originalFilename(originalFilename)
                     .type(imageType)
-                    .status(ImageStatus.PROCESSING) // [수정] TEMP -> PROCESSING
+                    .status(ImageStatus.PROCESSING)
                     .uploaderId(uploaderId)
                     .build();
-            imageRepository.save(image);
+            imageRepository.save(image); //
 
             return ImageUploadResponseDto.builder()
+                    .imagePublicId(image.getPublicId())
                     .imageUrl(urlPrefix + "/" + key)
                     .originalFilename(originalFilename)
                     .build();
@@ -88,24 +90,29 @@ public class ImageService {
 
     // [수정] 이미지 활성화 시 연관 엔티티와 순서(displayOrder) 부여
     @Transactional
-    public void activateImages(List<String> imageUrls, Object target) {
-        if (imageUrls == null || imageUrls.isEmpty()) return;
+    public void activateImages(List<UUID> imagePublicIds, Object target) {
+        if (imagePublicIds == null || imagePublicIds.isEmpty()) return;
 
-        for (int i = 0; i < imageUrls.size(); i++) {
-            String key = extractKeyFromUrl(imageUrls.get(i));
+        for (int i = 0; i < imagePublicIds.size(); i++) {
+            // [해결] 람다 내부에서 사용하기 위해 effectively final 변수로 복사합니다.
+            final int index = i;
+            final UUID currentId = imagePublicIds.get(i);
 
-            Image image = imageRepository.findByStoredFilename(key)
-                    .orElseThrow(() -> new IllegalArgumentException("Image not found: " + key));
+            // 이제 람다 안에서 index나 currentId를 안전하게 참조할 수 있습니다.
+            Image image = imageRepository.findByPublicId(currentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Image not found: " + currentId));
 
-            // 타입에 따른 연관 관계 설정
             if (target instanceof Recipe recipe) {
                 image.setRecipe(recipe);
             } else if (target instanceof LogPost logPost) {
                 image.setLogPost(logPost);
+            } else if (target instanceof User user) {
+                // 유저 프로필 이미지의 경우, 파일명은 User 엔티티에 저장되므로
+                // 여기서는 상태만 ACTIVE로 변경하여 가비지 컬렉션을 방지합니다.
             }
 
             image.setStatus(ImageStatus.ACTIVE);
-            image.setDisplayOrder(i); // [추가] 리스트 순서대로 0, 1, 2... 저장
+            image.setDisplayOrder(index); // 복사한 상수를 사용
         }
     }
 

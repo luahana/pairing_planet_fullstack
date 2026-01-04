@@ -1,6 +1,5 @@
 package com.pairingplanet.pairing_planet.controller;
 
-import com.pairingplanet.pairing_planet.dto.recipe.*;
 import com.pairingplanet.pairing_planet.dto.log_post.*;
 import com.pairingplanet.pairing_planet.security.UserPrincipal;
 import com.pairingplanet.pairing_planet.service.LogPostService;

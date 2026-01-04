@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record UpdateProfileRequestDto(
         String username,
-        String profileImageUrl,
+        UUID profileImagePublicId, // [수정] String profileImageUrl -> UUID profileImagePublicId
         Gender gender,
         LocalDate birthDate,
         UUID preferredDietaryId,

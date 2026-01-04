@@ -80,7 +80,7 @@ public class RecipeService {
         saveIngredientsAndSteps(recipe, req);
 
         // 이미지 활성화 (대표 이미지들)
-        imageService.activateImages(req.imageUrls(), recipe);
+        imageService.activateImages(req.imagePublicIds(), recipe);
 
         return getRecipeDetail(recipe.getPublicId());
     }
@@ -108,18 +108,7 @@ public class RecipeService {
                         null  // 작성자 생략
                 )).toList();
 
-        return RecipeDetailResponseDto.builder()
-                .publicId(recipe.getPublicId())
-                .title(recipe.getTitle())
-                .description(recipe.getDescription())
-                .culinaryLocale(recipe.getCulinaryLocale())
-                .changeCategory(recipe.getChangeCategory())
-                .rootInfo(convertToSummary(root))
-                .ingredients(convertToIngredientDtos(recipe.getIngredients()))
-                .steps(convertToStepDtos(recipe.getSteps()))
-                .variants(variants)
-                .logs(logs)
-                .build();
+        return RecipeDetailResponseDto.from(recipe, variants, logs, this.urlPrefix);
     }
 
     // --- 내부 헬퍼 메서드 (에러 해결 핵심) ---
@@ -142,9 +131,8 @@ public class RecipeService {
         if (req.steps() != null) {
             for (StepDto stepDto : req.steps()) {
                 Image stepImage = null;
-                if (stepDto.imageUrl() != null) {
-                    String filename = stepDto.imageUrl().replace(urlPrefix + "/", "");
-                    stepImage = imageRepository.findByStoredFilename(filename).orElse(null);
+                if (stepDto.imagePublicId() != null) {
+                    stepImage = imageRepository.findByPublicId(stepDto.imagePublicId()).orElse(null);
                 }
 
                 RecipeStep step = RecipeStep.builder()
@@ -181,11 +169,18 @@ public class RecipeService {
 
     private List<StepDto> convertToStepDtos(List<RecipeStep> steps) {
         return steps.stream()
-                .map(s -> new StepDto(
-                        s.getStepNumber(),
-                        s.getDescription(),
-                        s.getImage() != null ? urlPrefix + "/" + s.getImage().getStoredFilename() : null
-                ))
+                .map(s -> {
+                    // 이미지 엔티티가 존재할 경우에만 정보 추출
+                    UUID publicId = (s.getImage() != null) ? s.getImage().getPublicId() : null;
+                    String url = (s.getImage() != null) ? urlPrefix + "/" + s.getImage().getStoredFilename() : null;
+
+                    return new StepDto(
+                            s.getStepNumber(),
+                            s.getDescription(),
+                            publicId, // [해결] UUID 전달
+                            url       // [해결] URL 전달
+                    );
+                })
                 .collect(Collectors.toList());
     }
 

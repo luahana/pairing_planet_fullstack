@@ -20,7 +20,7 @@ public class AutocompleteController {
     @GetMapping
     public List<AutocompleteDto> autocomplete(
             @RequestParam String keyword,
-            @RequestParam(defaultValue = "en") String locale
+            @RequestParam(defaultValue = "ko-KR") String locale
     ) {
         return autocompleteService.search(keyword, locale);
     }
