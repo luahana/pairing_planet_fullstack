@@ -50,6 +50,7 @@ final dioProvider = Provider<Dio>((ref) {
         // context가 없는 환경이라면 별도의 LanguageService를 만들어 관리해야 합니다.
         final currentLocale = ref.read(localeProvider);
         options.headers['Accept-Language'] = currentLocale;
+
         return handler.next(options);
       },
     ),

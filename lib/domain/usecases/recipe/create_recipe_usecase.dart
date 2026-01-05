@@ -9,7 +9,9 @@ class CreateRecipeUseCase {
   CreateRecipeUseCase(this._repository);
 
   /// 레시피 생성을 실행합니다.
-  Future<Either<Failure, void>> execute(CreateRecipeRequestDto request) async {
+  Future<Either<Failure, String>> execute(
+    CreateRecipeRequestDto request,
+  ) async {
     return await _repository.createRecipe(request);
   }
 }

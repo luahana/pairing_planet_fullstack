@@ -8,7 +8,7 @@ part of 'autocomplete_dto.dart';
 
 AutocompleteDto _$AutocompleteDtoFromJson(Map<String, dynamic> json) =>
     AutocompleteDto(
-      id: (json['id'] as num).toInt(),
+      publicId: json['publicId'] as String?,
       name: json['name'] as String,
       type: json['type'] as String,
       score: (json['score'] as num).toDouble(),
@@ -16,7 +16,7 @@ AutocompleteDto _$AutocompleteDtoFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$AutocompleteDtoToJson(AutocompleteDto instance) =>
     <String, dynamic>{
-      'id': instance.id,
+      'publicId': instance.publicId,
       'name': instance.name,
       'type': instance.type,
       'score': instance.score,

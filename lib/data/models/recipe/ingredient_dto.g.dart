@@ -9,7 +9,7 @@ part of 'ingredient_dto.dart';
 IngredientDto _$IngredientDtoFromJson(Map<String, dynamic> json) =>
     IngredientDto(
       name: json['name'] as String,
-      amount: json['amount'] as String,
+      amount: json['amount'] as String?,
       type: $enumDecode(_$IngredientTypeEnumMap, json['type']),
     );
 
@@ -22,6 +22,6 @@ Map<String, dynamic> _$IngredientDtoToJson(IngredientDto instance) =>
 
 const _$IngredientTypeEnumMap = {
   IngredientType.MAIN: 'MAIN',
-  IngredientType.SUB: 'SUB',
+  IngredientType.SECONDARY: 'SECONDARY',
   IngredientType.SEASONING: 'SEASONING',
 };

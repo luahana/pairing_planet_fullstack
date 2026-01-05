@@ -2,6 +2,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info_impl.dart';
+import 'package:pairing_planet2_frontend/data/models/common/paged_response_dto.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import 'package:pairing_planet2_frontend/domain/usecases/recipe/create_recipe_usecase.dart';
 import 'package:pairing_planet2_frontend/domain/usecases/recipe/get_recipe_detail.dart';
 import 'package:pairing_planet2_frontend/data/datasources/recipe/recipe_local_data_source.dart';
@@ -82,3 +84,20 @@ final createRecipeUseCaseProvider = Provider<CreateRecipeUseCase>((ref) {
   final repository = ref.watch(recipeRepositoryProvider);
   return CreateRecipeUseCase(repository);
 });
+
+final recipesProvider =
+    FutureProvider.family<PagedResponseDto<RecipeSummary>, int>((
+      ref,
+      page,
+    ) async {
+      final repository = ref.watch(recipeRepositoryProvider);
+
+      // 💡 리포지토리의 getRecipes 호출
+      final result = await repository.getRecipes(page: page, size: 10);
+
+      // Either 타입을 처리하여 성공 시 데이터를 반환하고, 실패 시 에러를 던집니다.
+      return result.fold(
+        (failure) => throw failure,
+        (pagedResponse) => pagedResponse,
+      );
+    });

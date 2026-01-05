@@ -9,17 +9,29 @@ part of 'recipe_summary_dto.dart';
 RecipeSummaryDto _$RecipeSummaryDtoFromJson(Map<String, dynamic> json) =>
     RecipeSummaryDto(
       publicId: json['publicId'] as String,
+      foodName: json['foodName'] as String,
+      foodMasterPublicId: json['foodMasterPublicId'] as String,
       title: json['title'] as String,
-      culinaryLocale: json['culinaryLocale'] as String,
+      description: json['description'] as String?,
+      culinaryLocale: json['culinaryLocale'] as String?,
       creatorName: json['creatorName'] as String?,
       thumbnail: json['thumbnail'] as String?,
+      variantCount: (json['variantCount'] as num?)?.toInt(),
+      parentPublicId: json['parentPublicId'] as String?,
+      rootPublicId: json['rootPublicId'] as String?,
     );
 
 Map<String, dynamic> _$RecipeSummaryDtoToJson(RecipeSummaryDto instance) =>
     <String, dynamic>{
       'publicId': instance.publicId,
+      'foodName': instance.foodName,
+      'foodMasterPublicId': instance.foodMasterPublicId,
       'title': instance.title,
+      'description': instance.description,
       'culinaryLocale': instance.culinaryLocale,
       'creatorName': instance.creatorName,
       'thumbnail': instance.thumbnail,
+      'variantCount': instance.variantCount,
+      'parentPublicId': instance.parentPublicId,
+      'rootPublicId': instance.rootPublicId,
     };

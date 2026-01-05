@@ -8,55 +8,71 @@ import 'step_dto.dart';
 
 part 'recipe_detail_response_dto.g.dart';
 
+// recipe_detail_response_dto.dart
+
 @JsonSerializable()
 class RecipeDetailResponseDto {
   final String publicId;
+  final String foodName;
+  final String foodMasterPublicId;
   final String title;
-  final String description;
-  final String culinaryLocale;
+  final String? description;
+  final String? culinaryLocale;
   final String? changeCategory;
   final RecipeSummaryDto? rootInfo;
   final RecipeSummaryDto? parentInfo;
-  final List<IngredientDto> ingredients;
-  final List<StepDto> steps;
-  final List<ImageResponseDto> images; // [수정] String -> ImageResponseDto
-  final List<RecipeSummaryDto> variants;
-  final List<LogPostSummaryDto> logs; // [수정] DTO 타입 적용
+
+  // 💡 리스트 필드들을 Nullable(?)로 변경하여 파싱 에러 방지
+  final List<IngredientDto>? ingredients;
+  final List<StepDto>? steps;
+  final List<ImageResponseDto>? images;
+  final List<RecipeSummaryDto>? variants;
+  final List<LogPostSummaryDto>? logs;
 
   RecipeDetailResponseDto({
     required this.publicId,
+    required this.foodName,
+    required this.foodMasterPublicId,
     required this.title,
     required this.description,
-    required this.culinaryLocale,
+    this.culinaryLocale,
     this.changeCategory,
     this.rootInfo,
     this.parentInfo,
-    required this.ingredients,
-    required this.steps,
-    required this.images,
-    required this.variants,
-    required this.logs,
+    this.ingredients, // required 제거
+    this.steps,
+    this.images,
+    this.variants,
+    this.logs,
   });
 
   factory RecipeDetailResponseDto.fromJson(Map<String, dynamic> json) =>
       _$RecipeDetailResponseDtoFromJson(json);
+
   Map<String, dynamic> toJson() => _$RecipeDetailResponseDtoToJson(this);
 
   RecipeDetail toEntity() => RecipeDetail(
-    id: publicId,
+    publicId: publicId,
+    foodName: foodName,
+    foodMasterPublicId: foodMasterPublicId,
     title: title,
-    description: description,
-    culinaryLocale: culinaryLocale,
+    description: description ?? "", // 💡 엔티티가 String이면 ?? "" 필수
+    culinaryLocale: (culinaryLocale?.isEmpty ?? true) ? "ko" : culinaryLocale!,
     changeCategory: changeCategory,
     rootInfo: rootInfo?.toEntity(),
     parentInfo: parentInfo?.toEntity(),
-    ingredients: ingredients.map((e) => e.toEntity()).toList(),
-    steps: steps.map((e) => e.toEntity()).toList(),
+    ingredients: ingredients?.map((e) => e.toEntity()).toList() ?? [],
+    steps: steps?.map((e) => e.toEntity()).toList() ?? [],
 
-    // 💡 변경: images 리스트에서 url만 추출하여 문자열 리스트로 변환합니다.
-    imageUrls: images.map((img) => img.url).toList(),
+    // 💡 Java의 imageUrl 필드명을 사용하여 추출
+    imageUrls:
+        images
+            ?.map((img) => img.imageUrl ?? "")
+            .where((url) => url.isNotEmpty)
+            .toList() ??
+        [],
 
-    variants: variants.map((e) => e.toEntity()).toList(),
-    logs: logs.map((e) => e.toEntity()).toList(),
+    variants: variants?.map((e) => e.toEntity()).toList() ?? [],
+    logs: logs?.map((e) => e.toEntity()).toList() ?? [],
   );
 }

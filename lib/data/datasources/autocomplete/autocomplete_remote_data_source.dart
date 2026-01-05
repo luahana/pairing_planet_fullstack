@@ -11,7 +11,7 @@ class AutocompleteRemoteDataSource {
     String locale,
   ) async {
     final response = await _dio.get(
-      '/api/v1/autocomplete', //
+      '/autocomplete', //
       queryParameters: {
         'keyword': keyword,
         'locale': locale, //

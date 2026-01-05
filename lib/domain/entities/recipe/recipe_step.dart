@@ -1,6 +1,6 @@
 class RecipeStep {
   final int stepNumber;
-  final String description;
+  final String? description;
   final String? imageUrl;
   final String? imagePublicId;
 

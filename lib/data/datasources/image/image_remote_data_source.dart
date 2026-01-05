@@ -9,7 +9,7 @@ class ImageRemoteDataSource {
 
   Future<ImageUploadResponseDto> uploadImage({
     required File file,
-    required String type, // PROFILE, POST_RECIPE 등
+    required String type,
   }) async {
     // 💡 multipart/form-data 구성을 위한 FormData 생성
     final formData = FormData.fromMap({
@@ -21,7 +21,7 @@ class ImageRemoteDataSource {
     });
 
     final response = await _dio.post(
-      '/api/v1/images/upload',
+      '/images/upload',
       data: formData,
       options: Options(contentType: 'multipart/form-data'),
     );

@@ -6,7 +6,7 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.d
 import '../../core/error/failures.dart';
 
 abstract class RecipeRepository {
-  Future<Either<Failure, void>> createRecipe(CreateRecipeRequestDto request);
+  Future<Either<Failure, String>> createRecipe(CreateRecipeRequestDto recipe);
 
   Future<Either<Failure, RecipeDetail>> getRecipeDetail(String publicId);
 

@@ -3,12 +3,12 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/ingredient.dart'
 
 part 'ingredient_dto.g.dart'; // 💡 반드시 파일명과 일치해야 함
 
-enum IngredientType { MAIN, SUB, SEASONING }
+enum IngredientType { MAIN, SECONDARY, SEASONING }
 
 @JsonSerializable()
 class IngredientDto {
   final String name;
-  final String amount;
+  final String? amount;
   final IngredientType type; // 💡 String 대신 Enum 사용 권장
 
   IngredientDto({required this.name, required this.amount, required this.type});

@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pairing_planet2_frontend/core/constants/api_constants.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/ingredient_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/create_recipe_request_dtos.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/step_dto.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart'; // 💡 추가
+import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/ingredient_section.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
 import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 import '../widgets/hook_section.dart';
-import '../widgets/ingredient_section.dart';
 import '../widgets/step_section.dart';
 
 class RecipeCreateScreen extends ConsumerStatefulWidget {
-  const RecipeCreateScreen({super.key});
+  final RecipeDetail? parentRecipe; // 💡 변경: ID 대신 객체 수신
+
+  const RecipeCreateScreen({super.key, this.parentRecipe});
 
   @override
   ConsumerState<RecipeCreateScreen> createState() => _RecipeCreateScreenState();
@@ -19,27 +23,82 @@ class RecipeCreateScreen extends ConsumerStatefulWidget {
 
 class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
   final _titleController = TextEditingController();
-  final _foodNameController = TextEditingController(); // 💡 추가
+  final _foodNameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _localeController = TextEditingController();
+  final _changeReasonController = TextEditingController();
+
+  bool get isVariantMode => widget.parentRecipe != null;
 
   final List<Map<String, dynamic>> _ingredients = [];
   final List<Map<String, dynamic>> _steps = [];
-  final List<UploadItem> _finishedImages = []; // 💡 이미지 리스트 활성화
+  final List<UploadItem> _finishedImages = [];
 
-  int? _food1MasterId; // 💡 서버 전송용 음식 ID
+  String? _food1MasterPublicId;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _addIngredient();
-    _addStep();
+    if (isVariantMode) {
+      _initVariantData(); // 💡 변형 데이터 초기화
+    } else {
+      _addIngredient(IngredientType.MAIN);
+      _addStep();
+    }
+    _titleController.addListener(_rebuild);
+    _foodNameController.addListener(_rebuild);
   }
 
-  void _addIngredient() {
+  void _initVariantData() {
+    final p = widget.parentRecipe!;
+    _titleController.text = "${p.title} (변형)";
+    _descriptionController.text = p.description ?? "";
+    _foodNameController.text = p.foodName; // 💡 실제 요리명 매핑 권장
+
+    _food1MasterPublicId = p.foodMasterPublicId;
+
+    // 💡 기존 재료 복사 (수정 불가 마킹)
+    for (var ing in p.ingredients) {
+      _ingredients.add({
+        'name': ing.name,
+        'amount': ing.amount,
+        'type': IngredientType.values.firstWhere((e) => e.name == ing.type),
+        'isOriginal': true,
+      });
+    }
+    // 💡 기존 단계 복사 (수정 불가 마킹)
+    for (var step in p.steps) {
+      _steps.add({
+        'stepNumber': step.stepNumber,
+        'description': step.description,
+        'imageUrl': step.imageUrl,
+        'imagePublicId': step.imagePublicId,
+        'isOriginal': true,
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _foodNameController.dispose();
+    _descriptionController.dispose();
+    _localeController.dispose();
+    _changeReasonController.dispose();
+    super.dispose();
+  }
+
+  void _rebuild() => setState(() {});
+
+  void _addIngredient(IngredientType type) {
     setState(() {
-      _ingredients.add({'name': '', 'amount': '', 'type': IngredientType.MAIN});
+      _ingredients.add({
+        'name': '',
+        'amount': '',
+        'type': type,
+        'isOriginal': false,
+      });
     });
   }
 
@@ -49,26 +108,43 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
         'stepNumber': _steps.length + 1,
         'description': '',
         'imageUrl': '',
+        'imagePublicId': null,
+        'uploadItem': null,
+        'isOriginal': false,
       });
     });
   }
 
+  // 💡 드래그 앤 드롭 정렬 로직
+  void _onReorderSteps(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex -= 1;
+      final step = _steps.removeAt(oldIndex);
+      _steps.insert(newIndex, step);
+      // 단계 번호 재정렬
+      for (int i = 0; i < _steps.length; i++) {
+        _steps[i]['stepNumber'] = i + 1;
+      }
+    });
+  }
+
   Future<void> _handleSubmit() async {
-    // 💡 업로드 중인 이미지가 있는지 확인
-    if (_finishedImages.any((img) => img.status == UploadStatus.uploading)) {
+    if (isVariantMode && _changeReasonController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('이미지 업로드가 완료될 때까지 기다려주세요.')));
+      ).showSnackBar(const SnackBar(content: Text('레시피를 변형한 이유를 입력해주세요.')));
       return;
     }
-
     setState(() => _isLoading = true);
     try {
       final requestDto = CreateRecipeRequestDto(
         title: _titleController.text,
         description: _descriptionController.text,
-        culinaryLocale: _localeController.text,
-        food1MasterId: _food1MasterId, // 💡 자동완성으로 받은 ID 할당
+        culinaryLocale: _localeController.text.isEmpty
+            ? "ko"
+            : _localeController.text,
+        food1MasterPublicId: _food1MasterPublicId,
+        newFoodName: isVariantMode ? null : _foodNameController.text.trim(),
         ingredients: _ingredients
             .map(
               (i) => IngredientDto(
@@ -83,42 +159,30 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
               (s) => StepDto(
                 stepNumber: s['stepNumber'],
                 description: s['description'],
+                imagePublicId: s['imagePublicId'],
               ),
             )
             .toList(),
-        // 💡 성공한 이미지들의 publicId만 추출하여 전송
         imagePublicIds: _finishedImages
-            .where(
-              (img) =>
-                  img.status == UploadStatus.success && img.publicId != null,
-            )
+            .where((img) => img.status == UploadStatus.success)
             .map((img) => img.publicId!)
             .toList(),
+        changeCategory: _changeReasonController.text,
+        parentPublicId: widget.parentRecipe?.publicId,
+        rootPublicId:
+            widget.parentRecipe?.rootInfo?.publicId ??
+            widget.parentRecipe?.publicId,
       );
 
       final result = await ref
           .read(recipeRepositoryProvider)
           .createRecipe(requestDto);
-
-      if (mounted) {
-        result.fold(
-          (failure) => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('등록 실패: ${failure.toString()}')),
-          ),
-          (_) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('✨ 레시피가 등록되었습니다!')));
-            context.pop();
-          },
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
+      result.fold(
+        (failure) => ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('오류 발생: $e')));
-      }
+        ).showSnackBar(SnackBar(content: Text('실패: $failure'))),
+        (newId) => context.go(ApiEndpoints.recipeDetail(newId)),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -135,20 +199,27 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 💡 수정된 HookSection 호출부
                     HookSection(
                       titleController: _titleController,
                       foodNameController: _foodNameController,
                       descriptionController: _descriptionController,
                       finishedImages: _finishedImages,
-                      onFoodIdSelected: (id) => _food1MasterId = id,
+                      isReadOnly: isVariantMode, // 요리명 수정 불가 제약
+                      // 💡 누락된 필수 파라미터 추가
+                      onFoodPublicIdSelected: (publicId) =>
+                          setState(() => _food1MasterPublicId = publicId),
+
                       onStateChanged: () => setState(() {}),
                     ),
+
+                    if (isVariantMode) ...[
+                      const SizedBox(height: 32),
+                      _buildChangeReasonField(),
+                    ],
+
                     const SizedBox(height: 32),
                     IngredientSection(
                       ingredients: _ingredients,
@@ -161,10 +232,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
                       steps: _steps,
                       onAddStep: _addStep,
                       onRemoveStep: (i) => setState(() => _steps.removeAt(i)),
-                      onReorder: (o, n) => setState(() {
-                        if (n > o) n -= 1;
-                        _steps.insert(n, _steps.removeAt(o));
-                      }),
+                      onReorder: _onReorderSteps, // 💡 드래그앤드랍 연결
+                      onStateChanged: () => setState(() {}),
                     ),
                     const SizedBox(height: 120),
                   ],
@@ -180,25 +249,60 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
 
   PreferredSizeWidget _buildAppBar() => AppBar(
     backgroundColor: Colors.white,
-    elevation: 0,
-    centerTitle: true,
     leading: IconButton(
-      icon: const Icon(Icons.close, color: Colors.black),
+      icon: const Icon(Icons.close),
       onPressed: () => context.pop(),
     ),
-    title: const Text(
-      "새 레시피 등록",
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
+    title: Text(isVariantMode ? "레시피 변형하기" : "새 레시피 등록"),
   );
 
+  Widget _buildChangeReasonField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: Colors.orange, size: 20),
+            const SizedBox(width: 8),
+            const Text(
+              "변경 이유 (필수)",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.orange[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.orange[100]!),
+          ),
+          child: TextField(
+            controller: _changeReasonController, // 💡 사용자가 언급한 컨트롤러 연결
+            onChanged: (_) => setState(() {}), // 💡 입력 시 등록 버튼 활성화를 위해 호출
+            maxLines: 2,
+            decoration: const InputDecoration(
+              hintText: "예: 더 매콤한 맛을 위해 청양고추를 추가하고 조리 순서를 바꿨어요.",
+              hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
+              border: InputBorder.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSubmitButton() {
-    final bool isReady =
+    final bool hasBaseInfo =
         _titleController.text.isNotEmpty && _ingredients.isNotEmpty;
+
+    // 2. 변형 모드일 경우 변경 이유 입력 여부 체크
+    final bool hasChangeReason =
+        !isVariantMode || _changeReasonController.text.trim().isNotEmpty;
+
+    // 💡 두 조건이 모두 충족되어야 버튼 활성화
+    final bool isReady = hasBaseInfo && hasChangeReason;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
       child: SizedBox(
@@ -208,16 +312,14 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen> {
           onPressed: isReady && !_isLoading ? _handleSubmit : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF1A237E),
-            elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
           ),
           child: Text(
-            _isLoading ? "등록 중..." : "레시피 등록하기",
+            _isLoading ? "등록 중..." : "등록 완료",
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),

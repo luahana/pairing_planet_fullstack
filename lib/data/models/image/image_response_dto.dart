@@ -4,10 +4,10 @@ part 'image_response_dto.g.dart';
 
 @JsonSerializable()
 class ImageResponseDto {
-  final String publicId; // UUID
-  final String url; // 이미지 전체 경로
+  final String imagePublicId; // UUID
+  final String? imageUrl; // 이미지 전체 경로
 
-  ImageResponseDto({required this.publicId, required this.url});
+  ImageResponseDto({required this.imagePublicId, required this.imageUrl});
 
   factory ImageResponseDto.fromJson(Map<String, dynamic> json) =>
       _$ImageResponseDtoFromJson(json);

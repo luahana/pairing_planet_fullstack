@@ -11,8 +11,9 @@ CreateRecipeRequestDto _$CreateRecipeRequestDtoFromJson(
 ) => CreateRecipeRequestDto(
   title: json['title'] as String,
   description: json['description'] as String,
-  culinaryLocale: json['culinaryLocale'] as String,
-  food1MasterId: (json['food1MasterId'] as num?)?.toInt(),
+  culinaryLocale: json['culinaryLocale'] as String?,
+  food1MasterPublicId: json['food1MasterPublicId'] as String?,
+  newFoodName: json['newFoodName'] as String?,
   ingredients: (json['ingredients'] as List<dynamic>)
       .map((e) => IngredientDto.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -24,6 +25,7 @@ CreateRecipeRequestDto _$CreateRecipeRequestDtoFromJson(
       .toList(),
   changeCategory: json['changeCategory'] as String?,
   parentPublicId: json['parentPublicId'] as String?,
+  rootPublicId: json['rootPublicId'] as String?,
 );
 
 Map<String, dynamic> _$CreateRecipeRequestDtoToJson(
@@ -32,10 +34,12 @@ Map<String, dynamic> _$CreateRecipeRequestDtoToJson(
   'title': instance.title,
   'description': instance.description,
   'culinaryLocale': instance.culinaryLocale,
-  'food1MasterId': instance.food1MasterId,
+  'food1MasterPublicId': instance.food1MasterPublicId,
+  'newFoodName': instance.newFoodName,
   'ingredients': instance.ingredients,
   'steps': instance.steps,
   'imagePublicIds': instance.imagePublicIds,
   'changeCategory': instance.changeCategory,
   'parentPublicId': instance.parentPublicId,
+  'rootPublicId': instance.rootPublicId,
 };

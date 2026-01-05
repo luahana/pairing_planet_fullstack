@@ -9,25 +9,37 @@ part 'create_recipe_request_dtos.g.dart';
 class CreateRecipeRequestDto {
   final String title;
   final String description;
-  final String culinaryLocale;
-  final int? food1MasterId; // [추가]
+  final String? culinaryLocale;
+  final String? food1MasterPublicId;
+  final String? newFoodName;
   final List<IngredientDto> ingredients;
   final List<StepDto> steps;
-  final List<String> imagePublicIds; // [추가] 대표 사진 UUID 리스트
-  final String? changeCategory; // [추가] 변형 시 카테고리
-  final String? parentPublicId; // [추가] 부모 레시피 UUID
+  final List<String> imagePublicIds;
+  final String? changeCategory;
+  final String? parentPublicId;
+  final String? rootPublicId;
 
   CreateRecipeRequestDto({
     required this.title,
     required this.description,
-    required this.culinaryLocale,
-    this.food1MasterId,
+    this.culinaryLocale,
+    this.food1MasterPublicId,
+    this.newFoodName,
     required this.ingredients,
     required this.steps,
     required this.imagePublicIds,
     this.changeCategory,
     this.parentPublicId,
-  });
+    this.rootPublicId,
+  }) {
+    // 💡 생성자 몸체에서 검증 로직 추가
+    if (food1MasterPublicId == null &&
+        (newFoodName == null || newFoodName!.trim().isEmpty)) {
+      throw ArgumentError(
+        'food1MasterPublicId 또는 newFoodName 중 하나는 반드시 입력되어야 합니다.',
+      );
+    }
+  }
 
   // 💡 클래스 이름과 매칭되는 생성자
   factory CreateRecipeRequestDto.fromJson(Map<String, dynamic> json) =>

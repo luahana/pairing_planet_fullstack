@@ -8,9 +8,12 @@ part of 'image_response_dto.dart';
 
 ImageResponseDto _$ImageResponseDtoFromJson(Map<String, dynamic> json) =>
     ImageResponseDto(
-      publicId: json['publicId'] as String,
-      url: json['url'] as String,
+      imagePublicId: json['imagePublicId'] as String,
+      imageUrl: json['imageUrl'] as String?,
     );
 
 Map<String, dynamic> _$ImageResponseDtoToJson(ImageResponseDto instance) =>
-    <String, dynamic>{'publicId': instance.publicId, 'url': instance.url};
+    <String, dynamic>{
+      'imagePublicId': instance.imagePublicId,
+      'imageUrl': instance.imageUrl,
+    };

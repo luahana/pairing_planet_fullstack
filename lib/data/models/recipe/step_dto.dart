@@ -6,13 +6,13 @@ part 'step_dto.g.dart';
 @JsonSerializable()
 class StepDto {
   final int stepNumber;
-  final String description;
+  final String? description;
   final String? imagePublicId; // [추가] 식별용 UUID
   final String? imageUrl; // [유지] 표시용 URL
 
   StepDto({
     required this.stepNumber,
-    required this.description,
+    this.description,
     this.imagePublicId,
     this.imageUrl,
   });

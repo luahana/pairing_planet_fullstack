@@ -5,13 +5,14 @@ part 'autocomplete_dto.g.dart';
 
 @JsonSerializable()
 class AutocompleteDto {
-  final int id; // Java Long -> int
-  final String name; //
-  final String type; // "FOOD" or "CATEGORY"
-  final double score; // 유사도 점수
+  // 💡 String? 로 변경하여 null 허용 (파싱 에러 방지)
+  final String? publicId;
+  final String name;
+  final String type;
+  final double score;
 
   AutocompleteDto({
-    required this.id,
+    this.publicId, // 💡 required 제거
     required this.name,
     required this.type,
     required this.score,
@@ -20,7 +21,6 @@ class AutocompleteDto {
   factory AutocompleteDto.fromJson(Map<String, dynamic> json) =>
       _$AutocompleteDtoFromJson(json);
 
-  // 💡 도메인 엔티티로 변환
   AutocompleteResult toEntity() =>
-      AutocompleteResult(id: id, name: name, type: type);
+      AutocompleteResult(publicId: publicId, name: name, type: type);
 }

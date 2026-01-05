@@ -23,17 +23,17 @@ class RecipeRepositoryImpl implements RecipeRepository {
   });
 
   @override
-  Future<Either<Failure, Unit>> createRecipe(
+  Future<Either<Failure, String>> createRecipe(
     CreateRecipeRequestDto recipe,
   ) async {
     // 1. 네트워크 연결 상태 확인
     if (await networkInfo.isConnected) {
       try {
         // 2. 서버에 레시피 생성 요청 (RemoteDataSource에 해당 메서드 추가 필요)
-        await remoteDataSource.createRecipe(recipe);
+        final newPublicId = await remoteDataSource.createRecipe(recipe);
 
-        // 3. 성공 시 Unit 반환 (dartz 패키지의 성공 신호)
-        return const Right(unit);
+        // 💡 Unit 대신 받은 ID를 반환하여 스크린에서 사용할 수 있게 함
+        return Right(newPublicId);
       } on DioException catch (e) {
         // 4. 에러 발생 시 기존 헬퍼 메서드로 Failure 매핑
         return Left(_mapDioExceptionToFailure(e));
@@ -66,6 +66,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
         if (localData != null) return Right(localData.toEntity());
         return Left(_mapDioExceptionToFailure(e));
       } catch (e) {
+        print("❌ Recipe Detail Error: $e");
         if (localData != null) return Right(localData.toEntity());
         return Left(UnknownFailure(e.toString()));
       }
@@ -106,7 +107,10 @@ class RecipeRepositoryImpl implements RecipeRepository {
       );
     } on DioException catch (e) {
       return Left(_mapDioExceptionToFailure(e));
-    } catch (e) {
+    } catch (e, stack) {
+      // 💡 이 로그가 구체적인 파싱 에러(예: 'creatorName' is not a subtype of...)를 알려줍니다.
+      print("🆘 JSON Parsing Error: $e");
+      print("🆘 StackTrace: $stack");
       return Left(UnknownFailure(e.toString()));
     }
   }

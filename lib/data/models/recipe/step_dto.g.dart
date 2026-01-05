@@ -8,7 +8,7 @@ part of 'step_dto.dart';
 
 StepDto _$StepDtoFromJson(Map<String, dynamic> json) => StepDto(
   stepNumber: (json['stepNumber'] as num).toInt(),
-  description: json['description'] as String,
+  description: json['description'] as String?,
   imagePublicId: json['imagePublicId'] as String?,
   imageUrl: json['imageUrl'] as String?,
 );
