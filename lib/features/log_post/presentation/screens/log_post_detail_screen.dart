@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_providers.dart';
+import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/hashtag_chips.dart';
 import '../widgets/log_recipe_lineage.dart';
 
 class LogPostDetailScreen extends ConsumerWidget {
@@ -73,6 +74,20 @@ class LogPostDetailScreen extends ConsumerWidget {
                               color: Colors.black87,
                             ),
                           ),
+
+                          // 4. 해시태그
+                          if (log.hashtags.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            const Text(
+                              "해시태그",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            HashtagChips(hashtags: log.hashtags),
+                          ],
 
                           const SizedBox(height: 50),
                         ],

@@ -10,6 +10,7 @@ class CreateLogPostRequestDto {
   final String outcome; // SUCCESS, PARTIAL, FAILED
   final String? title;
   final List<String> imagePublicIds;
+  final List<String>? hashtags;
 
   CreateLogPostRequestDto({
     required this.recipePublicId,
@@ -17,6 +18,7 @@ class CreateLogPostRequestDto {
     required this.outcome,
     this.title,
     required this.imagePublicIds,
+    this.hashtags,
   });
 
   Map<String, dynamic> toJson() => _$CreateLogPostRequestDtoToJson(this);
@@ -28,6 +30,7 @@ class CreateLogPostRequestDto {
       outcome: request.outcome,
       title: request.title,
       imagePublicIds: request.imagePublicIds,
+      hashtags: request.hashtags,
     );
   }
 }

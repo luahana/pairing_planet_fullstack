@@ -21,6 +21,9 @@ LogPostDetailResponseDto _$LogPostDetailResponseDtoFromJson(
           : RecipeSummaryDto.fromJson(
               json['linkedRecipe'] as Map<String, dynamic>),
       createdAt: json['createdAt'] as String,
+      hashtags: (json['hashtags'] as List<dynamic>?)
+          ?.map((e) => HashtagDto.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
@@ -33,4 +36,5 @@ Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
       'images': instance.images,
       'linkedRecipe': instance.linkedRecipe,
       'createdAt': instance.createdAt,
+      'hashtags': instance.hashtags,
     };

@@ -16,6 +16,9 @@ CreateLogPostRequestDto _$CreateLogPostRequestDtoFromJson(
       imagePublicIds: (json['imagePublicIds'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
+      hashtags: (json['hashtags'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
     );
 
 Map<String, dynamic> _$CreateLogPostRequestDtoToJson(
@@ -26,4 +29,5 @@ Map<String, dynamic> _$CreateLogPostRequestDtoToJson(
       'outcome': instance.outcome,
       'title': instance.title,
       'imagePublicIds': instance.imagePublicIds,
+      'hashtags': instance.hashtags,
     };

@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pairing_planet2_frontend/data/models/image/image_response_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
+import 'package:pairing_planet2_frontend/data/models/hashtag/hashtag_dto.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_detail.dart';
 
 part 'log_post_detail_response_dto.g.dart';
@@ -14,6 +15,7 @@ class LogPostDetailResponseDto {
   final List<ImageResponseDto>? images;
   final RecipeSummaryDto? linkedRecipe;
   final String createdAt;
+  final List<HashtagDto>? hashtags;
 
   LogPostDetailResponseDto({
     required this.publicId,
@@ -23,6 +25,7 @@ class LogPostDetailResponseDto {
     required this.images,
     required this.linkedRecipe,
     required this.createdAt,
+    this.hashtags,
   });
 
   factory LogPostDetailResponseDto.fromJson(Map<String, dynamic> json) =>
@@ -39,5 +42,6 @@ class LogPostDetailResponseDto {
         ? LinkedRecipeInfo.fromRecipeSummary(linkedRecipe!.toEntity())
         : null,
     createdAt: DateTime.parse(createdAt),
+    hashtags: hashtags?.map((e) => e.toEntity()).toList() ?? [],
   );
 }

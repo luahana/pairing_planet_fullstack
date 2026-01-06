@@ -9,6 +9,7 @@ import 'package:pairing_planet2_frontend/core/widgets/image_source_sheet.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/create_log_post_request.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_providers.dart';
+import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/hashtag_input_section.dart';
 import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 import '../../../../core/providers/image_providers.dart'; // 💡 이미지 프로바이더 추가
 
@@ -25,6 +26,7 @@ class LogPostCreateScreen extends ConsumerStatefulWidget {
 class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
   final _contentController = TextEditingController();
   final List<UploadItem> _images = []; // 💡 업로드 이미지 리스트
+  final List<String> _hashtags = []; // 해시태그 리스트
   String _selectedOutcome = 'SUCCESS'; // 💡 요리 결과 (SUCCESS, PARTIAL, FAILED)
   bool _isLoading = false;
 
@@ -86,6 +88,7 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
       content: _contentController.text,
       outcome: _selectedOutcome,
       imagePublicIds: imagePublicIds,
+      hashtags: _hashtags.isNotEmpty ? _hashtags : null,
     );
 
     try {
@@ -177,6 +180,16 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
                     ),
                     const SizedBox(height: 12),
                     _buildContentField(),
+                    const SizedBox(height: 32),
+
+                    // 해시태그 입력 섹션
+                    HashtagInputSection(
+                      hashtags: _hashtags,
+                      onHashtagsChanged: (tags) => setState(() {
+                        _hashtags.clear();
+                        _hashtags.addAll(tags);
+                      }),
+                    ),
                   ],
                 ),
               ),

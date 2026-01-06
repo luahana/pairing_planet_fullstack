@@ -1,4 +1,5 @@
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
+import 'package:pairing_planet2_frontend/domain/entities/hashtag/hashtag.dart';
 
 /// Linked recipe info for log post lineage display
 class LinkedRecipeInfo {
@@ -41,6 +42,7 @@ class LogPostDetail {
   final String recipePublicId;
   final LinkedRecipeInfo? linkedRecipe; // Full recipe info for lineage display
   final DateTime createdAt;
+  final List<Hashtag> hashtags;
 
   LogPostDetail({
     required this.publicId,
@@ -50,5 +52,6 @@ class LogPostDetail {
     required this.recipePublicId,
     this.linkedRecipe,
     required this.createdAt,
+    this.hashtags = const [],
   });
 }

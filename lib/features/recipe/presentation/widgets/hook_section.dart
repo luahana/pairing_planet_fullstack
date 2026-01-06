@@ -116,15 +116,24 @@ class _HookSectionState extends ConsumerState<HookSection> {
           },
           onSelected: (selection) {
             widget.foodNameController.text = selection.name;
-            widget.onFoodPublicIdSelected(
-              selection.publicId,
-            ); // 💡 선택된 음식의 ID 저장
+            // Only set publicId for FOOD type, not CATEGORY
+            if (selection.type == 'FOOD') {
+              widget.onFoodPublicIdSelected(selection.publicId);
+            } else {
+              widget.onFoodPublicIdSelected(null); // Will use newFoodName instead
+            }
           },
           fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
             // 초기값 동기화
             if (controller.text != widget.foodNameController.text) {
               controller.text = widget.foodNameController.text;
             }
+            // Sync internal controller back to foodNameController
+            controller.addListener(() {
+              if (widget.foodNameController.text != controller.text) {
+                widget.foodNameController.text = controller.text;
+              }
+            });
             return _buildTextFieldRaw(
               controller: controller,
               focusNode: focusNode,
