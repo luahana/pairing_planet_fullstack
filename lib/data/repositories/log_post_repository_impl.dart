@@ -3,7 +3,10 @@ import 'package:pairing_planet2_frontend/core/error/failures.dart';
 import 'package:pairing_planet2_frontend/data/datasources/log_post/log_post_local_data_source.dart';
 import 'package:pairing_planet2_frontend/data/datasources/log_post/log_post_remote_data_source.dart';
 import 'package:pairing_planet2_frontend/data/models/log_post/create_log_post_request_dto.dart';
+import 'package:pairing_planet2_frontend/domain/entities/common/slice_response.dart';
+import 'package:pairing_planet2_frontend/domain/entities/log_post/create_log_post_request.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_detail.dart';
+import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_summary.dart';
 import 'package:pairing_planet2_frontend/domain/repositories/log_post_repository.dart';
 import '../../core/network/network_info.dart';
 
@@ -20,11 +23,12 @@ class LogPostRepositoryImpl implements LogPostRepository {
 
   @override
   Future<Either<Failure, LogPostDetail>> createLog(
-    CreateLogPostRequestDto request,
+    CreateLogPostRequest request,
   ) async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await remoteDataSource.createLog(request);
+        final dto = CreateLogPostRequestDto.fromEntity(request);
+        final result = await remoteDataSource.createLog(dto);
         return Right(result.toEntity());
       } catch (e) {
         return Left(ServerFailure(e.toString()));
@@ -57,5 +61,24 @@ class LogPostRepositoryImpl implements LogPostRepository {
       if (localData != null) return Right(localData.toEntity());
       return Left(ConnectionFailure('오프라인 상태이며 저장된 데이터가 없습니다.'));
     }
+  }
+
+  @override
+  Future<Either<Failure, SliceResponse<LogPostSummary>>> getLogPosts({
+    int page = 0,
+    int size = 20,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final sliceDto = await remoteDataSource.getLogPosts(
+          page: page,
+          size: size,
+        );
+        return Right(sliceDto.toEntity((dto) => dto.toEntity()));
+      } catch (e) {
+        return Left(ServerFailure(e.toString()));
+      }
+    }
+    return Left(ConnectionFailure());
   }
 }

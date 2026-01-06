@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:pairing_planet2_frontend/data/models/common/paged_response_dto.dart';
+import 'package:pairing_planet2_frontend/data/models/common/slice_response_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_detail_response_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/create_recipe_request_dtos.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
@@ -44,7 +44,6 @@ class RecipeRemoteDataSource {
         throw ServerException();
       }
     } catch (e) {
-      print("❌ JSON Parsing Error: $e");
       throw ServerException(e.toString());
     }
   }
@@ -64,7 +63,7 @@ class RecipeRemoteDataSource {
     }
   }
 
-  Future<PagedResponseDto<RecipeSummaryDto>> getRecipes({
+  Future<SliceResponseDto<RecipeSummaryDto>> getRecipes({
     required int page,
     int size = 10,
   }) async {
@@ -74,17 +73,9 @@ class RecipeRemoteDataSource {
         queryParameters: {'page': page, 'size': size},
       );
 
-      final data = response.data;
-
-      return PagedResponseDto<RecipeSummaryDto>(
-        // 💡 핵심 수정: Spring Slice는 'items'가 아니라 'content'를 사용합니다.
-        items: (data['content'] as List)
-            .map((e) => RecipeSummaryDto.fromJson(e))
-            .toList(),
-        // 💡 Spring Slice/Page 필드명에 맞춰 수정
-        currentPage: data['number'] ?? 0,
-        totalPages: data['totalPages'] ?? 1,
-        hasNext: data['last'] == false, // 'last'가 false면 다음 페이지가 있음
+      return SliceResponseDto.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => RecipeSummaryDto.fromJson(json),
       );
     } catch (e) {
       rethrow; // Repository에서 잡을 수 있도록 던짐

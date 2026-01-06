@@ -7,9 +7,13 @@ part of 'token_reissue_request_dto.dart';
 // **************************************************************************
 
 TokenReissueRequestDto _$TokenReissueRequestDtoFromJson(
-  Map<String, dynamic> json,
-) => TokenReissueRequestDto(refreshToken: json['refreshToken'] as String);
+        Map<String, dynamic> json) =>
+    TokenReissueRequestDto(
+      refreshToken: json['refreshToken'] as String,
+    );
 
 Map<String, dynamic> _$TokenReissueRequestDtoToJson(
-  TokenReissueRequestDto instance,
-) => <String, dynamic>{'refreshToken': instance.refreshToken};
+        TokenReissueRequestDto instance) =>
+    <String, dynamic>{
+      'refreshToken': instance.refreshToken,
+    };

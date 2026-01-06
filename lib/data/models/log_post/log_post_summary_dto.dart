@@ -6,17 +6,17 @@ part 'log_post_summary_dto.g.dart';
 @JsonSerializable()
 class LogPostSummaryDto {
   final String publicId;
-  final String title;
-  final int rating;
-  final String? thumbnailUrl; // [수정] thumbnail -> thumbnailUrl
-  final String creatorName;
+  final String? title;
+  final int? rating;
+  final String? thumbnailUrl;
+  final String? creatorName;
 
   LogPostSummaryDto({
     required this.publicId,
-    required this.title,
-    required this.rating,
+    this.title,
+    this.rating,
     this.thumbnailUrl,
-    required this.creatorName,
+    this.creatorName,
   });
 
   factory LogPostSummaryDto.fromJson(Map<String, dynamic> json) =>
@@ -25,9 +25,9 @@ class LogPostSummaryDto {
 
   LogPostSummary toEntity() => LogPostSummary(
     id: publicId,
-    title: title,
+    title: title ?? '',
     rating: rating,
-    thumbnailUrl: thumbnailUrl, // [수정됨]
+    thumbnailUrl: thumbnailUrl,
     creatorName: creatorName,
   );
 }

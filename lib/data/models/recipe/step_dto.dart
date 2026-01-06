@@ -27,4 +27,13 @@ class StepDto {
     imagePublicId: imagePublicId, // [추가됨]
     imageUrl: imageUrl, // [유지됨]
   );
+
+  factory StepDto.fromEntity(RecipeStep step) {
+    return StepDto(
+      stepNumber: step.stepNumber,
+      description: step.description,
+      imagePublicId: step.imagePublicId,
+      imageUrl: step.imageUrl,
+    );
+  }
 }

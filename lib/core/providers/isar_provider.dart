@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import 'package:pairing_planet2_frontend/data/models/local/queued_event.dart';
@@ -14,6 +15,8 @@ Future<Isar> initializeIsar() async {
   final isar = await Isar.open(
     [QueuedEventSchema],
     directory: dir.path,
+    // Enable inspector ONLY in debug mode (automatically disabled in production)
+    inspector: kDebugMode,
   );
 
   return isar;

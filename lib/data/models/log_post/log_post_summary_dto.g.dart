@@ -9,10 +9,10 @@ part of 'log_post_summary_dto.dart';
 LogPostSummaryDto _$LogPostSummaryDtoFromJson(Map<String, dynamic> json) =>
     LogPostSummaryDto(
       publicId: json['publicId'] as String,
-      title: json['title'] as String,
-      rating: (json['rating'] as num).toInt(),
+      title: json['title'] as String?,
+      rating: (json['rating'] as num?)?.toInt(),
       thumbnailUrl: json['thumbnailUrl'] as String?,
-      creatorName: json['creatorName'] as String,
+      creatorName: json['creatorName'] as String?,
     );
 
 Map<String, dynamic> _$LogPostSummaryDtoToJson(LogPostSummaryDto instance) =>

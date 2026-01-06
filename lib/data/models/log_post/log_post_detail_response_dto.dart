@@ -34,9 +34,7 @@ class LogPostDetailResponseDto {
     publicId: publicId,
     content: content,
     rating: rating.toDouble(), // 💡 int를 엔티티의 double 타입으로 변환
-    imageUrls:
-        images?.map((img) => img.imageUrl).toList() ??
-        [], // 💡 객체 리스트를 URL 문자열 리스트로 변환
+    imageUrls: images?.map((img) => img.imageUrl).toList() ?? [],
     recipePublicId: linkedRecipe?.publicId ?? "",
     createdAt: DateTime.parse(createdAt),
   );

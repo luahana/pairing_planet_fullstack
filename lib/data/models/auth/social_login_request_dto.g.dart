@@ -7,12 +7,15 @@ part of 'social_login_request_dto.dart';
 // **************************************************************************
 
 SocialLoginRequestDto _$SocialLoginRequestDtoFromJson(
-  Map<String, dynamic> json,
-) => SocialLoginRequestDto(
-  idToken: json['idToken'] as String,
-  locale: json['locale'] as String,
-);
+        Map<String, dynamic> json) =>
+    SocialLoginRequestDto(
+      idToken: json['idToken'] as String,
+      locale: json['locale'] as String,
+    );
 
 Map<String, dynamic> _$SocialLoginRequestDtoToJson(
-  SocialLoginRequestDto instance,
-) => <String, dynamic>{'idToken': instance.idToken, 'locale': instance.locale};
+        SocialLoginRequestDto instance) =>
+    <String, dynamic>{
+      'idToken': instance.idToken,
+      'locale': instance.locale,
+    };

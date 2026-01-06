@@ -6,15 +6,15 @@ import '../../domain/repositories/autocomplete_repository.dart';
 import '../../domain/usecases/autocomplete/get_autocomplete_usecase.dart';
 
 final autocompleteRemoteDataSourceProvider = Provider(
-  (ref) => AutocompleteRemoteDataSource(ref.watch(dioProvider)),
+  (ref) => AutocompleteRemoteDataSource(ref.read(dioProvider)),
 );
 
 final autocompleteRepositoryProvider = Provider<AutocompleteRepository>(
   (ref) => AutocompleteRepositoryImpl(
-    ref.watch(autocompleteRemoteDataSourceProvider),
+    ref.read(autocompleteRemoteDataSourceProvider),
   ),
 );
 
 final getAutocompleteUseCaseProvider = Provider(
-  (ref) => GetAutocompleteUseCase(ref.watch(autocompleteRepositoryProvider)),
+  (ref) => GetAutocompleteUseCase(ref.read(autocompleteRepositoryProvider)),
 );

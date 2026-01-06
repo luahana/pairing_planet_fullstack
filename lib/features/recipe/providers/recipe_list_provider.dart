@@ -31,9 +31,9 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
     final repository = ref.read(recipeRepositoryProvider);
     final result = await repository.getRecipes(page: page, size: 10);
 
-    return result.fold((failure) => throw failure, (pagedResponse) {
-      _hasNext = pagedResponse.hasNext; // 💡 서버 응답에서 다음 페이지 유무 확인
-      return pagedResponse.items;
+    return result.fold((failure) => throw failure, (sliceResponse) {
+      _hasNext = sliceResponse.hasNext; // 💡 서버 응답에서 다음 페이지 유무 확인
+      return sliceResponse.content;
     });
   }
 
@@ -53,9 +53,9 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
       (failure) {
         _isFetchingNext = false;
       },
-      (pagedResponse) {
+      (sliceResponse) {
         _currentPage = nextPage;
-        _hasNext = pagedResponse.hasNext;
+        _hasNext = sliceResponse.hasNext;
         _isFetchingNext = false;
 
         // 💡 기존 리스트에 새 데이터를 붙이고, 최신 hasNext 상태를 업데이트합니다.
@@ -64,7 +64,7 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
 
         state = AsyncValue.data(
           RecipeListState(
-            items: [...previousItems, ...pagedResponse.items],
+            items: [...previousItems, ...sliceResponse.content],
             hasNext: _hasNext,
           ),
         );

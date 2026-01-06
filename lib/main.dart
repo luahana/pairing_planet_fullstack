@@ -54,6 +54,11 @@ void main() async {
   final isar = await initializeIsar();
   talker.info('Isar database initialized');
 
+  // Isar Inspector is only available in debug mode
+  if (kDebugMode) {
+    talker.info('Isar Inspector: Check console for URL (https://inspect.isar.dev/...)');
+  }
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],

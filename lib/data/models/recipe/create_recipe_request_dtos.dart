@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/create_recipe_request.dart';
 import 'ingredient_dto.dart';
 import 'step_dto.dart';
 
@@ -46,4 +47,20 @@ class CreateRecipeRequestDto {
       _$CreateRecipeRequestDtoFromJson(json);
 
   Map<String, dynamic> toJson() => _$CreateRecipeRequestDtoToJson(this);
+
+  factory CreateRecipeRequestDto.fromEntity(CreateRecipeRequest request) {
+    return CreateRecipeRequestDto(
+      title: request.title,
+      description: request.description,
+      culinaryLocale: request.culinaryLocale,
+      food1MasterPublicId: request.food1MasterPublicId,
+      newFoodName: request.newFoodName,
+      ingredients: request.ingredients.map((e) => IngredientDto.fromEntity(e)).toList(),
+      steps: request.steps.map((e) => StepDto.fromEntity(e)).toList(),
+      imagePublicIds: request.imagePublicIds,
+      changeCategory: request.changeCategory,
+      parentPublicId: request.parentPublicId,
+      rootPublicId: request.rootPublicId,
+    );
+  }
 }

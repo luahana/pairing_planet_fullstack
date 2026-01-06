@@ -6,6 +6,7 @@ import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/features/home/screens/main_screen.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/log_post_create_screen.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/log_post_detail_screen.dart';
+import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/log_post_list_screen.dart';
 import 'package:pairing_planet2_frontend/features/login/screens/login_screen.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/screens/recipe_create_screen.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/screens/recipe_list_screen.dart';
@@ -71,11 +72,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: RouteConstants.logDetail, // '/log/:id'
-        name: 'log_detail',
+        path: RouteConstants.logPostDetail, // '/log_post/:id'
+        name: 'log_post_detail',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
-          // 💡 로그 상세 페이지로 이동 (해당 위젯은 별도로 생성 필요)
           return LogPostDetailScreen(logId: id);
         },
       ),
@@ -112,8 +112,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: RouteConstants.search,
-                builder: (context, state) => const Center(child: Text('검색 화면')),
+                path: RouteConstants.logPosts,
+                builder: (context, state) => const LogPostListScreen(),
               ),
             ],
           ),

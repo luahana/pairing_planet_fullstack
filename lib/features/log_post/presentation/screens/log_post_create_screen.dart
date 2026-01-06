@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/image_source_sheet.dart';
-import 'package:pairing_planet2_frontend/data/models/log_post/create_log_post_request_dto.dart';
+import 'package:pairing_planet2_frontend/domain/entities/log_post/create_log_post_request.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_providers.dart';
 import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
@@ -81,10 +81,10 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
         .map((img) => img.publicId!)
         .toList();
 
-    final request = CreateLogPostRequestDto(
+    final request = CreateLogPostRequest(
       recipePublicId: widget.recipe.publicId,
       content: _contentController.text,
-      rating: _rating,
+      rating: _rating.round(),
       imagePublicIds: imagePublicIds,
     );
 
@@ -112,7 +112,7 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
 
           // 성공한 데이터의 publicId를 사용하여 상세 페이지로 이동
           context.pushReplacement(
-            RouteConstants.logDetailPath(logDetail.publicId),
+            RouteConstants.logPostDetailPath(logDetail.publicId),
           );
         }
       }
@@ -199,13 +199,15 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
       ),
       child: Row(
         children: [
-          AppCachedImage(
-            imageUrl: widget.recipe.imageUrls.first,
-            width: 60,
-            height: 60,
-            borderRadius: 8,
-          ),
-          const SizedBox(width: 12),
+          if (widget.recipe.imageUrls.isNotEmpty)
+            AppCachedImage(
+              imageUrl: widget.recipe.imageUrls.first,
+              width: 60,
+              height: 60,
+              borderRadius: 8,
+            ),
+          if (widget.recipe.imageUrls.isNotEmpty)
+            const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

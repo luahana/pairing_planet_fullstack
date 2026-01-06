@@ -1,4 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:pairing_planet2_frontend/domain/entities/log_post/create_log_post_request.dart';
+
 part 'create_log_post_request_dto.g.dart';
 
 @JsonSerializable()
@@ -6,14 +8,26 @@ class CreateLogPostRequestDto {
   final String recipePublicId;
   final String content;
   final double rating;
+  final String? title;
   final List<String> imagePublicIds;
 
   CreateLogPostRequestDto({
     required this.recipePublicId,
     required this.content,
     required this.rating,
+    this.title,
     required this.imagePublicIds,
   });
 
   Map<String, dynamic> toJson() => _$CreateLogPostRequestDtoToJson(this);
+
+  factory CreateLogPostRequestDto.fromEntity(CreateLogPostRequest request) {
+    return CreateLogPostRequestDto(
+      recipePublicId: request.recipePublicId,
+      content: request.content,
+      rating: request.rating.toDouble(),
+      title: request.title,
+      imagePublicIds: request.imagePublicIds,
+    );
+  }
 }

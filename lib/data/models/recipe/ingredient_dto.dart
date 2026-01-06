@@ -22,4 +22,15 @@ class IngredientDto {
     amount: amount,
     type: type.name, // Entity에는 문자열로 전달
   );
+
+  factory IngredientDto.fromEntity(Ingredient ingredient) {
+    return IngredientDto(
+      name: ingredient.name,
+      amount: ingredient.amount,
+      type: IngredientType.values.firstWhere(
+        (e) => e.name == ingredient.type,
+        orElse: () => IngredientType.MAIN,
+      ),
+    );
+  }
 }

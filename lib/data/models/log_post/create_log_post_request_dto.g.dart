@@ -7,21 +7,23 @@ part of 'create_log_post_request_dto.dart';
 // **************************************************************************
 
 CreateLogPostRequestDto _$CreateLogPostRequestDtoFromJson(
-  Map<String, dynamic> json,
-) => CreateLogPostRequestDto(
-  recipePublicId: json['recipePublicId'] as String,
-  content: json['content'] as String,
-  rating: (json['rating'] as num).toDouble(),
-  imagePublicIds: (json['imagePublicIds'] as List<dynamic>)
-      .map((e) => e as String)
-      .toList(),
-);
+        Map<String, dynamic> json) =>
+    CreateLogPostRequestDto(
+      recipePublicId: json['recipePublicId'] as String,
+      content: json['content'] as String,
+      rating: (json['rating'] as num).toDouble(),
+      title: json['title'] as String?,
+      imagePublicIds: (json['imagePublicIds'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+    );
 
 Map<String, dynamic> _$CreateLogPostRequestDtoToJson(
-  CreateLogPostRequestDto instance,
-) => <String, dynamic>{
-  'recipePublicId': instance.recipePublicId,
-  'content': instance.content,
-  'rating': instance.rating,
-  'imagePublicIds': instance.imagePublicIds,
-};
+        CreateLogPostRequestDto instance) =>
+    <String, dynamic>{
+      'recipePublicId': instance.recipePublicId,
+      'content': instance.content,
+      'rating': instance.rating,
+      'title': instance.title,
+      'imagePublicIds': instance.imagePublicIds,
+    };

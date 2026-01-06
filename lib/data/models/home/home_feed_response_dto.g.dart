@@ -17,8 +17,8 @@ HomeFeedResponseDto _$HomeFeedResponseDtoFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$HomeFeedResponseDtoToJson(
-  HomeFeedResponseDto instance,
-) => <String, dynamic>{
-  'recentRecipes': instance.recentRecipes,
-  'trendingTrees': instance.trendingTrees,
-};
+        HomeFeedResponseDto instance) =>
+    <String, dynamic>{
+      'recentRecipes': instance.recentRecipes,
+      'trendingTrees': instance.trendingTrees,
+    };

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pairing_planet2_frontend/data/models/recipe/ingredient_dto.dart';
 import 'package:pairing_planet2_frontend/domain/entities/autocomplete/autocomplete_result.dart';
 import '../../../../core/providers/autocomplete_providers.dart';
 import '../../../../core/providers/locale_provider.dart';
@@ -8,7 +7,7 @@ import 'minimal_header.dart';
 
 class IngredientSection extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> ingredients;
-  final Function(IngredientType) onAddIngredient;
+  final Function(String) onAddIngredient;
   final Function(int) onRemoveIngredient;
 
   const IngredientSection({
@@ -30,19 +29,19 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
       children: [
         _buildCategorySection(
           "주재료",
-          IngredientType.MAIN,
+          "MAIN",
           Icons.set_meal_outlined,
         ),
         const SizedBox(height: 32),
         _buildCategorySection(
           "부재료",
-          IngredientType.SECONDARY,
+          "SECONDARY",
           Icons.bakery_dining_outlined,
         ),
         const SizedBox(height: 32),
         _buildCategorySection(
           "양념",
-          IngredientType.SEASONING,
+          "SEASONING",
           Icons.opacity_outlined,
         ),
       ],
@@ -51,7 +50,7 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
 
   Widget _buildCategorySection(
     String title,
-    IngredientType type,
+    String type,
     IconData icon,
   ) {
     final categoryIngredients = widget.ingredients

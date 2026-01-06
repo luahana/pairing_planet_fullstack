@@ -382,42 +382,4 @@ class _HookSectionState extends ConsumerState<HookSection> {
         return const SizedBox.shrink();
     }
   }
-
-  // Widget _buildTextField({
-  //   required TextEditingController controller,
-  //   required String label,
-  //   required String hint,
-  //   int maxLines = 1,
-  //   bool enabled = true,
-  //   Color? backgroundColor,
-  // }) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(
-  //         label,
-  //         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-  //       ),
-  //       const SizedBox(height: 8),
-  //       Container(
-  //         padding: const EdgeInsets.symmetric(horizontal: 12),
-  //         decoration: BoxDecoration(
-  //           color: backgroundColor ?? Colors.grey[50],
-  //           borderRadius: BorderRadius.circular(12),
-  //           border: Border.all(color: Colors.grey[200]!),
-  //         ),
-  //         child: TextField(
-  //           controller: controller,
-  //           enabled: enabled,
-  //           maxLines: maxLines,
-  //           decoration: InputDecoration(
-  //             hintText: hint,
-  //             border: InputBorder.none,
-  //             hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 }

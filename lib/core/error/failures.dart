@@ -28,3 +28,8 @@ class UnauthorizedFailure extends Failure {
 class UnknownFailure extends Failure {
   UnknownFailure([String message = '알 수 없는 에러가 발생했습니다.']) : super(message);
 }
+
+// Validation Error
+class ValidationFailure extends Failure {
+  ValidationFailure([String message = '입력값이 유효하지 않습니다.']) : super(message);
+}

@@ -7,17 +7,17 @@ part of 'image_upload_response_dto.dart';
 // **************************************************************************
 
 ImageUploadResponseDto _$ImageUploadResponseDtoFromJson(
-  Map<String, dynamic> json,
-) => ImageUploadResponseDto(
-  imagePublicId: json['imagePublicId'] as String,
-  imageUrl: json['imageUrl'] as String,
-  originalFilename: json['originalFilename'] as String,
-);
+        Map<String, dynamic> json) =>
+    ImageUploadResponseDto(
+      imagePublicId: json['imagePublicId'] as String,
+      imageUrl: json['imageUrl'] as String,
+      originalFilename: json['originalFilename'] as String,
+    );
 
 Map<String, dynamic> _$ImageUploadResponseDtoToJson(
-  ImageUploadResponseDto instance,
-) => <String, dynamic>{
-  'imagePublicId': instance.imagePublicId,
-  'imageUrl': instance.imageUrl,
-  'originalFilename': instance.originalFilename,
-};
+        ImageUploadResponseDto instance) =>
+    <String, dynamic>{
+      'imagePublicId': instance.imagePublicId,
+      'imageUrl': instance.imageUrl,
+      'originalFilename': instance.originalFilename,
+    };

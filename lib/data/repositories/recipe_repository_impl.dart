@@ -2,8 +2,9 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/error/failures.dart';
-import 'package:pairing_planet2_frontend/data/models/common/paged_response_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/create_recipe_request_dtos.dart';
+import 'package:pairing_planet2_frontend/domain/entities/common/slice_response.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/create_recipe_request.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import '../../core/network/network_info.dart'; // 네트워크 상태 확인용 (추가 필요)
@@ -24,13 +25,16 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<Either<Failure, String>> createRecipe(
-    CreateRecipeRequestDto recipe,
+    CreateRecipeRequest recipe,
   ) async {
     // 1. 네트워크 연결 상태 확인
     if (await networkInfo.isConnected) {
       try {
-        // 2. 서버에 레시피 생성 요청 (RemoteDataSource에 해당 메서드 추가 필요)
-        final newPublicId = await remoteDataSource.createRecipe(recipe);
+        // 2. Domain entity를 DTO로 변환
+        final dto = CreateRecipeRequestDto.fromEntity(recipe);
+
+        // 3. 서버에 레시피 생성 요청
+        final newPublicId = await remoteDataSource.createRecipe(dto);
 
         // 💡 Unit 대신 받은 ID를 반환하여 스크린에서 사용할 수 있게 함
         return Right(newPublicId);
@@ -66,7 +70,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
         if (localData != null) return Right(localData.toEntity());
         return Left(_mapDioExceptionToFailure(e));
       } catch (e) {
-        print("❌ Recipe Detail Error: $e");
         if (localData != null) return Right(localData.toEntity());
         return Left(UnknownFailure(e.toString()));
       }
@@ -82,35 +85,22 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<Either<Failure, PagedResponseDto<RecipeSummary>>> getRecipes({
+  Future<Either<Failure, SliceResponse<RecipeSummary>>> getRecipes({
     required int page,
     int size = 10,
   }) async {
     try {
       // 1. RemoteDataSource 호출
-      final pagedDto = await remoteDataSource.getRecipes(
+      final sliceDto = await remoteDataSource.getRecipes(
         page: page,
         size: size,
       );
 
-      // 2. DTO 리스트를 엔티티 리스트로 변환
-      final items = pagedDto.items.map((dto) => dto.toEntity()).toList();
-
-      // 3. 변환된 데이터를 담은 새로운 PagedResponseDto 반환
-      return Right(
-        PagedResponseDto<RecipeSummary>(
-          items: items,
-          currentPage: pagedDto.currentPage,
-          totalPages: pagedDto.totalPages,
-          hasNext: pagedDto.hasNext,
-        ),
-      );
+      // 2. DTO를 Entity로 변환
+      return Right(sliceDto.toEntity((dto) => dto.toEntity()));
     } on DioException catch (e) {
       return Left(_mapDioExceptionToFailure(e));
-    } catch (e, stack) {
-      // 💡 이 로그가 구체적인 파싱 에러(예: 'creatorName' is not a subtype of...)를 알려줍니다.
-      print("🆘 JSON Parsing Error: $e");
-      print("🆘 StackTrace: $stack");
+    } catch (e) {
       return Left(UnknownFailure(e.toString()));
     }
   }
