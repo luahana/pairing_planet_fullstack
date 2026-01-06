@@ -3,22 +3,53 @@ spring:
     activate:
       on-profile: test
 
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db}
-    username: ${SPRING_DATASOURCE_USERNAME:dev_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:dev_password}
-
   jpa:
     hibernate:
-      ddl-auto: validate
-#    properties:
-#      hibernate:
-#        format_sql: true
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: false
+        show_sql: false
 
   flyway:
-    enabled: true
-    baseline-on-migrate: false
+    enabled: false
 
   sql:
     init:
       mode: never
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cloud:
+    aws:
+      s3:
+        endpoint: http://localhost:9000
+      credentials:
+        access-key: test-access-key
+        secret-key: test-secret-key
+      region:
+        static: us-east-1
+
+jwt:
+  secret: dGVzdC1zZWNyZXQta2V5LWZvci1wYWlyaW5nLXBsYW5ldC1hcHBsaWNhdGlvbi10ZXN0aW5n
+
+security:
+  encryption-key: "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE="
+
+file:
+  upload:
+    bucket: test-bucket
+    url-prefix: http://localhost:9000/test-bucket
+
+logging:
+  level:
+    root: WARN
+    com.pairingplanet: DEBUG
+    org.testcontainers: INFO
+
+internal:
+  api:
+    key: test-internal-api-key

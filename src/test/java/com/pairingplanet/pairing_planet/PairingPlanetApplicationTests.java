@@ -1,10 +1,9 @@
 package com.pairingplanet.pairing_planet;
 
+import com.pairingplanet.pairing_planet.support.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class PairingPlanetApplicationTests {
+class PairingPlanetApplicationTests extends BaseIntegrationTest {
 
 	@Test
 	void contextLoads() {
