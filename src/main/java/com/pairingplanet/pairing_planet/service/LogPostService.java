@@ -7,6 +7,7 @@ import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.image.ImageResponseDto;
 import com.pairingplanet.pairing_planet.dto.log_post.LogPostDetailResponseDto;
 import com.pairingplanet.pairing_planet.dto.log_post.CreateLogRequestDto;
+import com.pairingplanet.pairing_planet.dto.log_post.LogPostSummaryDto;
 import com.pairingplanet.pairing_planet.dto.recipe.RecipeSummaryDto;
 import com.pairingplanet.pairing_planet.repository.log_post.LogPostRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.RecipeRepository;
@@ -14,9 +15,12 @@ import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import com.pairingplanet.pairing_planet.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +54,7 @@ public class LogPostService {
         RecipeLog recipeLog = RecipeLog.builder()
                 .logPost(logPost)
                 .recipe(recipe)
-                .rating(req.rating())
+                .outcome(req.outcome())
                 .build();
 
         logPost.setRecipeLog(recipeLog);
@@ -63,6 +67,12 @@ public class LogPostService {
     }
 
     @Transactional(readOnly = true)
+    public Slice<LogPostSummaryDto> getAllLogs(Pageable pageable) {
+        return logPostRepository.findAllOrderByCreatedAtDesc(pageable)
+                .map(this::convertToLogSummary);
+    }
+
+    @Transactional(readOnly = true)
     public LogPostDetailResponseDto getLogDetail(UUID publicId) {
         LogPost logPost = logPostRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new IllegalArgumentException("Log not found"));
@@ -70,7 +80,7 @@ public class LogPostService {
         RecipeLog recipeLog = logPost.getRecipeLog();
         Recipe linkedRecipe = recipeLog.getRecipe();
 
-        // [수정] 로그 이미지 엔티티 리스트를 ImageResponseDto 리스트로 변환
+        // 1. 이미지 리스트 변환
         List<ImageResponseDto> imageResponses = logPost.getImages().stream()
                 .map(img -> new ImageResponseDto(
                         img.getPublicId(),
@@ -78,16 +88,37 @@ public class LogPostService {
                 ))
                 .toList();
 
-        // [추가] 연결된 레시피의 요약 정보 생성 (9개 파라미터 대응)
+        // 2. 연결된 레시피 요약 정보 생성 (11개 필드 대응)
         RecipeSummaryDto linkedRecipeSummary = convertToRecipeSummary(linkedRecipe);
 
+        // 3. 최종 DTO 생성 시 createdAt 추가
         return new LogPostDetailResponseDto(
                 logPost.getPublicId(),
                 logPost.getTitle(),
                 logPost.getContent(),
-                recipeLog.getRating(),
+                recipeLog.getOutcome(),
                 imageResponses,
-                linkedRecipeSummary // [적용]
+                linkedRecipeSummary,
+                logPost.getCreatedAt()// [추가] BaseEntity로부터 상속받은 생성일시 전달
+        );
+    }
+
+    private LogPostSummaryDto convertToLogSummary(LogPost log) {
+        String creatorName = userRepository.findById(log.getCreatorId())
+                .map(User::getUsername)
+                .orElse("Unknown");
+
+        String thumbnailUrl = log.getImages().stream()
+                .findFirst() // 로그의 첫 번째 이미지를 썸네일로 사용
+                .map(img -> urlPrefix + "/" + img.getStoredFilename())
+                .orElse(null);
+
+        return new LogPostSummaryDto(
+                log.getPublicId(),
+                log.getTitle(),
+                log.getRecipeLog().getOutcome(),
+                thumbnailUrl,
+                creatorName
         );
     }
 

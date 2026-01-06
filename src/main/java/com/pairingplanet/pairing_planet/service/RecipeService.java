@@ -115,7 +115,7 @@ public class RecipeService {
                 .stream().map(rl -> new LogPostSummaryDto(
                         rl.getLogPost().getPublicId(),
                         rl.getLogPost().getTitle(),
-                        rl.getRating(),
+                        rl.getOutcome(),
                         null, // 대표이미지 생략
                         null  // 작성자 생략
                 )).toList();

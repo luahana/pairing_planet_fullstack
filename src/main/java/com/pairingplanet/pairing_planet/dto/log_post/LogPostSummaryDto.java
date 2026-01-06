@@ -5,7 +5,7 @@ import java.util.UUID;
 public record LogPostSummaryDto(
         UUID publicId,
         String title,
-        Integer rating,
+        String outcome,  // SUCCESS, PARTIAL, FAILED
         String thumbnailUrl, // [수정] thumbnail -> thumbnailUrl
         String creatorName
 ) {}

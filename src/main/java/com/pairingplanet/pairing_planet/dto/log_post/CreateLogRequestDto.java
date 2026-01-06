@@ -7,6 +7,6 @@ public record CreateLogRequestDto(
         UUID recipePublicId,
         String title,
         String content,
-        Integer rating,
+        String outcome,  // SUCCESS, PARTIAL, FAILED
         List<UUID> imagePublicIds // [수정] String imageUrls -> UUID imagePublicIds
 ) {}
