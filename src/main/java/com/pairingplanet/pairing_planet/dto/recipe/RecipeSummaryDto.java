@@ -12,6 +12,8 @@ public record RecipeSummaryDto(
         String creatorName,
         String thumbnail,
         Integer variantCount,
+        Integer logCount,      // Activity count: number of cooking logs
         UUID parentPublicId,
-        UUID rootPublicId
+        UUID rootPublicId,
+        String rootTitle       // Root recipe title for variants (lineage display)
 ) {}

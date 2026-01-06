@@ -6,7 +6,9 @@ import com.pairingplanet.pairing_planet.dto.user.MyProfileResponseDto;
 import com.pairingplanet.pairing_planet.dto.user.UpdateProfileRequestDto;
 import com.pairingplanet.pairing_planet.dto.user.UserDto;
 import com.pairingplanet.pairing_planet.repository.image.ImageRepository;
+import com.pairingplanet.pairing_planet.repository.log_post.LogPostRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.RecipeRepository;
+import com.pairingplanet.pairing_planet.repository.recipe.SavedRecipeRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import com.pairingplanet.pairing_planet.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,8 @@ public class UserService {
     private final ImageService imageService;
     private final RecipeRepository recipeRepository;
     private final ImageRepository imageRepository;
+    private final LogPostRepository logPostRepository;
+    private final SavedRecipeRepository savedRecipeRepository;
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
@@ -38,10 +42,14 @@ public class UserService {
         User user = userRepository.findById(principal.getId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // 기획서 요구사항: 내가 만든 레시피 개수 등 활동 내역 포함
+        Long userId = user.getId();
+
+        // 활동 내역: 레시피, 로그, 저장 개수
         return MyProfileResponseDto.builder()
                 .user(UserDto.from(user, urlPrefix))
-                .recipeCount(recipeRepository.countByCreatorIdAndIsDeletedFalse(user.getId()))
+                .recipeCount(recipeRepository.countByCreatorIdAndIsDeletedFalse(userId))
+                .logCount(logPostRepository.countByCreatorIdAndIsDeletedFalse(userId))
+                .savedCount(savedRecipeRepository.countByUserId(userId))
                 .build();
     }
 

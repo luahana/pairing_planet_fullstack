@@ -36,25 +36,27 @@ public record RecipeDetailResponseDto(
                         nameMap.values().stream().findFirst().orElse("Unknown Food")));
         UUID currentFoodMasterPublicId = recipe.getFoodMaster().getPublicId();
 
-        // 2. 루트 레시피 정보 생성 (11개 필드 생성자 대응)
+        // 2. 루트 레시피 정보 생성 (13개 필드 생성자 대응)
         RecipeSummaryDto rootInfo = (root != null) ? new RecipeSummaryDto(
                 root.getPublicId(), // 1. publicId (UUID)
                 // 2. foodName (String): 현재 로케일 -> 한국어 -> 첫 번째 이름 순으로 시도
                 root.getFoodMaster().getName().getOrDefault(root.getCulinaryLocale(),
                         root.getFoodMaster().getName().getOrDefault("ko-KR",
                                 root.getFoodMaster().getName().values().stream().findFirst().orElse("Unknown Food"))),
-                root.getFoodMaster().getPublicId(), // 3. foodMasterPublicId (UUID) - [수정됨]
+                root.getFoodMaster().getPublicId(), // 3. foodMasterPublicId (UUID)
                 root.getTitle(),       // 4. title
                 root.getDescription(), // 5. description
                 root.getCulinaryLocale(), // 6. culinaryLocale
                 null, // 7. creatorName (상세 카드 내 생략)
                 null, // 8. thumbnail (상세 카드 내 생략)
                 0,    // 9. variantCount (상세 카드 내 생략)
-                null, // 10. parentPublicId
-                null  // 11. rootPublicId
+                0,    // 10. logCount (상세 카드 내 생략)
+                null, // 11. parentPublicId
+                null, // 12. rootPublicId
+                null  // 13. rootTitle (root itself has no root)
         ) : null;
 
-        // 3. 부모 레시피 정보 생성 (11개 필드 생성자 대응)
+        // 3. 부모 레시피 정보 생성 (13개 필드 생성자 대응)
         RecipeSummaryDto parentInfo = (parent != null) ? new RecipeSummaryDto(
                 parent.getPublicId(),
                 parent.getFoodMaster().getName().getOrDefault(parent.getCulinaryLocale(), "Unknown Food"),
@@ -64,9 +66,11 @@ public record RecipeDetailResponseDto(
                 parent.getCulinaryLocale(),
                 null,
                 null,
-                0,
-                null,
-                null
+                0,    // variantCount
+                0,    // logCount
+                null, // parentPublicId
+                null, // rootPublicId
+                null  // rootTitle
         ) : null;
 
         // 4. 이미지 리스트 변환

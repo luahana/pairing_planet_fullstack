@@ -59,6 +59,28 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.createRecipe(req, principal));
     }
 
+    // --- [MY RECIPES] ---
+    /**
+     * 내가 만든 레시피 목록
+     */
+    @GetMapping("/my")
+    public ResponseEntity<Slice<RecipeSummaryDto>> getMyRecipes(
+            @AuthenticationPrincipal UserPrincipal principal,
+            Pageable pageable) {
+        return ResponseEntity.ok(recipeService.getMyRecipes(principal.getId(), pageable));
+    }
+
+    // --- [SAVED RECIPES] ---
+    /**
+     * 저장한 레시피 목록
+     */
+    @GetMapping("/saved")
+    public ResponseEntity<Slice<RecipeSummaryDto>> getSavedRecipes(
+            @AuthenticationPrincipal UserPrincipal principal,
+            Pageable pageable) {
+        return ResponseEntity.ok(savedRecipeService.getSavedRecipes(principal.getId(), pageable));
+    }
+
     // --- [SAVE/BOOKMARK] ---
     /**
      * 레시피 저장 (북마크)

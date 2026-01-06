@@ -23,4 +23,7 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
 
     @Query("SELECT l FROM LogPost l ORDER BY l.createdAt DESC")
     Slice<LogPost> findAllOrderByCreatedAtDesc(Pageable pageable);
+
+    // 4. 사용자의 로그 개수 (삭제되지 않은 것만)
+    long countByCreatorIdAndIsDeletedFalse(Long creatorId);
 }

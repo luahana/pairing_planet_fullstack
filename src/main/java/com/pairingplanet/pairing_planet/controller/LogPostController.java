@@ -37,6 +37,17 @@ public class LogPostController {
         return ResponseEntity.ok(logPostService.getAllLogs(pageable));
     }
 
+    /**
+     * 내 로그 목록 조회 (마이페이지용)
+     * GET /api/v1/log_posts/my?page=0&size=10
+     */
+    @GetMapping("/my")
+    public ResponseEntity<Slice<LogPostSummaryDto>> getMyLogs(
+            @AuthenticationPrincipal UserPrincipal principal,
+            Pageable pageable) {
+        return ResponseEntity.ok(logPostService.getMyLogs(principal.getId(), pageable));
+    }
+
     // --- [LOG DETAIL] ---
     /**
      * 로그 상세: 사진, 메모, 연결된 레시피 카드 포함

@@ -21,4 +21,7 @@ public interface SavedRecipeRepository extends JpaRepository<SavedRecipe, SavedR
     Slice<SavedRecipe> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
     long countByRecipeId(Long recipeId);
+
+    // 사용자가 저장한 레시피 개수
+    long countByUserId(Long userId);
 }

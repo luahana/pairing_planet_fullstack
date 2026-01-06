@@ -10,6 +10,7 @@ import com.pairingplanet.pairing_planet.dto.log_post.CreateLogRequestDto;
 import com.pairingplanet.pairing_planet.dto.log_post.LogPostSummaryDto;
 import com.pairingplanet.pairing_planet.dto.recipe.RecipeSummaryDto;
 import com.pairingplanet.pairing_planet.repository.log_post.LogPostRepository;
+import com.pairingplanet.pairing_planet.repository.recipe.RecipeLogRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.RecipeRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import com.pairingplanet.pairing_planet.security.UserPrincipal;
@@ -30,6 +31,7 @@ import java.util.UUID;
 public class LogPostService {
     private final LogPostRepository logPostRepository;
     private final RecipeRepository recipeRepository;
+    private final RecipeLogRepository recipeLogRepository;
     private final ImageService imageService;
     private final UserRepository userRepository;
 
@@ -69,6 +71,15 @@ public class LogPostService {
     @Transactional(readOnly = true)
     public Slice<LogPostSummaryDto> getAllLogs(Pageable pageable) {
         return logPostRepository.findAllOrderByCreatedAtDesc(pageable)
+                .map(this::convertToLogSummary);
+    }
+
+    /**
+     * 내가 작성한 로그 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public Slice<LogPostSummaryDto> getMyLogs(Long userId, Pageable pageable) {
+        return logPostRepository.findByCreatorIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable)
                 .map(this::convertToLogSummary);
     }
 
@@ -142,19 +153,27 @@ public class LogPostService {
         // 4. 변형 수 조회
         int variantCount = (int) recipeRepository.countByRootRecipeIdAndIsDeletedFalse(recipe.getId());
 
-        // 11개 인자 생성자 호출
+        // 5. 로그 수 조회 (Activity count)
+        int logCount = (int) recipeLogRepository.countByRecipeId(recipe.getId());
+
+        // 6. 루트 레시피 제목 추출 (for lineage display in variants)
+        String rootTitle = recipe.getRootRecipe() != null ? recipe.getRootRecipe().getTitle() : null;
+
+        // 13개 인자 생성자 호출
         return new RecipeSummaryDto(
                 recipe.getPublicId(),
-                foodName,                             // [추가]
-                recipe.getFoodMaster().getPublicId(), // [추가] foodMasterPublicId
+                foodName,
+                recipe.getFoodMaster().getPublicId(),
                 recipe.getTitle(),
                 recipe.getDescription(),
                 recipe.getCulinaryLocale(),
                 creatorName,
                 thumbnail,
                 variantCount,
+                logCount,
                 recipe.getParentRecipe() != null ? recipe.getParentRecipe().getPublicId() : null,
-                recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null
+                recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null,
+                rootTitle
         );
     }
 }

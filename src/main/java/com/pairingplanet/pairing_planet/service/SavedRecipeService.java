@@ -4,6 +4,7 @@ import com.pairingplanet.pairing_planet.domain.entity.recipe.Recipe;
 import com.pairingplanet.pairing_planet.domain.entity.recipe.SavedRecipe;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.dto.recipe.RecipeSummaryDto;
+import com.pairingplanet.pairing_planet.repository.recipe.RecipeLogRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.RecipeRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.SavedRecipeRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
@@ -24,6 +25,7 @@ public class SavedRecipeService {
 
     private final SavedRecipeRepository savedRecipeRepository;
     private final RecipeRepository recipeRepository;
+    private final RecipeLogRepository recipeLogRepository;
     private final UserRepository userRepository;
 
     @Value("${file.upload.url-prefix}")
@@ -78,6 +80,8 @@ public class SavedRecipeService {
                 .orElse(null);
 
         int variantCount = (int) recipeRepository.countByRootRecipeIdAndIsDeletedFalse(recipe.getId());
+        int logCount = (int) recipeLogRepository.countByRecipeId(recipe.getId());
+        String rootTitle = recipe.getRootRecipe() != null ? recipe.getRootRecipe().getTitle() : null;
 
         return new RecipeSummaryDto(
                 recipe.getPublicId(),
@@ -89,8 +93,10 @@ public class SavedRecipeService {
                 creatorName,
                 thumbnail,
                 variantCount,
+                logCount,
                 recipe.getParentRecipe() != null ? recipe.getParentRecipe().getPublicId() : null,
-                recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null
+                recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null,
+                rootTitle
         );
     }
 

@@ -59,4 +59,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     // 2. [필터] 특정 로케일의 모든 공개 레시피 (에러 해결 지점)
     @Query("SELECT r FROM Recipe r WHERE r.culinaryLocale = :locale AND r.isDeleted = false AND r.isPrivate = false")
     Slice<Recipe> findPublicRecipesByLocale(@Param("locale") String locale, Pageable pageable);
+
+    // [마이페이지] 내가 만든 레시피 (최신순)
+    Slice<Recipe> findByCreatorIdAndIsDeletedFalseOrderByCreatedAtDesc(Long creatorId, Pageable pageable);
 }

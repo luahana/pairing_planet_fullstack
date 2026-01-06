@@ -9,8 +9,10 @@ import com.pairingplanet.pairing_planet.domain.entity.recipe.RecipeStep;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.domain.enums.SuggestionStatus;
 import com.pairingplanet.pairing_planet.dto.log_post.LogPostSummaryDto;
+import com.pairingplanet.pairing_planet.dto.log_post.RecentActivityDto;
 import com.pairingplanet.pairing_planet.dto.recipe.*;
 import com.pairingplanet.pairing_planet.repository.food.FoodMasterRepository;
+import com.pairingplanet.pairing_planet.repository.log_post.LogPostRepository;
 import com.pairingplanet.pairing_planet.repository.food.UserSuggestedFoodRepository;
 import com.pairingplanet.pairing_planet.repository.image.ImageRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.*;
@@ -37,7 +39,8 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository ingredientRepository;
     private final RecipeStepRepository stepRepository;
-    private final RecipeLogRepository recipeLogRepository; // [수정] 누락된 주입 추가
+    private final RecipeLogRepository recipeLogRepository;
+    private final LogPostRepository logPostRepository;  // For home feed activity
     private final ImageService imageService;
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
@@ -286,6 +289,12 @@ public class RecipeService {
         // 4. 변형 수 조회
         int variantCount = (int) recipeRepository.countByRootRecipeIdAndIsDeletedFalse(recipe.getId());
 
+        // 5. 로그 수 조회 (Activity count)
+        int logCount = (int) recipeLogRepository.countByRecipeId(recipe.getId());
+
+        // 6. 루트 레시피 제목 추출 (for lineage display in variants)
+        String rootTitle = recipe.getRootRecipe() != null ? recipe.getRootRecipe().getTitle() : null;
+
         return new RecipeSummaryDto(
                 recipe.getPublicId(),
                 foodName,
@@ -296,34 +305,71 @@ public class RecipeService {
                 creatorName,
                 thumbnail,
                 variantCount,
+                logCount,
                 recipe.getParentRecipe() != null ? recipe.getParentRecipe().getPublicId() : null,
-                recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null
+                recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null,
+                rootTitle
         );
     }
 
     @Transactional(readOnly = true)
     public HomeFeedResponseDto getHomeFeed() {
-        // 1. 최근 레시피 조회
-        List<RecipeSummaryDto> recent = recipeRepository.findTop5ByIsDeletedFalseAndIsPrivateFalseOrderByCreatedAtDesc()
+        // 1. 최근 요리 활동 (로그) 조회 - "📍 최근 요리 활동" 섹션
+        List<RecentActivityDto> recentActivity = logPostRepository
+                .findAllOrderByCreatedAtDesc(PageRequest.of(0, 5))
+                .stream()
+                .map(log -> {
+                    var recipeLog = log.getRecipeLog();
+                    var recipe = recipeLog.getRecipe();
+                    String creatorName = userRepository.findById(log.getCreatorId())
+                            .map(User::getUsername)
+                            .orElse("익명");
+                    String thumbnailUrl = log.getImages().stream()
+                            .findFirst()
+                            .map(img -> urlPrefix + "/" + img.getStoredFilename())
+                            .orElse(null);
+
+                    return RecentActivityDto.builder()
+                            .logPublicId(log.getPublicId())
+                            .outcome(recipeLog.getOutcome())
+                            .thumbnailUrl(thumbnailUrl)
+                            .creatorName(creatorName)
+                            .recipeTitle(recipe.getTitle())
+                            .recipePublicId(recipe.getPublicId())
+                            .foodName(getFoodName(recipe))
+                            .createdAt(log.getCreatedAt())
+                            .build();
+                })
+                .toList();
+
+        // 2. 최근 레시피 조회
+        List<RecipeSummaryDto> recentRecipes = recipeRepository.findTop5ByIsDeletedFalseAndIsPrivateFalseOrderByCreatedAtDesc()
                 .stream().map(this::convertToSummary).toList();
 
-        // 2. 활발한 변형 트리 조회 (기획서: "이 레시피, 이렇게 바뀌고 있어요")
-        List<TrendingTreeDto> trending = recipeRepository.findTrendingOriginals(PageRequest.of(0, 3))
+        // 3. 활발한 변형 트리 조회 (기획서: "🔥 이 레시피, 이렇게 바뀌고 있어요")
+        List<TrendingTreeDto> trending = recipeRepository.findTrendingOriginals(PageRequest.of(0, 5))
                 .stream().map(root -> {
                     long variants = recipeRepository.countByRootRecipeIdAndIsDeletedFalse(root.getId());
-                    long logs = recipeLogRepository.countByRecipeId(root.getId()); // 혹은 계보 전체 로그 합산
+                    long logs = recipeLogRepository.countByRecipeId(root.getId());
+                    String thumbnail = root.getImages().stream()
+                            .filter(img -> img.getType() == com.pairingplanet.pairing_planet.domain.enums.ImageType.THUMBNAIL)
+                            .findFirst()
+                            .map(img -> urlPrefix + "/" + img.getStoredFilename())
+                            .orElse(null);
 
                     return TrendingTreeDto.builder()
                             .rootRecipeId(root.getPublicId())
                             .title(root.getTitle())
+                            .foodName(getFoodName(root))
                             .culinaryLocale(root.getCulinaryLocale())
+                            .thumbnail(thumbnail)
                             .variantCount(variants)
                             .logCount(logs)
-                            .latestChangeSummary(root.getDescription()) // 예시 데이터
+                            .latestChangeSummary(root.getDescription())
                             .build();
                 }).toList();
 
-        return new HomeFeedResponseDto(recent, trending);
+        return new HomeFeedResponseDto(recentActivity, recentRecipes, trending);
     }
 
     private Long findUserId(UUID publicId) {
@@ -333,6 +379,14 @@ public class RecipeService {
 
     public Slice<RecipeSummaryDto> findAllRootRecipes(Pageable pageable) {
         return recipeRepository.findAllRootRecipes(pageable)
+                .map(this::convertToSummary);
+    }
+
+    /**
+     * 내가 만든 레시피 목록 조회
+     */
+    public Slice<RecipeSummaryDto> getMyRecipes(Long userId, Pageable pageable) {
+        return recipeRepository.findByCreatorIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable)
                 .map(this::convertToSummary);
     }
 
