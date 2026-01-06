@@ -27,13 +27,19 @@ class LogPostRemoteDataSource {
   Future<SliceResponseDto<LogPostSummaryDto>> getLogPosts({
     int page = 0,
     int size = 20,
+    String? query,
   }) async {
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'size': size,
+    };
+    if (query != null && query.isNotEmpty) {
+      queryParams['q'] = query;
+    }
+
     final response = await _dio.get(
       ApiEndpoints.log_posts,
-      queryParameters: {
-        'page': page,
-        'size': size,
-      },
+      queryParameters: queryParams,
     );
 
     return SliceResponseDto.fromJson(

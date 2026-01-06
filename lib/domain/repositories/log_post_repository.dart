@@ -16,5 +16,6 @@ abstract class LogPostRepository {
   Future<Either<Failure, SliceResponse<LogPostSummary>>> getLogPosts({
     int page = 0,
     int size = 20,
+    String? query,
   });
 }

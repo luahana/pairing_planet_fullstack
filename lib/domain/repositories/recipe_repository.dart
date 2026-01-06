@@ -13,6 +13,7 @@ abstract class RecipeRepository {
   Future<Either<Failure, SliceResponse<RecipeSummary>>> getRecipes({
     required int page,
     int size = 10,
+    String? query,
   });
 
   // P1: 레시피 저장/저장취소

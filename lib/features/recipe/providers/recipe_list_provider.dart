@@ -2,18 +2,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
 import '../../../domain/entities/recipe/recipe_summary.dart';
 
-/// State class for recipe list with pagination and cache info.
+/// State class for recipe list with pagination, cache info, and search.
 class RecipeListState {
   final List<RecipeSummary> items;
   final bool hasNext;
   final bool isFromCache;
   final DateTime? cachedAt;
+  final String? searchQuery;
 
   RecipeListState({
     required this.items,
     required this.hasNext,
     this.isFromCache = false,
     this.cachedAt,
+    this.searchQuery,
   });
 
   RecipeListState copyWith({
@@ -21,12 +23,15 @@ class RecipeListState {
     bool? hasNext,
     bool? isFromCache,
     DateTime? cachedAt,
+    String? searchQuery,
+    bool clearSearchQuery = false,
   }) {
     return RecipeListState(
       items: items ?? this.items,
       hasNext: hasNext ?? this.hasNext,
       isFromCache: isFromCache ?? this.isFromCache,
       cachedAt: cachedAt ?? this.cachedAt,
+      searchQuery: clearSearchQuery ? null : (searchQuery ?? this.searchQuery),
     );
   }
 }
@@ -37,6 +42,7 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
   bool _isFetchingNext = false;
   bool _isFromCache = false;
   DateTime? _cachedAt;
+  String? _searchQuery;
 
   @override
   Future<RecipeListState> build() async {
@@ -46,6 +52,7 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
     _isFetchingNext = false;
     _isFromCache = false;
     _cachedAt = null;
+    _searchQuery = null;
 
     final items = await _fetchRecipes(page: _currentPage);
     // 초기 상태에 현재 리스트와 hasNext, 캐시 정보를 함께 담아 반환합니다.
@@ -54,22 +61,68 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
       hasNext: _hasNext,
       isFromCache: _isFromCache,
       cachedAt: _cachedAt,
+      searchQuery: _searchQuery,
     );
   }
 
   Future<List<RecipeSummary>> _fetchRecipes({required int page}) async {
     final repository = ref.read(recipeRepositoryProvider);
-    final result = await repository.getRecipes(page: page, size: 10);
+    final result = await repository.getRecipes(
+      page: page,
+      size: 10,
+      query: _searchQuery,
+    );
 
     return result.fold((failure) => throw failure, (sliceResponse) {
       _hasNext = sliceResponse.hasNext;
-      // Track cache status for first page
-      if (page == 0) {
+      // Track cache status for first page (only when not searching)
+      if (page == 0 && _searchQuery == null) {
         _isFromCache = sliceResponse.isFromCache;
         _cachedAt = sliceResponse.cachedAt;
       }
       return sliceResponse.content;
     });
+  }
+
+  /// 검색 실행
+  Future<void> search(String query) async {
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) {
+      await clearSearch();
+      return;
+    }
+
+    _searchQuery = trimmedQuery;
+    _currentPage = 0;
+    _hasNext = true;
+    _isFromCache = false;
+    _cachedAt = null;
+
+    state = const AsyncValue.loading();
+
+    try {
+      final items = await _fetchRecipes(page: 0);
+      state = AsyncValue.data(RecipeListState(
+        items: items,
+        hasNext: _hasNext,
+        searchQuery: _searchQuery,
+      ));
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// 검색 초기화
+  Future<void> clearSearch() async {
+    if (_searchQuery == null) return;
+
+    _searchQuery = null;
+    _currentPage = 0;
+    _hasNext = true;
+    _isFromCache = false;
+    _cachedAt = null;
+
+    ref.invalidateSelf();
   }
 
   /// 다음 페이지 로드
@@ -82,7 +135,7 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
 
     final result = await ref
         .read(recipeRepositoryProvider)
-        .getRecipes(page: nextPage, size: 10);
+        .getRecipes(page: nextPage, size: 10, query: _searchQuery);
 
     result.fold(
       (failure) {
@@ -101,6 +154,7 @@ class RecipeListNotifier extends AsyncNotifier<RecipeListState> {
           RecipeListState(
             items: [...previousItems, ...sliceResponse.content],
             hasNext: _hasNext,
+            searchQuery: _searchQuery,
           ),
         );
       },

@@ -67,12 +67,14 @@ class LogPostRepositoryImpl implements LogPostRepository {
   Future<Either<Failure, SliceResponse<LogPostSummary>>> getLogPosts({
     int page = 0,
     int size = 20,
+    String? query,
   }) async {
     if (await networkInfo.isConnected) {
       try {
         final sliceDto = await remoteDataSource.getLogPosts(
           page: page,
           size: size,
+          query: query,
         );
         return Right(sliceDto.toEntity((dto) => dto.toEntity()));
       } catch (e) {

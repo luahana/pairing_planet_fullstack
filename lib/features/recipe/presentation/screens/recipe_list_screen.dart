@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search_app_bar.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_list_provider.dart';
 
@@ -41,14 +42,16 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          "레시피 탐색",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+      appBar: SearchAppBar(
+        title: "레시피 탐색",
+        hintText: "레시피, 재료 검색...",
+        currentQuery: recipesAsync.valueOrNull?.searchQuery,
+        onSearch: (query) {
+          ref.read(recipeListProvider.notifier).search(query);
+        },
+        onClear: () {
+          ref.read(recipeListProvider.notifier).clearSearch();
+        },
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -62,6 +65,34 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
 
             // 데이터가 없을 때도 스크롤 가능하게 ListView를 반환
             if (recipes.isEmpty) {
+              // 검색 결과가 없는 경우
+              if (state.searchQuery != null && state.searchQuery!.isNotEmpty) {
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                    Center(
+                      child: Column(
+                        children: [
+                          const Icon(Icons.search_off, size: 64, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          Text(
+                            "'${state.searchQuery}'에 대한 검색 결과가 없습니다.",
+                            style: const TextStyle(color: Colors.grey, fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "다른 키워드로 검색해보세요.",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+              // 일반 빈 상태
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search_app_bar.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_summary.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_list_provider.dart';
 
@@ -49,19 +50,21 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          '요리 기록',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+      appBar: SearchAppBar(
+        title: '요리 기록',
+        hintText: '요리 기록 검색...',
+        currentQuery: logPostsAsync.valueOrNull?.searchQuery,
+        onSearch: (query) {
+          ref.read(logPostPaginatedListProvider.notifier).search(query);
+        },
+        onClear: () {
+          ref.read(logPostPaginatedListProvider.notifier).clearSearch();
+        },
       ),
       body: logPostsAsync.when(
         data: (state) {
           if (state.items.isEmpty) {
-            return _buildEmptyState();
+            return _buildEmptyState(state.searchQuery);
           }
 
           return RefreshIndicator(
@@ -234,7 +237,46 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(String? searchQuery) {
+    // 검색 결과가 없는 경우
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+          Center(
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.search_off,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "'$searchQuery'에 대한 검색 결과가 없습니다.",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "다른 키워드로 검색해보세요.",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    // 일반 빈 상태
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [

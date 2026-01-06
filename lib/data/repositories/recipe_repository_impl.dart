@@ -88,8 +88,25 @@ class RecipeRepositoryImpl implements RecipeRepository {
   Future<Either<Failure, SliceResponse<RecipeSummary>>> getRecipes({
     required int page,
     int size = 10,
+    String? query,
   }) async {
-    // Only cache first page (page 0)
+    // Search mode: always fetch from network, no caching
+    if (query != null && query.isNotEmpty) {
+      try {
+        final sliceDto = await remoteDataSource.getRecipes(
+          page: page,
+          size: size,
+          query: query,
+        );
+        return Right(sliceDto.toEntity((dto) => dto.toEntity()));
+      } on DioException catch (e) {
+        return Left(_mapDioExceptionToFailure(e));
+      } catch (e) {
+        return Left(UnknownFailure(e.toString()));
+      }
+    }
+
+    // Only cache first page (page 0) when not searching
     if (page == 0) {
       return _getRecipesWithCache(size: size);
     }

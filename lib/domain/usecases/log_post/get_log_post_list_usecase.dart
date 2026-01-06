@@ -12,7 +12,8 @@ class GetLogPostListUseCase {
   Future<Either<Failure, SliceResponse<LogPostSummary>>> call({
     int page = 0,
     int size = 20,
+    String? query,
   }) async {
-    return await _repository.getLogPosts(page: page, size: size);
+    return await _repository.getLogPosts(page: page, size: size, query: query);
   }
 }

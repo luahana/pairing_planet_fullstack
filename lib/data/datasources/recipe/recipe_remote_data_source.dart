@@ -66,11 +66,20 @@ class RecipeRemoteDataSource {
   Future<SliceResponseDto<RecipeSummaryDto>> getRecipes({
     required int page,
     int size = 10,
+    String? query,
   }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'size': size,
+      };
+      if (query != null && query.isNotEmpty) {
+        queryParams['q'] = query;
+      }
+
       final response = await _dio.get(
         ApiEndpoints.recipes,
-        queryParameters: {'page': page, 'size': size},
+        queryParameters: queryParams,
       );
 
       return SliceResponseDto.fromJson(
