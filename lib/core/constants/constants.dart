@@ -12,6 +12,10 @@ class ApiEndpoints {
   // Logs 관련
   static const String logs = '/logs'; //
   static String logDetail(String id) => '/logs/$id'; //
+
+  // Analytics 관련
+  static const String events = '/events'; // 단일 이벤트 추적
+  static const String eventsBatch = '/events/batch'; // 배치 이벤트 추적
 }
 
 class RouteConstants {
@@ -21,13 +25,14 @@ class RouteConstants {
   static const String recipes = '/recipes';
   static const String recipeDetail = ':id'; // 하위 경로용
   static const String logPostCreate = '/log_post/create';
-  static const String logDetail = '/log/:id'; // 💡 추가
+  static const String logPostDetail = '/log_post/:id';
+  static const String logPosts = '/log_posts'; // 로그 포스트 리스트
   static const String search = '/search';
   static const String profile = '/profile';
 
   // 이동 시 사용할 전체 경로 헬퍼
   static String recipeDetailPath(String id) => '/recipes/$id';
-  static String logDetailPath(String id) => '/log/$id';
+  static String logPostDetailPath(String id) => '/log_post/$id';
 }
 
 class HttpStatus {

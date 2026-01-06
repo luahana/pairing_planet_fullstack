@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pairing_planet2_frontend/core/providers/isar_provider.dart';
 import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
 import 'package:pairing_planet2_frontend/core/router/app_router.dart';
 import 'package:pairing_planet2_frontend/core/services/toast_service.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_theme.dart';
 import 'package:pairing_planet2_frontend/core/utils/logger.dart';
+import 'package:pairing_planet2_frontend/core/workers/event_sync_manager.dart';
 import 'package:pairing_planet2_frontend/firebase_options.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -48,6 +50,10 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('recipe_box');
 
+  // Initialize Isar database for event tracking
+  final isar = await initializeIsar();
+  talker.info('Isar database initialized');
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
@@ -55,6 +61,10 @@ void main() async {
       fallbackLocale: const Locale('ko', 'KR'),
       // 3. ProviderScope를 그 아래에 배치
       child: ProviderScope(
+        overrides: [
+          // Override Isar provider with initialized instance
+          isarProvider.overrideWithValue(isar),
+        ],
         observers: [
           TalkerRiverpodObserver(
             talker: talker,
@@ -71,11 +81,49 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // Initialize event sync manager
+    EventSyncManager.initialize(ref);
+    EventSyncManager.startPeriodicSync();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    EventSyncManager.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        EventSyncManager.onAppResume();
+        break;
+      case AppLifecycleState.paused:
+        EventSyncManager.onAppPause();
+        break;
+      default:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
