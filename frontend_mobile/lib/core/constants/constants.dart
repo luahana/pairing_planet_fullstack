@@ -40,6 +40,7 @@ class RouteConstants {
   static const String logPosts = '/log_posts'; // 로그 포스트 리스트
   static const String search = '/search';
   static const String profile = '/profile';
+  static const String notifications = '/notifications';
 
   // 이동 시 사용할 전체 경로 헬퍼
   static String recipeDetailPath(String id) => '/recipes/$id';
