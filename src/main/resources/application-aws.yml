@@ -55,6 +55,9 @@ jwt:
 security:
   encryption-key: ${ENCRYPTION_KEY}
 
+firebase:
+  credentials: ${FIREBASE_CREDENTIALS:}
+
 file:
   upload:
     bucket: ${S3_BUCKET}
