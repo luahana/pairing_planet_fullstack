@@ -8,16 +8,10 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Configuration;
-
-import java.net.URI;
 
 @Configuration
-@Profile("dev")
-public class S3Config {
-
-    @Value("${spring.cloud.aws.s3.endpoint}")
-    private String endpoint;
+@Profile("aws")
+public class AwsS3Config {
 
     @Value("${spring.cloud.aws.credentials.access-key}")
     private String accessKey;
@@ -32,11 +26,8 @@ public class S3Config {
     public S3Client s3Client() {
         return S3Client.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-                .endpointOverride(URI.create(endpoint))
-                .serviceConfiguration(S3Configuration.builder()
-                        .pathStyleAccessEnabled(true) // MinIO 사용 시 필수
-                        .build())
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(accessKey, secretKey)))
                 .build();
     }
 }
