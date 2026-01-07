@@ -37,3 +37,11 @@ out/
 .vscode/
 
 /src/main/resources/firebase-service-account.json
+
+### Terraform ###
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform.lock.hcl
