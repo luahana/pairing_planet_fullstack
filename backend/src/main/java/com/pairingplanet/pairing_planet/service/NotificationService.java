@@ -116,6 +116,39 @@ public class NotificationService {
     }
 
     /**
+     * Called when someone follows a user
+     */
+    public void notifyNewFollower(User followedUser, User follower) {
+        Long recipientId = followedUser.getId();
+
+        // Don't notify yourself (shouldn't happen but safety check)
+        if (recipientId.equals(follower.getId())) {
+            log.debug("Skipping self-notification for NEW_FOLLOWER");
+            return;
+        }
+
+        String title = "새로운 팔로워가 생겼어요!";
+        String body = String.format("%s님이 회원님을 팔로우하기 시작했습니다.",
+            follower.getUsername());
+
+        Notification notification = Notification.builder()
+            .recipient(followedUser)
+            .sender(follower)
+            .type(NotificationType.NEW_FOLLOWER)
+            .title(title)
+            .body(body)
+            .data(Map.of(
+                "followerName", follower.getUsername(),
+                "followerPublicId", follower.getPublicId().toString()
+            ))
+            .build();
+
+        notificationRepository.save(notification);
+        pushNotificationService.sendToUser(recipientId, notification);
+        log.info("Sent NEW_FOLLOWER notification to user {} from user {}", recipientId, follower.getId());
+    }
+
+    /**
      * Called when someone creates a variation of a recipe
      */
     public void notifyRecipeVariation(Recipe parentRecipe, Recipe newVariation, User sender) {
