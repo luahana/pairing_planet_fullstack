@@ -10,6 +10,7 @@ import 'minimal_header.dart';
 class StepSection extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> steps;
   final VoidCallback onAddStep;
+  final Function(List<File>) onAddMultipleSteps;
   final Function(int) onRemoveStep;
   final Function(int) onRestoreStep;
   final Function(int, int) onReorder;
@@ -19,6 +20,7 @@ class StepSection extends ConsumerStatefulWidget {
     super.key,
     required this.steps,
     required this.onAddStep,
+    required this.onAddMultipleSteps,
     required this.onRemoveStep,
     required this.onRestoreStep,
     required this.onReorder,
@@ -30,6 +32,18 @@ class StepSection extends ConsumerStatefulWidget {
 }
 
 class _StepSectionState extends ConsumerState<StepSection> {
+  Future<void> _pickMultipleStepImages() async {
+    final picker = ImagePicker();
+    final List<XFile> images = await picker.pickMultiImage(
+      imageQuality: 70,
+      limit: 10,
+    );
+    if (images.isNotEmpty) {
+      final files = images.map((img) => File(img.path)).toList();
+      widget.onAddMultipleSteps(files);
+    }
+  }
+
   Future<void> _pickStepImage(int index, ImageSource source) async {
     if (widget.steps[index]['isOriginal'] == true) return; // 💡 기존 이미지는 수정 불가
 
@@ -134,12 +148,21 @@ class _StepSectionState extends ConsumerState<StepSection> {
             );
           },
         ),
-        Center(
-          child: TextButton.icon(
-            onPressed: widget.onAddStep,
-            icon: const Icon(Icons.add),
-            label: const Text("단계 추가"),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: widget.onAddStep,
+              icon: const Icon(Icons.add),
+              label: const Text("단계 추가"),
+            ),
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: _pickMultipleStepImages,
+              icon: const Icon(Icons.add_photo_alternate),
+              label: const Text("사진 여러장"),
+            ),
+          ],
         ),
         if (deletedSteps.isNotEmpty) _buildDeletedSection(deletedSteps),
       ],
