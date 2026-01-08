@@ -291,6 +291,44 @@
 
 ---
 
+### [FEAT-025]: Idempotency Keys
+
+**Status:** ✅ Done
+**Branch:** `feature/idempotency-keys`
+**PR:** #15
+
+**Description:** Prevent duplicate writes on network retries using idempotency keys pattern (Stripe-style).
+
+**Acceptance Criteria:**
+- [x] Client generates UUID v4 for POST/PATCH requests
+- [x] Server stores key + response, returns cached on retry
+- [x] 24-hour TTL for keys
+- [x] Request hash verification to detect misuse
+- [x] Hourly cleanup of expired keys
+- [x] Keys scoped per user
+
+**Technical Notes:**
+- Backend: `idempotency_keys` table, `IdempotencyFilter` after JWT auth
+- Frontend: `IdempotencyInterceptor` in Dio chain before retry interceptor
+- Reuses same key on retry, clears on success/non-retryable error
+- Returns 422 if same key used with different request body
+
+**How it works:**
+```
+Client                                  Server
+  │  POST /recipes                        │
+  │  Idempotency-Key: uuid-123            │
+  │ ──────────────────────────────────────>
+  │       (timeout)                       │
+  │ <──────────────────────────────────── X
+  │  RETRY with same key                  │
+  │ ──────────────────────────────────────>
+  │       200 OK (cached response)        │
+  │ <──────────────────────────────────────
+```
+
+---
+
 ## Planned 📋
 
 ### [FEAT-016]: Improved Onboarding
@@ -414,6 +452,18 @@
 
 ---
 
+### [DEC-006]: PostgreSQL for Idempotency Keys
+
+**Date:** 2026-01-08
+**Status:** ✅ Accepted
+
+**Context:** Need storage for idempotency keys with 24h TTL.
+**Decision:** Use PostgreSQL table with scheduled cleanup
+**Reason:** No new infrastructure, transactional with main data, simpler deployment
+**Alternatives:** Redis (faster, built-in TTL, but extra dependency and sync complexity)
+
+---
+
 # 📖 GLOSSARY
 
 | Term | Definition |
@@ -427,6 +477,7 @@
 | **publicId** | UUID exposed in API (never expose internal `id`) |
 | **Slice** | Spring paginated response with `content` array |
 | **TTL** | Time To Live - cache validity duration |
+| **Idempotency Key** | Client-generated UUID to prevent duplicate writes on retry |
 
 ---
 
@@ -452,3 +503,4 @@
 | FEAT-016 | Improved Onboarding | 📋 |
 | FEAT-017 | Full-Text Search | 📋 |
 | FEAT-018 | Achievement Badges | 📋 |
+| FEAT-025 | Idempotency Keys | ✅ |
