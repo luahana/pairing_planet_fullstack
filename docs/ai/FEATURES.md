@@ -307,6 +307,26 @@ git push origin dev
 - Backend: `PATCH /api/v1/users/me` with locale field
 - Frontend: EasyLocalization for dynamic locale switching
 - Profile refresh after save
+### [FEAT-012]: Recipe Search
+**Status:** ✅ Done
+
+**Description:** Search recipes with filters and relevance ranking.
+
+**Acceptance Criteria:**
+- [x] Search by title (debounced 300ms)
+- [x] Search by description
+- [x] Search by ingredient name
+- [x] Search ranking (pg_trgm SIMILARITY-based ordering)
+- [x] Filter by ingredient (via search query)
+- [x] Recent searches (local, max 10) - search_history_provider.dart
+- [x] Empty state with suggestions - search_empty_state.dart, search_suggestions_overlay.dart
+
+**Technical Notes:**
+- Backend: PostgreSQL pg_trgm extension for trigram matching (V9__add_search_indexes.sql)
+- Uses `%` operator for fuzzy matching + ILIKE for substring fallback
+- SIMILARITY() function for relevance-based ordering
+- GIN indexes on title, description, and ingredient names
+- Frontend: enhanced_search_app_bar.dart, search_local_data_source.dart
 
 ---
 
