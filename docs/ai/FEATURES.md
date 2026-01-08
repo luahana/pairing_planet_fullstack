@@ -376,19 +376,25 @@ Client                                  Server
 
 ### [FEAT-019]: Batch Photo Upload
 
-**Status:** 📋 Planned
-**Branch:** `feature/content-creation-ux`
+**Status:** ✅ Done
+**Branch:** `feature/batch-photo-upload`
+**PR:** #24
 
 **Description:** Upload multiple photos at once for cooking steps. Each photo creates a step automatically.
 
 **Acceptance Criteria:**
-- [ ] "Add Multiple" button in step section
-- [ ] Multi-select from gallery (up to 10)
-- [ ] Each photo creates a step with empty description
-- [ ] User can reorder, edit descriptions, remove steps
-- [ ] Progress indicator during upload
+- [x] "Add Multiple" button in step section
+- [x] Multi-select from gallery (up to 10)
+- [x] Each photo creates a step with empty description
+- [x] User can reorder, edit descriptions, remove steps
+- [x] Progress indicator during upload
 
-**Technical Notes:** Use `pickMultiImage()`, parallel upload, numbered badges for order
+**Technical Notes:**
+- `StepSection` widget: Added `onAddMultipleSteps` callback and `_pickMultipleStepImages()` method
+- Uses `ImagePicker.pickMultiImage()` with `imageQuality: 70` and `limit: 10`
+- Each image creates a step via `_addMultipleSteps()` in `RecipeCreateScreen`
+- Upload status indicators: `CircularProgressIndicator` while uploading, red border + retry icon on error
+- Translation keys added: `steps.addMultiple`, `steps.addStep`, etc. in en-US.json and ko-KR.json
 
 ---
 
@@ -632,7 +638,7 @@ Client                                  Server
 | FEAT-016 | Improved Onboarding | 📋 |
 | FEAT-017 | Full-Text Search | 📋 |
 | FEAT-018 | Achievement Badges | 📋 |
-| FEAT-019 | Batch Photo Upload | 📋 |
+| FEAT-019 | Batch Photo Upload | ✅ |
 | FEAT-020 | Recipe Locale | ✅ |
 | FEAT-021 | Recipe Draft Auto-Save | ✅ |
 | FEAT-022 | Guest Access | ✅ |
