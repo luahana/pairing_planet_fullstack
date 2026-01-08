@@ -1,5 +1,5 @@
 # Flutter Staging Distribution
-# Triggers on push to release branch
+# Triggers on push to staging branch
 # Builds APK and distributes to Firebase App Distribution for QA testing
 
 name: Flutter Distribute Staging
@@ -7,7 +7,7 @@ name: Flutter Distribute Staging
 on:
   push:
     branches:
-      - release
+      - staging
     paths:
       - 'frontend_mobile/**'
       - '.github/workflows/flutter-distribute-stg.yml'
