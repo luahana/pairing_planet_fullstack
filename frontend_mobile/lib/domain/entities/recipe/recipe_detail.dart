@@ -27,6 +27,10 @@ class RecipeDetail {
   final List<String>? changeCategories;
   final String? changeReason;
 
+  // Edit/Delete permission fields
+  final String? creatorPublicId;
+  final bool hasChildren;
+
   RecipeDetail({
     required this.publicId,
     required this.foodName,
@@ -47,6 +51,8 @@ class RecipeDetail {
     this.changeDiff,
     this.changeCategories,
     this.changeReason,
+    this.creatorPublicId,
+    this.hasChildren = false,
   });
 
   /// Check if this recipe is a variant (has a parent)
@@ -54,4 +60,8 @@ class RecipeDetail {
 
   /// Check if this recipe has any changes from parent
   bool get hasChanges => changeDiff != null && changeDiff!.isNotEmpty;
+
+  /// Check if current user can edit or delete this recipe
+  /// Recipe must have no children (variants)
+  bool get canEditOrDelete => !hasChildren;
 }

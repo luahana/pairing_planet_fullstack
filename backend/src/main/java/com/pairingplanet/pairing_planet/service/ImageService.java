@@ -138,6 +138,19 @@ public class ImageService {
         }
     }
 
+
+    /**
+     * 레시피에 연결된 이미지들을 비활성화 (수정 시 기존 이미지 제거용)
+     */
+    @Transactional
+    public void deactivateImagesForRecipe(Recipe recipe) {
+        List<Image> images = imageRepository.findByRecipeId(recipe.getId());
+        for (Image image : images) {
+            image.setRecipe(null);
+            image.setStatus(ImageStatus.PROCESSING);
+        }
+    }
+
     private String getExtension(String filename) {
         if (filename == null || !filename.contains(".")) return "";
         return filename.substring(filename.lastIndexOf("."));

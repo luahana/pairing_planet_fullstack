@@ -66,4 +66,12 @@ class RecipeLocalDataSource {
     final box = await Hive.openBox(_recipeBoxName);
     await box.delete(_recipeListKey);
   }
+
+  /// Delete a specific recipe detail from cache.
+  Future<void> deleteRecipeDetailCache(String publicId) async {
+    final box = await Hive.openBox(_recipeBoxName);
+    await box.delete(publicId);
+    // Also clear the list cache as it may contain the deleted recipe
+    await box.delete(_recipeListKey);
+  }
 }

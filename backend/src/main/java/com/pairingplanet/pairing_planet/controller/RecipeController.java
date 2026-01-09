@@ -67,6 +67,30 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.createRecipe(req, principal));
     }
 
+
+    // --- [EDIT/DELETE] ---
+    /**
+     * 레시피 수정 (소유자만, 자식 레시피 없을 때만)
+     */
+    @PutMapping("/{publicId}")
+    public ResponseEntity<RecipeDetailResponseDto> updateRecipe(
+            @PathVariable("publicId") UUID publicId,
+            @Valid @RequestBody UpdateRecipeRequestDto req,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(recipeService.updateRecipe(publicId, req, principal));
+    }
+
+    /**
+     * 레시피 삭제 (소프트 삭제, 소유자만, 자식 레시피 없을 때만)
+     */
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> deleteRecipe(
+            @PathVariable("publicId") UUID publicId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        recipeService.deleteRecipe(publicId, principal);
+        return ResponseEntity.noContent().build();
+    }
+
     // --- [MY RECIPES] ---
     /**
      * 내가 만든 레시피 목록

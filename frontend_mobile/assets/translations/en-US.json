@@ -213,6 +213,12 @@
     "submitting": "Submitting...",
     "submit": "Submit",
     "submitFailed": "Failed: {error}",
+    "editTitle": "Edit Recipe",
+    "update": "Save Changes",
+    "updating": "Saving...",
+    "deleteConfirmTitle": "Delete Recipe",
+    "deleteConfirmMessage": "Are you sure you want to delete this recipe? This action cannot be undone.",
+    "hasChildrenWarning": "This recipe has variants and cannot be modified",
     "ingredients": {
       "title": "Ingredients",
       "main": "Main Ingredients",

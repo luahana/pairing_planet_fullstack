@@ -165,7 +165,13 @@ public class RecipeService {
                 ? savedRecipeRepository.existsByUserIdAndRecipeId(userId, recipe.getId())
                 : null;
 
-        return RecipeDetailResponseDto.from(recipe, variants, logs, this.urlPrefix, isSavedByCurrentUser);
+        // 편집/삭제 권한용 정보
+        UUID creatorPublicId = userRepository.findById(recipe.getCreatorId())
+                .map(User::getPublicId)
+                .orElse(null);
+        Boolean hasChildren = recipeRepository.existsByParentRecipeIdAndIsDeletedFalse(recipe.getId());
+
+        return RecipeDetailResponseDto.from(recipe, variants, logs, this.urlPrefix, isSavedByCurrentUser, creatorPublicId, hasChildren);
     }
 
     @Transactional(readOnly = true)
@@ -441,6 +447,107 @@ public class RecipeService {
         }
         return recipeRepository.searchRecipes(keyword.trim(), pageable)
                 .map(this::convertToSummary);
+    }
+
+    /**
+     * 레시피 수정 (소유자만, 자식 레시피 없을 때만)
+     */
+    @Transactional
+    public RecipeDetailResponseDto updateRecipe(UUID publicId, UpdateRecipeRequestDto req, UserPrincipal principal) {
+        Recipe recipe = recipeRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
+        // 소유권 확인
+        if (!recipe.getCreatorId().equals(principal.getId())) {
+            throw new org.springframework.security.access.AccessDeniedException("You can only edit your own recipes");
+        }
+
+        // 자식 레시피 존재 여부 확인
+        if (recipeRepository.existsByParentRecipeIdAndIsDeletedFalse(recipe.getId())) {
+            throw new IllegalStateException("Cannot edit a recipe that has variants");
+        }
+
+        // 기본 정보 업데이트
+        recipe.setTitle(req.title());
+        recipe.setDescription(req.description());
+        if (req.culinaryLocale() != null) {
+            recipe.setCulinaryLocale(req.culinaryLocale());
+        }
+
+        // 기존 재료 삭제 후 새로 저장
+        ingredientRepository.deleteByRecipeId(recipe.getId());
+        if (req.ingredients() != null) {
+            List<RecipeIngredient> ingredients = req.ingredients().stream()
+                    .map(dto -> RecipeIngredient.builder()
+                            .recipe(recipe)
+                            .name(dto.name())
+                            .amount(dto.amount())
+                            .type(dto.type())
+                            .build())
+                    .toList();
+            ingredientRepository.saveAll(ingredients);
+        }
+
+        // 기존 단계 삭제 후 새로 저장
+        stepRepository.deleteByRecipeId(recipe.getId());
+        if (req.steps() != null) {
+            for (StepDto stepDto : req.steps()) {
+                Image stepImage = null;
+                if (stepDto.imagePublicId() != null) {
+                    stepImage = imageRepository.findByPublicId(stepDto.imagePublicId())
+                            .orElseThrow(() -> new IllegalArgumentException("Step image not found"));
+                    stepImage.setRecipe(recipe);
+                    stepImage.setStatus(com.pairingplanet.pairing_planet.domain.enums.ImageStatus.ACTIVE);
+                }
+
+                RecipeStep step = RecipeStep.builder()
+                        .recipe(recipe)
+                        .stepNumber(stepDto.stepNumber())
+                        .description(stepDto.description())
+                        .image(stepImage)
+                        .build();
+                stepRepository.save(step);
+            }
+        }
+
+        // 이미지 업데이트
+        imageService.deactivateImagesForRecipe(recipe);
+        imageService.activateImages(req.imagePublicIds(), recipe);
+
+        // 해시태그 업데이트
+        if (req.hashtags() != null && !req.hashtags().isEmpty()) {
+            Set<Hashtag> hashtags = hashtagService.getOrCreateHashtags(req.hashtags());
+            recipe.setHashtags(hashtags);
+        } else {
+            recipe.setHashtags(new java.util.HashSet<>());
+        }
+
+        recipeRepository.save(recipe);
+
+        return getRecipeDetail(publicId, principal.getId());
+    }
+
+    /**
+     * 레시피 삭제 (소프트 삭제, 소유자만, 자식 레시피 없을 때만)
+     */
+    @Transactional
+    public void deleteRecipe(UUID publicId, UserPrincipal principal) {
+        Recipe recipe = recipeRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
+        // 소유권 확인
+        if (!recipe.getCreatorId().equals(principal.getId())) {
+            throw new org.springframework.security.access.AccessDeniedException("You can only delete your own recipes");
+        }
+
+        // 자식 레시피 존재 여부 확인
+        if (recipeRepository.existsByParentRecipeIdAndIsDeletedFalse(recipe.getId())) {
+            throw new IllegalStateException("Cannot delete a recipe that has variants");
+        }
+
+        // 소프트 삭제
+        recipe.setIsDeleted(true);
+        recipeRepository.save(recipe);
     }
 
 }

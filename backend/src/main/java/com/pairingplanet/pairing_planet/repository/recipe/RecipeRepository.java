@@ -24,6 +24,9 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     // [계보 조회용] 특정 레시피로부터 직접 파생된 변형들
     List<Recipe> findByParentRecipeIdAndIsDeletedFalse(Long parentId);
 
+    // [편집/삭제 권한] 자식 레시피 존재 여부 확인
+    boolean existsByParentRecipeIdAndIsDeletedFalse(Long parentId);
+
     // [계보 조회용] 한 뿌리(Root) 아래의 모든 가족 레시피 조회
     List<Recipe> findByRootRecipeIdAndIsDeletedFalse(Long rootId);
 

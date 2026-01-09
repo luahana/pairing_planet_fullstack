@@ -68,6 +68,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Protected paths that require authentication
         final protectedPaths = [
           RouteConstants.recipeCreate,
+          RouteConstants.recipeEdit,
           RouteConstants.logPostCreate,
           RouteConstants.profileEdit,
           RouteConstants.settings,
@@ -112,6 +113,16 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return RecipeCreateScreen(
             parentRecipe: parentRecipe, // 💡 객체 하나만 전달
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteConstants.recipeEdit,
+        name: 'recipe_edit',
+        builder: (context, state) {
+          final recipeToEdit = state.extra as RecipeDetail;
+          return RecipeCreateScreen(
+            recipeToEdit: recipeToEdit,
           );
         },
       ),

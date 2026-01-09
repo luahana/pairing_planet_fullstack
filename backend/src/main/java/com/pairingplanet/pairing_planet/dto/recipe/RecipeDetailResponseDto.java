@@ -15,24 +15,25 @@ public record RecipeDetailResponseDto(
         String title,
         String description,
         String culinaryLocale,
-        String foodName,              // [추가] UI 상단 표시용
-        UUID foodMasterPublicId,      // [추가] 음식 상세 이동용
+        String foodName,
+        UUID foodMasterPublicId,
         String changeCategory,
-        RecipeSummaryDto rootInfo,    // 11개 필드 규격 적용 필요
-        RecipeSummaryDto parentInfo,  // 11개 필드 규격 적용 필요
+        RecipeSummaryDto rootInfo,
+        RecipeSummaryDto parentInfo,
         List<IngredientDto> ingredients,
         List<StepDto> steps,
         List<ImageResponseDto> images,
         List<RecipeSummaryDto> variants,
         List<LogPostSummaryDto> logs,
-        List<HashtagDto> hashtags,    // Hashtags for this recipe
-        Boolean isSavedByCurrentUser, // P1: 북마크 저장 여부
-        // Living Blueprint: Diff fields for variation tracking
-        Map<String, Object> changeDiff,      // Ingredient/step changes from parent
-        List<String> changeCategories,       // Auto-detected: INGREDIENT, TECHNIQUE, AMOUNT, SEASONING
-        String changeReason                  // User-provided reason for changes
+        List<HashtagDto> hashtags,
+        Boolean isSavedByCurrentUser,
+        Map<String, Object> changeDiff,
+        List<String> changeCategories,
+        String changeReason,
+        UUID creatorPublicId,
+        Boolean hasChildren
 ) {
-    public static RecipeDetailResponseDto from(Recipe recipe, List<RecipeSummaryDto> variants, List<LogPostSummaryDto> logs, String urlPrefix, Boolean isSavedByCurrentUser) {
+    public static RecipeDetailResponseDto from(Recipe recipe, List<RecipeSummaryDto> variants, List<LogPostSummaryDto> logs, String urlPrefix, Boolean isSavedByCurrentUser, UUID creatorPublicId, Boolean hasChildren) {
         Recipe root = recipe.getRootRecipe();
         Recipe parent = recipe.getParentRecipe();
 
@@ -42,27 +43,24 @@ public record RecipeDetailResponseDto(
                         nameMap.values().stream().findFirst().orElse("Unknown Food")));
         UUID currentFoodMasterPublicId = recipe.getFoodMaster().getPublicId();
 
-        // 2. 루트 레시피 정보 생성 (13개 필드 생성자 대응)
         RecipeSummaryDto rootInfo = (root != null) ? new RecipeSummaryDto(
-                root.getPublicId(), // 1. publicId (UUID)
-                // 2. foodName (String): 현재 로케일 -> 한국어 -> 첫 번째 이름 순으로 시도
+                root.getPublicId(),
                 root.getFoodMaster().getName().getOrDefault(root.getCulinaryLocale(),
                         root.getFoodMaster().getName().getOrDefault("ko-KR",
                                 root.getFoodMaster().getName().values().stream().findFirst().orElse("Unknown Food"))),
-                root.getFoodMaster().getPublicId(), // 3. foodMasterPublicId (UUID)
-                root.getTitle(),       // 4. title
-                root.getDescription(), // 5. description
-                root.getCulinaryLocale(), // 6. culinaryLocale
-                null, // 7. creatorName (상세 카드 내 생략)
-                null, // 8. thumbnail (상세 카드 내 생략)
-                0,    // 9. variantCount (상세 카드 내 생략)
-                0,    // 10. logCount (상세 카드 내 생략)
-                null, // 11. parentPublicId
-                null, // 12. rootPublicId
-                null  // 13. rootTitle (root itself has no root)
+                root.getFoodMaster().getPublicId(),
+                root.getTitle(),
+                root.getDescription(),
+                root.getCulinaryLocale(),
+                null,
+                null,
+                0,
+                0,
+                null,
+                null,
+                null
         ) : null;
 
-        // 3. 부모 레시피 정보 생성 (13개 필드 생성자 대응)
         RecipeSummaryDto parentInfo = (parent != null) ? new RecipeSummaryDto(
                 parent.getPublicId(),
                 parent.getFoodMaster().getName().getOrDefault(parent.getCulinaryLocale(), "Unknown Food"),
@@ -72,14 +70,13 @@ public record RecipeDetailResponseDto(
                 parent.getCulinaryLocale(),
                 null,
                 null,
-                0,    // variantCount
-                0,    // logCount
-                null, // parentPublicId
-                null, // rootPublicId
-                null  // rootTitle
+                0,
+                0,
+                null,
+                null,
+                null
         ) : null;
 
-        // 4. 이미지 리스트 변환
         List<ImageResponseDto> imageResponses = recipe.getImages().stream()
                 .map(img -> new ImageResponseDto(
                         img.getPublicId(),
@@ -87,7 +84,6 @@ public record RecipeDetailResponseDto(
                 ))
                 .toList();
 
-        // 5. 해시태그 리스트 변환
         List<HashtagDto> hashtagDtos = recipe.getHashtags().stream()
                 .map(HashtagDto::from)
                 .toList();
@@ -97,8 +93,8 @@ public record RecipeDetailResponseDto(
                 .title(recipe.getTitle())
                 .description(recipe.getDescription())
                 .culinaryLocale(recipe.getCulinaryLocale())
-                .foodName(currentFoodName) // [적용]
-                .foodMasterPublicId(currentFoodMasterPublicId) // [적용]
+                .foodName(currentFoodName)
+                .foodMasterPublicId(currentFoodMasterPublicId)
                 .changeCategory(recipe.getChangeCategory())
                 .rootInfo(rootInfo)
                 .parentInfo(parentInfo)
@@ -120,6 +116,8 @@ public record RecipeDetailResponseDto(
                 .changeDiff(recipe.getChangeDiff())
                 .changeCategories(recipe.getChangeCategories())
                 .changeReason(recipe.getChangeReason())
+                .creatorPublicId(creatorPublicId)
+                .hasChildren(hasChildren)
                 .build();
     }
 }

@@ -24,8 +24,9 @@ import '../widgets/continue_draft_dialog.dart';
 
 class RecipeCreateScreen extends ConsumerStatefulWidget {
   final RecipeDetail? parentRecipe; // 💡 변경: ID 대신 객체 수신
+  final RecipeDetail? recipeToEdit; // Edit mode: existing recipe to edit
 
-  const RecipeCreateScreen({super.key, this.parentRecipe});
+  const RecipeCreateScreen({super.key, this.parentRecipe, this.recipeToEdit});
 
   @override
   ConsumerState<RecipeCreateScreen> createState() => _RecipeCreateScreenState();
@@ -40,6 +41,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
   final _changeReasonController = TextEditingController();
 
   bool get isVariantMode => widget.parentRecipe != null;
+  bool get isEditMode => widget.recipeToEdit != null;
 
   final List<Map<String, dynamic>> _ingredients = [];
   final List<Map<String, dynamic>> _steps = [];
@@ -56,7 +58,10 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    if (isVariantMode) {
+    if (isEditMode) {
+      _initEditData();
+      _draftChecked = true; // Skip draft check in edit mode
+    } else if (isVariantMode) {
       _initVariantData();
       _draftChecked = true; // Skip draft check in variant mode
     } else {
@@ -74,8 +79,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     _titleController.addListener(_rebuild);
     _foodNameController.addListener(_rebuild);
 
-    // Start auto-save timer (skip for variant mode)
-    if (!isVariantMode) {
+    // Start auto-save timer (skip for variant mode and edit mode)
+    if (!isVariantMode && !isEditMode) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(recipeDraftProvider.notifier).startAutoSave(_collectCurrentDraft);
       });
@@ -114,10 +119,52 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     }
   }
 
+  /// Initialize form with existing recipe data for edit mode
+  void _initEditData() {
+    final recipe = widget.recipeToEdit!;
+    _titleController.text = recipe.title;
+    _descriptionController.text = recipe.description ?? "";
+    _foodNameController.text = recipe.foodName;
+    _localeController.text = recipe.culinaryLocale ?? "ko-KR";
+    _food1MasterPublicId = recipe.foodMasterPublicId;
+
+    // Copy ingredients (editable in edit mode)
+    for (var ing in recipe.ingredients) {
+      _ingredients.add({
+        'name': ing.name,
+        'amount': ing.amount,
+        'type': ing.type,
+        'isOriginal': false, // All editable in edit mode
+        'isDeleted': false,
+      });
+    }
+    if (_ingredients.isEmpty) {
+      _addIngredient('MAIN');
+    }
+
+    // Copy steps (editable in edit mode)
+    for (var step in recipe.steps) {
+      _steps.add({
+        'stepNumber': step.stepNumber,
+        'description': step.description,
+        'imageUrl': step.imageUrl,
+        'imagePublicId': step.imagePublicId,
+        'isOriginal': false, // All editable in edit mode
+        'isDeleted': false,
+      });
+    }
+    if (_steps.isEmpty) {
+      _addStep();
+    }
+
+    // Copy hashtags
+    _hashtags.addAll(recipe.hashtags.map((h) => h.name));
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (!isVariantMode) {
+    if (!isVariantMode && !isEditMode) {
       ref.read(recipeDraftProvider.notifier).stopAutoSave();
     }
     _titleController.dispose();
@@ -130,8 +177,9 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Save draft when app goes to background
+    // Save draft when app goes to background (skip for variant and edit mode)
     if (!isVariantMode &&
+        !isEditMode &&
         (state == AppLifecycleState.paused ||
             state == AppLifecycleState.inactive)) {
       _triggerSave();
@@ -187,7 +235,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
 
   /// Trigger a save of the current draft
   Future<void> _triggerSave() async {
-    if (isVariantMode) return;
+    if (isVariantMode || isEditMode) return;
     final draft = _collectCurrentDraft();
     if (draft.hasContent) {
       await ref.read(recipeDraftProvider.notifier).saveDraft(draft);
@@ -472,77 +520,147 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     }
     setState(() => _isLoading = true);
     try {
-      // Phase 7-3: Compute change diff for variations
-      final changeDiff = _computeChangeDiff();
-
-      final request = CreateRecipeRequest(
-        title: _titleController.text,
-        description: _descriptionController.text,
-        culinaryLocale: _localeController.text.isEmpty
-            ? "ko-KR"
-            : _localeController.text,
-        food1MasterPublicId: _food1MasterPublicId,
-        newFoodName: isVariantMode ? null : _foodNameController.text.trim(),
-        ingredients: _ingredients
-            .where((i) => i['isDeleted'] != true)  // Exclude deleted items
-            .map(
-              (i) => Ingredient(
-                name: i['name'],
-                amount: i['amount'],
-                type: i['type'],
-              ),
-            )
-            .toList(),
-        steps: _steps
-            .where((s) => s['isDeleted'] != true)  // Exclude deleted items
-            .map(
-              (s) => RecipeStep(
-                stepNumber: s['stepNumber'],
-                description: s['description'],
-                imagePublicId: s['imagePublicId'],
-              ),
-            )
-            .toList(),
-        imagePublicIds: _finishedImages
-            .where((img) => img.status == UploadStatus.success)
-            .map((img) => img.publicId!)
-            .toList(),
-        changeCategory: _changeReasonController.text,
-        parentPublicId: widget.parentRecipe?.publicId,
-        rootPublicId:
-            widget.parentRecipe?.rootInfo?.publicId ??
-            widget.parentRecipe?.publicId,
-        changeDiff: changeDiff,
-        changeReason: isVariantMode ? _changeReasonController.text.trim() : null,
-        hashtags: _hashtags.isNotEmpty ? _hashtags : null,
-      );
-
-      // Use the new provider with analytics tracking
-      await ref.read(recipeCreationProvider.notifier).createRecipe(request);
-
-      if (!mounted) return;
-
-      final state = ref.read(recipeCreationProvider);
-      state.when(
-        data: (newId) {
-          if (newId != null) {
-            // Clear draft on successful publish (skip for variants)
-            if (!isVariantMode) {
-              ref.read(recipeDraftProvider.notifier).clearDraft();
-            }
-            // Invalidate profile providers so they refresh when user visits profile
-            ref.invalidate(myRecipesProvider);
-            ref.invalidate(myProfileProvider);
-            context.go(ApiEndpoints.recipeDetail(newId));
-          }
-        },
-        error: (error, _) => ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('recipe.submitFailed'.tr(namedArgs: {'error': error.toString()})))),
-        loading: () {},
-      );
+      if (isEditMode) {
+        await _handleUpdate();
+      } else {
+        await _handleCreate();
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _handleUpdate() async {
+    final recipe = widget.recipeToEdit!;
+    final repository = ref.read(recipeRepositoryProvider);
+
+    // Collect image public IDs from existing images + new uploads
+    final imagePublicIds = <String>[];
+    // Add new uploaded images
+    for (final img in _finishedImages) {
+      if (img.status == UploadStatus.success && img.publicId != null) {
+        imagePublicIds.add(img.publicId!);
+      }
+    }
+
+    final updateData = {
+      'title': _titleController.text,
+      'description': _descriptionController.text,
+      'culinaryLocale': _localeController.text.isEmpty ? "ko-KR" : _localeController.text,
+      'ingredients': _ingredients
+          .where((i) => i['isDeleted'] != true)
+          .map((i) => {
+                'name': i['name'],
+                'amount': i['amount'],
+                'type': i['type'],
+              })
+          .toList(),
+      'steps': _steps
+          .where((s) => s['isDeleted'] != true)
+          .map((s) => {
+                'stepNumber': s['stepNumber'],
+                'description': s['description'],
+                'imagePublicId': s['imagePublicId'],
+              })
+          .toList(),
+      'imagePublicIds': imagePublicIds,
+      'hashtags': _hashtags,
+    };
+
+    final result = await repository.updateRecipe(recipe.publicId, updateData);
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('recipe.updateFailed'.tr(namedArgs: {'error': failure.message}))),
+        );
+      },
+      (updatedRecipe) {
+        // Invalidate providers
+        ref.invalidate(myRecipesProvider);
+        ref.invalidate(myProfileProvider);
+        ref.invalidate(recipeDetailProvider(recipe.publicId));
+        ref.invalidate(recipeDetailWithTrackingProvider(recipe.publicId));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('recipe.updateSuccess'.tr())),
+        );
+        context.pop();
+      },
+    );
+  }
+
+  Future<void> _handleCreate() async {
+    // Phase 7-3: Compute change diff for variations
+    final changeDiff = _computeChangeDiff();
+
+    final request = CreateRecipeRequest(
+      title: _titleController.text,
+      description: _descriptionController.text,
+      culinaryLocale: _localeController.text.isEmpty
+          ? "ko-KR"
+          : _localeController.text,
+      food1MasterPublicId: _food1MasterPublicId,
+      newFoodName: isVariantMode ? null : _foodNameController.text.trim(),
+      ingredients: _ingredients
+          .where((i) => i['isDeleted'] != true)  // Exclude deleted items
+          .map(
+            (i) => Ingredient(
+              name: i['name'],
+              amount: i['amount'],
+              type: i['type'],
+            ),
+          )
+          .toList(),
+      steps: _steps
+          .where((s) => s['isDeleted'] != true)  // Exclude deleted items
+          .map(
+            (s) => RecipeStep(
+              stepNumber: s['stepNumber'],
+              description: s['description'],
+              imagePublicId: s['imagePublicId'],
+            ),
+          )
+          .toList(),
+      imagePublicIds: _finishedImages
+          .where((img) => img.status == UploadStatus.success)
+          .map((img) => img.publicId!)
+          .toList(),
+      changeCategory: _changeReasonController.text,
+      parentPublicId: widget.parentRecipe?.publicId,
+      rootPublicId:
+          widget.parentRecipe?.rootInfo?.publicId ??
+          widget.parentRecipe?.publicId,
+      changeDiff: changeDiff,
+      changeReason: isVariantMode ? _changeReasonController.text.trim() : null,
+      hashtags: _hashtags.isNotEmpty ? _hashtags : null,
+    );
+
+    // Use the new provider with analytics tracking
+    await ref.read(recipeCreationProvider.notifier).createRecipe(request);
+
+    if (!mounted) return;
+
+    final state = ref.read(recipeCreationProvider);
+    state.when(
+      data: (newId) {
+        if (newId != null) {
+          // Clear draft on successful publish (skip for variants)
+          if (!isVariantMode) {
+            ref.read(recipeDraftProvider.notifier).clearDraft();
+          }
+          // Invalidate profile providers so they refresh when user visits profile
+          ref.invalidate(myRecipesProvider);
+          ref.invalidate(myProfileProvider);
+          context.go(ApiEndpoints.recipeDetail(newId));
+        }
+      },
+      error: (error, _) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('recipe.submitFailed'.tr(namedArgs: {'error': error.toString()})))),
+      loading: () {},
+    );
   }
 
   @override
@@ -635,22 +753,33 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     );
   }
 
-  PreferredSizeWidget _buildAppBar() => AppBar(
-    backgroundColor: Colors.white,
-    leading: IconButton(
-      icon: const Icon(Icons.close),
-      onPressed: _handleClose,
-    ),
-    title: Text(isVariantMode ? 'recipe.createVariantTitle'.tr() : 'recipe.createNew'.tr()),
-    actions: [
-      // Show draft status indicator (only for new recipes, not variants)
-      if (!isVariantMode)
-        const Padding(
-          padding: EdgeInsets.only(right: 16),
-          child: DraftStatusIndicator(),
-        ),
-    ],
-  );
+  PreferredSizeWidget _buildAppBar() {
+    String title;
+    if (isEditMode) {
+      title = 'recipe.editTitle'.tr();
+    } else if (isVariantMode) {
+      title = 'recipe.createVariantTitle'.tr();
+    } else {
+      title = 'recipe.createNew'.tr();
+    }
+
+    return AppBar(
+      backgroundColor: Colors.white,
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: _handleClose,
+      ),
+      title: Text(title),
+      actions: [
+        // Show draft status indicator (only for new recipes, not variants or edits)
+        if (!isVariantMode && !isEditMode)
+          const Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: DraftStatusIndicator(),
+          ),
+      ],
+    );
+  }
 
   Widget _buildChangeReasonField() {
     return Column(
@@ -699,6 +828,15 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
 
     // 💡 두 조건이 모두 충족되어야 버튼 활성화
     final bool isReady = hasBaseInfo && hasChangeReason;
+
+    // Different text for edit mode
+    String buttonText;
+    if (_isLoading) {
+      buttonText = isEditMode ? 'recipe.updating'.tr() : 'recipe.submitting'.tr();
+    } else {
+      buttonText = isEditMode ? 'recipe.update'.tr() : 'recipe.submit'.tr();
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
       child: SizedBox(
@@ -713,7 +851,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
             ),
           ),
           child: Text(
-            _isLoading ? 'recipe.submitting'.tr() : 'recipe.submit'.tr(),
+            buttonText,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,

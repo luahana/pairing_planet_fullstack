@@ -49,6 +49,10 @@ class RecipeDetailResponseDto {
   @JsonKey(fromJson: _parseChangeReason)
   final String? changeReason;
 
+  // Edit/Delete permission fields
+  final String? creatorPublicId;
+  final bool? hasChildren;
+
   RecipeDetailResponseDto({
     required this.publicId,
     required this.foodName,
@@ -69,6 +73,8 @@ class RecipeDetailResponseDto {
     this.changeDiff,
     this.changeCategories,
     this.changeReason,
+    this.creatorPublicId,
+    this.hasChildren,
   });
 
   factory RecipeDetailResponseDto.fromJson(Map<String, dynamic> json) =>
@@ -101,5 +107,7 @@ class RecipeDetailResponseDto {
     changeDiff: changeDiff,
     changeCategories: changeCategories,
     changeReason: changeReason,
+    creatorPublicId: creatorPublicId,
+    hasChildren: hasChildren ?? false,
   );
 }

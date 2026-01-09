@@ -43,6 +43,7 @@ class RouteConstants {
   static const String home = '/';
   static const String login = '/login';
   static const String recipeCreate = '/recipe/create';
+  static const String recipeEdit = '/recipe/edit';
   static const String recipes = '/recipes';
   static const String recipeDetail = ':id'; // 하위 경로용
   static const String logPostCreate = '/log_post/create';

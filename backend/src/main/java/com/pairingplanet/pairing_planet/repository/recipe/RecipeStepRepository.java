@@ -8,4 +8,6 @@ import java.util.List;
 public interface RecipeStepRepository extends JpaRepository<RecipeStep, Long> {
 
     List<RecipeStep> findByRecipeIdOrderByStepNumberAsc(Long recipeId);
+
+    void deleteByRecipeId(Long recipeId);
 }

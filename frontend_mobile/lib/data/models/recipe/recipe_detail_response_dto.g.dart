@@ -47,6 +47,8 @@ RecipeDetailResponseDto _$RecipeDetailResponseDtoFromJson(
           ?.map((e) => e as String)
           .toList(),
       changeReason: _parseChangeReason(json['changeReason']),
+      creatorPublicId: json['creatorPublicId'] as String?,
+      hasChildren: json['hasChildren'] as bool?,
     );
 
 Map<String, dynamic> _$RecipeDetailResponseDtoToJson(
@@ -71,4 +73,6 @@ Map<String, dynamic> _$RecipeDetailResponseDtoToJson(
       'changeDiff': instance.changeDiff,
       'changeCategories': instance.changeCategories,
       'changeReason': instance.changeReason,
+      'creatorPublicId': instance.creatorPublicId,
+      'hasChildren': instance.hasChildren,
     };

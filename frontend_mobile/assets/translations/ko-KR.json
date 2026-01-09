@@ -213,6 +213,12 @@
     "submitting": "등록 중...",
     "submit": "등록 완료",
     "submitFailed": "실패: {error}",
+    "editTitle": "레시피 수정",
+    "update": "저장",
+    "updating": "저장 중...",
+    "deleteConfirmTitle": "레시피 삭제",
+    "deleteConfirmMessage": "이 레시피를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "hasChildrenWarning": "변형이 있는 레시피는 수정/삭제할 수 없습니다",
     "ingredients": {
       "title": "재료",
       "main": "주재료",

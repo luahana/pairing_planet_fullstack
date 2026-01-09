@@ -15,6 +15,7 @@ import java.util.UUID;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
     // 1. 레시피/로그별 이미지 목록 (정렬 순서 준수)
+    List<Image> findByRecipeId(Long recipeId);
     List<Image> findByRecipeIdAndStatusOrderByDisplayOrderAsc(Long recipeId, ImageStatus status);
     List<Image> findByLogPostIdAndStatusOrderByDisplayOrderAsc(Long logPostId, ImageStatus status);
 

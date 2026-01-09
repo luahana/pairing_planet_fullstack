@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pairing_planet2_frontend/core/error/failures.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info_impl.dart';
 import 'package:pairing_planet2_frontend/core/providers/analytics_providers.dart';
@@ -253,6 +255,17 @@ final saveRecipeProvider =
     return SaveRecipeNotifier(repository, recipeId);
   },
 );
+
+// ----------------------------------------------------------------
+// Recipe Delete
+// ----------------------------------------------------------------
+
+/// Delete recipe provider (레시피 ID별로 생성)
+final deleteRecipeProvider =
+    FutureProvider.family<Either<Failure, void>, String>((ref, recipeId) async {
+  final repository = ref.read(recipeRepositoryProvider);
+  return repository.deleteRecipe(recipeId);
+});
 
 // ----------------------------------------------------------------
 // 8. Recipe Draft Auto-Save (FEAT-021)

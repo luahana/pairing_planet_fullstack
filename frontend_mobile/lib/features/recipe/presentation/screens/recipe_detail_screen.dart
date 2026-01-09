@@ -11,6 +11,7 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.da
 import 'package:pairing_planet2_frontend/features/auth/providers/auth_provider.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/widgets/quick_log_sheet.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/quick_log_draft_provider.dart';
+import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
 import '../../providers/recipe_providers.dart';
 import '../widgets/lineage_breadcrumb.dart';
 import '../widgets/recent_logs_gallery.dart';
@@ -112,6 +113,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               onPressed: null,
             ),
           ),
+          // Edit/Delete popup menu (only for owner when recipe has no children)
+          _buildPopupMenu(recipeAsync),
         ],
       ),
       body: recipeAsync.when(
@@ -386,6 +389,149 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       width: double.infinity,
       height: 300,
       borderRadius: 0,
+    );
+  }
+
+  /// Build popup menu for edit/delete actions
+  /// Only visible when user is owner and recipe has no children
+  Widget _buildPopupMenu(AsyncValue<RecipeDetail> recipeAsync) {
+    final authStatus = ref.watch(authStateProvider).status;
+    if (authStatus != AuthStatus.authenticated) {
+      return const SizedBox.shrink();
+    }
+
+    return recipeAsync.maybeWhen(
+      data: (recipe) {
+        final myProfile = ref.watch(myProfileProvider);
+        return myProfile.maybeWhen(
+          data: (profile) {
+            final isOwner = recipe.creatorPublicId == profile.user.id;
+            if (!isOwner) return const SizedBox.shrink();
+
+            return PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+              onSelected: (value) => _handleMenuAction(value, recipe),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  enabled: recipe.canEditOrDelete,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: recipe.canEditOrDelete ? null : Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'recipe.edit'.tr(),
+                        style: TextStyle(
+                          color: recipe.canEditOrDelete ? null : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  enabled: recipe.canEditOrDelete,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.delete,
+                        size: 20,
+                        color: recipe.canEditOrDelete ? Colors.red : Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'recipe.delete'.tr(),
+                        style: TextStyle(
+                          color: recipe.canEditOrDelete ? Colors.red : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!recipe.canEditOrDelete)
+                  PopupMenuItem(
+                    enabled: false,
+                    child: Text(
+                      'recipe.hasChildrenWarning'.tr(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+          orElse: () => const SizedBox.shrink(),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+
+  void _handleMenuAction(String action, RecipeDetail recipe) {
+    switch (action) {
+      case 'edit':
+        _handleEditRecipe(recipe);
+        break;
+      case 'delete':
+        _handleDeleteRecipe(recipe);
+        break;
+    }
+  }
+
+  void _handleEditRecipe(RecipeDetail recipe) {
+    context.push(RouteConstants.recipeEdit, extra: recipe);
+  }
+
+  void _handleDeleteRecipe(RecipeDetail recipe) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('recipe.deleteConfirmTitle'.tr()),
+        content: Text('recipe.deleteConfirmMessage'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('common.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _performDelete(recipe.publicId);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text('recipe.delete'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performDelete(String publicId) async {
+    final result = await ref.read(deleteRecipeProvider(publicId).future);
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('common.errorWithMessage'.tr(namedArgs: {'message': failure.message})),
+            backgroundColor: Colors.red,
+          ),
+        );
+      },
+      (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('recipe.deleteSuccess'.tr())),
+        );
+        context.pop();
+      },
     );
   }
 }

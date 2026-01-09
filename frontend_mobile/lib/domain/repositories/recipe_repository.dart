@@ -22,4 +22,11 @@ abstract class RecipeRepository {
   // P1: 레시피 저장/저장취소
   Future<Either<Failure, void>> saveRecipe(String publicId);
   Future<Either<Failure, void>> unsaveRecipe(String publicId);
+
+  // 레시피 수정/삭제
+  Future<Either<Failure, RecipeDetail>> updateRecipe(
+    String publicId,
+    Map<String, dynamic> data,
+  );
+  Future<Either<Failure, void>> deleteRecipe(String publicId);
 }

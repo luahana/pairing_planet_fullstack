@@ -133,4 +133,42 @@ class RecipeRemoteDataSource {
       rethrow;
     }
   }
+
+  /// 레시피 수정
+  Future<RecipeDetailResponseDto> updateRecipe(
+    String publicId,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dio.put(
+        ApiEndpoints.recipeDetail(publicId),
+        data: data,
+      );
+
+      if (response.statusCode == HttpStatus.ok) {
+        return RecipeDetailResponseDto.fromJson(response.data);
+      } else {
+        throw ServerException();
+      }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "서버 응답 에러");
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  /// 레시피 삭제
+  Future<void> deleteRecipe(String publicId) async {
+    try {
+      final response = await _dio.delete(ApiEndpoints.recipeDetail(publicId));
+      if (response.statusCode != HttpStatus.noContent &&
+          response.statusCode != HttpStatus.ok) {
+        throw ServerException();
+      }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "서버 응답 에러");
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
 }
