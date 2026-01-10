@@ -104,13 +104,13 @@ class LogPostControllerTest extends BaseIntegrationTest {
     class GetLogDetailTests {
 
         @Test
-        @DisplayName("Should return log detail with creatorId")
-        void getLogDetail_ReturnsCreatorId() throws Exception {
+        @DisplayName("Should return log detail with creatorPublicId")
+        void getLogDetail_ReturnsCreatorPublicId() throws Exception {
             mockMvc.perform(get("/api/v1/log_posts/" + testLogPost.getPublicId())
                             .header("Authorization", "Bearer " + testUserToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.publicId").value(testLogPost.getPublicId().toString()))
-                    .andExpect(jsonPath("$.creatorId").value(testUser.getId()));
+                    .andExpect(jsonPath("$.creatorPublicId").value(testUser.getPublicId().toString()));
         }
     }
 
@@ -125,7 +125,8 @@ class LogPostControllerTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "PARTIAL",
-                    List.of("tag1", "tag2")
+                    List.of("tag1", "tag2"),
+                    null
             );
 
             mockMvc.perform(put("/api/v1/log_posts/" + testLogPost.getPublicId())
@@ -148,6 +149,7 @@ class LogPostControllerTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "PARTIAL",
+                    null,
                     null
             );
 
@@ -165,6 +167,7 @@ class LogPostControllerTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "PARTIAL",
+                    null,
                     null
             );
 
@@ -181,6 +184,7 @@ class LogPostControllerTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "PARTIAL",
+                    null,
                     null
             );
 
@@ -198,6 +202,7 @@ class LogPostControllerTest extends BaseIntegrationTest {
                     "Updated Title",
                     "",  // blank content
                     "PARTIAL",
+                    null,
                     null
             );
 
@@ -215,6 +220,7 @@ class LogPostControllerTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "INVALID_OUTCOME",  // invalid outcome
+                    null,
                     null
             );
 

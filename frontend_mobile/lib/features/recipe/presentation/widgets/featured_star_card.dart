@@ -1,27 +1,20 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/locale_dropdown.dart';
 
 /// Large featured card for recipes with many variants (Star recipes)
 /// Used in Bento grid layout to highlight popular original recipes
 class FeaturedStarCard extends StatelessWidget {
   final RecipeSummary recipe;
   final VoidCallback? onTap;
-  final VoidCallback? onLog;
-  final VoidCallback? onFork;
-  final VoidCallback? onViewStar;
 
   const FeaturedStarCard({
     super.key,
     required this.recipe,
     this.onTap,
-    this.onLog,
-    this.onFork,
-    this.onViewStar,
   });
 
   @override
@@ -31,12 +24,12 @@ class FeaturedStarCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4.h),
             ),
           ],
         ),
@@ -52,7 +45,7 @@ class FeaturedStarCard extends StatelessWidget {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14.r),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -61,44 +54,44 @@ class FeaturedStarCard extends StatelessWidget {
                       recipe.foodName,
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     // Title
                     Expanded(
                       child: Text(
                         recipe.title,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     // Creator info
                     Row(
                       children: [
-                        Icon(Icons.person_outline, size: 14, color: Colors.grey[500]),
-                        const SizedBox(width: 4),
+                        Icon(Icons.person_outline, size: 14.sp, color: Colors.grey[500]),
+                        SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
                             recipe.creatorName,
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    // Action buttons
-                    _buildActionButtons(),
+                    SizedBox(height: 10.h),
+                    // Stats row
+                    _buildStatsRow(),
                   ],
                 ),
               ),
@@ -115,9 +108,9 @@ class FeaturedStarCard extends StatelessWidget {
       children: [
         // Hero image
         ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16.r),
+            topRight: Radius.circular(16.r),
           ),
           child: AppCachedImage(
             imageUrl: recipe.thumbnailUrl ?? 'https://via.placeholder.com/400x250',
@@ -132,11 +125,11 @@ class FeaturedStarCard extends StatelessWidget {
           left: 0,
           right: 0,
           child: Container(
-            height: 80,
+            height: 80.h,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.r),
+                topRight: Radius.circular(16.r),
               ),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -151,21 +144,15 @@ class FeaturedStarCard extends StatelessWidget {
         ),
         // Featured badge (top left)
         Positioned(
-          top: 10,
-          left: 10,
+          top: 10.h,
+          left: 10.w,
           child: _buildFeaturedBadge(),
-        ),
-        // Locale badge (top right)
-        Positioned(
-          top: 10,
-          right: 10,
-          child: _buildLocaleBadge(),
         ),
         // Star metrics (bottom)
         Positioned(
-          bottom: 10,
-          left: 10,
-          right: 10,
+          bottom: 10.h,
+          left: 10.w,
+          right: 10.w,
           child: _buildStarMetrics(),
         ),
       ],
@@ -174,64 +161,29 @@ class FeaturedStarCard extends StatelessWidget {
 
   Widget _buildFeaturedBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: AppColors.textPrimary,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 4,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('⭐', style: TextStyle(fontSize: 12)),
-          const SizedBox(width: 4),
+          Text('⭐', style: TextStyle(fontSize: 12.sp)),
+          SizedBox(width: 4.w),
           Text(
             'recipe.starLabel'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocaleBadge() {
-    final locale = CulinaryLocale.fromCode(recipe.culinaryLocale);
-    if (locale == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(locale.flagEmoji, style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 4),
-          Text(
-            locale.labelKey.tr(),
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
+              color: Colors.white,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -241,16 +193,16 @@ class FeaturedStarCard extends StatelessWidget {
 
   Widget _buildStarMetrics() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildMetricItem(Icons.call_split, recipe.variantCount, 'grid.variants'.tr()),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           _buildMetricItem(Icons.edit_note, recipe.logCount, 'grid.logs'.tr()),
         ],
       ),
@@ -261,21 +213,21 @@ class FeaturedStarCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: AppColors.primary),
-        const SizedBox(width: 4),
+        Icon(icon, size: 16.sp, color: AppColors.primary),
+        SizedBox(width: 4.w),
         Text(
           count.toString(),
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.bold,
             color: Colors.grey[800],
           ),
         ),
-        const SizedBox(width: 2),
+        SizedBox(width: 2.w),
         Text(
           label,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 11.sp,
             color: Colors.grey[600],
           ),
         ),
@@ -283,86 +235,59 @@ class FeaturedStarCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildStatsRow() {
     return Row(
       children: [
-        Expanded(
-          child: _FeaturedActionButton(
-            icon: Icons.edit_note,
-            label: 'recipe.action.log'.tr(),
-            onTap: onLog,
-            isPrimary: false,
-          ),
+        // Variant count
+        _buildStatBadge(
+          icon: Icons.call_split,
+          count: recipe.variantCount,
+          label: 'recipe.variants'.tr(),
         ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _FeaturedActionButton(
-            icon: Icons.call_split,
-            label: 'recipe.action.fork'.tr(),
-            onTap: onFork,
-            isPrimary: false,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _FeaturedActionButton(
-            icon: Icons.star_outline,
-            label: 'recipe.action.star'.tr(),
-            onTap: onViewStar,
-            isPrimary: true,
-          ),
+        SizedBox(width: 12.w),
+        // Log count
+        _buildStatBadge(
+          icon: Icons.edit_note,
+          count: recipe.logCount,
+          label: 'recipe.logs'.tr(),
         ),
       ],
     );
   }
-}
 
-class _FeaturedActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-  final bool isPrimary;
-
-  const _FeaturedActionButton({
-    required this.icon,
-    required this.label,
-    this.onTap,
-    this.isPrimary = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: isPrimary ? AppColors.primary.withValues(alpha: 0.1) : Colors.grey[100],
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap?.call();
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isPrimary ? AppColors.primary : Colors.grey[600],
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: isPrimary ? AppColors.primary : Colors.grey[600],
-                ),
-              ),
-            ],
+  Widget _buildStatBadge({
+    required IconData icon,
+    required int count,
+    required String label,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16.sp, color: Colors.grey[600]),
+          SizedBox(width: 6.w),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
           ),
-        ),
+          SizedBox(width: 4.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -387,15 +312,15 @@ class FeaturedStarCardHorizontal extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: width,
-        height: 160,
-        margin: const EdgeInsets.only(right: 12),
+        height: 160.h,
+        margin: EdgeInsets.only(right: 12.w),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2.h),
             ),
           ],
         ),
@@ -404,18 +329,18 @@ class FeaturedStarCardHorizontal extends StatelessWidget {
           children: [
             // Background image
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               child: AppCachedImage(
                 imageUrl: recipe.thumbnailUrl ?? 'https://via.placeholder.com/280x160',
                 width: width,
-                height: 160,
+                height: 160.h,
                 borderRadius: 12,
               ),
             ),
             // Gradient overlay
             Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -428,27 +353,27 @@ class FeaturedStarCardHorizontal extends StatelessWidget {
             ),
             // Content
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Star badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(6.r),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('⭐', style: TextStyle(fontSize: 10)),
-                        const SizedBox(width: 4),
+                        Text('⭐', style: TextStyle(fontSize: 10.sp)),
+                        SizedBox(width: 4.w),
                         Text(
                           '${recipe.variantCount} ${'grid.variants'.tr()}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 10.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -459,21 +384,21 @@ class FeaturedStarCardHorizontal extends StatelessWidget {
                   // Title
                   Text(
                     recipe.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   // Creator
                   Text(
                     'by ${recipe.creatorName}',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 12,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],

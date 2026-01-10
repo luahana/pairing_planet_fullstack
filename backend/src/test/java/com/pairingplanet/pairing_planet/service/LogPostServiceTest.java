@@ -96,7 +96,8 @@ class LogPostServiceTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "PARTIAL",
-                    List.of("tag1", "tag2")
+                    List.of("tag1", "tag2"),
+                    null
             );
 
             LogPostDetailResponseDto result = logPostService.updateLog(
@@ -121,6 +122,7 @@ class LogPostServiceTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "PARTIAL",
+                    null,
                     null
             );
 
@@ -139,6 +141,7 @@ class LogPostServiceTest extends BaseIntegrationTest {
                     "Updated Title",
                     "Updated content",
                     "PARTIAL",
+                    null,
                     null
             );
 
@@ -158,7 +161,8 @@ class LogPostServiceTest extends BaseIntegrationTest {
                     null,
                     "Content with tags",
                     "SUCCESS",
-                    List.of("tag1", "tag2")
+                    List.of("tag1", "tag2"),
+                    null
             );
             logPostService.updateLog(testLogPost.getPublicId(), addTagsRequest, testUser.getId());
 
@@ -167,6 +171,7 @@ class LogPostServiceTest extends BaseIntegrationTest {
                     null,
                     "Content without tags",
                     "SUCCESS",
+                    null,
                     null
             );
             logPostService.updateLog(testLogPost.getPublicId(), clearTagsRequest, testUser.getId());
@@ -211,18 +216,18 @@ class LogPostServiceTest extends BaseIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Get Log Detail with creatorId")
+    @DisplayName("Get Log Detail with creatorPublicId")
     class GetLogDetailTests {
 
         @Test
-        @DisplayName("Should return creatorId in response")
-        void getLogDetail_ReturnsCreatorId() {
+        @DisplayName("Should return creatorPublicId in response")
+        void getLogDetail_ReturnsCreatorPublicId() {
             LogPostDetailResponseDto result = logPostService.getLogDetail(
                     testLogPost.getPublicId(),
                     testUser.getId()
             );
 
-            assertThat(result.creatorId()).isEqualTo(testUser.getId());
+            assertThat(result.creatorPublicId()).isEqualTo(testUser.getPublicId());
         }
     }
 }

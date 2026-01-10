@@ -1,28 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/search/highlighted_text.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/card_action_row.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/diff_summary_row.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/ingredient_preview_chips.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/locale_badge.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/star_preview_badge.dart';
 
 /// Enhanced recipe card for the Living Blueprint browse page
-/// Shows star metrics for originals, diff summary for variants
+/// Shows diff summary for variants
 class EnhancedRecipeCard extends StatelessWidget {
   final RecipeSummary recipe;
   final String? searchQuery;
   final List<IngredientPreview>? ingredientPreviews;
   final DiffSummary? diffSummary;
   final VoidCallback? onTap;
-  final VoidCallback? onLog;
-  final VoidCallback? onFork;
-  final VoidCallback? onViewStar;
-  final VoidCallback? onViewRoot;
 
   const EnhancedRecipeCard({
     super.key,
@@ -31,10 +25,6 @@ class EnhancedRecipeCard extends StatelessWidget {
     this.ingredientPreviews,
     this.diffSummary,
     this.onTap,
-    this.onLog,
-    this.onFork,
-    this.onViewStar,
-    this.onViewRoot,
   });
 
   bool get isOriginal => !recipe.isVariant;
@@ -51,15 +41,15 @@ class EnhancedRecipeCard extends StatelessWidget {
           onTap?.call();
         },
         child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.only(bottom: 16.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4.h),
             ),
           ],
         ),
@@ -70,24 +60,24 @@ class EnhancedRecipeCard extends StatelessWidget {
             _buildImageHeader(),
             // Content section
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Food name and title
                   _buildTitleSection(),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   // Description
                   HighlightedText(
                     text: recipe.description,
                     query: searchQuery,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
                   ),
                   // Ingredient preview (if available)
                   if (ingredientPreviews != null && ingredientPreviews!.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     IngredientPreviewChips(
                       ingredients: ingredientPreviews!,
                       showDiffBadges: !isOriginal && diffSummary != null,
@@ -95,21 +85,15 @@ class EnhancedRecipeCard extends StatelessWidget {
                   ],
                   // Diff summary for variants
                   if (!isOriginal && diffSummary != null && diffSummary!.hasChanges) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     DiffSummaryRow(summary: diffSummary!),
                   ],
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   // Creator row
                   _buildCreatorRow(),
-                  const SizedBox(height: 12),
-                  // Action buttons
-                  CardActionRow(
-                    isOriginal: isOriginal,
-                    onLog: onLog,
-                    onFork: onFork,
-                    onViewStar: onViewStar,
-                    onViewRoot: onViewRoot,
-                  ),
+                  SizedBox(height: 12.h),
+                  // Stats row (log count + variant count)
+                  _buildStatsRow(),
                 ],
               ),
             ),
@@ -127,7 +111,7 @@ class EnhancedRecipeCard extends StatelessWidget {
         AppCachedImage(
           imageUrl: recipe.thumbnailUrl ?? 'https://via.placeholder.com/400x200',
           width: double.infinity,
-          height: 180,
+          height: 180.h,
           borderRadius: 16,
         ),
         // Gradient overlay at bottom for badges
@@ -136,11 +120,11 @@ class EnhancedRecipeCard extends StatelessWidget {
           left: 0,
           right: 0,
           child: Container(
-            height: 60,
+            height: 60.h,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(16.r),
+                bottomRight: Radius.circular(16.r),
               ),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -155,36 +139,9 @@ class EnhancedRecipeCard extends StatelessWidget {
         ),
         // Original/Variant badge (top left)
         Positioned(
-          top: 12,
-          left: 12,
+          top: 12.h,
+          left: 12.w,
           child: _buildTypeBadge(),
-        ),
-        // Locale badge (top right)
-        Positioned(
-          top: 12,
-          right: 12,
-          child: LocaleBadge(
-            localeCode: recipe.culinaryLocale,
-            showLabel: false,
-          ),
-        ),
-        // Star preview (bottom left) for originals
-        // Or Based on badge (bottom left) for variants
-        Positioned(
-          bottom: 12,
-          left: 12,
-          right: 12,
-          child: isOriginal
-              ? StarPreviewBadge(
-                  variantCount: recipe.variantCount,
-                  logCount: recipe.logCount,
-                )
-              : (recipe.rootTitle != null
-                  ? BasedOnBadge(
-                      rootTitle: recipe.rootTitle!,
-                      onTap: onViewRoot,
-                    )
-                  : const SizedBox.shrink()),
         ),
       ],
     );
@@ -192,24 +149,24 @@ class EnhancedRecipeCard extends StatelessWidget {
 
   Widget _buildTypeBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: isOriginal ? AppColors.textPrimary : AppColors.primary,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             isOriginal ? '📌' : '🔀',
-            style: const TextStyle(fontSize: 11),
+            style: TextStyle(fontSize: 11.sp),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
             isOriginal ? 'recipe.originalBadge'.tr() : 'recipe.variant'.tr(),
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 11,
+              fontSize: 11.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -227,16 +184,16 @@ class EnhancedRecipeCard extends StatelessWidget {
           query: searchQuery,
           style: TextStyle(
             color: AppColors.primary,
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         HighlightedText(
           text: recipe.title,
           query: searchQuery,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -249,25 +206,72 @@ class EnhancedRecipeCard extends StatelessWidget {
       children: [
         Icon(
           Icons.person_outline,
-          size: 16,
+          size: 16.sp,
           color: Colors.grey[400],
         ),
-        const SizedBox(width: 4),
+        SizedBox(width: 4.w),
         Text(
           recipe.creatorName,
-          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+          style: TextStyle(color: Colors.grey[600], fontSize: 13.sp),
         ),
-        if (recipe.logCount > 0) ...[
+      ],
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Row(
+      children: [
+        // Variant count
+        _buildStatBadge(
+          icon: Icons.call_split,
+          count: recipe.variantCount,
+          label: 'recipe.variants'.tr(),
+        ),
+        SizedBox(width: 12.w),
+        // Log count
+        _buildStatBadge(
+          icon: Icons.edit_note,
+          count: recipe.logCount,
+          label: 'recipe.logs'.tr(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatBadge({
+    required IconData icon,
+    required int count,
+    required String label,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16.sp, color: Colors.grey[600]),
+          SizedBox(width: 6.w),
           Text(
-            " · ",
-            style: TextStyle(color: Colors.grey[400], fontSize: 13),
+            count.toString(),
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
           ),
+          SizedBox(width: 4.w),
           Text(
-            'recipe.logCountLabel'.tr(namedArgs: {'count': recipe.logCount.toString()}),
-            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey[500],
+            ),
           ),
         ],
-      ],
+      ),
     );
   }
 }

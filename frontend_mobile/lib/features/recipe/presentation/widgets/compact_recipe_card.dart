@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/locale_dropdown.dart';
 
 /// Compact recipe card for grid view
 /// Shows essential info: image, title, type badge, variant/log counts
 class CompactRecipeCard extends StatelessWidget {
   final RecipeSummary recipe;
   final VoidCallback? onTap;
-  final VoidCallback? onLog;
-  final VoidCallback? onFork;
 
   const CompactRecipeCard({
     super.key,
     required this.recipe,
     this.onTap,
-    this.onLog,
-    this.onFork,
   });
 
   bool get isOriginal => !recipe.isVariant;
@@ -37,12 +33,12 @@ class CompactRecipeCard extends StatelessWidget {
         child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2.h),
             ),
           ],
         ),
@@ -53,7 +49,7 @@ class CompactRecipeCard extends StatelessWidget {
             _buildImageSection(),
             // Content
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -62,29 +58,26 @@ class CompactRecipeCard extends StatelessWidget {
                     recipe.foodName,
                     style: TextStyle(
                       color: AppColors.primary,
-                      fontSize: 10,
+                      fontSize: 10.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   // Title
                   Text(
                     recipe.title,
-                    style: const TextStyle(
-                      fontSize: 13,
+                    style: TextStyle(
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   // Stats row
                   _buildStatsRow(),
-                  const SizedBox(height: 8),
-                  // Action buttons
-                  _buildActionButtons(),
                 ],
               ),
             ),
@@ -100,28 +93,22 @@ class CompactRecipeCard extends StatelessWidget {
       children: [
         // Image
         ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12.r),
+            topRight: Radius.circular(12.r),
           ),
           child: AppCachedImage(
             imageUrl: recipe.thumbnailUrl ?? 'https://via.placeholder.com/200x120',
             width: double.infinity,
-            height: 100,
+            height: 100.h,
             borderRadius: 0,
           ),
         ),
         // Type badge (top left)
         Positioned(
-          top: 6,
-          left: 6,
+          top: 6.h,
+          left: 6.w,
           child: _buildTypeBadge(),
-        ),
-        // Locale badge (top right)
-        Positioned(
-          top: 6,
-          right: 6,
-          child: _buildLocaleBadge(),
         ),
       ],
     );
@@ -129,31 +116,14 @@ class CompactRecipeCard extends StatelessWidget {
 
   Widget _buildTypeBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: isOriginal ? AppColors.textPrimary : AppColors.primary,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
         isOriginal ? '📌' : '🔀',
-        style: const TextStyle(fontSize: 10),
-      ),
-    );
-  }
-
-  Widget _buildLocaleBadge() {
-    final locale = CulinaryLocale.fromCode(recipe.culinaryLocale);
-    if (locale == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        locale.flagEmoji,
-        style: const TextStyle(fontSize: 12),
+        style: TextStyle(fontSize: 10.sp),
       ),
     );
   }
@@ -163,82 +133,29 @@ class CompactRecipeCard extends StatelessWidget {
     final hasLogs = recipe.logCount > 0;
 
     if (!hasVariants && !hasLogs) {
-      return const SizedBox(height: 14); // Maintain spacing
+      return SizedBox(height: 14.h); // Maintain spacing
     }
 
     return Row(
       children: [
         if (hasVariants) ...[
-          Icon(Icons.call_split, size: 12, color: Colors.grey[500]),
-          const SizedBox(width: 2),
+          Icon(Icons.call_split, size: 12.sp, color: Colors.grey[500]),
+          SizedBox(width: 2.w),
           Text(
             recipe.variantCount.toString(),
-            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
           ),
         ],
-        if (hasVariants && hasLogs) const SizedBox(width: 8),
+        if (hasVariants && hasLogs) SizedBox(width: 8.w),
         if (hasLogs) ...[
-          Icon(Icons.edit_note, size: 12, color: Colors.grey[500]),
-          const SizedBox(width: 2),
+          Icon(Icons.edit_note, size: 12.sp, color: Colors.grey[500]),
+          SizedBox(width: 2.w),
           Text(
             recipe.logCount.toString(),
-            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
           ),
         ],
       ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: _CompactActionButton(
-            icon: Icons.edit_note,
-            onTap: onLog,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: _CompactActionButton(
-            icon: Icons.call_split,
-            onTap: onFork,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CompactActionButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  const _CompactActionButton({
-    required this.icon,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.grey[100],
-      borderRadius: BorderRadius.circular(6),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap?.call();
-        },
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Icon(
-            icon,
-            size: 16,
-            color: Colors.grey[600],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -248,16 +165,12 @@ class CompactRecipeCardFixed extends StatelessWidget {
   final RecipeSummary recipe;
   final double height;
   final VoidCallback? onTap;
-  final VoidCallback? onLog;
-  final VoidCallback? onFork;
 
   const CompactRecipeCardFixed({
     super.key,
     required this.recipe,
     this.height = 220,
     this.onTap,
-    this.onLog,
-    this.onFork,
   });
 
   bool get isOriginal => !recipe.isVariant;
@@ -270,12 +183,12 @@ class CompactRecipeCardFixed extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2.h),
             ),
           ],
         ),
@@ -290,7 +203,7 @@ class CompactRecipeCardFixed extends StatelessWidget {
             // Content - flexible
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(10.r),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -299,19 +212,19 @@ class CompactRecipeCardFixed extends StatelessWidget {
                       recipe.foodName,
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     // Title
                     Expanded(
                       child: Text(
                         recipe.title,
-                        style: const TextStyle(
-                          fontSize: 13,
+                        style: TextStyle(
+                          fontSize: 13.sp,
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 2,
@@ -320,9 +233,6 @@ class CompactRecipeCardFixed extends StatelessWidget {
                     ),
                     // Stats row
                     _buildStatsRow(),
-                    const SizedBox(height: 6),
-                    // Action buttons
-                    _buildActionButtons(),
                   ],
                 ),
               ),
@@ -339,9 +249,9 @@ class CompactRecipeCardFixed extends StatelessWidget {
       children: [
         // Image
         ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12.r),
+            topRight: Radius.circular(12.r),
           ),
           child: AppCachedImage(
             imageUrl: recipe.thumbnailUrl ?? 'https://via.placeholder.com/200x120',
@@ -352,15 +262,9 @@ class CompactRecipeCardFixed extends StatelessWidget {
         ),
         // Type badge (top left)
         Positioned(
-          top: 6,
-          left: 6,
+          top: 6.h,
+          left: 6.w,
           child: _buildTypeBadge(),
-        ),
-        // Locale badge (top right)
-        Positioned(
-          top: 6,
-          right: 6,
-          child: _buildLocaleBadge(),
         ),
       ],
     );
@@ -368,31 +272,14 @@ class CompactRecipeCardFixed extends StatelessWidget {
 
   Widget _buildTypeBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: isOriginal ? AppColors.textPrimary : AppColors.primary,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
         isOriginal ? '📌' : '🔀',
-        style: const TextStyle(fontSize: 10),
-      ),
-    );
-  }
-
-  Widget _buildLocaleBadge() {
-    final locale = CulinaryLocale.fromCode(recipe.culinaryLocale);
-    if (locale == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        locale.flagEmoji,
-        style: const TextStyle(fontSize: 12),
+        style: TextStyle(fontSize: 10.sp),
       ),
     );
   }
@@ -402,48 +289,28 @@ class CompactRecipeCardFixed extends StatelessWidget {
     final hasLogs = recipe.logCount > 0;
 
     if (!hasVariants && !hasLogs) {
-      return const SizedBox(height: 14);
+      return SizedBox(height: 14.h);
     }
 
     return Row(
       children: [
         if (hasVariants) ...[
-          Icon(Icons.call_split, size: 12, color: Colors.grey[500]),
-          const SizedBox(width: 2),
+          Icon(Icons.call_split, size: 12.sp, color: Colors.grey[500]),
+          SizedBox(width: 2.w),
           Text(
             recipe.variantCount.toString(),
-            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
           ),
         ],
-        if (hasVariants && hasLogs) const SizedBox(width: 8),
+        if (hasVariants && hasLogs) SizedBox(width: 8.w),
         if (hasLogs) ...[
-          Icon(Icons.edit_note, size: 12, color: Colors.grey[500]),
-          const SizedBox(width: 2),
+          Icon(Icons.edit_note, size: 12.sp, color: Colors.grey[500]),
+          SizedBox(width: 2.w),
           Text(
             recipe.logCount.toString(),
-            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
           ),
         ],
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: _CompactActionButton(
-            icon: Icons.edit_note,
-            onTap: onLog,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: _CompactActionButton(
-            icon: Icons.call_split,
-            onTap: onFork,
-          ),
-        ),
       ],
     );
   }

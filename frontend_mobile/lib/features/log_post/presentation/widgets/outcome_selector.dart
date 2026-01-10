@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/widgets/outcome_badge.dart';
 
 /// Large outcome selection buttons for quick log flow
@@ -23,23 +24,23 @@ class OutcomeSelector extends StatelessWidget {
         // Header question
         Text(
           'logPost.quickLog.howDidItGo'.tr(),
-          style: const TextStyle(
-            fontSize: 22,
+          style: TextStyle(
+            fontSize: 22.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           'logPost.quickLog.tapToSelect'.tr(),
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 14.sp,
             color: Colors.grey[600],
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: 32.h),
         // Outcome buttons row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -131,13 +132,13 @@ class _OutcomeButtonState extends State<_OutcomeButton>
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            width: 100,
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+            width: 100.w,
+            padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 12.w),
             decoration: BoxDecoration(
               color: widget.isSelected
                   ? widget.outcome.primaryColor
                   : widget.outcome.backgroundColor,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               border: Border.all(
                 color: widget.isSelected
                     ? widget.outcome.primaryColor
@@ -149,14 +150,14 @@ class _OutcomeButtonState extends State<_OutcomeButton>
                       BoxShadow(
                         color: widget.outcome.primaryColor.withValues(alpha: 0.4),
                         blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        offset: Offset(0, 4.h),
                       ),
                     ]
                   : [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        offset: Offset(0, 2.h),
                       ),
                     ],
             ),
@@ -166,14 +167,14 @@ class _OutcomeButtonState extends State<_OutcomeButton>
                 // Large emoji
                 Text(
                   widget.outcome.emoji,
-                  style: const TextStyle(fontSize: 40),
+                  style: TextStyle(fontSize: 40.sp),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 // Label
                 Text(
                   widget.outcome.label,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                     color: widget.isSelected
                         ? Colors.white
@@ -209,42 +210,49 @@ class CompactOutcomeSelector extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: LogOutcome.values.map((outcome) {
         final isSelected = selectedOutcome == outcome;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: GestureDetector(
-            onTap: () {
-              HapticFeedback.selectionClick();
-              onOutcomeSelected(outcome);
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? outcome.primaryColor
-                    : outcome.backgroundColor,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
+        return Flexible(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onOutcomeSelected(outcome);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                decoration: BoxDecoration(
                   color: isSelected
                       ? outcome.primaryColor
-                      : outcome.primaryColor.withValues(alpha: 0.3),
-                  width: isSelected ? 2 : 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(outcome.emoji, style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 6),
-                  Text(
-                    outcome.label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : outcome.primaryColor,
-                    ),
+                      : outcome.backgroundColor,
+                  borderRadius: BorderRadius.circular(24.r),
+                  border: Border.all(
+                    color: isSelected
+                        ? outcome.primaryColor
+                        : outcome.primaryColor.withValues(alpha: 0.3),
+                    width: isSelected ? 2 : 1,
                   ),
-                ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(outcome.emoji, style: TextStyle(fontSize: 18.sp)),
+                    SizedBox(width: 4.w),
+                    Flexible(
+                      child: Text(
+                        outcome.label,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : outcome.primaryColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
