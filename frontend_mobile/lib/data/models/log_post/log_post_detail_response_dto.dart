@@ -6,7 +6,7 @@ import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_detai
 
 part 'log_post_detail_response_dto.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class LogPostDetailResponseDto {
   final String publicId;
   final String? title;
@@ -17,7 +17,7 @@ class LogPostDetailResponseDto {
   final String createdAt;
   final List<HashtagDto>? hashtags;
   final bool? isSavedByCurrentUser;
-  final int? creatorId; // For ownership check
+  final String? creatorPublicId; // For ownership check (UUID string)
 
   LogPostDetailResponseDto({
     required this.publicId,
@@ -29,25 +29,27 @@ class LogPostDetailResponseDto {
     required this.createdAt,
     this.hashtags,
     this.isSavedByCurrentUser,
-    this.creatorId,
+    this.creatorPublicId,
   });
 
   factory LogPostDetailResponseDto.fromJson(Map<String, dynamic> json) =>
       _$LogPostDetailResponseDtoFromJson(json);
   Map<String, dynamic> toJson() => _$LogPostDetailResponseDtoToJson(this);
 
-  LogPostDetail toEntity() => LogPostDetail(
-    publicId: publicId,
-    content: content,
-    outcome: outcome ?? 'PARTIAL', // Default to PARTIAL if null
-    imageUrls: images?.map((img) => img.imageUrl).toList() ?? [],
-    recipePublicId: linkedRecipe?.publicId ?? "",
-    linkedRecipe: linkedRecipe != null
-        ? LinkedRecipeInfo.fromRecipeSummary(linkedRecipe!.toEntity())
-        : null,
-    createdAt: DateTime.parse(createdAt),
-    hashtags: hashtags?.map((e) => e.toEntity()).toList() ?? [],
-    isSavedByCurrentUser: isSavedByCurrentUser,
-    creatorId: creatorId,
-  );
+  LogPostDetail toEntity() {
+    return LogPostDetail(
+      publicId: publicId,
+      content: content,
+      outcome: outcome ?? 'PARTIAL', // Default to PARTIAL if null
+      imageUrls: images?.map((img) => img.imageUrl).toList() ?? [],
+      recipePublicId: linkedRecipe?.publicId ?? "",
+      linkedRecipe: linkedRecipe != null
+          ? LinkedRecipeInfo.fromRecipeSummary(linkedRecipe!.toEntity())
+          : null,
+      createdAt: DateTime.parse(createdAt),
+      hashtags: hashtags?.map((e) => e.toEntity()).toList() ?? [],
+      isSavedByCurrentUser: isSavedByCurrentUser,
+      creatorPublicId: creatorPublicId,
+    );
+  }
 }
