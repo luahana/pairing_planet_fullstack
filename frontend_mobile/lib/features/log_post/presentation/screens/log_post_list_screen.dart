@@ -124,6 +124,7 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
             label: 'logPost.filter.all'.tr(),
             isSelected: isAllSelected,
             onTap: () {
+              if (isAllSelected) return;
               HapticFeedback.selectionClick();
               ref.read(logFilterProvider.notifier).clearOutcomeFilters();
             },
@@ -133,6 +134,7 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
             label: 'logPost.filter.wins'.tr(),
             isSelected: isWinsSelected,
             onTap: () {
+              if (isWinsSelected) return;
               HapticFeedback.selectionClick();
               ref.read(logFilterProvider.notifier).setOutcome(LogOutcome.success);
             },
@@ -142,6 +144,7 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
             label: 'logPost.filter.learning'.tr(),
             isSelected: isLearningSelected,
             onTap: () {
+              if (isLearningSelected) return;
               HapticFeedback.selectionClick();
               ref.read(logFilterProvider.notifier).setLearningFilter();
             },
