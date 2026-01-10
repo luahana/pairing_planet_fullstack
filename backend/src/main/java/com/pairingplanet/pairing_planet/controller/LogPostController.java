@@ -35,14 +35,21 @@ public class LogPostController {
      * 모든 로그 탐색 (무한 스크롤용 커서 기반 조회)
      * GET /api/v1/log_posts?page=0&size=10
      * GET /api/v1/log_posts?q=검색어 : 제목/내용/레시피명 검색
+     * GET /api/v1/log_posts?outcomes=PARTIAL,FAILED : outcome 필터링
      */
     @GetMapping
     public ResponseEntity<Slice<LogPostSummaryDto>> getAllLogs(
             @RequestParam(name = "q", required = false) String searchKeyword,
+            @RequestParam(name = "outcomes", required = false) String outcomes,
             Pageable pageable) {
         // 검색어가 있으면 검색 모드
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             return ResponseEntity.ok(logPostService.searchLogPosts(searchKeyword, pageable));
+        }
+        // outcome 필터링
+        if (outcomes != null && !outcomes.isBlank()) {
+            java.util.List<String> outcomeList = java.util.Arrays.asList(outcomes.split(","));
+            return ResponseEntity.ok(logPostService.getAllLogsByOutcomes(outcomeList, pageable));
         }
         return ResponseEntity.ok(logPostService.getAllLogs(pageable));
     }
