@@ -1,4 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 
 class HashtagInputSection extends StatefulWidget {
   final List<String> hashtags;
@@ -38,13 +41,13 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
     if (normalized.isEmpty) return;
     if (widget.hashtags.length >= widget.maxHashtags) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('최대 ${widget.maxHashtags}개의 해시태그만 추가할 수 있습니다.')),
+        SnackBar(content: Text('recipe.hashtag.maxError'.tr(namedArgs: {'max': '${widget.maxHashtags}'}))),
       );
       return;
     }
     if (widget.hashtags.contains(normalized)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이미 추가된 해시태그입니다.')),
+        SnackBar(content: Text('recipe.hashtag.duplicateError'.tr())),
       );
       return;
     }
@@ -66,29 +69,29 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
       children: [
         Row(
           children: [
-            const Icon(Icons.tag, color: Colors.indigo, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              "해시태그",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Icon(Icons.tag, color: AppColors.primary, size: 20.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'recipe.hashtag.title'.tr(),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
             ),
             const Spacer(),
             Text(
               '${widget.hashtags.length}/${widget.maxHashtags}',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: Colors.grey[600],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         // Input field
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: Colors.grey[300]!),
           ),
           child: Row(
@@ -96,22 +99,22 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
               Text(
                 '#',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   color: Colors.grey[600],
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               Expanded(
                 child: TextField(
                   controller: _controller,
                   focusNode: _focusNode,
-                  decoration: const InputDecoration(
-                    hintText: '해시태그 입력 후 Enter',
-                    hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
+                  decoration: InputDecoration(
+                    hintText: 'recipe.hashtag.hint'.tr(),
+                    hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   textInputAction: TextInputAction.done,
                   onSubmitted: (value) {
@@ -122,7 +125,7 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
               ),
               if (_controller.text.isNotEmpty)
                 IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.indigo),
+                  icon: const Icon(Icons.add_circle, color: AppColors.primary),
                   onPressed: () {
                     _addHashtag(_controller.text);
                     _focusNode.requestFocus();
@@ -133,19 +136,19 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         // Hashtag chips
         if (widget.hashtags.isNotEmpty)
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 8.w,
+            runSpacing: 8.h,
             children: widget.hashtags.map((tag) => _buildChip(tag)).toList(),
           ),
         if (widget.hashtags.isEmpty)
           Text(
-            '예: 간편요리, 한식, 매운맛',
+            'recipe.hashtag.example'.tr(),
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: Colors.grey[500],
             ),
           ),
@@ -155,11 +158,11 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
 
   Widget _buildChip(String hashtag) {
     return Container(
-      padding: const EdgeInsets.only(left: 12, right: 4, top: 6, bottom: 6),
+      padding: EdgeInsets.only(left: 12.w, right: 4.w, top: 6.h, bottom: 6.h),
       decoration: BoxDecoration(
-        color: Colors.indigo[50],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.indigo[200]!),
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -167,18 +170,18 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
           Text(
             '#$hashtag',
             style: TextStyle(
-              fontSize: 13,
-              color: Colors.indigo[700],
+              fontSize: 13.sp,
+              color: AppColors.primary,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           GestureDetector(
             onTap: () => _removeHashtag(hashtag),
             child: Icon(
               Icons.close,
-              size: 16,
-              color: Colors.indigo[400],
+              size: 16.sp,
+              color: AppColors.primary.withValues(alpha: 0.6),
             ),
           ),
         ],

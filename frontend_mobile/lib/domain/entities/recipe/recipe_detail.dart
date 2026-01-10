@@ -17,10 +17,16 @@ class RecipeDetail {
   final List<Ingredient> ingredients;
   final List<RecipeStep> steps;
   final List<String> imageUrls;
+  final List<String> imagePublicIds; // For edit mode - to send back to server
   final List<RecipeSummary> variants;
   final List<LogPostSummary> logs;
   final List<Hashtag> hashtags;
   final bool? isSavedByCurrentUser;
+
+  // Living Blueprint: Diff fields for variation tracking
+  final Map<String, dynamic>? changeDiff;
+  final List<String>? changeCategories;
+  final String? changeReason;
 
   RecipeDetail({
     required this.publicId,
@@ -35,9 +41,19 @@ class RecipeDetail {
     required this.ingredients,
     required this.steps,
     required this.imageUrls,
+    required this.imagePublicIds,
     required this.variants,
     required this.logs,
     required this.hashtags,
     this.isSavedByCurrentUser,
+    this.changeDiff,
+    this.changeCategories,
+    this.changeReason,
   });
+
+  /// Check if this recipe is a variant (has a parent)
+  bool get isVariant => parentInfo != null;
+
+  /// Check if this recipe has any changes from parent
+  bool get hasChanges => changeDiff != null && changeDiff!.isNotEmpty;
 }

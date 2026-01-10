@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// Skeleton widget for log post grid loading state.
 /// Matches the 2-column grid layout with aspect ratio 0.75.
 class LogPostGridSkeleton extends StatelessWidget {
   final int itemCount;
+  final bool showFilterBar;
+  final bool showProgressCard;
 
   const LogPostGridSkeleton({
     super.key,
     this.itemCount = 6,
+    this.showFilterBar = true,
+    this.showProgressCard = false,
   });
 
   @override
@@ -16,18 +21,88 @@ class LogPostGridSkeleton extends StatelessWidget {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
-      child: GridView.builder(
-        shrinkWrap: true,
+      child: CustomScrollView(
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(12),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.75,
-        ),
-        itemCount: itemCount,
-        itemBuilder: (context, index) => const _LogPostCardSkeleton(),
+        slivers: [
+          // Progress overview card skeleton
+          if (showProgressCard)
+            const SliverToBoxAdapter(
+              child: _ProgressOverviewSkeleton(),
+            ),
+          // Filter bar skeleton
+          if (showFilterBar)
+            const SliverToBoxAdapter(
+              child: _FilterBarSkeleton(),
+            ),
+          // Grid skeleton
+          SliverPadding(
+            padding: EdgeInsets.all(12.r),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12.h,
+                crossAxisSpacing: 12.w,
+                childAspectRatio: 0.75,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const _LogPostCardSkeleton(),
+                childCount: itemCount,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Filter bar skeleton
+class _FilterBarSkeleton extends StatelessWidget {
+  const _FilterBarSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: Row(
+        children: [
+          _buildChipSkeleton(width: 50.w),
+          SizedBox(width: 8.w),
+          _buildChipSkeleton(width: 70.w),
+          SizedBox(width: 8.w),
+          _buildChipSkeleton(width: 80.w),
+          SizedBox(width: 8.w),
+          _buildChipSkeleton(width: 75.w),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChipSkeleton({required double width}) {
+    return Container(
+      width: width,
+      height: 32.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+    );
+  }
+}
+
+/// Progress overview card skeleton
+class _ProgressOverviewSkeleton extends StatelessWidget {
+  const _ProgressOverviewSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(20.r),
+      height: 160.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
       ),
     );
   }
@@ -42,40 +117,63 @@ class _LogPostCardSkeleton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image area (flex: 3)
+          // Image area with outcome badge (flex: 3)
           Expanded(
             flex: 3,
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              ),
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+                  ),
+                ),
+                // Outcome badge skeleton
+                Positioned(
+                  left: 8.w,
+                  top: 8.h,
+                  child: Container(
+                    width: 28.w,
+                    height: 28.w,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           // Text area (flex: 1)
           Expanded(
             flex: 1,
             child: Padding(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
                     width: double.infinity,
-                    height: 14,
-                    color: Colors.white,
+                    height: 14.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Container(
-                    width: 60,
-                    height: 10,
-                    color: Colors.white,
+                    width: 60.w,
+                    height: 10.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
                   ),
                 ],
               ),

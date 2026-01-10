@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/features/auth/providers/auth_provider.dart';
 import 'package:pairing_planet2_frontend/features/splash/providers/splash_provider.dart';
 
@@ -47,7 +49,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A237E), // Indigo brand color
+      backgroundColor: AppColors.textPrimary, // Brand color
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: Center(
@@ -56,11 +58,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             children: [
               // Logo placeholder
               Container(
-                width: 120,
-                height: 120,
+                width: 120.w,
+                height: 120.w,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.2),
@@ -69,34 +71,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'PP',
                     style: TextStyle(
-                      fontSize: 48,
+                      fontSize: 48.sp,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A237E),
+                      color: AppColors.textPrimary,
                       letterSpacing: 2,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               // App name
-              const Text(
+              Text(
                 'Pairing Planet',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 28.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                   letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: 48.h),
               // Loading indicator
-              const SizedBox(
-                width: 24,
-                height: 24,
+              SizedBox(
+                width: 24.w,
+                height: 24.w,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),

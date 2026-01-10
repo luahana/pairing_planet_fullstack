@@ -2,11 +2,14 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/image_source_sheet.dart';
+import 'package:pairing_planet2_frontend/core/widgets/reorderable_image_picker.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/create_log_post_request.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_providers.dart';
@@ -61,7 +64,7 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
     setState(() => item.status = UploadStatus.uploading);
     final result = await ref
         .read(uploadImageWithTrackingUseCaseProvider)
-        .execute(file: item.file, type: "LOG_POST");
+        .execute(file: item.file!, type: "LOG_POST");
     result.fold((f) => setState(() => item.status = UploadStatus.error), (res) {
       setState(() {
         item.status = UploadStatus.success;
@@ -72,6 +75,14 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
 
   void _removeImage(int index) {
     setState(() => _images.removeAt(index));
+  }
+
+  void _reorderImages(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex--;
+      final item = _images.removeAt(oldIndex);
+      _images.insert(newIndex, item);
+    });
   }
 
   Future<void> _submit() async {
@@ -141,47 +152,57 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.r),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildRecipeSummary(),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // 💡 2. 이미지 업로드 섹션 추가
                     Text(
                       'logPost.photosMax'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildImagePickerList(),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 12.h),
+                    ReorderableImagePicker(
+                      images: _images,
+                      maxImages: 3,
+                      onReorder: _reorderImages,
+                      onRemove: _removeImage,
+                      onRetry: _handleImageUpload,
+                      onAdd: () => ImageSourceSheet.show(
+                        context: context,
+                        onSourceSelected: _pickImage,
+                      ),
+                    ),
+                    SizedBox(height: 32.h),
 
                     // 💡 3. 요리 결과 섹션 (이모지 선택)
                     Text(
                       'logPost.howWasIt'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     _buildOutcomeSelector(),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     Text(
                       'logPost.howWasToday'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     _buildContentField(),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // 해시태그 입력 섹션
                     HashtagInputSection(
@@ -205,10 +226,10 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
   // ... (레시피 요약 위젯은 기존과 동일)
   Widget _buildRecipeSummary() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
@@ -216,12 +237,12 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
           if (widget.recipe.imageUrls.isNotEmpty)
             AppCachedImage(
               imageUrl: widget.recipe.imageUrls.first,
-              width: 60,
-              height: 60,
-              borderRadius: 8,
+              width: 60.w,
+              height: 60.w,
+              borderRadius: 8.r,
             ),
           if (widget.recipe.imageUrls.isNotEmpty)
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,16 +250,16 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
                 Text(
                   widget.recipe.foodName,
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.indigo[900],
+                    fontSize: 12.sp,
+                    color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   widget.recipe.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -248,144 +269,6 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
         ],
       ),
     );
-  }
-
-  // 💡 이미지 리스트 및 추가 버튼 UI
-  Widget _buildImagePickerList() {
-    return SizedBox(
-      height: 110, // 버튼 잘림 방지를 위한 높이
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _images.length + 1,
-        itemBuilder: (context, index) {
-          if (index == _images.length) {
-            if (_images.length >= 3) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: _buildAddButton(),
-            );
-          }
-          final item = _images[index];
-          return _buildImageItem(item, index);
-        },
-      ),
-    );
-  }
-
-  Widget _buildAddButton() {
-    return GestureDetector(
-      onTap: () =>
-          ImageSourceSheet.show(context: context, onSourceSelected: _pickImage),
-      child: Container(
-        width: 100,
-        height: 100,
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
-        child: const Icon(Icons.add_a_photo, color: Colors.grey),
-      ),
-    );
-  }
-
-  // 💡 개별 이미지 아이템 UI (로딩, 성공, 에러 오버레이 포함)
-  Widget _buildImageItem(UploadItem item, int index) {
-    return SizedBox(
-      width: 112,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 10, right: 12),
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.file(
-                      item.file,
-                      fit: BoxFit.cover,
-                      opacity: AlwaysStoppedAnimation(
-                        item.status == UploadStatus.uploading
-                            ? 0.7
-                            : (item.status == UploadStatus.error ? 0.5 : 1.0),
-                      ),
-                    ),
-                    _buildStatusOverlay(item), // 상태별 오버레이
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            // 삭제 버튼
-            top: 2,
-            right: 4,
-            child: GestureDetector(
-              onTap: () => _removeImage(index),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-                ),
-                child: const Icon(Icons.close, size: 14, color: Colors.black),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusOverlay(UploadItem item) {
-    switch (item.status) {
-      case UploadStatus.uploading:
-        return Container(
-          color: Colors.black12,
-          child: const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white,
-            ),
-          ),
-        );
-      case UploadStatus.success:
-        return Align(
-          alignment: Alignment.bottomRight,
-          child: Container(
-            margin: const EdgeInsets.all(6),
-            padding: const EdgeInsets.all(2),
-            decoration: const BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.check, size: 14, color: Colors.white),
-          ),
-        );
-      case UploadStatus.error:
-        return Container(
-          color: Colors.black38,
-          child: Center(
-            child: IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.white, size: 28),
-              onPressed: () => _handleImageUpload(item),
-            ),
-          ),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
   }
 
   // 💡 요리 결과 이모지 선택 UI
@@ -405,10 +288,10 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedOutcome = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.indigo[50] : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? Colors.indigo : Colors.transparent,
             width: 2,
@@ -416,12 +299,12 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
         ),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 32)),
-            const SizedBox(height: 4),
+            Text(emoji, style: TextStyle(fontSize: 32.sp)),
+            SizedBox(height: 4.h),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected ? Colors.indigo : Colors.grey[600],
               ),
@@ -434,10 +317,10 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
 
   Widget _buildContentField() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: TextField(
@@ -446,7 +329,7 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
         decoration: InputDecoration(
           hintText: 'logPost.contentHint'.tr(),
           border: InputBorder.none,
-          hintStyle: const TextStyle(fontSize: 14),
+          hintStyle: TextStyle(fontSize: 14.sp),
         ),
       ),
     );
@@ -454,16 +337,16 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
 
   Widget _buildSubmitButton() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
       child: SizedBox(
         width: double.infinity,
-        height: 56,
+        height: 56.h,
         child: ElevatedButton(
           onPressed: _isLoading ? null : _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1A237E),
+            backgroundColor: AppColors.primary,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
             ),
           ),
           child: Text(

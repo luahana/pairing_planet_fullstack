@@ -1,492 +1,327 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nested_scroll_view_plus/nested_scroll_view_plus.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
-import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
-import 'package:pairing_planet2_frontend/data/models/home/recent_activity_dto.dart';
-import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
+import 'package:pairing_planet2_frontend/core/providers/scroll_to_top_provider.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/trending_tree_dto.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/locale_badge.dart';
+import 'package:pairing_planet2_frontend/features/auth/providers/auth_provider.dart';
+import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
+import 'package:pairing_planet2_frontend/features/recipe/providers/browse_filter_provider.dart';
+import 'package:pairing_planet2_frontend/core/widgets/app_logo.dart';
 import '../providers/home_feed_provider.dart';
-import '../widgets/locale_filter_chips.dart';
+import '../widgets/cache_status_banner.dart';
+import '../widgets/section_header.dart';
+import '../widgets/bento_grid_section.dart';
+import '../widgets/horizontal_recipe_scroll.dart';
+import '../widgets/evolution_recipe_card.dart';
+import '../widgets/skeletons/home_feed_skeleton.dart';
 
-class HomeFeedScreen extends ConsumerWidget {
+class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeFeedScreen> createState() => _HomeFeedScreenState();
+}
+
+class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
+  final ScrollController _scrollController = ScrollController();
+  double _titleOpacity = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateTitleOpacity);
+  }
+
+  void _updateTitleOpacity() {
+    final maxScroll = 100.h - kToolbarHeight;
+    final opacity = (_scrollController.offset / maxScroll).clamp(0.0, 1.0);
+    if (opacity != _titleOpacity) {
+      setState(() => _titleOpacity = opacity);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateTitleOpacity);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return 'home.goodMorning'.tr();
+    } else if (hour >= 12 && hour < 17) {
+      return 'home.goodAfternoon'.tr();
+    } else {
+      return 'home.goodEvening'.tr();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Listen to scroll-to-top events for tab index 0 (Home)
+    ref.listen<int>(scrollToTopProvider(0), (previous, current) {
+      if (previous != null && current != previous) {
+        _scrollToTop();
+      }
+    });
     final feedState = ref.watch(homeFeedProvider);
+    final authState = ref.watch(authStateProvider);
+
+    // Get username if authenticated
+    String? username;
+    if (authState.status == AuthStatus.authenticated) {
+      final profileAsync = ref.watch(myProfileProvider);
+      username = profileAsync.whenOrNull(
+        data: (profile) => profile.user.username,
+      );
+    }
+
+    final greeting = _getGreeting();
+    final displayName = username ?? 'home.welcome'.tr();
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          "Pairing Planet",
-          style: TextStyle(fontWeight: FontWeight.bold),
+      body: _buildContent(feedState, greeting, displayName),
+    );
+  }
+
+  Widget _buildContent(HomeFeedState feedState, String greeting, String displayName) {
+    return NestedScrollViewPlus(
+      controller: _scrollController,
+      headerSliverBuilder: (context, innerBoxIsScrolled) => [
+        // SliverAppBar with greeting and search
+        _buildSliverAppBar(greeting, displayName, innerBoxIsScrolled),
+        // Instagram-style pull-to-refresh
+        CupertinoSliverRefreshControl(
+          onRefresh: () async {
+            await ref.read(homeFeedProvider.notifier).refresh();
+          },
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(homeFeedProvider.notifier).refresh();
-        },
-        child: _buildContent(context, ref, feedState),
-      ),
-    );
-  }
+      ],
+      body: Builder(
+        builder: (context) {
+          // Show shimmer skeleton only if no data available
+          if (feedState.isLoading && feedState.data == null) {
+            return const HomeFeedSkeleton();
+          }
 
-  Widget _buildContent(BuildContext context, WidgetRef ref, HomeFeedState feedState) {
-    // Show loading only if no data available
-    if (feedState.isLoading && feedState.data == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+          // Show error only if no data available
+          if (feedState.error != null && feedState.data == null) {
+            return _buildErrorBody(feedState.error!);
+          }
 
-    // Show error only if no data available
-    if (feedState.error != null && feedState.data == null) {
-      return _buildErrorState(context, ref, feedState.error!);
-    }
+          final feed = feedState.data;
+          if (feed == null) {
+            return _buildErrorBody('common.noData'.tr());
+          }
 
-    final feed = feedState.data;
-    if (feed == null) {
-      return _buildErrorState(context, ref, 'common.noData'.tr());
-    }
+          // Sort trending trees by evolution (variantCount + logCount) descending
+          final sortedTrending = List<TrendingTreeDto>.from(feed.trendingTrees)
+            ..sort((a, b) {
+              final aScore = a.variantCount + a.logCount;
+              final bScore = b.variantCount + b.logCount;
+              return bScore.compareTo(aScore);
+            });
 
-    // Get selected locale filter
-    final selectedLocale = ref.watch(homeLocaleFilterProvider);
-
-    // Filter recipes by locale (client-side)
-    final filteredRecipes = selectedLocale == null
-        ? feed.recentRecipes
-        : feed.recentRecipes.where((r) => r.culinaryLocale == selectedLocale).toList();
-
-    // Filter trending trees by locale (client-side)
-    final filteredTrending = selectedLocale == null
-        ? feed.trendingTrees
-        : feed.trendingTrees.where((t) => t.culinaryLocale == selectedLocale).toList();
-
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Cache status indicator (optional)
-          if (feedState.isFromCache && feedState.cachedAt != null)
-            _buildCacheIndicator(feedState),
-
-          // Locale filter chips
-          const SizedBox(height: 12),
-          LocaleFilterChips(
-            selectedLocale: selectedLocale,
-            onLocaleChanged: (locale) {
-              ref.read(homeLocaleFilterProvider.notifier).state = locale;
-            },
-          ),
-
-          // Section 1: Recent Activity
-          if (feed.recentActivity.isNotEmpty) ...[
-            _buildSectionHeader('home.recentActivity'.tr()),
-            ...feed.recentActivity.map((activity) => _buildActivityCard(context, activity)),
-          ],
-
-          // Section 2: Trending Trees
-          if (filteredTrending.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            _buildSectionHeader('home.trendingVariants'.tr()),
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: filteredTrending.length,
-                itemBuilder: (context, index) {
-                  return _buildTrendingTreeCard(context, filteredTrending[index]);
-                },
-              ),
-            ),
-          ],
-
-          // Section 3: Recent Recipes
-          if (filteredRecipes.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            _buildSectionHeader('home.recentRecipes'.tr()),
-            ...filteredRecipes.map((recipe) => _buildRecipeCard(context, recipe)),
-          ],
-
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCacheIndicator(HomeFeedState state) {
-    final cachedAt = state.cachedAt;
-    if (cachedAt == null) return const SizedBox.shrink();
-
-    final diff = DateTime.now().difference(cachedAt);
-    String timeText;
-    if (diff.inMinutes < 1) {
-      timeText = 'common.justNow'.tr();
-    } else if (diff.inMinutes < 60) {
-      timeText = 'common.minutesAgo'.tr(namedArgs: {'count': diff.inMinutes.toString()});
-    } else {
-      timeText = 'common.hoursAgo'.tr(namedArgs: {'count': diff.inHours.toString()});
-    }
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.orange[50],
-      child: Row(
-        children: [
-          Icon(Icons.access_time, size: 14, color: Colors.orange[700]),
-          const SizedBox(width: 6),
-          Text(
-            'common.lastUpdatedTime'.tr(namedArgs: {'time': timeText}),
-            style: TextStyle(fontSize: 12, color: Colors.orange[700]),
-          ),
-          if (state.isLoading) ...[
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.orange[700],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActivityCard(BuildContext context, RecentActivityDto activity) {
-    final outcomeEmoji = switch (activity.outcome) {
-      'SUCCESS' => '😊',
-      'PARTIAL' => '😐',
-      'FAILED' => '😢',
-      _ => '🍳',
-    };
-
-    return GestureDetector(
-      onTap: () => context.push(RouteConstants.logPostDetailPath(activity.logPublicId)),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Thumbnail with outcome overlay
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: activity.thumbnailUrl != null
-                      ? AppCachedImage(
-                          imageUrl: activity.thumbnailUrl!,
-                          width: 60,
-                          height: 60,
-                          borderRadius: 8,
-                        )
-                      : Container(
-                          width: 60,
-                          height: 60,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.restaurant, color: Colors.grey),
-                        ),
+          return CustomScrollView(
+            slivers: [
+              // Cache status banner
+              SliverToBoxAdapter(
+                child: CacheStatusBanner(
+                  isFromCache: feedState.isFromCache,
+                  cachedAt: feedState.cachedAt,
+                  isLoading: feedState.isLoading,
                 ),
-                Positioned(
-                  right: 4,
-                  bottom: 4,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+              ),
+
+              // Section 1: Most Evolved (Bento Grid)
+              if (sortedTrending.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: SectionHeader(
+                    title: 'home.mostEvolved'.tr(),
+                    padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 12.h),
+                    onSeeAll: () {
+                      ref.read(browseFilterProvider.notifier).setSortOption(RecipeSortOption.mostForked);
+                      context.push(RouteConstants.recipes);
+                    },
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: BentoGridFromTrending(trendingTrees: sortedTrending.take(3).toList()),
+                ),
+              ],
+
+              // Section 2: Hot Right Now (Horizontal Activity)
+              if (feed.recentActivity.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: SectionHeader(
+                    title: 'home.hotRightNow'.tr(),
+                    onSeeAll: () => context.push(RouteConstants.logPosts),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: HorizontalActivityScroll(activities: feed.recentActivity),
+                ),
+              ],
+
+              // Section 3: Fresh Uploads (Vertical Recipe List)
+              if (feed.recentRecipes.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: SectionHeader(
+                    title: 'home.freshUploads'.tr(),
+                    onSeeAll: () => context.push(RouteConstants.recipes),
+                  ),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final recipe = feed.recentRecipes[index];
+                      return EvolutionRecipeCard(recipe: recipe);
+                    },
+                    childCount: feed.recentRecipes.length,
+                  ),
+                ),
+              ],
+
+              // Bottom padding
+              SliverToBoxAdapter(
+                child: SizedBox(height: 32.h),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorBody(Object err) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 48.sp, color: Colors.red),
+          SizedBox(height: 16.h),
+          Text('common.errorWithMessage'.tr(namedArgs: {'message': err.toString()})),
+          TextButton(
+            onPressed: () => ref.invalidate(homeFeedProvider),
+            child: Text('common.tryAgain'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(String greeting, String displayName, bool innerBoxIsScrolled) {
+    return SliverAppBar(
+      pinned: true,
+      floating: false,
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      elevation: innerBoxIsScrolled ? 1 : 0,
+      expandedHeight: 100.h,
+      centerTitle: false,
+      title: Opacity(
+        opacity: _titleOpacity,
+        child: const AppLogo(),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        background: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 12.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Greeting row
+                RichText(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      color: AppColors.textPrimary,
                     ),
-                    child: Text(outcomeEmoji, style: const TextStyle(fontSize: 16)),
+                    children: [
+                      TextSpan(
+                        text: '$greeting, ',
+                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      ),
+                      TextSpan(
+                        text: displayName,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const TextSpan(text: '!'),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                // Search bar - taps navigate to dedicated search page
+                GestureDetector(
+                  onTap: () => context.push(RouteConstants.search),
+                  child: Container(
+                    height: 44.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 12.w),
+                        Icon(
+                          Icons.search,
+                          color: AppColors.textSecondary,
+                          size: 20.sp,
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'home.searchHint'.tr(),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(width: 12),
-            // Activity info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'home.cookedThis'.tr(namedArgs: {'name': activity.creatorName}),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    activity.recipeTitle,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    activity.foodName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.indigo[700],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrendingTreeCard(BuildContext context, TrendingTreeDto tree) {
-    return GestureDetector(
-      onTap: () => context.push(RouteConstants.recipeDetailPath(tree.rootRecipeId)),
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thumbnail
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: tree.thumbnail != null
-                  ? AppCachedImage(
-                      imageUrl: tree.thumbnail!,
-                      width: 160,
-                      height: 100,
-                      borderRadius: 0,
-                    )
-                  : Container(
-                      width: 160,
-                      height: 100,
-                      color: Colors.orange[100],
-                      child: Icon(Icons.restaurant_menu, size: 40, color: Colors.orange[300]),
-                    ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          tree.foodName ?? tree.title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      LocaleBadge(
-                        localeCode: tree.culinaryLocale,
-                        showLabel: false,
-                        fontSize: 10,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    tree.title,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        "🔀 ${tree.variantCount}",
-                        style: TextStyle(fontSize: 11, color: Colors.grey[700]),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "📝 ${tree.logCount}",
-                        style: TextStyle(fontSize: 11, color: Colors.grey[700]),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecipeCard(BuildContext context, RecipeSummaryDto recipe) {
-    return GestureDetector(
-      onTap: () => context.push(RouteConstants.recipeDetailPath(recipe.publicId)),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Thumbnail
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: recipe.thumbnail != null
-                  ? AppCachedImage(
-                      imageUrl: recipe.thumbnail!,
-                      width: 70,
-                      height: 70,
-                      borderRadius: 8,
-                    )
-                  : Container(
-                      width: 70,
-                      height: 70,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.restaurant_menu, color: Colors.grey),
-                    ),
-            ),
-            const SizedBox(width: 12),
-            // Recipe info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          recipe.foodName,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.indigo[700],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      LocaleBadge(
-                        localeCode: recipe.culinaryLocale,
-                        showLabel: false,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    recipe.title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if ((recipe.variantCount ?? 0) > 0)
-                        Text(
-                          "🔀 ${'home.variants'.tr(namedArgs: {'count': recipe.variantCount.toString()})}",
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                        ),
-                      if ((recipe.variantCount ?? 0) > 0 && (recipe.logCount ?? 0) > 0)
-                        Text(" · ", style: TextStyle(color: Colors.grey[400], fontSize: 11)),
-                      if ((recipe.logCount ?? 0) > 0)
-                        Text(
-                          "📝 ${'home.logs'.tr(namedArgs: {'count': recipe.logCount.toString()})}",
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object err) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-        Center(
-          child: Column(
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('common.errorWithMessage'.tr(namedArgs: {'message': err.toString()})),
-              TextButton(
-                onPressed: () => ref.invalidate(homeFeedProvider),
-                child: Text('common.tryAgain'.tr()),
-              ),
-            ],
           ),
+        ),
+      ),
+      actions: [
+        Opacity(
+          opacity: _titleOpacity,
+          child: IconButton(
+            onPressed: () => context.push(RouteConstants.search),
+            icon: const Icon(Icons.search),
+          ),
+        ),
+        IconButton(
+          onPressed: () => context.push(RouteConstants.notifications),
+          icon: const Icon(Icons.notifications_outlined),
         ),
       ],
     );
   }
+
 }

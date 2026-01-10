@@ -52,6 +52,9 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     // 특정 루트 레시피를 기준으로 생성된 모든 변형 레시피의 개수
     long countByRootRecipeIdAndIsDeletedFalse(Long rootId);
 
+    // [수정/삭제 검증] 특정 레시피의 직접 자식 변형 개수 (parentRecipe로 참조하는 레시피)
+    long countByParentRecipeIdAndIsDeletedFalse(Long parentId);
+
     // [추가] 음식 ID(Long)를 사용하는 레시피가 있는지 확인 (삭제 방지용 등)
     boolean existsByFoodMasterId(Long foodMasterId);
 
@@ -62,6 +65,20 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     // [마이페이지] 내가 만든 레시피 (최신순)
     Slice<Recipe> findByCreatorIdAndIsDeletedFalseOrderByCreatedAtDesc(Long creatorId, Pageable pageable);
+
+    // [마이페이지] 내가 만든 오리지널 레시피 (parentRecipe가 없는 것)
+    Slice<Recipe> findByCreatorIdAndIsDeletedFalseAndParentRecipeIsNullOrderByCreatedAtDesc(Long creatorId, Pageable pageable);
+
+    // [마이페이지] 내가 만든 변형 레시피 (parentRecipe가 있는 것)
+    Slice<Recipe> findByCreatorIdAndIsDeletedFalseAndParentRecipeIsNotNullOrderByCreatedAtDesc(Long creatorId, Pageable pageable);
+
+    // [필터] 변형 레시피만 조회 (rootRecipe가 있는 레시피)
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.isDeleted = false AND r.isPrivate = false")
+    Slice<Recipe> findOnlyVariantsPublic(Pageable pageable);
+
+    // [필터] 특정 로케일의 변형 레시피만 조회
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.culinaryLocale = :locale AND r.isDeleted = false AND r.isPrivate = false")
+    Slice<Recipe> findOnlyVariantsByLocale(@Param("locale") String locale, Pageable pageable);
 
     // [검색] pg_trgm 기반 레시피 검색 (제목, 설명, 재료명) - 퍼지 매칭 + 관련도 정렬
     @Query(value = """

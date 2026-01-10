@@ -34,13 +34,14 @@ public class RecipeController {
     public ResponseEntity<Slice<RecipeSummaryDto>> getRecipes(
             @RequestParam(name = "locale", required = false) String locale,
             @RequestParam(name = "onlyRoot", defaultValue = "false") boolean onlyRoot,
+            @RequestParam(name = "typeFilter", required = false) String typeFilter,
             @RequestParam(name = "q", required = false) String searchKeyword,
             Pageable pageable) {
         // 검색어가 있으면 검색 모드
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             return ResponseEntity.ok(recipeService.searchRecipes(searchKeyword, pageable));
         }
-        return ResponseEntity.ok(recipeService.findRecipes(locale, onlyRoot, pageable));
+        return ResponseEntity.ok(recipeService.findRecipes(locale, onlyRoot, typeFilter, pageable));
     }
 
     /**
@@ -69,12 +70,14 @@ public class RecipeController {
     // --- [MY RECIPES] ---
     /**
      * 내가 만든 레시피 목록
+     * GET /api/v1/recipes/my?typeFilter=original|variants
      */
     @GetMapping("/my")
     public ResponseEntity<Slice<RecipeSummaryDto>> getMyRecipes(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(name = "typeFilter", required = false) String typeFilter,
             Pageable pageable) {
-        return ResponseEntity.ok(recipeService.getMyRecipes(principal.getId(), pageable));
+        return ResponseEntity.ok(recipeService.getMyRecipes(principal.getId(), typeFilter, pageable));
     }
 
     // --- [SAVED RECIPES] ---
@@ -109,5 +112,42 @@ public class RecipeController {
             @AuthenticationPrincipal UserPrincipal principal) {
         savedRecipeService.unsaveRecipe(publicId, principal.getId());
         return ResponseEntity.ok().build();
+    }
+
+    // --- [RECIPE MODIFICATION] ---
+
+    /**
+     * Check if recipe can be modified (edited/deleted) by current user.
+     * Returns modifiability status with reasons if blocked.
+     */
+    @GetMapping("/{publicId}/modifiable")
+    public ResponseEntity<RecipeModifiableResponseDto> checkRecipeModifiable(
+            @PathVariable("publicId") UUID publicId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(recipeService.checkRecipeModifiable(publicId, principal.getId()));
+    }
+
+    /**
+     * Update recipe in-place.
+     * Only allowed for recipe creator when no variants or logs exist.
+     */
+    @PutMapping("/{publicId}")
+    public ResponseEntity<RecipeDetailResponseDto> updateRecipe(
+            @PathVariable("publicId") UUID publicId,
+            @Valid @RequestBody UpdateRecipeRequestDto req,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(recipeService.updateRecipe(publicId, req, principal.getId()));
+    }
+
+    /**
+     * Soft delete a recipe.
+     * Only allowed for recipe creator when no variants or logs exist.
+     */
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> deleteRecipe(
+            @PathVariable("publicId") UUID publicId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        recipeService.deleteRecipe(publicId, principal.getId());
+        return ResponseEntity.noContent().build();
     }
 }

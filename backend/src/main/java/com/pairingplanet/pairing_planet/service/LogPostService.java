@@ -10,8 +10,10 @@ import com.pairingplanet.pairing_planet.dto.image.ImageResponseDto;
 import com.pairingplanet.pairing_planet.dto.log_post.LogPostDetailResponseDto;
 import com.pairingplanet.pairing_planet.dto.log_post.CreateLogRequestDto;
 import com.pairingplanet.pairing_planet.dto.log_post.LogPostSummaryDto;
+import com.pairingplanet.pairing_planet.dto.log_post.UpdateLogRequestDto;
 import com.pairingplanet.pairing_planet.dto.recipe.RecipeSummaryDto;
 import com.pairingplanet.pairing_planet.repository.log_post.LogPostRepository;
+import com.pairingplanet.pairing_planet.repository.log_post.SavedLogRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.RecipeLogRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.RecipeRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
@@ -38,6 +40,7 @@ public class LogPostService {
     private final UserRepository userRepository;
     private final HashtagService hashtagService;
     private final NotificationService notificationService;
+    private final SavedLogRepository savedLogRepository;
 
     @Value("${file.upload.url-prefix}") // [추가] URL 조합을 위해 필요
     private String urlPrefix;
@@ -90,16 +93,39 @@ public class LogPostService {
     }
 
     /**
-     * 내가 작성한 로그 목록 조회
+     * 로그 목록 조회 (outcome 필터링)
+     * @param outcomes List of outcome values to filter by (e.g., ["PARTIAL", "FAILED"])
      */
     @Transactional(readOnly = true)
-    public Slice<LogPostSummaryDto> getMyLogs(Long userId, Pageable pageable) {
-        return logPostRepository.findByCreatorIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable)
+    public Slice<LogPostSummaryDto> getAllLogsByOutcomes(List<String> outcomes, Pageable pageable) {
+        return logPostRepository.findByOutcomesIn(outcomes, pageable)
                 .map(this::convertToLogSummary);
+    }
+
+    /**
+     * 내가 작성한 로그 목록 조회
+     * @param outcome null=all, "SUCCESS", "PARTIAL", "FAILED"
+     */
+    @Transactional(readOnly = true)
+    public Slice<LogPostSummaryDto> getMyLogs(Long userId, String outcome, Pageable pageable) {
+        Slice<LogPost> logs;
+
+        if (outcome != null && !outcome.isBlank()) {
+            logs = logPostRepository.findByCreatorIdAndOutcome(userId, outcome.toUpperCase(), pageable);
+        } else {
+            logs = logPostRepository.findByCreatorIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable);
+        }
+
+        return logs.map(this::convertToLogSummary);
     }
 
     @Transactional(readOnly = true)
     public LogPostDetailResponseDto getLogDetail(UUID publicId) {
+        return getLogDetail(publicId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public LogPostDetailResponseDto getLogDetail(UUID publicId, Long userId) {
         LogPost logPost = logPostRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new IllegalArgumentException("Log not found"));
 
@@ -122,7 +148,18 @@ public class LogPostService {
                 .map(HashtagDto::from)
                 .toList();
 
-        // 4. 최종 DTO 생성 시 createdAt 추가
+        // 4. 저장 상태 확인 (로그인한 경우만)
+        Boolean isSavedByCurrentUser = null;
+        if (userId != null) {
+            isSavedByCurrentUser = savedLogRepository.existsByUserIdAndLogPostId(userId, logPost.getId());
+        }
+
+        // 5. 소유자 publicId 조회 (edit/delete 권한 확인용)
+        UUID creatorPublicId = userRepository.findById(logPost.getCreatorId())
+                .map(User::getPublicId)
+                .orElse(null);
+
+        // 6. 최종 DTO 생성
         return new LogPostDetailResponseDto(
                 logPost.getPublicId(),
                 logPost.getTitle(),
@@ -131,7 +168,9 @@ public class LogPostService {
                 imageResponses,
                 linkedRecipeSummary,
                 logPost.getCreatedAt(),
-                hashtagDtos
+                hashtagDtos,
+                isSavedByCurrentUser,
+                creatorPublicId
         );
     }
 
@@ -209,5 +248,62 @@ public class LogPostService {
         }
         return logPostRepository.searchLogPosts(keyword.trim(), pageable)
                 .map(this::convertToLogSummary);
+    }
+
+    /**
+     * 로그 수정
+     */
+    public LogPostDetailResponseDto updateLog(UUID publicId, UpdateLogRequestDto request, Long userId) {
+        LogPost logPost = logPostRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Log not found"));
+
+        // Verify ownership
+        if (!logPost.getCreatorId().equals(userId)) {
+            throw new org.springframework.security.access.AccessDeniedException("You are not the owner of this log");
+        }
+
+        // Update fields
+        if (request.title() != null) {
+            logPost.setTitle(request.title());
+        }
+        logPost.setContent(request.content());
+
+        // Update outcome via RecipeLog
+        RecipeLog recipeLog = logPost.getRecipeLog();
+        recipeLog.setOutcome(request.outcome());
+
+        // Update hashtags
+        if (request.hashtags() != null) {
+            Set<Hashtag> hashtags = hashtagService.getOrCreateHashtags(request.hashtags());
+            logPost.setHashtags(hashtags);
+        } else {
+            logPost.getHashtags().clear();
+        }
+
+        // Update images if provided
+        if (request.imagePublicIds() != null) {
+            imageService.updateLogPostImages(logPost, request.imagePublicIds());
+        }
+
+        logPostRepository.save(logPost);
+
+        return getLogDetail(publicId, userId);
+    }
+
+    /**
+     * 로그 삭제 (소프트 삭제)
+     */
+    public void deleteLog(UUID publicId, Long userId) {
+        LogPost logPost = logPostRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Log not found"));
+
+        // Verify ownership
+        if (!logPost.getCreatorId().equals(userId)) {
+            throw new org.springframework.security.access.AccessDeniedException("You are not the owner of this log");
+        }
+
+        // Soft delete
+        logPost.setIsDeleted(true);
+        logPostRepository.save(logPost);
     }
 }

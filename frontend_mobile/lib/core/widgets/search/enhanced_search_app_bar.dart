@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/providers/search_history_provider.dart';
 import 'package:pairing_planet2_frontend/core/widgets/search/search_suggestions_overlay.dart';
 import 'package:pairing_planet2_frontend/data/datasources/search/search_local_data_source.dart';
@@ -15,6 +16,7 @@ class EnhancedSearchAppBar extends ConsumerStatefulWidget
   final VoidCallback? onClear;
   final String? currentQuery;
   final SearchType searchType;
+  final List<Widget>? actions;
 
   const EnhancedSearchAppBar({
     super.key,
@@ -24,6 +26,7 @@ class EnhancedSearchAppBar extends ConsumerStatefulWidget
     this.onClear,
     this.currentQuery,
     required this.searchType,
+    this.actions,
   });
 
   @override
@@ -240,12 +243,12 @@ class _EnhancedSearchAppBarState extends ConsumerState<EnhancedSearchAppBar> {
                   contentPadding: EdgeInsets.zero,
                   suffixIcon: _controller.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, size: 20),
+                          icon: Icon(Icons.clear, size: 20.sp),
                           onPressed: _clearSearch,
                         )
                       : null,
                 ),
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16.sp),
                 onChanged: _onSearchChanged,
                 textInputAction: TextInputAction.search,
                 onSubmitted: _onSearchSubmitted,
@@ -255,6 +258,7 @@ class _EnhancedSearchAppBarState extends ConsumerState<EnhancedSearchAppBar> {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
         actions: [
+          if (widget.actions != null && !_showSearchField) ...widget.actions!,
           IconButton(
             icon: Icon(_showSearchField ? Icons.close : Icons.search),
             onPressed: _toggleSearch,
