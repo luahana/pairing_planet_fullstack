@@ -53,8 +53,8 @@ class RouteConstants {
   static const String search = '/search';
   static const String profile = '/profile';
   static const String profileEdit = '/profile/edit';
-  static const String settings = '/settings';
-  static const String deleteAccount = '/settings/delete-account';
+  static const String settings = '/profile/settings';
+  static const String deleteAccount = '/profile/delete-account';
   static const String notifications = '/notifications';
 
   // Follow 관련

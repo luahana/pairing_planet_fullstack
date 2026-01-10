@@ -34,9 +34,9 @@ class SettingsScreen extends ConsumerWidget {
           _buildSectionHeader('settings.general'.tr()),
           _buildSettingsTile(
             context,
-            icon: Icons.language,
-            title: 'settings.language'.tr(),
-            subtitle: _getLanguageDisplayName(currentLocale),
+            icon: Icons.person_outline,
+            title: 'profile.editProfile'.tr(),
+            subtitle: 'profile.menu.editProfileSubtitle'.tr(),
             onTap: () => context.push(RouteConstants.profileEdit),
           ),
           _buildSettingsTile(
@@ -67,34 +67,32 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showLogoutDialog(context, ref),
           ),
 
-          SizedBox(height: 24.h),
+          SizedBox(height: 40.h),
 
-          // Danger Zone Section
+          // Danger Zone Section - visually separated with red border
           _buildSectionHeader(
             'settings.dangerZone'.tr(),
             color: Colors.red[700],
           ),
-          _buildSettingsTile(
-            context,
-            icon: Icons.delete_forever,
-            title: 'settings.deleteAccount'.tr(),
-            titleColor: Colors.red[700],
-            iconColor: Colors.red[700],
-            onTap: () => context.push(RouteConstants.deleteAccount),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.red[200]!, width: 1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: _buildDangerTile(
+              context,
+              icon: Icons.delete_forever,
+              title: 'settings.deleteAccount'.tr(),
+              subtitle: 'settings.deleteAccountSubtitle'.tr(),
+              onTap: () => context.push(RouteConstants.deleteAccount),
+            ),
           ),
 
           SizedBox(height: 32.h),
         ],
       ),
     );
-  }
-
-  String _getLanguageDisplayName(String locale) {
-    return switch (locale) {
-      'ko-KR' => '한국어',
-      'en-US' => 'English',
-      _ => locale,
-    };
   }
 
   Widget _buildSectionHeader(String title, {Color? color}) {
@@ -157,6 +155,41 @@ class SettingsScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
         ),
+      ),
+    );
+  }
+
+  /// Special tile for danger zone items with red styling
+  Widget _buildDangerTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.red[700]),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w500,
+          color: Colors.red[700],
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: Colors.grey[600],
+              ),
+            )
+          : null,
+      trailing: Icon(Icons.chevron_right, color: Colors.red[300]),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.r),
       ),
     );
   }

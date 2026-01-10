@@ -1,5 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nested_scroll_view_plus/nested_scroll_view_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -76,16 +78,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: profileAsync.when(
-        data: (profile) => RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(myProfileProvider);
-            ref.invalidate(cookingDnaProvider);
-            ref.invalidate(myRecipesProvider);
-            ref.invalidate(myLogsProvider);
-            ref.invalidate(savedRecipesProvider);
-            ref.invalidate(savedLogsProvider);
-          },
-          child: NestedScrollView(
+        data: (profile) => NestedScrollViewPlus(
           controller: _scrollController,
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             // Pinned app bar
@@ -104,14 +97,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
               actions: [
                 IconButton(
-                  icon: Icon(Icons.edit_outlined, size: 22.sp),
-                  onPressed: () => context.push(RouteConstants.profileEdit),
-                ),
-                IconButton(
                   icon: Icon(Icons.settings_outlined, size: 22.sp),
                   onPressed: () => context.push(RouteConstants.settings),
                 ),
               ],
+            ),
+            // Instagram-style pull-to-refresh - grows from 0 height, pushes content down
+            CupertinoSliverRefreshControl(
+              onRefresh: () async {
+                ref.invalidate(myProfileProvider);
+                ref.invalidate(cookingDnaProvider);
+                ref.invalidate(myRecipesProvider);
+                ref.invalidate(myLogsProvider);
+                ref.invalidate(savedRecipesProvider);
+                ref.invalidate(savedLogsProvider);
+              },
             ),
             // Header content - sizes naturally to content
             SliverToBoxAdapter(
@@ -150,7 +150,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               _SavedTab(key: PageStorageKey<String>('saved')),
             ],
           ),
-        ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
@@ -364,6 +363,7 @@ class _MyRecipesTabState extends ConsumerState<_MyRecipesTab> {
         return false;
       },
       child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
             child: _buildCacheIndicator(
@@ -574,6 +574,7 @@ class _MyLogsTabState extends ConsumerState<_MyLogsTab> {
         return false;
       },
       child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
             child: _buildCacheIndicator(
@@ -812,6 +813,7 @@ class _SavedTabState extends ConsumerState<_SavedTab> {
         return false;
       },
       child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           // Filter chips
           SliverToBoxAdapter(
