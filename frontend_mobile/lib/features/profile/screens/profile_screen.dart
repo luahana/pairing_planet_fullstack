@@ -145,9 +145,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           body: TabBarView(
             controller: _tabController,
             children: const [
-              _MyRecipesTab(),
-              _MyLogsTab(),
-              _SavedTab(),
+              _MyRecipesTab(key: PageStorageKey<String>('my_recipes')),
+              _MyLogsTab(key: PageStorageKey<String>('my_logs')),
+              _SavedTab(key: PageStorageKey<String>('saved')),
             ],
           ),
         ),
@@ -330,34 +330,13 @@ Widget _buildCacheIndicator({
 
 /// 내 레시피 탭
 class _MyRecipesTab extends ConsumerStatefulWidget {
-  const _MyRecipesTab();
+  const _MyRecipesTab({super.key});
 
   @override
   ConsumerState<_MyRecipesTab> createState() => _MyRecipesTabState();
 }
 
 class _MyRecipesTabState extends ConsumerState<_MyRecipesTab> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.8) {
-      ref.read(myRecipesProvider.notifier).fetchNextPage();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(myRecipesProvider);
@@ -376,67 +355,84 @@ class _MyRecipesTabState extends ConsumerState<_MyRecipesTab> {
     }
 
     // Data available or empty (with filter chips)
-    return Column(
-      children: [
-        _buildCacheIndicator(
-          isFromCache: state.isFromCache,
-          cachedAt: state.cachedAt,
-          isLoading: state.isLoading,
-        ),
-        // Filter chips
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          child: Row(
-            children: [
-              _buildRecipeFilterChip(
-                label: 'profile.filter.all'.tr(),
-                isSelected: notifier.currentFilter == RecipeTypeFilter.all,
-                onTap: () => notifier.setFilter(RecipeTypeFilter.all),
-              ),
-              SizedBox(width: 8.w),
-              _buildRecipeFilterChip(
-                label: 'profile.filter.original'.tr(),
-                isSelected: notifier.currentFilter == RecipeTypeFilter.original,
-                onTap: () => notifier.setFilter(RecipeTypeFilter.original),
-              ),
-              SizedBox(width: 8.w),
-              _buildRecipeFilterChip(
-                label: 'profile.filter.variants'.tr(),
-                isSelected: notifier.currentFilter == RecipeTypeFilter.variants,
-                onTap: () => notifier.setFilter(RecipeTypeFilter.variants),
-              ),
-            ],
-          ),
-        ),
-        // Empty state or list
-        if (state.items.isEmpty)
-          Expanded(
-            child: _buildEmptyState(
-              icon: Icons.restaurant_menu,
-              message: 'profile.noRecipesYet'.tr(),
-              subMessage: 'profile.createRecipe'.tr(),
-            ),
-          )
-        else
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.all(16.r),
-              itemCount: state.items.length + (state.hasNext ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index >= state.items.length) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.r),
-                      child: const CircularProgressIndicator(),
-                    ),
-                  );
-                }
-                return _buildRecipeCard(context, state.items[index]);
-              },
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent * 0.8) {
+          ref.read(myRecipesProvider.notifier).fetchNextPage();
+        }
+        return false;
+      },
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: _buildCacheIndicator(
+              isFromCache: state.isFromCache,
+              cachedAt: state.cachedAt,
+              isLoading: state.isLoading,
             ),
           ),
-      ],
+          // Filter chips
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              child: Row(
+                children: [
+                  _buildRecipeFilterChip(
+                    label: 'profile.filter.all'.tr(),
+                    isSelected: notifier.currentFilter == RecipeTypeFilter.all,
+                    onTap: () => notifier.setFilter(RecipeTypeFilter.all),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildRecipeFilterChip(
+                    label: 'profile.filter.original'.tr(),
+                    isSelected: notifier.currentFilter == RecipeTypeFilter.original,
+                    onTap: () => notifier.setFilter(RecipeTypeFilter.original),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildRecipeFilterChip(
+                    label: 'profile.filter.variants'.tr(),
+                    isSelected: notifier.currentFilter == RecipeTypeFilter.variants,
+                    onTap: () => notifier.setFilter(RecipeTypeFilter.variants),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Empty state or list
+          if (state.items.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildEmptyState(
+                icon: Icons.restaurant_menu,
+                message: 'profile.noRecipesYet'.tr(),
+                subMessage: 'profile.createRecipe'.tr(),
+              ),
+            )
+          else ...[
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index >= state.items.length) {
+                      return Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.r),
+                          child: const CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+                    return _buildRecipeCard(context, state.items[index]);
+                  },
+                  childCount: state.items.length + (state.hasNext ? 1 : 0),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+          ],
+        ],
+      ),
     );
   }
 
@@ -535,34 +531,13 @@ class _MyRecipesTabState extends ConsumerState<_MyRecipesTab> {
 
 /// 내 로그 탭
 class _MyLogsTab extends ConsumerStatefulWidget {
-  const _MyLogsTab();
+  const _MyLogsTab({super.key});
 
   @override
   ConsumerState<_MyLogsTab> createState() => _MyLogsTabState();
 }
 
 class _MyLogsTabState extends ConsumerState<_MyLogsTab> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.8) {
-      ref.read(myLogsProvider.notifier).fetchNextPage();
-    }
-  }
-
   String _getOutcomeEmoji(String? outcome) {
     return switch (outcome) {
       'SUCCESS' => '😊',
@@ -590,74 +565,91 @@ class _MyLogsTabState extends ConsumerState<_MyLogsTab> {
     }
 
     // Data available or empty (with filter chips)
-    return Column(
-      children: [
-        _buildCacheIndicator(
-          isFromCache: state.isFromCache,
-          cachedAt: state.cachedAt,
-          isLoading: state.isLoading,
-        ),
-        // Filter chips with emojis
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-          child: Row(
-            children: [
-              _buildLogFilterChip(
-                label: 'profile.filter.all'.tr(),
-                isSelected: notifier.currentFilter == LogOutcomeFilter.all,
-                onTap: () => notifier.setFilter(LogOutcomeFilter.all),
-              ),
-              SizedBox(width: 8.w),
-              _buildLogFilterChip(
-                label: '😊 ${'profile.filter.wins'.tr()}',
-                isSelected: notifier.currentFilter == LogOutcomeFilter.wins,
-                onTap: () => notifier.setFilter(LogOutcomeFilter.wins),
-              ),
-              SizedBox(width: 8.w),
-              _buildLogFilterChip(
-                label: '😐 ${'profile.filter.learning'.tr()}',
-                isSelected: notifier.currentFilter == LogOutcomeFilter.learning,
-                onTap: () => notifier.setFilter(LogOutcomeFilter.learning),
-              ),
-              SizedBox(width: 8.w),
-              _buildLogFilterChip(
-                label: '😢 ${'profile.filter.lessons'.tr()}',
-                isSelected: notifier.currentFilter == LogOutcomeFilter.lessons,
-                onTap: () => notifier.setFilter(LogOutcomeFilter.lessons),
-              ),
-            ],
-          ),
-        ),
-        // Empty state or grid
-        if (state.items.isEmpty)
-          Expanded(
-            child: _buildEmptyState(
-              icon: Icons.history_edu,
-              message: 'profile.noLogsYet'.tr(),
-              subMessage: 'profile.tryRecipe'.tr(),
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent * 0.8) {
+          ref.read(myLogsProvider.notifier).fetchNextPage();
+        }
+        return false;
+      },
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: _buildCacheIndicator(
+              isFromCache: state.isFromCache,
+              cachedAt: state.cachedAt,
+              isLoading: state.isLoading,
             ),
-          )
-        else
-          Expanded(
-            child: GridView.builder(
-              controller: _scrollController,
+          ),
+          // Filter chips with emojis
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              child: Row(
+                children: [
+                  _buildLogFilterChip(
+                    label: 'profile.filter.all'.tr(),
+                    isSelected: notifier.currentFilter == LogOutcomeFilter.all,
+                    onTap: () => notifier.setFilter(LogOutcomeFilter.all),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildLogFilterChip(
+                    label: '😊 ${'profile.filter.wins'.tr()}',
+                    isSelected: notifier.currentFilter == LogOutcomeFilter.wins,
+                    onTap: () => notifier.setFilter(LogOutcomeFilter.wins),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildLogFilterChip(
+                    label: '😐 ${'profile.filter.learning'.tr()}',
+                    isSelected: notifier.currentFilter == LogOutcomeFilter.learning,
+                    onTap: () => notifier.setFilter(LogOutcomeFilter.learning),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildLogFilterChip(
+                    label: '😢 ${'profile.filter.lessons'.tr()}',
+                    isSelected: notifier.currentFilter == LogOutcomeFilter.lessons,
+                    onTap: () => notifier.setFilter(LogOutcomeFilter.lessons),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Empty state or grid
+          if (state.items.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildEmptyState(
+                icon: Icons.history_edu,
+                message: 'profile.noLogsYet'.tr(),
+                subMessage: 'profile.tryRecipe'.tr(),
+              ),
+            )
+          else ...[
+            SliverPadding(
               padding: EdgeInsets.all(12.r),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12.h,
-                crossAxisSpacing: 12.w,
-                childAspectRatio: 0.85,
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12.h,
+                  crossAxisSpacing: 12.w,
+                  childAspectRatio: 0.85,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index >= state.items.length) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    return _buildLogCard(context, state.items[index]);
+                  },
+                  childCount: state.items.length + (state.hasNext ? 1 : 0),
+                ),
               ),
-              itemCount: state.items.length + (state.hasNext ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index >= state.items.length) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                return _buildLogCard(context, state.items[index]);
-              },
             ),
-          ),
-      ],
+            SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+          ],
+        ],
+      ),
     );
   }
 
@@ -767,45 +759,14 @@ class _MyLogsTabState extends ConsumerState<_MyLogsTab> {
 
 /// 저장한 탭 (레시피 + 로그)
 class _SavedTab extends ConsumerStatefulWidget {
-  const _SavedTab();
+  const _SavedTab({super.key});
 
   @override
   ConsumerState<_SavedTab> createState() => _SavedTabState();
 }
 
 class _SavedTabState extends ConsumerState<_SavedTab> {
-  final ScrollController _scrollController = ScrollController();
   SavedTypeFilter _currentFilter = SavedTypeFilter.all;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.8) {
-      // Fetch next page based on current filter
-      switch (_currentFilter) {
-        case SavedTypeFilter.all:
-          // All filter shows limited items, no pagination needed
-          break;
-        case SavedTypeFilter.recipes:
-          ref.read(savedRecipesProvider.notifier).fetchNextPage();
-          break;
-        case SavedTypeFilter.logs:
-          ref.read(savedLogsProvider.notifier).fetchNextPage();
-          break;
-      }
-    }
-  }
 
   String _getOutcomeEmoji(String? outcome) {
     return switch (outcome) {
@@ -830,175 +791,213 @@ class _SavedTabState extends ConsumerState<_SavedTab> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Single scrollable ListView - filter chips + content together
-    // This ensures proper scroll integration with NestedScrollView/RefreshIndicator
-    return ListView(
-      controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.zero,
-      children: [
-        // Filter chips
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          child: Row(
-            children: [
-              _buildFilterChip(
-                label: 'profile.filter.all'.tr(),
-                isSelected: _currentFilter == SavedTypeFilter.all,
-                onTap: () => setState(() => _currentFilter = SavedTypeFilter.all),
+    // CustomScrollView with slivers for unified scrolling
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent * 0.8) {
+          // Fetch next page based on current filter
+          switch (_currentFilter) {
+            case SavedTypeFilter.all:
+              // All filter shows limited items, no pagination needed
+              break;
+            case SavedTypeFilter.recipes:
+              ref.read(savedRecipesProvider.notifier).fetchNextPage();
+              break;
+            case SavedTypeFilter.logs:
+              ref.read(savedLogsProvider.notifier).fetchNextPage();
+              break;
+          }
+        }
+        return false;
+      },
+      child: CustomScrollView(
+        slivers: [
+          // Filter chips
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              child: Row(
+                children: [
+                  _buildFilterChip(
+                    label: 'profile.filter.all'.tr(),
+                    isSelected: _currentFilter == SavedTypeFilter.all,
+                    onTap: () => setState(() => _currentFilter = SavedTypeFilter.all),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildFilterChip(
+                    label: 'profile.filter.recipes'.tr(),
+                    isSelected: _currentFilter == SavedTypeFilter.recipes,
+                    onTap: () => setState(() => _currentFilter = SavedTypeFilter.recipes),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildFilterChip(
+                    label: 'profile.filter.logs'.tr(),
+                    isSelected: _currentFilter == SavedTypeFilter.logs,
+                    onTap: () => setState(() => _currentFilter = SavedTypeFilter.logs),
+                  ),
+                ],
               ),
-              SizedBox(width: 8.w),
-              _buildFilterChip(
-                label: 'profile.filter.recipes'.tr(),
-                isSelected: _currentFilter == SavedTypeFilter.recipes,
-                onTap: () => setState(() => _currentFilter = SavedTypeFilter.recipes),
-              ),
-              SizedBox(width: 8.w),
-              _buildFilterChip(
-                label: 'profile.filter.logs'.tr(),
-                isSelected: _currentFilter == SavedTypeFilter.logs,
-                onTap: () => setState(() => _currentFilter = SavedTypeFilter.logs),
-              ),
-            ],
+            ),
           ),
-        ),
-        // Content based on filter
-        ..._buildContentItems(recipesState, logsState),
-      ],
+          // Content based on filter
+          ..._buildContentSlivers(recipesState, logsState),
+        ],
+      ),
     );
   }
 
-  List<Widget> _buildContentItems(SavedRecipesState recipesState, SavedLogsState logsState) {
+  List<Widget> _buildContentSlivers(SavedRecipesState recipesState, SavedLogsState logsState) {
     switch (_currentFilter) {
       case SavedTypeFilter.all:
-        return _buildCombinedListItems(recipesState, logsState);
+        return _buildCombinedSlivers(recipesState, logsState);
       case SavedTypeFilter.recipes:
-        return _buildRecipesListItems(recipesState);
+        return _buildRecipesSlivers(recipesState);
       case SavedTypeFilter.logs:
-        return _buildLogsListItems(logsState);
+        return _buildLogsSlivers(logsState);
     }
   }
 
-  List<Widget> _buildCombinedListItems(SavedRecipesState recipesState, SavedLogsState logsState) {
+  List<Widget> _buildCombinedSlivers(SavedRecipesState recipesState, SavedLogsState logsState) {
     final hasRecipes = recipesState.items.isNotEmpty;
     final hasLogs = logsState.items.isNotEmpty;
 
     if (!hasRecipes && !hasLogs) {
       return [
-        SizedBox(height: 100.h),
-        _buildEmptyState(
-          icon: Icons.bookmark_border,
-          message: 'profile.noSavedYet'.tr(),
-          subMessage: 'profile.saveRecipe'.tr(),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildEmptyState(
+            icon: Icons.bookmark_border,
+            message: 'profile.noSavedYet'.tr(),
+            subMessage: 'profile.saveRecipe'.tr(),
+          ),
         ),
       ];
     }
 
     return [
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (hasRecipes) ...[
-              Text(
-                'profile.filter.recipes'.tr(),
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasRecipes) ...[
+                Text(
+                  'profile.filter.recipes'.tr(),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
                 ),
-              ),
-              SizedBox(height: 8.h),
-              ...recipesState.items.take(3).map((recipe) => _buildSavedRecipeCard(context, recipe)),
-              if (recipesState.items.length > 3)
-                TextButton(
-                  onPressed: () => setState(() => _currentFilter = SavedTypeFilter.recipes),
-                  child: Text('+ ${recipesState.items.length - 3} more'),
+                SizedBox(height: 8.h),
+                ...recipesState.items.take(3).map((recipe) => _buildSavedRecipeCard(context, recipe)),
+                if (recipesState.items.length > 3)
+                  TextButton(
+                    onPressed: () => setState(() => _currentFilter = SavedTypeFilter.recipes),
+                    child: Text('+ ${recipesState.items.length - 3} more'),
+                  ),
+                SizedBox(height: 16.h),
+              ],
+              if (hasLogs) ...[
+                Text(
+                  'profile.filter.logs'.tr(),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
                 ),
+                SizedBox(height: 8.h),
+                ...logsState.items.take(3).map((log) => _buildSavedLogCard(context, log)),
+                if (logsState.items.length > 3)
+                  TextButton(
+                    onPressed: () => setState(() => _currentFilter = SavedTypeFilter.logs),
+                    child: Text('+ ${logsState.items.length - 3} more'),
+                  ),
+              ],
               SizedBox(height: 16.h),
             ],
-            if (hasLogs) ...[
-              Text(
-                'profile.filter.logs'.tr(),
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
-              ),
-              SizedBox(height: 8.h),
-              ...logsState.items.take(3).map((log) => _buildSavedLogCard(context, log)),
-              if (logsState.items.length > 3)
-                TextButton(
-                  onPressed: () => setState(() => _currentFilter = SavedTypeFilter.logs),
-                  child: Text('+ ${logsState.items.length - 3} more'),
-                ),
-            ],
-            SizedBox(height: 16.h),
-          ],
+          ),
         ),
       ),
     ];
   }
 
-  List<Widget> _buildRecipesListItems(SavedRecipesState state) {
+  List<Widget> _buildRecipesSlivers(SavedRecipesState state) {
     if (state.items.isEmpty) {
       return [
-        SizedBox(height: 100.h),
-        _buildEmptyState(
-          icon: Icons.bookmark_border,
-          message: 'profile.noSavedYet'.tr(),
-          subMessage: 'profile.saveRecipe'.tr(),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildEmptyState(
+            icon: Icons.bookmark_border,
+            message: 'profile.noSavedYet'.tr(),
+            subMessage: 'profile.saveRecipe'.tr(),
+          ),
         ),
       ];
     }
 
     return [
-      Padding(
+      SliverPadding(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Column(
-          children: [
-            ...state.items.map((recipe) => _buildSavedRecipeCard(context, recipe)),
-            if (state.hasNext)
-              Padding(
-                padding: EdgeInsets.all(16.r),
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-            SizedBox(height: 16.h),
-          ],
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index >= state.items.length) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.r),
+                    child: const CircularProgressIndicator(),
+                  ),
+                );
+              }
+              return _buildSavedRecipeCard(context, state.items[index]);
+            },
+            childCount: state.items.length + (state.hasNext ? 1 : 0),
+          ),
         ),
       ),
+      SliverToBoxAdapter(child: SizedBox(height: 16.h)),
     ];
   }
 
-  List<Widget> _buildLogsListItems(SavedLogsState state) {
+  List<Widget> _buildLogsSlivers(SavedLogsState state) {
     if (state.items.isEmpty) {
       return [
-        SizedBox(height: 100.h),
-        _buildEmptyState(
-          icon: Icons.bookmark_border,
-          message: 'profile.noSavedYet'.tr(),
-          subMessage: 'profile.saveRecipe'.tr(),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildEmptyState(
+            icon: Icons.bookmark_border,
+            message: 'profile.noSavedYet'.tr(),
+            subMessage: 'profile.saveRecipe'.tr(),
+          ),
         ),
       ];
     }
 
     return [
-      Padding(
+      SliverPadding(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Column(
-          children: [
-            ...state.items.map((log) => _buildSavedLogCard(context, log)),
-            if (state.hasNext)
-              Padding(
-                padding: EdgeInsets.all(16.r),
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-            SizedBox(height: 16.h),
-          ],
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index >= state.items.length) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.r),
+                    child: const CircularProgressIndicator(),
+                  ),
+                );
+              }
+              return _buildSavedLogCard(context, state.items[index]);
+            },
+            childCount: state.items.length + (state.hasNext ? 1 : 0),
+          ),
         ),
       ),
+      SliverToBoxAdapter(child: SizedBox(height: 16.h)),
     ];
   }
 
