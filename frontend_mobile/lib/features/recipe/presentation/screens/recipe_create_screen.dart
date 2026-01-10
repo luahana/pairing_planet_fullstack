@@ -96,6 +96,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       _ingredients.add({
         'name': ing.name,
         'amount': ing.amount,
+        'quantity': ing.quantity,
+        'unit': ing.unit,
         'type': ing.type, // Already a string in domain entity
         'isOriginal': true,
         'isDeleted': false,
@@ -155,6 +157,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
           .map((i) => DraftIngredient(
                 name: i['name'] as String,
                 amount: i['amount'] as String?,
+                quantity: i['quantity'] as double?,
+                unit: i['unit'] as String?,
                 type: i['type'] as String,
                 isOriginal: i['isOriginal'] as bool? ?? false,
                 isDeleted: i['isDeleted'] as bool? ?? false,
@@ -235,6 +239,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       _ingredients.add({
         'name': ing.name,
         'amount': ing.amount,
+        'quantity': ing.quantity,
+        'unit': ing.unit,
         'type': ing.type,
         'isOriginal': ing.isOriginal,
         'isDeleted': ing.isDeleted,
@@ -328,7 +334,9 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     setState(() {
       _ingredients.add({
         'name': '',
-        'amount': '',
+        'amount': null,
+        'quantity': null,
+        'unit': null,
         'type': type,
         'isOriginal': false,
         'isDeleted': false,
@@ -489,6 +497,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
               (i) => Ingredient(
                 name: i['name'],
                 amount: i['amount'],
+                quantity: i['quantity'] as double?,
+                unit: i['unit'] as String?,
                 type: i['type'],
               ),
             )
