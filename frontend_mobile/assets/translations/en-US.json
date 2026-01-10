@@ -112,6 +112,10 @@
     "measurementMetric": "Metric (g, ml)",
     "measurementUS": "US (cups, oz)",
     "measurementOriginal": "Original (as entered)",
+    "menu": {
+      "editProfile": "Edit Profile",
+      "editProfileSubtitle": "Birthday, gender, language"
+    },
     "filter": {
       "all": "All",
       "original": "Original",
@@ -590,6 +594,7 @@
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
     "deleteAccount": "Delete Account",
+    "deleteAccountSubtitle": "Permanently remove your data",
     "deleteWarningTitle": "Delete your account?",
     "deleteWarningBody": "This action cannot be undone. The following will be permanently deleted:",
     "deleteItemRecipes": "All your recipes",
