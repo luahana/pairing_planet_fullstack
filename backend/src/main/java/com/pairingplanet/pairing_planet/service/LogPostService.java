@@ -93,6 +93,16 @@ public class LogPostService {
     }
 
     /**
+     * 로그 목록 조회 (outcome 필터링)
+     * @param outcomes List of outcome values to filter by (e.g., ["PARTIAL", "FAILED"])
+     */
+    @Transactional(readOnly = true)
+    public Slice<LogPostSummaryDto> getAllLogsByOutcomes(List<String> outcomes, Pageable pageable) {
+        return logPostRepository.findByOutcomesIn(outcomes, pageable)
+                .map(this::convertToLogSummary);
+    }
+
+    /**
      * 내가 작성한 로그 목록 조회
      * @param outcome null=all, "SUCCESS", "PARTIAL", "FAILED"
      */
