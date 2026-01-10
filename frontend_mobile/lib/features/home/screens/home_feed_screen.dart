@@ -30,9 +30,25 @@ class HomeFeedScreen extends ConsumerStatefulWidget {
 
 class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
   final ScrollController _scrollController = ScrollController();
+  double _titleOpacity = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateTitleOpacity);
+  }
+
+  void _updateTitleOpacity() {
+    final maxScroll = 100.h - kToolbarHeight;
+    final opacity = (_scrollController.offset / maxScroll).clamp(0.0, 1.0);
+    if (opacity != _titleOpacity) {
+      setState(() => _titleOpacity = opacity);
+    }
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_updateTitleOpacity);
     _scrollController.dispose();
     super.dispose();
   }
@@ -222,7 +238,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
       elevation: innerBoxIsScrolled ? 1 : 0,
       expandedHeight: 100.h,
       centerTitle: false,
-      title: const AppLogo(),
+      title: Opacity(
+        opacity: _titleOpacity,
+        child: const AppLogo(),
+      ),
       flexibleSpace: FlexibleSpaceBar(
         background: SafeArea(
           child: Padding(
