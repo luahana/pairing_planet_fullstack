@@ -1,11 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/providers/measurement_preference_provider.dart';
+import 'package:pairing_planet2_frontend/core/services/measurement_service.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/data/models/recipe/ingredient_dto.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/ingredient.dart';
 
 /// Kitchen-Proof Ingredients Section
 /// Collapsible ingredient groups with checkboxes and diff badges
-class KitchenProofIngredients extends StatefulWidget {
+class KitchenProofIngredients extends ConsumerStatefulWidget {
   final List<Ingredient> ingredients;
   final Map<String, dynamic>? changeDiff;
   final bool showDiffBadges;
@@ -18,10 +23,10 @@ class KitchenProofIngredients extends StatefulWidget {
   });
 
   @override
-  State<KitchenProofIngredients> createState() => _KitchenProofIngredientsState();
+  ConsumerState<KitchenProofIngredients> createState() => _KitchenProofIngredientsState();
 }
 
-class _KitchenProofIngredientsState extends State<KitchenProofIngredients> {
+class _KitchenProofIngredientsState extends ConsumerState<KitchenProofIngredients> {
   final Set<String> _checkedIngredients = {};
   bool _showDiff = true;
 
@@ -36,12 +41,15 @@ class _KitchenProofIngredientsState extends State<KitchenProofIngredients> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch measurement preference for auto-conversion
+    final measurementPref = ref.watch(measurementPreferenceProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header with diff toggle
         _buildHeader(),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         // Ingredient groups
         if (mainIngredients.isNotEmpty)
           _IngredientGroupCard(
@@ -52,9 +60,10 @@ class _KitchenProofIngredientsState extends State<KitchenProofIngredients> {
             onToggle: _toggleIngredient,
             changeDiff: widget.changeDiff,
             showDiff: widget.showDiffBadges && _showDiff,
+            measurementPreference: measurementPref,
           ),
         if (secondaryIngredients.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _IngredientGroupCard(
             title: 'recipe.ingredients.secondary'.tr(),
             icon: Icons.eco,
@@ -63,10 +72,11 @@ class _KitchenProofIngredientsState extends State<KitchenProofIngredients> {
             onToggle: _toggleIngredient,
             changeDiff: widget.changeDiff,
             showDiff: widget.showDiffBadges && _showDiff,
+            measurementPreference: measurementPref,
           ),
         ],
         if (seasoningIngredients.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _IngredientGroupCard(
             title: 'recipe.ingredients.seasoning'.tr(),
             icon: Icons.local_fire_department,
@@ -75,6 +85,7 @@ class _KitchenProofIngredientsState extends State<KitchenProofIngredients> {
             onToggle: _toggleIngredient,
             changeDiff: widget.changeDiff,
             showDiff: widget.showDiffBadges && _showDiff,
+            measurementPreference: measurementPref,
           ),
         ],
       ],
@@ -84,12 +95,12 @@ class _KitchenProofIngredientsState extends State<KitchenProofIngredients> {
   Widget _buildHeader() {
     return Row(
       children: [
-        const Icon(Icons.shopping_basket_outlined, size: 20),
-        const SizedBox(width: 8),
+        Icon(Icons.shopping_basket_outlined, size: 20.sp),
+        SizedBox(width: 8.w),
         Text(
           'recipe.ingredients.title'.tr(),
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -99,14 +110,14 @@ class _KitchenProofIngredientsState extends State<KitchenProofIngredients> {
             onPressed: () => setState(() => _showDiff = !_showDiff),
             icon: Icon(
               _showDiff ? Icons.visibility : Icons.visibility_off,
-              size: 16,
+              size: 16.sp,
             ),
             label: Text(
               _showDiff ? 'recipe.diff.hide'.tr() : 'recipe.diff.show'.tr(),
-              style: const TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: 12.sp),
             ),
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -135,6 +146,7 @@ class _IngredientGroupCard extends StatefulWidget {
   final Function(String) onToggle;
   final Map<String, dynamic>? changeDiff;
   final bool showDiff;
+  final MeasurementPreference measurementPreference;
 
   const _IngredientGroupCard({
     required this.title,
@@ -144,6 +156,7 @@ class _IngredientGroupCard extends StatefulWidget {
     required this.onToggle,
     this.changeDiff,
     this.showDiff = false,
+    required this.measurementPreference,
   });
 
   @override
@@ -158,7 +171,7 @@ class _IngredientGroupCardState extends State<_IngredientGroupCard> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -166,31 +179,31 @@ class _IngredientGroupCardState extends State<_IngredientGroupCard> {
           // Header - tappable to expand/collapse
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.r),
               child: Row(
                 children: [
-                  Icon(widget.icon, size: 18, color: AppColors.primary),
-                  const SizedBox(width: 8),
+                  Icon(widget.icon, size: 18.sp, color: AppColors.primary),
+                  SizedBox(width: 8.w),
                   Text(
                     widget.title,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
                       color: AppColors.badgeBackground,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
                       '${widget.ingredients.length}',
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -225,7 +238,7 @@ class _IngredientGroupCardState extends State<_IngredientGroupCard> {
         ...widget.ingredients.asMap().entries.map((entry) {
           final index = entry.key;
           final ingredient = entry.value;
-          final ingredientKey = '${ingredient.name}_${ingredient.amount}';
+          final ingredientKey = '${ingredient.name}_${ingredient.displayAmount}';
           final isChecked = widget.checkedIngredients.contains(ingredientKey);
           final diffStatus = _getDiffStatus(ingredient);
 
@@ -236,9 +249,10 @@ class _IngredientGroupCardState extends State<_IngredientGroupCard> {
                 isChecked: isChecked,
                 onToggle: () => widget.onToggle(ingredientKey),
                 diffStatus: widget.showDiff ? diffStatus : null,
+                measurementPreference: widget.measurementPreference,
               ),
               if (index < widget.ingredients.length - 1)
-                const Divider(height: 1, indent: 48),
+                Divider(height: 1, indent: 48.w),
             ],
           );
         }),
@@ -296,63 +310,85 @@ class _IngredientRow extends StatelessWidget {
   final bool isChecked;
   final VoidCallback onToggle;
   final IngredientDiffStatus? diffStatus;
+  final MeasurementPreference measurementPreference;
 
   const _IngredientRow({
     required this.ingredient,
     required this.isChecked,
     required this.onToggle,
     this.diffStatus,
+    required this.measurementPreference,
   });
+
+  /// Get the display amount, converted based on user preference
+  String _getConvertedAmount() {
+    // If ingredient has structured measurements, convert based on preference
+    if (ingredient.hasStructuredMeasurement) {
+      final unitEnum = MeasurementUnit.values.firstWhere(
+        (u) => u.name == ingredient.unit,
+        orElse: () => MeasurementUnit.piece,
+      );
+      final result = MeasurementService.convertForPreference(
+        ingredient.quantity,
+        unitEnum,
+        measurementPreference,
+      );
+      return result.format();
+    }
+    // Legacy: use original amount string
+    return ingredient.amount ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
     final isRemoved = diffStatus?.type == DiffType.removed;
+    final displayAmount = _getConvertedAmount();
 
     return InkWell(
       onTap: onToggle,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         child: Row(
           children: [
             // Checkbox
             SizedBox(
-              width: 24,
-              height: 24,
+              width: 24.w,
+              height: 24.w,
               child: Checkbox(
                 value: isChecked,
                 onChanged: (_) => onToggle(),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                 ),
                 activeColor: AppColors.primary,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             // Ingredient name
             Expanded(
               child: Text(
                 ingredient.name,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   decoration: isRemoved ? TextDecoration.lineThrough : null,
                   color: isRemoved ? AppColors.diffRemoved : AppColors.textPrimary,
                 ),
               ),
             ),
-            // Amount
-            if (ingredient.amount != null && ingredient.amount!.isNotEmpty)
+            // Amount - converted based on user preference
+            if (displayAmount.isNotEmpty)
               Text(
-                ingredient.amount!,
+                displayAmount,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   color: AppColors.textSecondary,
                   decoration: isRemoved ? TextDecoration.lineThrough : null,
                 ),
               ),
             // Diff badge
             if (diffStatus != null) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               _DiffBadge(status: diffStatus!),
             ],
           ],
@@ -377,15 +413,15 @@ class _DiffBadge extends StatelessWidget {
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 12.sp,
           fontWeight: FontWeight.bold,
           color: color,
         ),

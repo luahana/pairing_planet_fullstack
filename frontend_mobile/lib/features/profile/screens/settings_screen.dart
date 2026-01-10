@@ -1,10 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
+import 'package:pairing_planet2_frontend/core/providers/measurement_preference_provider.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/data/models/recipe/ingredient_dto.dart';
 import 'package:pairing_planet2_frontend/features/auth/providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -13,6 +16,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = ref.watch(localeProvider);
+    final measurementPref = ref.watch(measurementPreferenceProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -24,16 +28,23 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // General Settings Section
           _buildSectionHeader('settings.general'.tr()),
           _buildSettingsTile(
             context,
-            icon: Icons.language,
-            title: 'settings.language'.tr(),
-            subtitle: _getLanguageDisplayName(currentLocale),
+            icon: Icons.person_outline,
+            title: 'profile.editProfile'.tr(),
+            subtitle: 'profile.menu.editProfileSubtitle'.tr(),
             onTap: () => context.push(RouteConstants.profileEdit),
+          ),
+          _buildSettingsTile(
+            context,
+            icon: Icons.straighten,
+            title: 'settings.measurementUnits'.tr(),
+            subtitle: _getMeasurementDisplayName(measurementPref, currentLocale),
+            onTap: () => _showMeasurementPreferenceDialog(context, ref, measurementPref),
           ),
           _buildSettingsTile(
             context,
@@ -45,7 +56,7 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Account Section
           _buildSectionHeader('settings.account'.tr()),
@@ -56,43 +67,41 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showLogoutDialog(context, ref),
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 40.h),
 
-          // Danger Zone Section
+          // Danger Zone Section - visually separated with red border
           _buildSectionHeader(
             'settings.dangerZone'.tr(),
             color: Colors.red[700],
           ),
-          _buildSettingsTile(
-            context,
-            icon: Icons.delete_forever,
-            title: 'settings.deleteAccount'.tr(),
-            titleColor: Colors.red[700],
-            iconColor: Colors.red[700],
-            onTap: () => context.push(RouteConstants.deleteAccount),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.red[200]!, width: 1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: _buildDangerTile(
+              context,
+              icon: Icons.delete_forever,
+              title: 'settings.deleteAccount'.tr(),
+              subtitle: 'settings.deleteAccountSubtitle'.tr(),
+              onTap: () => context.push(RouteConstants.deleteAccount),
+            ),
           ),
 
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
         ],
       ),
     );
   }
 
-  String _getLanguageDisplayName(String locale) {
-    return switch (locale) {
-      'ko-KR' => '한국어',
-      'en-US' => 'English',
-      _ => locale,
-    };
-  }
-
   Widget _buildSectionHeader(String title, {Color? color}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 13.sp,
           fontWeight: FontWeight.w600,
           color: color ?? Colors.grey[600],
         ),
@@ -110,10 +119,10 @@ class SettingsScreen extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -127,7 +136,7 @@ class SettingsScreen extends ConsumerWidget {
         title: Text(
           title,
           style: TextStyle(
-            fontSize: 15,
+            fontSize: 15.sp,
             fontWeight: FontWeight.w500,
             color: titleColor ?? Colors.black87,
           ),
@@ -136,7 +145,7 @@ class SettingsScreen extends ConsumerWidget {
             ? Text(
                 subtitle,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   color: Colors.grey[600],
                 ),
               )
@@ -144,8 +153,43 @@ class SettingsScreen extends ConsumerWidget {
         trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
         onTap: onTap,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
+      ),
+    );
+  }
+
+  /// Special tile for danger zone items with red styling
+  Widget _buildDangerTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.red[700]),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w500,
+          color: Colors.red[700],
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: Colors.grey[600],
+              ),
+            )
+          : null,
+      trailing: Icon(Icons.chevron_right, color: Colors.red[300]),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.r),
       ),
     );
   }
@@ -170,6 +214,61 @@ class SettingsScreen extends ConsumerWidget {
               'settings.logout'.tr(),
               style: const TextStyle(color: Colors.red),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMeasurementDisplayName(MeasurementPreference pref, String locale) {
+    if (locale.startsWith('ko')) {
+      return pref.displayNameKo;
+    }
+    return pref.displayName;
+  }
+
+  void _showMeasurementPreferenceDialog(
+    BuildContext context,
+    WidgetRef ref,
+    MeasurementPreference current,
+  ) {
+    final locale = ref.read(localeProvider);
+    final isKorean = locale.startsWith('ko');
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('settings.measurementUnits'.tr()),
+        content: RadioGroup<MeasurementPreference>(
+          groupValue: current,
+          onChanged: (value) {
+            if (value != null) {
+              ref.read(measurementPreferenceProvider.notifier).setPreference(value);
+              Navigator.pop(dialogContext);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: MeasurementPreference.values.map((pref) {
+              return ListTile(
+                title: Text(isKorean ? pref.displayNameKo : pref.displayName),
+                leading: Radio<MeasurementPreference>(
+                  value: pref,
+                  activeColor: AppColors.primary,
+                ),
+                selected: pref == current,
+                onTap: () {
+                  ref.read(measurementPreferenceProvider.notifier).setPreference(pref);
+                  Navigator.pop(dialogContext);
+                },
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('common.cancel'.tr()),
           ),
         ],
       ),

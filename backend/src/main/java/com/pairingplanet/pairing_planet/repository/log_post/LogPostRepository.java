@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,6 +40,17 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
 
     @Query("SELECT l FROM LogPost l ORDER BY l.createdAt DESC")
     Slice<LogPost> findAllOrderByCreatedAtDesc(Pageable pageable);
+
+    // Filter by multiple outcomes
+    @Query(value = """
+        SELECT lp.* FROM log_posts lp
+        JOIN recipe_logs rl ON rl.log_post_id = lp.id
+        WHERE lp.is_deleted = false
+        AND rl.outcome IN (:outcomes)
+        ORDER BY lp.created_at DESC
+        """,
+        nativeQuery = true)
+    Slice<LogPost> findByOutcomesIn(@Param("outcomes") List<String> outcomes, Pageable pageable);
 
     // 4. 사용자의 로그 개수 (삭제되지 않은 것만)
     long countByCreatorIdAndIsDeletedFalse(Long creatorId);

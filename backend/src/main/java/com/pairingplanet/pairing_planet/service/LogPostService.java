@@ -93,6 +93,16 @@ public class LogPostService {
     }
 
     /**
+     * 로그 목록 조회 (outcome 필터링)
+     * @param outcomes List of outcome values to filter by (e.g., ["PARTIAL", "FAILED"])
+     */
+    @Transactional(readOnly = true)
+    public Slice<LogPostSummaryDto> getAllLogsByOutcomes(List<String> outcomes, Pageable pageable) {
+        return logPostRepository.findByOutcomesIn(outcomes, pageable)
+                .map(this::convertToLogSummary);
+    }
+
+    /**
      * 내가 작성한 로그 목록 조회
      * @param outcome null=all, "SUCCESS", "PARTIAL", "FAILED"
      */
@@ -144,7 +154,12 @@ public class LogPostService {
             isSavedByCurrentUser = savedLogRepository.existsByUserIdAndLogPostId(userId, logPost.getId());
         }
 
-        // 5. 최종 DTO 생성
+        // 5. 소유자 publicId 조회 (edit/delete 권한 확인용)
+        UUID creatorPublicId = userRepository.findById(logPost.getCreatorId())
+                .map(User::getPublicId)
+                .orElse(null);
+
+        // 6. 최종 DTO 생성
         return new LogPostDetailResponseDto(
                 logPost.getPublicId(),
                 logPost.getTitle(),
@@ -155,7 +170,7 @@ public class LogPostService {
                 logPost.getCreatedAt(),
                 hashtagDtos,
                 isSavedByCurrentUser,
-                logPost.getCreatorId()
+                creatorPublicId
         );
     }
 
@@ -263,6 +278,11 @@ public class LogPostService {
             logPost.setHashtags(hashtags);
         } else {
             logPost.getHashtags().clear();
+        }
+
+        // Update images if provided
+        if (request.imagePublicIds() != null) {
+            imageService.updateLogPostImages(logPost, request.imagePublicIds());
         }
 
         logPostRepository.save(logPost);

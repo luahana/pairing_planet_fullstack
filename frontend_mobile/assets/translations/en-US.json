@@ -85,7 +85,7 @@
     "dayStreak": "day streak",
     "best": "Best: {count}",
     "successRate": "success",
-    "cuisineDistribution": "Cuisine Distribution",
+    "cuisineDistribution": "Cooking Style Distribution",
     "noCuisineData": "Cook some recipes to see your cuisine preferences!",
     "startCookingToUnlock": "Start cooking to unlock your Cooking DNA!",
     "birthday": "Birthday",
@@ -106,6 +106,16 @@
     "languageChangeTitle": "Language Changed",
     "languageChangeMessage": "The app needs to restart to apply the language change.",
     "restart": "Restart",
+    "measurementUnits": "Measurement Units",
+    "selectMeasurementUnits": "Select measurement units",
+    "measurementHint": "How recipe ingredients should be displayed.",
+    "measurementMetric": "Metric (g, ml)",
+    "measurementUS": "US (cups, oz)",
+    "measurementOriginal": "Original (as entered)",
+    "menu": {
+      "editProfile": "Edit Profile",
+      "editProfileSubtitle": "Birthday, gender, language"
+    },
     "filter": {
       "all": "All",
       "original": "Original",
@@ -147,6 +157,14 @@
     "edit": "Edit Recipe",
     "delete": "Delete Recipe",
     "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "cannotModify": "Cannot Modify",
+    "deleteConfirmTitle": "Delete Recipe",
+    "deleteConfirmMessage": "Are you sure you want to delete this recipe? This action cannot be undone.",
+    "deleted": "Recipe deleted",
+    "updated": "Recipe updated",
+    "update": "Update",
+    "updating": "Updating...",
+    "editTitle": "Edit Recipe",
     "save": "Save",
     "unsave": "Unsave",
     "share": "Share",
@@ -339,6 +357,7 @@
     "createFailed": "Failed to create log",
     "updateSuccess": "Log updated",
     "updateFailed": "Failed to update log",
+    "waitForUpload": "Please wait for images to finish uploading",
     "deleteSuccess": "Log deleted",
     "deleteFailed": "Failed to delete log",
     "selectRecipe": "Select recipe",
@@ -366,7 +385,7 @@
     "card": {
       "tapToView": "Tap to view details"
     },
-    "outcome": {
+    "outcomeLabel": {
       "success": "Nailed It!",
       "partial": "Learning",
       "failed": "Lesson"
@@ -488,9 +507,13 @@
   "search": {
     "title": "Search",
     "hint": "Search recipes, ingredients, dishes",
+    "placeholder": "Search recipes...",
     "noResults": "No results found",
-    "recentSearches": "Recent searches",
-    "clearHistory": "Clear history"
+    "recentSearches": "Recent Searches",
+    "clearAll": "Clear All",
+    "clearHistory": "Clear history",
+    "trendingThisWeek": "Trending This Week",
+    "browseByCuisine": "Browse by Cuisine"
   },
   "speedDial": {
     "newRecipe": "New Recipe",
@@ -523,18 +546,19 @@
     "permissionDenied": "Permission required"
   },
   "locale": {
-    "korean": "Korean",
-    "american": "American",
-    "japanese": "Japanese",
-    "chinese": "Chinese",
-    "italian": "Italian",
-    "mexican": "Mexican",
-    "thai": "Thai",
-    "indian": "Indian",
-    "french": "French",
-    "other": "Other/Fusion",
+    "korean": "Korean-style",
+    "american": "American-style",
+    "japanese": "Japanese-style",
+    "chinese": "Chinese-style",
+    "italian": "Italian-style",
+    "mexican": "Mexican-style",
+    "thai": "Thai-style",
+    "indian": "Indian-style",
+    "french": "French-style",
+    "other": "Fusion/Other",
     "all": "All",
-    "selectLocale": "Cuisine Type"
+    "selectLocale": "Cooking Style",
+    "helperText": "How is this dish prepared?"
   },
   "cuisine": {
     "korean": "Korean",
@@ -567,9 +591,11 @@
     "language": "Language",
     "notifications": "Notifications",
     "notificationsSubtitle": "Manage push notifications",
+    "measurementUnits": "Measurement Units",
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
     "deleteAccount": "Delete Account",
+    "deleteAccountSubtitle": "Permanently remove your data",
     "deleteWarningTitle": "Delete your account?",
     "deleteWarningBody": "This action cannot be undone. The following will be permanently deleted:",
     "deleteItemRecipes": "All your recipes",
@@ -634,5 +660,29 @@
     "tapToSelect": "Tap a node to see details",
     "noVariants": "No variants yet",
     "createFirst": "Be the first to create a variant!"
+  },
+  "units": {
+    "selectUnit": "Unit",
+    "quantity": "Qty",
+    "ml": "ml",
+    "l": "L",
+    "tsp": "tsp",
+    "tbsp": "tbsp",
+    "cup": "cup",
+    "flOz": "fl oz",
+    "pint": "pint",
+    "quart": "quart",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "pc",
+    "pinch": "pinch",
+    "dash": "dash",
+    "toTaste": "to taste",
+    "clove": "clove",
+    "bunch": "bunch",
+    "can": "can",
+    "package": "pkg"
   }
 }

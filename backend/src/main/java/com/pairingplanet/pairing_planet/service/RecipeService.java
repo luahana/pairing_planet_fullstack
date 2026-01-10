@@ -253,10 +253,14 @@ public class RecipeService {
                             .recipe(recipe)
                             .name(dto.name())
                             .amount(dto.amount())
+                            .quantity(dto.quantity())
+                            .unit(dto.unit())
                             .type(dto.type())
                             .build())
                     .toList();
             ingredientRepository.saveAll(ingredients);
+            // Maintain bidirectional relationship for proper lazy loading in same transaction
+            recipe.getIngredients().addAll(ingredients);
         }
 
         // 2. 단계 저장 및 단계 이미지 연결
@@ -279,6 +283,8 @@ public class RecipeService {
                         .image(stepImage)
                         .build();
                 stepRepository.save(step);
+                // Maintain bidirectional relationship for proper lazy loading in same transaction
+                recipe.getSteps().add(step);
             }
         }
     }
@@ -439,8 +445,170 @@ public class RecipeService {
             return new org.springframework.data.domain.SliceImpl<>(
                     java.util.Collections.emptyList(), pageable, false);
         }
-        return recipeRepository.searchRecipes(keyword.trim(), pageable)
+        // Use unsorted pageable - the native query handles ordering by relevance score
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return recipeRepository.searchRecipes(keyword.trim(), unsortedPageable)
                 .map(this::convertToSummary);
+    }
+
+    // ================================================================
+    // Recipe Modification (Edit/Delete) Methods
+    // ================================================================
+
+    /**
+     * Check if a recipe can be modified (edited or deleted) by the current user.
+     * A recipe can only be modified if:
+     * 1. The user is the creator
+     * 2. The recipe has no child variants (recipes that use this as parent)
+     * 3. The recipe has no associated cooking logs
+     */
+    public RecipeModifiableResponseDto checkRecipeModifiable(UUID publicId, Long userId) {
+        Recipe recipe = recipeRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
+        boolean isOwner = recipe.getCreatorId().equals(userId);
+        long variantCount = recipeRepository.countByParentRecipeIdAndIsDeletedFalse(recipe.getId());
+        long logCount = recipeLogRepository.countByRecipeId(recipe.getId());
+
+        boolean hasVariants = variantCount > 0;
+        boolean hasLogs = logCount > 0;
+        boolean canModify = isOwner && !hasVariants && !hasLogs;
+
+        String reason = null;
+        if (!isOwner) {
+            reason = "You can only modify recipes you created";
+        } else if (hasVariants) {
+            reason = "Cannot modify: this recipe has " + variantCount + " variant(s)";
+        } else if (hasLogs) {
+            reason = "Cannot modify: this recipe has " + logCount + " cooking log(s)";
+        }
+
+        return RecipeModifiableResponseDto.builder()
+                .canModify(canModify)
+                .isOwner(isOwner)
+                .hasVariants(hasVariants)
+                .hasLogs(hasLogs)
+                .variantCount(variantCount)
+                .logCount(logCount)
+                .reason(reason)
+                .build();
+    }
+
+    /**
+     * Update recipe in-place.
+     * Only allowed if the user is the creator and there are no variants or logs.
+     */
+    @Transactional
+    public RecipeDetailResponseDto updateRecipe(UUID publicId, UpdateRecipeRequestDto req, Long userId) {
+        Recipe recipe = recipeRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
+        // Validate ownership
+        if (!recipe.getCreatorId().equals(userId)) {
+            throw new IllegalArgumentException("You can only edit recipes you created");
+        }
+
+        // Validate no variants
+        long variantCount = recipeRepository.countByParentRecipeIdAndIsDeletedFalse(recipe.getId());
+        if (variantCount > 0) {
+            throw new IllegalArgumentException("Cannot edit: recipe has " + variantCount + " variant(s)");
+        }
+
+        // Validate no logs
+        long logCount = recipeLogRepository.countByRecipeId(recipe.getId());
+        if (logCount > 0) {
+            throw new IllegalArgumentException("Cannot edit: recipe has " + logCount + " cooking log(s)");
+        }
+
+        // Update basic fields
+        recipe.setTitle(req.title());
+        recipe.setDescription(req.description());
+        if (req.culinaryLocale() != null && !req.culinaryLocale().isBlank()) {
+            recipe.setCulinaryLocale(req.culinaryLocale());
+        }
+
+        // Update ingredients (clear and re-add)
+        ingredientRepository.deleteAllByRecipeId(recipe.getId());
+        if (req.ingredients() != null) {
+            List<RecipeIngredient> newIngredients = req.ingredients().stream()
+                    .map(dto -> RecipeIngredient.builder()
+                            .recipe(recipe)
+                            .name(dto.name())
+                            .amount(dto.amount())
+                            .quantity(dto.quantity())
+                            .unit(dto.unit())
+                            .type(dto.type())
+                            .build())
+                    .toList();
+            ingredientRepository.saveAll(newIngredients);
+        }
+
+        // Update steps (clear and re-add)
+        stepRepository.deleteAllByRecipeId(recipe.getId());
+        if (req.steps() != null) {
+            for (StepDto stepDto : req.steps()) {
+                Image stepImage = null;
+                if (stepDto.imagePublicId() != null) {
+                    stepImage = imageRepository.findByPublicId(stepDto.imagePublicId())
+                            .orElseThrow(() -> new IllegalArgumentException("Step image not found"));
+                    stepImage.setRecipe(recipe);
+                    stepImage.setStatus(com.pairingplanet.pairing_planet.domain.enums.ImageStatus.ACTIVE);
+                }
+
+                RecipeStep step = RecipeStep.builder()
+                        .recipe(recipe)
+                        .stepNumber(stepDto.stepNumber())
+                        .description(stepDto.description())
+                        .image(stepImage)
+                        .build();
+                stepRepository.save(step);
+            }
+        }
+
+        // Update images - deactivate old ones and activate new ones
+        imageService.updateRecipeImages(recipe, req.imagePublicIds());
+
+        // Update hashtags
+        if (req.hashtags() != null) {
+            Set<Hashtag> hashtags = hashtagService.getOrCreateHashtags(req.hashtags());
+            recipe.setHashtags(hashtags);
+        } else {
+            recipe.getHashtags().clear();
+        }
+
+        recipeRepository.save(recipe);
+        return getRecipeDetail(recipe.getPublicId(), userId);
+    }
+
+    /**
+     * Soft delete a recipe.
+     * Only allowed if the user is the creator and there are no variants or logs.
+     */
+    @Transactional
+    public void deleteRecipe(UUID publicId, Long userId) {
+        Recipe recipe = recipeRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
+        // Validate ownership
+        if (!recipe.getCreatorId().equals(userId)) {
+            throw new IllegalArgumentException("You can only delete recipes you created");
+        }
+
+        // Validate no variants
+        long variantCount = recipeRepository.countByParentRecipeIdAndIsDeletedFalse(recipe.getId());
+        if (variantCount > 0) {
+            throw new IllegalArgumentException("Cannot delete: recipe has " + variantCount + " variant(s)");
+        }
+
+        // Validate no logs
+        long logCount = recipeLogRepository.countByRecipeId(recipe.getId());
+        if (logCount > 0) {
+            throw new IllegalArgumentException("Cannot delete: recipe has " + logCount + " cooking log(s)");
+        }
+
+        // Soft delete (images remain, just hidden with recipe)
+        recipe.setIsDeleted(true);
+        recipeRepository.save(recipe);
     }
 
 }

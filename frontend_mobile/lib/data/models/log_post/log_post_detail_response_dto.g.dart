@@ -25,7 +25,7 @@ LogPostDetailResponseDto _$LogPostDetailResponseDtoFromJson(
           ?.map((e) => HashtagDto.fromJson(e as Map<String, dynamic>))
           .toList(),
       isSavedByCurrentUser: json['isSavedByCurrentUser'] as bool?,
-      creatorId: (json['creatorId'] as num?)?.toInt(),
+      creatorPublicId: json['creatorPublicId'] as String?,
     );
 
 Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
@@ -35,10 +35,10 @@ Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
       'title': instance.title,
       'content': instance.content,
       'outcome': instance.outcome,
-      'images': instance.images,
-      'linkedRecipe': instance.linkedRecipe,
+      'images': instance.images?.map((e) => e.toJson()).toList(),
+      'linkedRecipe': instance.linkedRecipe?.toJson(),
       'createdAt': instance.createdAt,
-      'hashtags': instance.hashtags,
+      'hashtags': instance.hashtags?.map((e) => e.toJson()).toList(),
       'isSavedByCurrentUser': instance.isSavedByCurrentUser,
-      'creatorId': instance.creatorId,
+      'creatorPublicId': instance.creatorPublicId,
     };

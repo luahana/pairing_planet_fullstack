@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
@@ -96,6 +97,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       _ingredients.add({
         'name': ing.name,
         'amount': ing.amount,
+        'quantity': ing.quantity,
+        'unit': ing.unit,
         'type': ing.type, // Already a string in domain entity
         'isOriginal': true,
         'isDeleted': false,
@@ -155,6 +158,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
           .map((i) => DraftIngredient(
                 name: i['name'] as String,
                 amount: i['amount'] as String?,
+                quantity: i['quantity'] as double?,
+                unit: i['unit'] as String?,
                 type: i['type'] as String,
                 isOriginal: i['isOriginal'] as bool? ?? false,
                 isDeleted: i['isDeleted'] as bool? ?? false,
@@ -166,14 +171,14 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                 description: s['description'] as String?,
                 imageUrl: s['imageUrl'] as String?,
                 imagePublicId: s['imagePublicId'] as String?,
-                localImagePath: (s['uploadItem'] as UploadItem?)?.file.path,
+                localImagePath: (s['uploadItem'] as UploadItem?)?.file?.path,
                 isOriginal: s['isOriginal'] as bool? ?? false,
                 isDeleted: s['isDeleted'] as bool? ?? false,
               ))
           .toList(),
       images: _finishedImages
           .map((img) => DraftImage(
-                localPath: img.file.path,
+                localPath: img.file!.path,
                 serverUrl: img.serverUrl,
                 publicId: img.publicId,
                 status: img.status.name,
@@ -235,6 +240,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       _ingredients.add({
         'name': ing.name,
         'amount': ing.amount,
+        'quantity': ing.quantity,
+        'unit': ing.unit,
         'type': ing.type,
         'isOriginal': ing.isOriginal,
         'isDeleted': ing.isDeleted,
@@ -328,7 +335,9 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     setState(() {
       _ingredients.add({
         'name': '',
-        'amount': '',
+        'amount': null,
+        'quantity': null,
+        'unit': null,
         'type': type,
         'isOriginal': false,
         'isDeleted': false,
@@ -489,6 +498,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
               (i) => Ingredient(
                 name: i['name'],
                 amount: i['amount'],
+                quantity: i['quantity'] as double?,
+                unit: i['unit'] as String?,
                 type: i['type'],
               ),
             )
@@ -568,7 +579,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
                   children: [
                     HookSection(
@@ -591,7 +602,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                       },
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                     HashtagInputSection(
                       hashtags: _hashtags,
                       onHashtagsChanged: (tags) => setState(() {
@@ -601,18 +612,18 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                     ),
 
                     if (isVariantMode) ...[
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h),
                       _buildChangeReasonField(),
                     ],
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
                     IngredientSection(
                       ingredients: _ingredients,
                       onAddIngredient: _addIngredient,
                       onRemoveIngredient: _onRemoveIngredient,
                       onRestoreIngredient: _onRestoreIngredient,
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
                     StepSection(
                       steps: _steps,
                       onAddStep: _addStep,
@@ -622,7 +633,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                       onReorder: _onReorderSteps,
                       onStateChanged: () => setState(() {}),
                     ),
-                    const SizedBox(height: 120),
+                    SizedBox(height: 120.h),
                   ],
                 ),
               ),
@@ -645,9 +656,9 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     actions: [
       // Show draft status indicator (only for new recipes, not variants)
       if (!isVariantMode)
-        const Padding(
-          padding: EdgeInsets.only(right: 16),
-          child: DraftStatusIndicator(),
+        Padding(
+          padding: EdgeInsets.only(right: 16.w),
+          child: const DraftStatusIndicator(),
         ),
     ],
   );
@@ -658,20 +669,20 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       children: [
         Row(
           children: [
-            const Icon(Icons.auto_awesome, color: Colors.orange, size: 20),
-            const SizedBox(width: 8),
+            Icon(Icons.auto_awesome, color: Colors.orange, size: 20.sp),
+            SizedBox(width: 8.w),
             Text(
               'recipe.changeReasonRequired'.tr(),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: Colors.orange[50],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: Colors.orange[100]!),
           ),
           child: TextField(
@@ -680,7 +691,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
             maxLines: 2,
             decoration: InputDecoration(
               hintText: 'recipe.changeReasonHint'.tr(),
-              hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+              hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey),
               border: InputBorder.none,
             ),
           ),
@@ -700,16 +711,16 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     // 💡 두 조건이 모두 충족되어야 버튼 활성화
     final bool isReady = hasBaseInfo && hasChangeReason;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
       child: SizedBox(
         width: double.infinity,
-        height: 56,
+        height: 56.h,
         child: ElevatedButton(
           onPressed: isReady && !_isLoading ? _handleSubmit : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
             ),
           ),
           child: Text(
