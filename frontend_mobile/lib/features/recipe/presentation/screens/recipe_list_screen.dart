@@ -64,6 +64,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
             label: 'filter.all'.tr(),
             isSelected: typeFilter == RecipeTypeFilter.all,
             onTap: () {
+              if (typeFilter == RecipeTypeFilter.all) return;
               HapticFeedback.selectionClick();
               ref.read(browseFilterProvider.notifier).setTypeFilter(RecipeTypeFilter.all);
             },
@@ -73,6 +74,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
             label: 'filter.originals'.tr(),
             isSelected: typeFilter == RecipeTypeFilter.originals,
             onTap: () {
+              if (typeFilter == RecipeTypeFilter.originals) return;
               HapticFeedback.selectionClick();
               ref.read(browseFilterProvider.notifier).setTypeFilter(RecipeTypeFilter.originals);
             },
@@ -82,6 +84,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
             label: 'filter.variants'.tr(),
             isSelected: typeFilter == RecipeTypeFilter.variants,
             onTap: () {
+              if (typeFilter == RecipeTypeFilter.variants) return;
               HapticFeedback.selectionClick();
               ref.read(browseFilterProvider.notifier).setTypeFilter(RecipeTypeFilter.variants);
             },
