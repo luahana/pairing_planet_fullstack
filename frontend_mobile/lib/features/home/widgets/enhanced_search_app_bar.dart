@@ -86,10 +86,11 @@ class EnhancedSearchAppBar extends ConsumerWidget {
                 ],
               ),
               SizedBox(height: 12.h),
-              // Search bar - taps navigate to dedicated search page
+              // Search bar - taps navigate to Recipes tab for search
               GestureDetector(
                 onTap: () {
-                  context.push(RouteConstants.search);
+                  // Navigate to Recipes tab (index 1) where users can search
+                  StatefulNavigationShell.of(context).goBranch(1);
                 },
                 child: Container(
                   height: 44.h,
