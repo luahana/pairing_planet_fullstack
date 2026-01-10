@@ -1,13 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/login_prompt_sheet.dart';
-import 'package:pairing_planet2_frontend/data/models/recipe/ingredient_dto.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart';
 import 'package:pairing_planet2_frontend/features/auth/providers/auth_provider.dart';
+import 'package:pairing_planet2_frontend/features/log_post/presentation/widgets/quick_log_sheet.dart';
+import 'package:pairing_planet2_frontend/features/log_post/providers/quick_log_draft_provider.dart';
 import '../../providers/recipe_providers.dart';
 import '../widgets/lineage_breadcrumb.dart';
 import '../widgets/recent_logs_gallery.dart';
@@ -15,6 +19,12 @@ import '../widgets/variants_gallery.dart';
 import '../widgets/hashtag_chips.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../widgets/locale_badge.dart';
+// Living Blueprint widgets
+import '../widgets/kitchen_proof_ingredients.dart';
+import '../widgets/change_diff_section.dart';
+import '../widgets/recipe_family_section.dart';
+import '../widgets/action_hub_bar.dart';
+import '../widgets/recipe_action_menu.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final String recipeId;
@@ -74,7 +84,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             data: (isSaved) => IconButton(
               icon: Icon(
                 isSaved ? Icons.bookmark : Icons.bookmark_border,
-                color: isSaved ? const Color(0xFF1A237E) : Colors.grey[600],
+                color: isSaved ? AppColors.primary : Colors.grey[600],
               ),
               onPressed: () {
                 final authStatus = ref.read(authStateProvider).status;
@@ -91,19 +101,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ref.read(saveRecipeProvider(widget.recipeId).notifier).toggle();
               },
             ),
-            loading: () => const Padding(
-              padding: EdgeInsets.all(12.0),
+            loading: () => Padding(
+              padding: EdgeInsets.all(12.r),
               child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                width: 24.w,
+                height: 24.w,
+                child: const CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
-            error: (_, __) => IconButton(
+            error: (_, _) => IconButton(
               icon: Icon(Icons.bookmark_border, color: Colors.grey[400]),
               onPressed: null,
             ),
           ),
+          // Recipe action menu (edit/delete) - only shown for owner
+          RecipeActionMenu(recipePublicId: widget.recipeId),
         ],
       ),
       body: recipeAsync.when(
@@ -121,17 +133,17 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   children: [
                     _buildImageHeader(recipe),
                     Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: EdgeInsets.all(20.r),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildLineageTag(recipe),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12.h),
                           Text(
                             "[${recipe.foodName}]",
                             style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.indigo[900],
+                              fontSize: 18.sp,
+                              color: AppColors.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -140,8 +152,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                               Expanded(
                                 child: Text(
                                   recipe.title,
-                                  style: const TextStyle(
-                                    fontSize: 26,
+                                  style: TextStyle(
+                                    fontSize: 26.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -149,78 +161,105 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                               LocaleBadgeLarge(localeCode: recipe.culinaryLocale),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           Text(
                             recipe.description ?? "",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               color: Colors.grey[700],
                               height: 1.5,
                             ),
                           ),
                           // Hashtags section
                           if (recipe.hashtags.isNotEmpty) ...[
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
                             HashtagChips(hashtags: recipe.hashtags),
                           ],
-                          const Divider(height: 48),
-                          Text(
-                            'recipe.prepareIngredients'.tr(),
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        ],
+                      ),
+                    ),
+                    // Recipe Family Section (for variant recipes - star layout)
+                    if (recipe.isVariant && recipe.rootInfo != null) ...[
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: RecipeFamilySection(
+                          rootInfo: recipe.rootInfo!,
+                          allVariants: recipe.variants,
+                          currentRecipeId: recipe.publicId,
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
+                    // Change Diff Section (for variant recipes)
+                    if (recipe.isVariant && recipe.hasChanges) ...[
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: ChangeDiffSection(
+                          changeDiff: recipe.changeDiff!,
+                          changeCategories: recipe.changeCategories,
+                          changeReason: recipe.changeReason,
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
+                    // Kitchen-Proof Ingredients Section
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: KitchenProofIngredients(
+                        ingredients: recipe.ingredients,
+                        changeDiff: recipe.changeDiff,
+                        showDiffBadges: recipe.isVariant,
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    // Steps Section
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.format_list_numbered, size: 20.sp),
+                              SizedBox(width: 8.w),
+                              Text(
+                                'recipe.steps'.tr(),
+                                style: TextStyle(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          _buildIngredientSection(
-                            'recipe.mainIngredients'.tr(),
-                            recipe.ingredients,
-                            IngredientType.MAIN,
-                          ),
-                          _buildIngredientSection(
-                            'recipe.secondaryIngredients'.tr(),
-                            recipe.ingredients,
-                            IngredientType.SECONDARY,
-                          ),
-                          _buildIngredientSection(
-                            'recipe.seasonings'.tr(),
-                            recipe.ingredients,
-                            IngredientType.SEASONING,
-                          ),
-                          const Divider(height: 48),
-                          Text(
-                            'recipe.steps'.tr(),
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           ...recipe.steps.map((step) => _buildStepItem(step)),
                         ],
                       ),
                     ),
                     // Variants Gallery section (only for ROOT recipes with variants)
-                    if (recipe.variants.isNotEmpty && recipe.rootInfo == null) ...[
-                      const Divider(height: 48),
+                    if (recipe.variants.isNotEmpty && !recipe.isVariant) ...[
+                      SizedBox(height: 24.h),
                       VariantsGallery(
                         variants: recipe.variants,
                         recipeId: recipe.publicId,
                       ),
                     ],
                     // Recent Logs Gallery section
-                    const Divider(height: 48),
+                    SizedBox(height: 24.h),
                     RecentLogsGallery(
                       logs: recipe.logs,
                       recipeId: recipe.publicId,
                     ),
-                    const SizedBox(height: 30),
+                    SizedBox(height: 20.h),
                   ],
                 ),
               ),
             ),
-            // 💡 하단 고정 버튼 섹션 추가
-            _buildBottomActionButtons(context, recipe),
+            // Action Hub Bar
+            ActionHubBar(
+              onLogPressed: () => _handleLogPress(context, recipe),
+              onVariationPressed: () => _handleVariationPress(context, recipe),
+            ),
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -229,7 +268,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('common.errorWithMessage'.tr(namedArgs: {'message': err.toString()})),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               ElevatedButton(
                 onPressed: () => ref.refresh(recipeDetailProvider(widget.recipeId)),
                 child: Text('common.tryAgain'.tr()),
@@ -241,181 +280,102 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     );
   }
 
-  // 💡 하단 변형하기 & 로그 기록하기 버튼 레이아웃
-  Widget _buildBottomActionButtons(BuildContext context, RecipeDetail recipe) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // 1. 로그 기록하기 버튼 (좌측)
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () {
-                final authStatus = ref.read(authStateProvider).status;
-                if (authStatus != AuthStatus.authenticated) {
-                  LoginPromptSheet.show(
-                    context: context,
-                    actionKey: 'guest.signInToCreate',
-                    pendingAction: () {
-                      context.push(RouteConstants.logPostCreate, extra: recipe);
-                    },
-                  );
-                  return;
-                }
-                context.push(RouteConstants.logPostCreate, extra: recipe);
-              },
-              icon: const Icon(Icons.history_edu),
-              label: Text('recipe.logRecord'.tr()),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                side: const BorderSide(color: Color(0xFF1A237E)),
-                foregroundColor: const Color(0xFF1A237E),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // 2. 변형하기 버튼 (우측)
-          Expanded(
-            flex: 1,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                final authStatus = ref.read(authStateProvider).status;
-                if (authStatus != AuthStatus.authenticated) {
-                  LoginPromptSheet.show(
-                    context: context,
-                    actionKey: 'guest.signInToCreate',
-                    pendingAction: () {
-                      context.push(RouteConstants.recipeCreate, extra: recipe);
-                    },
-                  );
-                  return;
-                }
-                context.push(RouteConstants.recipeCreate, extra: recipe);
-              },
-              icon: const Icon(Icons.alt_route, color: Colors.white),
-              label: Text('recipe.makeVariant'.tr(), style: const TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A237E), // 남색 스타일 적용
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+  // Handle log button press - opens QuickLogSheet with pre-selected recipe
+  void _handleLogPress(BuildContext context, RecipeDetail recipe) {
+    final authStatus = ref.read(authStateProvider).status;
+    if (authStatus != AuthStatus.authenticated) {
+      LoginPromptSheet.show(
+        context: context,
+        actionKey: 'guest.signInToCreate',
+        pendingAction: () {
+          _showQuickLogSheet(context, recipe);
+        },
+      );
+      return;
+    }
+    _showQuickLogSheet(context, recipe);
+  }
+
+  // Show QuickLogSheet with recipe pre-selected
+  void _showQuickLogSheet(BuildContext context, RecipeDetail recipe) {
+    HapticFeedback.mediumImpact();
+    // Pre-select the recipe before showing the sheet
+    ref.read(quickLogDraftProvider.notifier).startFlowWithRecipe(
+      recipe.publicId,
+      recipe.title,
     );
+    QuickLogSheet.show(context);
+  }
+
+  // Handle variation button press
+  void _handleVariationPress(BuildContext context, RecipeDetail recipe) {
+    final authStatus = ref.read(authStateProvider).status;
+    if (authStatus != AuthStatus.authenticated) {
+      LoginPromptSheet.show(
+        context: context,
+        actionKey: 'guest.signInToCreate',
+        pendingAction: () {
+          context.push(RouteConstants.recipeCreate, extra: recipe);
+        },
+      );
+      return;
+    }
+    context.push(RouteConstants.recipeCreate, extra: recipe);
   }
 
   Widget _buildLineageTag(RecipeDetail recipe) {
     final isVariant = recipe.parentInfo != null || recipe.rootInfo != null;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: isVariant ? Colors.orange[50] : Colors.indigo[50],
-        borderRadius: BorderRadius.circular(8),
+        color: isVariant ? Colors.orange[50] : AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
         isVariant ? 'recipe.variantRecipe'.tr() : 'recipe.originalRecipe'.tr(),
         style: TextStyle(
-          color: isVariant ? Colors.orange[800] : Colors.indigo[800],
-          fontSize: 12,
+          color: isVariant ? Colors.orange[800] : AppColors.primary,
+          fontSize: 12.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget _buildIngredientSection(
-    String title,
-    List<dynamic> allIngredients,
-    IngredientType type,
-  ) {
-    final items = allIngredients.where((i) => i.type == type.name).toList();
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.indigo[900],
-            ),
-          ),
-          const SizedBox(height: 8),
-          ...items.map(
-            (i) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(i.name, style: const TextStyle(fontSize: 15)),
-                  Text(
-                    i.amount ?? "",
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStepItem(dynamic step) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: EdgeInsets.only(bottom: 24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               CircleAvatar(
-                radius: 12,
-                backgroundColor: Colors.indigo[900],
+                radius: 12.r,
+                backgroundColor: AppColors.primary,
                 child: Text(
                   "${step.stepNumber}",
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
                 ),
               ),
-              const SizedBox(width: 12),
-              Text('recipe.step'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+              SizedBox(width: 12.w),
+              Text('steps.step'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           if (step.imageUrl != null && step.imageUrl!.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.only(bottom: 12.h),
               child: AppCachedImage(
                 imageUrl: step.imageUrl!,
                 width: double.infinity,
-                height: 200,
-                borderRadius: 12,
+                height: 200.h,
+                borderRadius: 12.r,
               ),
             ),
           Text(
             step.description,
-            style: const TextStyle(fontSize: 15, height: 1.6),
+            style: TextStyle(fontSize: 15.sp, height: 1.6),
           ),
         ],
       ),
@@ -428,7 +388,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           ? recipe.imageUrls.first
           : 'https://via.placeholder.com/400x250',
       width: double.infinity,
-      height: 300,
+      height: 300.h,
       borderRadius: 0,
     );
   }

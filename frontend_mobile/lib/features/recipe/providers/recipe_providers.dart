@@ -4,11 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info_impl.dart';
 import 'package:pairing_planet2_frontend/core/providers/analytics_providers.dart';
+import 'package:pairing_planet2_frontend/core/providers/recently_viewed_provider.dart';
 import 'package:pairing_planet2_frontend/domain/entities/analytics/app_event.dart';
 import 'package:pairing_planet2_frontend/domain/entities/common/slice_response.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/create_recipe_request.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_draft.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_modifiable.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
+import 'package:pairing_planet2_frontend/domain/entities/recipe/update_recipe_request.dart';
 import 'package:pairing_planet2_frontend/domain/repositories/analytics_repository.dart';
 import 'package:pairing_planet2_frontend/domain/usecases/recipe/create_recipe_usecase.dart';
 import 'package:pairing_planet2_frontend/domain/usecases/recipe/get_recipe_detail.dart';
@@ -197,6 +200,15 @@ final recipeDetailWithTrackingProvider =
         },
       ));
 
+      // Add to recently viewed recipes for quick log picker
+      ref.read(recentlyViewedRecipesProvider.notifier).addRecipe(
+            publicId: recipe.publicId,
+            title: recipe.title,
+            foodName: recipe.foodName,
+            thumbnailUrl:
+                recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
+          );
+
       return recipe;
     },
   );
@@ -291,6 +303,7 @@ class RecipeDraftNotifier extends StateNotifier<RecipeDraftState> {
   final RecipeDraftLocalDataSource _localDataSource;
   Timer? _autoSaveTimer;
   bool _isSaving = false;
+  RecipeDraft? _lastSavedDraft; // Track last saved draft to detect changes
 
   RecipeDraftNotifier(this._localDataSource) : super(const RecipeDraftState());
 
@@ -299,7 +312,8 @@ class RecipeDraftNotifier extends StateNotifier<RecipeDraftState> {
     _autoSaveTimer?.cancel();
     _autoSaveTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       final draft = getCurrentDraft();
-      if (draft.hasContent) {
+      // Only save if content exists AND has changed since last save
+      if (draft.hasContent && draft != _lastSavedDraft) {
         saveDraft(draft);
       }
     });
@@ -327,6 +341,7 @@ class RecipeDraftNotifier extends StateNotifier<RecipeDraftState> {
 
     try {
       await _localDataSource.saveDraft(RecipeDraftDto.fromEntity(draft));
+      _lastSavedDraft = draft; // Update last saved draft after successful save
       state = state.copyWith(
         draft: draft,
         saveStatus: DraftSaveStatus.saved,
@@ -348,6 +363,14 @@ class RecipeDraftNotifier extends StateNotifier<RecipeDraftState> {
     final draftDto = await _localDataSource.getDraft();
     if (draftDto != null) {
       final draft = draftDto.toEntity();
+
+      // Don't restore drafts with no meaningful content
+      if (!draft.hasContent) {
+        await _localDataSource.clearDraft();
+        return null;
+      }
+
+      _lastSavedDraft = draft; // Track loaded draft as baseline
       state = RecipeDraftState(draft: draft);
       return draft;
     }
@@ -362,6 +385,7 @@ class RecipeDraftNotifier extends StateNotifier<RecipeDraftState> {
   /// Clear the draft from local storage
   Future<void> clearDraft() async {
     await _localDataSource.clearDraft();
+    _lastSavedDraft = null; // Clear baseline when draft is cleared
     state = const RecipeDraftState();
   }
 
@@ -381,4 +405,123 @@ class RecipeDraftNotifier extends StateNotifier<RecipeDraftState> {
 final recipeDraftProvider =
     StateNotifierProvider<RecipeDraftNotifier, RecipeDraftState>((ref) {
   return RecipeDraftNotifier(ref.read(recipeDraftLocalDataSourceProvider));
+});
+
+// ----------------------------------------------------------------
+// 9. Recipe Modifiable Check (Edit/Delete Permission)
+// ----------------------------------------------------------------
+
+/// Provider to check if recipe can be modified (edited/deleted)
+final recipeModifiableProvider = FutureProvider.family<RecipeModifiable, String>(
+  (ref, publicId) async {
+    final repository = ref.watch(recipeRepositoryProvider);
+    final result = await repository.checkRecipeModifiable(publicId);
+    return result.fold(
+      (failure) => throw failure.message,
+      (modifiable) => modifiable,
+    );
+  },
+);
+
+// ----------------------------------------------------------------
+// 10. Recipe Update
+// ----------------------------------------------------------------
+
+class RecipeUpdateNotifier extends StateNotifier<AsyncValue<RecipeDetail?>> {
+  final RecipeRepository _repository;
+  final AnalyticsRepository _analyticsRepository;
+
+  RecipeUpdateNotifier(this._repository, this._analyticsRepository)
+      : super(const AsyncValue.data(null));
+
+  Future<bool> updateRecipe(String publicId, UpdateRecipeRequest request) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.updateRecipe(publicId, request);
+
+    return result.fold(
+      (failure) {
+        state = AsyncValue.error(failure.message, StackTrace.current);
+        return false;
+      },
+      (recipe) {
+        // Track recipe update event
+        _analyticsRepository.trackEvent(AppEvent(
+          eventId: const Uuid().v4(),
+          eventType: EventType.recipeUpdated,
+          timestamp: DateTime.now(),
+          priority: EventPriority.immediate,
+          recipeId: publicId,
+          properties: {
+            'ingredient_count': request.ingredients.length,
+            'step_count': request.steps.length,
+            'image_count': request.imagePublicIds.length,
+          },
+        ));
+
+        state = AsyncValue.data(recipe);
+        return true;
+      },
+    );
+  }
+
+  void reset() {
+    state = const AsyncValue.data(null);
+  }
+}
+
+final recipeUpdateProvider =
+    StateNotifierProvider<RecipeUpdateNotifier, AsyncValue<RecipeDetail?>>((ref) {
+  return RecipeUpdateNotifier(
+    ref.read(recipeRepositoryProvider),
+    ref.read(analyticsRepositoryProvider),
+  );
+});
+
+// ----------------------------------------------------------------
+// 11. Recipe Delete
+// ----------------------------------------------------------------
+
+class RecipeDeleteNotifier extends StateNotifier<AsyncValue<bool>> {
+  final RecipeRepository _repository;
+  final AnalyticsRepository _analyticsRepository;
+
+  RecipeDeleteNotifier(this._repository, this._analyticsRepository)
+      : super(const AsyncValue.data(false));
+
+  Future<bool> deleteRecipe(String publicId) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.deleteRecipe(publicId);
+
+    return result.fold(
+      (failure) {
+        state = AsyncValue.error(failure.message, StackTrace.current);
+        return false;
+      },
+      (_) {
+        // Track recipe delete event
+        _analyticsRepository.trackEvent(AppEvent(
+          eventId: const Uuid().v4(),
+          eventType: EventType.recipeDeleted,
+          timestamp: DateTime.now(),
+          priority: EventPriority.immediate,
+          recipeId: publicId,
+        ));
+
+        state = const AsyncValue.data(true);
+        return true;
+      },
+    );
+  }
+
+  void reset() {
+    state = const AsyncValue.data(false);
+  }
+}
+
+final recipeDeleteProvider =
+    StateNotifierProvider<RecipeDeleteNotifier, AsyncValue<bool>>((ref) {
+  return RecipeDeleteNotifier(
+    ref.read(recipeRepositoryProvider),
+    ref.read(analyticsRepositoryProvider),
+  );
 });

@@ -1,7 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// Culinary locale options for recipe creation
+/// Cooking style options for recipe creation
 class CulinaryLocale {
   final String code;
   final String flagEmoji;
@@ -54,6 +55,21 @@ class LocaleDropdown extends StatelessWidget {
     this.enabled = true,
   });
 
+  /// Normalize legacy locale codes to match dropdown items
+  String? _normalizeValue(String? value) {
+    if (value == null || value.isEmpty) return null;
+
+    // Map legacy short codes to full codes
+    if (value == 'ko') return 'ko-KR';
+    if (value == 'en') return 'en-US';
+    if (value == 'ja') return 'ja-JP';
+    if (value == 'zh') return 'zh-CN';
+
+    // Check if value exists in options
+    final exists = CulinaryLocale.options.any((o) => o.code == value);
+    return exists ? value : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -61,23 +77,23 @@ class LocaleDropdown extends StatelessWidget {
       children: [
         Text(
           'locale.selectLocale'.tr(),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
           decoration: BoxDecoration(
             color: enabled ? Colors.grey[50] : Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: Colors.grey[200]!),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: value,
+              value: _normalizeValue(value),
               isExpanded: true,
               hint: Text(
                 'locale.selectLocale'.tr(),
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey),
               ),
               icon: Icon(
                 Icons.arrow_drop_down,
@@ -89,7 +105,7 @@ class LocaleDropdown extends StatelessWidget {
                   child: Text(
                     '${locale.flagEmoji} ${locale.labelKey.tr()}',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: enabled ? Colors.black : Colors.grey[600],
                     ),
                   ),
@@ -98,6 +114,11 @@ class LocaleDropdown extends StatelessWidget {
               onChanged: enabled ? onChanged : null,
             ),
           ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'locale.helperText'.tr(),
+          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
         ),
       ],
     );

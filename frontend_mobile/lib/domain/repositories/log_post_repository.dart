@@ -17,5 +17,31 @@ abstract class LogPostRepository {
     int page = 0,
     int size = 20,
     String? query,
+    List<String>? outcomes,
+  });
+
+  // 로그 수정
+  Future<Either<Failure, LogPostDetail>> updateLog(
+    String publicId, {
+    String? title,
+    required String content,
+    required String outcome,
+    List<String>? hashtags,
+    List<String>? imagePublicIds,
+  });
+
+  // 로그 삭제
+  Future<Either<Failure, void>> deleteLog(String publicId);
+
+  // 로그 저장 (북마크)
+  Future<Either<Failure, void>> saveLog(String publicId);
+
+  // 로그 저장 취소
+  Future<Either<Failure, void>> unsaveLog(String publicId);
+
+  // 저장한 로그 목록 조회
+  Future<Either<Failure, SliceResponse<LogPostSummary>>> getSavedLogs({
+    int page = 0,
+    int size = 20,
   });
 }

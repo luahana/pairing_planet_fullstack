@@ -1,6 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 
@@ -27,14 +30,14 @@ class VariantsGallery extends StatelessWidget {
       children: [
         // Section header
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "이 레시피의 변형",
+              Text(
+                'recipe.variantsGallery.title'.tr(),
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -44,24 +47,24 @@ class VariantsGallery extends StatelessWidget {
                     // Navigate to full variants list (future feature)
                   },
                   child: Text(
-                    "모두 보기",
+                    'recipe.variantsGallery.viewAll'.tr(),
                     style: TextStyle(
-                      color: Colors.indigo[700],
-                      fontSize: 13,
+                      color: AppColors.primary,
+                      fontSize: 13.sp,
                     ),
                   ),
                 ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
 
         // Horizontal scroll gallery
         SizedBox(
-          height: 180,
+          height: 180.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             itemCount: variants.length,
             itemBuilder: (context, index) {
               return _buildVariantCard(context, variants[index]);
@@ -76,85 +79,85 @@ class VariantsGallery extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push(RouteConstants.recipeDetailPath(variant.publicId)),
       child: Container(
-        width: 140,
-        margin: const EdgeInsets.only(right: 12),
+        width: 140.w,
+        margin: EdgeInsets.only(right: 12.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Thumbnail
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               child: variant.thumbnailUrl != null
                   ? AppCachedImage(
                       imageUrl: variant.thumbnailUrl!,
-                      width: 140,
-                      height: 100,
-                      borderRadius: 12,
+                      width: 140.w,
+                      height: 100.h,
+                      borderRadius: 12.r,
                     )
                   : Container(
-                      width: 140,
-                      height: 100,
+                      width: 140.w,
+                      height: 100.h,
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Icon(
                         Icons.restaurant,
                         color: Colors.grey[400],
-                        size: 32,
+                        size: 32.sp,
                       ),
                     ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             // Title (max 2 lines)
             Text(
               variant.title,
-              style: const TextStyle(
-                fontSize: 13,
+              style: TextStyle(
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             // Creator name
             Text(
               "@${variant.creatorName}",
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 11.sp,
                 color: Colors.grey[600],
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             // Activity counts
             Row(
               children: [
                 Icon(
                   Icons.alt_route,
-                  size: 12,
+                  size: 12.sp,
                   color: Colors.orange[700],
                 ),
-                const SizedBox(width: 2),
+                SizedBox(width: 2.w),
                 Text(
                   "${variant.variantCount}",
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: Colors.grey[600],
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Icon(
                   Icons.history_edu,
-                  size: 12,
-                  color: Colors.indigo[400],
+                  size: 12.sp,
+                  color: AppColors.primary,
                 ),
-                const SizedBox(width: 2),
+                SizedBox(width: 2.w),
                 Text(
                   "${variant.logCount}",
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: Colors.grey[600],
                   ),
                 ),

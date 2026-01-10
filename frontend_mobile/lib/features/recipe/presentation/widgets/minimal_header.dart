@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 
 class MinimalHeader extends StatelessWidget {
   final IconData icon;
@@ -10,12 +12,12 @@ class MinimalHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF1A237E).withOpacity(0.7)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20.sp, color: AppColors.textPrimary.withValues(alpha: 0.7)),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
           ),

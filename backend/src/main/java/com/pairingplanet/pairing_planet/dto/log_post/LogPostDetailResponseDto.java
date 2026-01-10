@@ -16,5 +16,7 @@ public record LogPostDetailResponseDto(
         List<ImageResponseDto> images,
         RecipeSummaryDto linkedRecipe,
         Instant createdAt,
-        List<HashtagDto> hashtags
+        List<HashtagDto> hashtags,
+        Boolean isSavedByCurrentUser,  // null if not logged in
+        UUID creatorPublicId  // for ownership check (UUID for frontend comparison)
 ) {}
