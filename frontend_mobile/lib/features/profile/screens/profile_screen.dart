@@ -9,6 +9,7 @@ import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/providers/scroll_to_top_provider.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
+import 'package:pairing_planet2_frontend/core/widgets/app_logo.dart';
 import 'package:pairing_planet2_frontend/data/models/log_post/log_post_summary_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/recipe/recipe_summary_dto.dart';
 import 'package:pairing_planet2_frontend/features/auth/providers/auth_provider.dart';
@@ -88,13 +89,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
               elevation: innerBoxIsScrolled ? 1 : 0,
-              title: Text(
-                '@${profile.user.username}',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              title: const AppLogo(),
               actions: [
                 IconButton(
                   icon: Icon(Icons.settings_outlined, size: 22.sp),
