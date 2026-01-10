@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
@@ -70,10 +71,6 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
       ),
       body: logPostsAsync.when(
         data: (state) {
-          if (state.items.isEmpty) {
-            return _buildEmptyState(state.searchQuery);
-          }
-
           return RefreshIndicator(
             onRefresh: () async {
               await ref.read(logPostPaginatedListProvider.notifier).refresh();
@@ -86,60 +83,72 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
                 const SliverToBoxAdapter(
                   child: SyncStatusIndicator(variant: SyncStatusVariant.banner),
                 ),
-                // Filter bar at the top
-                SliverToBoxAdapter(
-                  child: CompactLogFilterBar(
-                    onFilterChanged: () {
-                      // Provider auto-refreshes on filter change
-                      HapticFeedback.selectionClick();
-                    },
-                  ),
-                ),
-                // Grid of log posts
-                SliverPadding(
-                  padding: const EdgeInsets.all(12),
-                  sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 0.75,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index < state.items.length) {
-                          return _buildLogCard(context, state.items[index], state.searchQuery);
-                        }
-                        return null;
+                // Filter bar at the top (pinned/sticky)
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _FilterBarDelegate(
+                    height: 48.h,
+                    child: CompactLogFilterBar(
+                      onFilterChanged: () {
+                        // Provider auto-refreshes on filter change
+                        HapticFeedback.selectionClick();
                       },
-                      childCount: state.items.length,
                     ),
                   ),
                 ),
-                // Loading indicator at the bottom
-                if (state.hasNext)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: CircularProgressIndicator()),
+                // Empty state or grid of log posts
+                if (state.items.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _buildEmptyStateContent(state.searchQuery),
+                  )
+                else ...[
+                  // Grid of log posts
+                  SliverPadding(
+                    padding: const EdgeInsets.all(12),
+                    sliver: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.75,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (index < state.items.length) {
+                            return _buildLogCard(context, state.items[index], state.searchQuery);
+                          }
+                          return null;
+                        },
+                        childCount: state.items.length,
+                      ),
                     ),
                   ),
-                // End message when no more items
-                if (!state.hasNext && state.items.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Center(
-                        child: Text(
-                          'logPost.allLoaded'.tr(),
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 13,
+                  // Loading indicator at the bottom
+                  if (state.hasNext)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ),
+                  // End message when no more items
+                  if (!state.hasNext)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Center(
+                          child: Text(
+                            'logPost.allLoaded'.tr(),
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                ],
               ],
             ),
           );
@@ -255,7 +264,7 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
     );
   }
 
-  Widget _buildEmptyState(String? searchQuery) {
+  Widget _buildEmptyStateContent(String? searchQuery) {
     // Check if filters are active
     final filterState = ref.watch(logFilterProvider);
 
@@ -281,19 +290,8 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
     }
 
     // No logs at all - show illustrated empty state
-    return RefreshIndicator(
-      onRefresh: () async {
-        await ref.read(logPostPaginatedListProvider.notifier).refresh();
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.8,
-          child: const LogEmptyState(
-            type: EmptyStateType.noLogs,
-          ),
-        ),
-      ),
+    return const LogEmptyState(
+      type: EmptyStateType.noLogs,
     );
   }
 
@@ -324,5 +322,35 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
         ],
       ),
     );
+  }
+}
+
+/// Delegate for sticky filter bar header
+class _FilterBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  _FilterBarDelegate({required this.child, required this.height});
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(
+      child: Material(
+        color: Colors.white,
+        elevation: overlapsContent ? 2 : 0,
+        child: child,
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  bool shouldRebuild(covariant _FilterBarDelegate oldDelegate) {
+    return height != oldDelegate.height || child != oldDelegate.child;
   }
 }
