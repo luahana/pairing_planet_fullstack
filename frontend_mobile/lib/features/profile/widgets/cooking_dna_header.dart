@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/data/models/user/cooking_dna_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/user/my_profile_response_dto.dart';
@@ -106,27 +104,6 @@ class CookingDnaHeader extends StatelessWidget {
                   ),
                 ),
               ],
-              SizedBox(height: 8.h),
-              // Edit Profile button for quick access
-              OutlinedButton(
-                onPressed: () => context.push(RouteConstants.profileEdit),
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  side: BorderSide(color: Colors.grey[300]!),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
-                child: Text(
-                  'profile.editProfile'.tr(),
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
