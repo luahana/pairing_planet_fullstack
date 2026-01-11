@@ -66,6 +66,17 @@ public class LogPostController {
         return ResponseEntity.ok(logPostService.getMyLogs(principal.getId(), outcome, pageable));
     }
 
+    /**
+     * 특정 레시피에 달린 로그 목록 조회
+     * GET /api/v1/log_posts/recipe/{recipePublicId}?page=0&size=20
+     */
+    @GetMapping("/recipe/{recipePublicId}")
+    public ResponseEntity<Slice<LogPostSummaryDto>> getLogsByRecipe(
+            @PathVariable("recipePublicId") UUID recipePublicId,
+            Pageable pageable) {
+        return ResponseEntity.ok(logPostService.getLogsByRecipe(recipePublicId, pageable));
+    }
+
     // --- [LOG DETAIL] ---
     /**
      * 로그 상세: 사진, 메모, 연결된 레시피 카드 포함

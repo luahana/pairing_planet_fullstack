@@ -7,6 +7,7 @@ import 'package:pairing_planet2_frontend/features/home/screens/main_screen.dart'
 import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/log_post_create_screen.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/log_post_detail_screen.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/log_post_list_screen.dart';
+import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/recipe_logs_screen.dart';
 import 'package:pairing_planet2_frontend/features/home/screens/home_feed_screen.dart';
 import 'package:pairing_planet2_frontend/features/login/screens/login_screen.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/screens/recipe_create_screen.dart';
@@ -238,7 +239,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: RouteConstants.logPosts,
-                builder: (context, state) => const LogPostListScreen(),
+                builder: (context, state) {
+                  // Check for recipeId query parameter
+                  final recipeId = state.uri.queryParameters['recipeId'];
+                  if (recipeId != null && recipeId.isNotEmpty) {
+                    return RecipeLogsScreen(recipeId: recipeId);
+                  }
+                  return const LogPostListScreen();
+                },
               ),
             ],
           ),

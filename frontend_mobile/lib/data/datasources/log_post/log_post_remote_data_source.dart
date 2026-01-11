@@ -71,6 +71,22 @@ class LogPostRemoteDataSource {
     );
   }
 
+  /// 특정 레시피의 로그 목록 조회
+  Future<SliceResponseDto<LogPostSummaryDto>> getLogsByRecipe({
+    required String recipeId,
+    int page = 0,
+    int size = 20,
+  }) async {
+    final response = await _dio.get(
+      ApiEndpoints.logsByRecipe(recipeId),
+      queryParameters: {'page': page, 'size': size},
+    );
+    return SliceResponseDto.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => LogPostSummaryDto.fromJson(json),
+    );
+  }
+
   /// 로그 저장 (북마크)
   Future<void> saveLog(String publicId) async {
     await _dio.post(ApiEndpoints.logPostSave(publicId));

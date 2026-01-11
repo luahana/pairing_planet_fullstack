@@ -271,4 +271,125 @@ class LogPostControllerTest extends BaseIntegrationTest {
                     .andExpect(status().isBadRequest());
         }
     }
+
+    @Nested
+    @DisplayName("GET /api/v1/log_posts/recipe/{recipePublicId} - Logs by Recipe")
+    class GetLogsByRecipeTests {
+
+        @Test
+        @DisplayName("Should return logs for a specific recipe")
+        void getLogsByRecipe_ReturnsLogs() throws Exception {
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content.length()").value(1))
+                    .andExpect(jsonPath("$.content[0].publicId").value(testLogPost.getPublicId().toString()))
+                    .andExpect(jsonPath("$.content[0].title").value("Test Log"))
+                    .andExpect(jsonPath("$.content[0].outcome").value("SUCCESS"));
+        }
+
+        @Test
+        @DisplayName("Should return empty content when recipe has no logs")
+        void getLogsByRecipe_NoLogs_ReturnsEmpty() throws Exception {
+            // Create a recipe without logs
+            FoodMaster food2 = FoodMaster.builder()
+                    .name(Map.of("ko-KR", "다른음식"))
+                    .isVerified(true)
+                    .build();
+            foodMasterRepository.save(food2);
+
+            Recipe recipeWithNoLogs = Recipe.builder()
+                    .title("Recipe Without Logs")
+                    .description("No logs here")
+                    .culinaryLocale("ko-KR")
+                    .foodMaster(food2)
+                    .creatorId(testUser.getId())
+                    .build();
+            recipeRepository.save(recipeWithNoLogs);
+
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + recipeWithNoLogs.getPublicId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content.length()").value(0))
+                    .andExpect(jsonPath("$.last").value(true));
+        }
+
+        @Test
+        @DisplayName("Should return 400 when recipe not found")
+        void getLogsByRecipe_RecipeNotFound_Returns400() throws Exception {
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + UUID.randomUUID()))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should support pagination parameters")
+        void getLogsByRecipe_Pagination_Works() throws Exception {
+            // Create more logs
+            for (int i = 0; i < 5; i++) {
+                LogPost log = LogPost.builder()
+                        .title("Log " + i)
+                        .content("Content " + i)
+                        .locale("ko-KR")
+                        .creatorId(testUser.getId())
+                        .build();
+
+                RecipeLog recipeLog = RecipeLog.builder()
+                        .logPost(log)
+                        .recipe(testRecipe)
+                        .outcome("SUCCESS")
+                        .build();
+                log.setRecipeLog(recipeLog);
+                logPostRepository.save(log);
+            }
+
+            // First page with size 3
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId())
+                            .param("page", "0")
+                            .param("size", "3"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content.length()").value(3))
+                    .andExpect(jsonPath("$.last").value(false));
+
+            // Second page
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId())
+                            .param("page", "1")
+                            .param("size", "3"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content.length()").value(3))
+                    .andExpect(jsonPath("$.last").value(true));
+        }
+
+        @Test
+        @DisplayName("Should not include deleted logs in response")
+        void getLogsByRecipe_ExcludesDeletedLogs() throws Exception {
+            // Soft delete the log
+            testLogPost.setIsDeleted(true);
+            logPostRepository.save(testLogPost);
+
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("Should work without authentication (public endpoint)")
+        void getLogsByRecipe_NoAuth_Works() throws Exception {
+            // No auth header - should still work as this is a public read endpoint
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content").isArray());
+        }
+
+        @Test
+        @DisplayName("Should include thumbnailUrl and creatorName in response")
+        void getLogsByRecipe_IncludesAllFields() throws Exception {
+            mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content[0].publicId").exists())
+                    .andExpect(jsonPath("$.content[0].title").exists())
+                    .andExpect(jsonPath("$.content[0].outcome").exists())
+                    .andExpect(jsonPath("$.content[0].creatorName").value(testUser.getUsername()));
+        }
+    }
 }

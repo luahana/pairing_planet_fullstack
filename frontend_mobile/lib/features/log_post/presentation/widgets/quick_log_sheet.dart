@@ -10,12 +10,15 @@ import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/services/media_service.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/image_source_sheet.dart';
+import 'package:pairing_planet2_frontend/core/widgets/reorderable_image_picker.dart';
+import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/widgets/outcome_badge.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/quick_log_draft_provider.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/hashtag_input_section.dart';
 import 'package:pairing_planet2_frontend/data/datasources/sync/log_sync_engine.dart';
 import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
+import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
 
 /// Bottom sheet for quick log entry flow
 /// Target: Complete log in under 10 seconds
@@ -366,8 +369,28 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 24.h),
-          // Reorderable photo grid
-          _buildPhotoGrid(draft.photoPaths),
+          // Reorderable photo grid using shared widget
+          ReorderableImagePicker(
+            images: _photoPathsToUploadItems(draft.photoPaths),
+            maxImages: 3,
+            onReorder: (oldIndex, newIndex) {
+              HapticFeedback.selectionClick();
+              ref.read(quickLogDraftProvider.notifier).reorderPhotos(oldIndex, newIndex);
+            },
+            onRemove: (index) {
+              HapticFeedback.lightImpact();
+              ref.read(quickLogDraftProvider.notifier).removePhoto(index);
+            },
+            onRetry: (_) {}, // No upload retry needed - local files only
+            onAdd: () {
+              HapticFeedback.selectionClick();
+              ImageSourceSheet.show(
+                context: context,
+                onSourceSelected: _pickImage,
+              );
+            },
+            showThumbnailBadge: true,
+          ),
           SizedBox(height: 24.h),
           // Navigation buttons
           Row(
@@ -398,153 +421,6 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
     );
   }
 
-  Widget _buildPhotoGrid(List<String> photoPaths) {
-    const maxPhotos = 3;
-    final canAddMore = photoPaths.length < maxPhotos;
-
-    return SizedBox(
-      height: 110.h,
-      child: ReorderableListView.builder(
-        scrollDirection: Axis.horizontal,
-        buildDefaultDragHandles: false,
-        itemCount: photoPaths.length + (canAddMore ? 1 : 0),
-        onReorder: (oldIndex, newIndex) {
-          // Don't allow reordering the add button
-          if (oldIndex >= photoPaths.length) return;
-          if (newIndex > photoPaths.length) {
-            newIndex = photoPaths.length;
-          }
-          HapticFeedback.selectionClick();
-          ref.read(quickLogDraftProvider.notifier).reorderPhotos(oldIndex, newIndex);
-        },
-        itemBuilder: (context, index) {
-          // Add button
-          if (index == photoPaths.length) {
-            return Padding(
-              key: const ValueKey('add_button'),
-              padding: EdgeInsets.only(top: 10.h),
-              child: _buildAddPhotoButton(),
-            );
-          }
-          // Photo thumbnail
-          return _buildPhotoThumbnail(photoPaths[index], index);
-        },
-      ),
-    );
-  }
-
-  Widget _buildAddPhotoButton() {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        ImageSourceSheet.show(
-          context: context,
-          onSourceSelected: _pickImage,
-        );
-      },
-      child: Container(
-        width: 100.w,
-        margin: EdgeInsets.only(right: 12.w),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_a_photo, color: Colors.grey[600], size: 28.sp),
-            SizedBox(height: 4.h),
-            Text(
-              'logPost.quickLog.takePhoto'.tr(),
-              style: TextStyle(fontSize: 10.sp, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhotoThumbnail(String photoPath, int index) {
-    final bool isThumbnail = index == 0;
-
-    return ReorderableDragStartListener(
-      key: ValueKey('photo_$index'),
-      index: index,
-      child: SizedBox(
-        width: 112.w,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Image container
-            Padding(
-              padding: EdgeInsets.only(top: 10.h, right: 12.w),
-              child: Container(
-                width: 100.w,
-                height: 100.w,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: isThumbnail
-                      ? Border.all(color: AppColors.primary, width: 2)
-                      : null,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(isThumbnail ? 10.r : 12.r),
-                  child: Image.file(
-                    File(photoPath),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            // Thumbnail badge (first photo)
-            if (isThumbnail)
-              Positioned(
-                top: 0,
-                left: 0,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    'recipe.hook.thumbnail'.tr(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            // Remove button
-            Positioned(
-              top: 2.h,
-              right: 4.w,
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ref.read(quickLogDraftProvider.notifier).removePhoto(index);
-                },
-                child: Container(
-                  padding: EdgeInsets.all(4.r),
-                  decoration: const BoxDecoration(
-                    color: Colors.black54,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.close, color: Colors.white, size: 14.sp),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _pickImage(ImageSource source) async {
     final photo = source == ImageSource.camera
         ? await _mediaService.takePhoto()
@@ -552,6 +428,13 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
     if (photo != null) {
       ref.read(quickLogDraftProvider.notifier).addPhoto(photo.path);
     }
+  }
+
+  /// Convert photo paths to UploadItem for ReorderableImagePicker compatibility.
+  /// Since QuickLogSheet uses offline-first sync, photos are stored locally
+  /// and uploaded later by the sync engine, so we don't need upload status.
+  List<UploadItem> _photoPathsToUploadItems(List<String> photoPaths) {
+    return photoPaths.map((path) => UploadItem(file: File(path))).toList();
   }
 
   Widget _buildHashtagStep(QuickLogDraft draft) {
@@ -819,8 +702,14 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
               OutlinedButton(
                 onPressed: () {
                   HapticFeedback.lightImpact();
+                  // Read draft before reset to get recipePublicId
+                  final draft = ref.read(quickLogDraftProvider);
                   ref.read(quickLogDraftProvider.notifier).reset();
                   Navigator.of(context).pop(true);
+                  // Invalidate recipe detail to refresh "See How Others Made It"
+                  if (draft.recipePublicId != null) {
+                    ref.invalidate(recipeDetailWithTrackingProvider(draft.recipePublicId!));
+                  }
                 },
                 child: Text('common.done'.tr()),
               ),
@@ -828,10 +717,16 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
               FilledButton.icon(
                 onPressed: () {
                   HapticFeedback.mediumImpact();
+                  // Read draft before reset to get recipePublicId
+                  final draft = ref.read(quickLogDraftProvider);
                   ref.read(quickLogDraftProvider.notifier).reset();
                   Navigator.of(context).pop(true);
                   // Invalidate profile to refresh stats
                   ref.invalidate(myProfileProvider);
+                  // Invalidate recipe detail to refresh "See How Others Made It"
+                  if (draft.recipePublicId != null) {
+                    ref.invalidate(recipeDetailWithTrackingProvider(draft.recipePublicId!));
+                  }
                   // Navigate to Profile with My Logs tab (index 1)
                   context.go('${RouteConstants.profile}?tab=1');
                 },

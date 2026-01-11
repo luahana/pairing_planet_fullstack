@@ -230,4 +230,132 @@ class LogPostServiceTest extends BaseIntegrationTest {
             assertThat(result.creatorPublicId()).isEqualTo(testUser.getPublicId());
         }
     }
+
+    @Nested
+    @DisplayName("Get Logs By Recipe")
+    class GetLogsByRecipeTests {
+
+        @Test
+        @DisplayName("Should return logs for a specific recipe")
+        void getLogsByRecipe_ReturnsLogs() {
+            var pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+            var result = logPostService.getLogsByRecipe(testRecipe.getPublicId(), pageable);
+
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).publicId()).isEqualTo(testLogPost.getPublicId());
+        }
+
+        @Test
+        @DisplayName("Should return empty when recipe has no logs")
+        void getLogsByRecipe_NoLogs_ReturnsEmpty() {
+            // Create a recipe without logs
+            FoodMaster food2 = FoodMaster.builder()
+                    .name(Map.of("ko-KR", "다른음식"))
+                    .isVerified(true)
+                    .build();
+            foodMasterRepository.save(food2);
+
+            Recipe recipeWithNoLogs = Recipe.builder()
+                    .title("Recipe Without Logs")
+                    .description("No logs here")
+                    .culinaryLocale("ko-KR")
+                    .foodMaster(food2)
+                    .creatorId(testUser.getId())
+                    .build();
+            recipeRepository.save(recipeWithNoLogs);
+
+            var pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+            var result = logPostService.getLogsByRecipe(recipeWithNoLogs.getPublicId(), pageable);
+
+            assertThat(result.getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should throw exception when recipe not found")
+        void getLogsByRecipe_RecipeNotFound_ThrowsException() {
+            var pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+
+            assertThatThrownBy(() -> logPostService.getLogsByRecipe(
+                    java.util.UUID.randomUUID(),
+                    pageable
+            )).isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Recipe not found");
+        }
+
+        @Test
+        @DisplayName("Should not return deleted logs")
+        void getLogsByRecipe_ExcludesDeletedLogs() {
+            // Soft delete the log post
+            testLogPost.setIsDeleted(true);
+            logPostRepository.save(testLogPost);
+
+            var pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+            var result = logPostService.getLogsByRecipe(testRecipe.getPublicId(), pageable);
+
+            assertThat(result.getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should paginate logs correctly")
+        void getLogsByRecipe_Pagination_Works() {
+            // Create more logs for pagination test
+            for (int i = 0; i < 5; i++) {
+                LogPost log = LogPost.builder()
+                        .title("Log " + i)
+                        .content("Content " + i)
+                        .locale("ko-KR")
+                        .creatorId(testUser.getId())
+                        .build();
+
+                RecipeLog recipeLog = RecipeLog.builder()
+                        .logPost(log)
+                        .recipe(testRecipe)
+                        .outcome("SUCCESS")
+                        .build();
+                log.setRecipeLog(recipeLog);
+                logPostRepository.save(log);
+            }
+
+            // First page (size 3)
+            var page1 = org.springframework.data.domain.PageRequest.of(0, 3);
+            var result1 = logPostService.getLogsByRecipe(testRecipe.getPublicId(), page1);
+
+            assertThat(result1.getContent()).hasSize(3);
+            assertThat(result1.hasNext()).isTrue();
+
+            // Second page
+            var page2 = org.springframework.data.domain.PageRequest.of(1, 3);
+            var result2 = logPostService.getLogsByRecipe(testRecipe.getPublicId(), page2);
+
+            assertThat(result2.getContent()).hasSize(3);
+            assertThat(result2.hasNext()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return logs ordered by created date descending")
+        void getLogsByRecipe_OrderedByCreatedAtDesc() {
+            // Create more logs with slight delay to ensure different timestamps
+            LogPost newerLog = LogPost.builder()
+                    .title("Newer Log")
+                    .content("Newer content")
+                    .locale("ko-KR")
+                    .creatorId(testUser.getId())
+                    .build();
+
+            RecipeLog recipeLog = RecipeLog.builder()
+                    .logPost(newerLog)
+                    .recipe(testRecipe)
+                    .outcome("PARTIAL")
+                    .build();
+            newerLog.setRecipeLog(recipeLog);
+            logPostRepository.save(newerLog);
+
+            var pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+            var result = logPostService.getLogsByRecipe(testRecipe.getPublicId(), pageable);
+
+            assertThat(result.getContent()).hasSize(2);
+            // Newer log should come first
+            assertThat(result.getContent().get(0).title()).isEqualTo("Newer Log");
+        }
+    }
 }

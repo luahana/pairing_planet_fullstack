@@ -14,7 +14,16 @@ class GetLogPostListUseCase {
     int size = 20,
     String? query,
     List<String>? outcomes,
+    String? recipeId,
   }) async {
+    // If recipeId is provided, use the recipe-specific endpoint
+    if (recipeId != null && recipeId.isNotEmpty) {
+      return await _repository.getLogsByRecipe(
+        recipeId: recipeId,
+        page: page,
+        size: size,
+      );
+    }
     return await _repository.getLogPosts(
       page: page,
       size: size,
