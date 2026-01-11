@@ -74,6 +74,8 @@ class HomeFeedNotifier extends StateNotifier<HomeFeedState> {
   final NetworkInfo networkInfo;
   bool _isRefreshing = false; // Guard against race condition in rapid pulls
   Completer<void>? _refreshCompleter; // Used to coordinate concurrent refresh calls
+  DateTime? _lastRefreshTime; // Debounce: track last refresh time
+  static const _refreshCooldown = Duration(milliseconds: 500); // Minimum time between refreshes
 
   HomeFeedNotifier({
     required this.remoteDataSource,
@@ -103,9 +105,15 @@ class HomeFeedNotifier extends StateNotifier<HomeFeedState> {
   }
 
   /// Refresh: Force fetch from network.
-  /// Uses _isRefreshing guard + Completer pattern to prevent race conditions
-  /// during rapid pull-to-refresh (prevents blank page issues).
+  /// Uses debounce + _isRefreshing guard + Completer pattern to prevent
+  /// race conditions during rapid pull-to-refresh (prevents blank page issues).
   Future<void> refresh() async {
+    // Debounce: Skip if refreshed recently (prevents rapid sequential refreshes)
+    if (_lastRefreshTime != null &&
+        DateTime.now().difference(_lastRefreshTime!) < _refreshCooldown) {
+      return;
+    }
+
     // Early return if already refreshing (covers race condition)
     if (_isRefreshing) {
       if (_refreshCompleter != null) {
@@ -115,6 +123,7 @@ class HomeFeedNotifier extends StateNotifier<HomeFeedState> {
     }
 
     _isRefreshing = true;
+    _lastRefreshTime = DateTime.now();
     _refreshCompleter = Completer<void>();
 
     try {
