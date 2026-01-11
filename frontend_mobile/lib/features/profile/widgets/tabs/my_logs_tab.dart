@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
+import 'package:pairing_planet2_frontend/core/models/log_outcome.dart';
 import 'package:pairing_planet2_frontend/core/widgets/outcome/outcome_badge.dart';
 import 'package:pairing_planet2_frontend/data/models/log_post/log_post_summary_dto.dart';
 import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
@@ -68,20 +69,20 @@ class _MyLogsTabState extends ConsumerState<MyLogsTab> {
                   ),
                   SizedBox(width: 8.w),
                   _buildLogFilterChip(
-                    label: '😊 ${'profile.filter.wins'.tr()}',
+                    label: '${LogOutcome.success.emoji} ${'profile.filter.wins'.tr()}',
                     isSelected: notifier.currentFilter == LogOutcomeFilter.wins,
                     onTap: () => notifier.setFilter(LogOutcomeFilter.wins),
                   ),
                   SizedBox(width: 8.w),
                   _buildLogFilterChip(
-                    label: '😐 ${'profile.filter.learning'.tr()}',
+                    label: '${LogOutcome.partial.emoji} ${'profile.filter.learning'.tr()}',
                     isSelected:
                         notifier.currentFilter == LogOutcomeFilter.learning,
                     onTap: () => notifier.setFilter(LogOutcomeFilter.learning),
                   ),
                   SizedBox(width: 8.w),
                   _buildLogFilterChip(
-                    label: '😢 ${'profile.filter.lessons'.tr()}',
+                    label: '${LogOutcome.failed.emoji} ${'profile.filter.lessons'.tr()}',
                     isSelected:
                         notifier.currentFilter == LogOutcomeFilter.lessons,
                     onTap: () => notifier.setFilter(LogOutcomeFilter.lessons),

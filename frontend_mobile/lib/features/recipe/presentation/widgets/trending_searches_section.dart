@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
@@ -32,7 +33,7 @@ class TrendingSearchesSection extends ConsumerWidget {
           child: Row(
             children: [
               Text(
-                '🔥',
+                AppEmojis.trending,
                 style: TextStyle(fontSize: 18.sp),
               ),
               SizedBox(width: 6.w),

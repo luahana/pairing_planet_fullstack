@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/compact_recipe_card.dart';
@@ -278,7 +279,7 @@ class FeaturedStarsCarousel extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             child: Row(
               children: [
-                Text('⭐', style: TextStyle(fontSize: 16.sp)),
+                Text(AppEmojis.recipeFeatured, style: TextStyle(fontSize: 16.sp)),
                 SizedBox(width: 6.w),
                 Text(
                   title!,

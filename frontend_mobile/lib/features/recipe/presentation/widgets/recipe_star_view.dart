@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/star_node.dart';
@@ -203,9 +204,9 @@ class _RecipeStarViewState extends State<RecipeStarView>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildLegendItem('📌', 'star.root'.tr()),
+          _buildLegendItem(AppEmojis.recipeOriginal, 'star.root'.tr()),
           SizedBox(width: 12.w),
-          _buildLegendItem('🔀', '${widget.variants.length}'),
+          _buildLegendItem(AppEmojis.recipeVariant, '${widget.variants.length}'),
         ],
       ),
     );
@@ -427,7 +428,7 @@ class StarPreviewMini extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('⭐', style: TextStyle(fontSize: 12.sp)),
+          Text(AppEmojis.recipeFeatured, style: TextStyle(fontSize: 12.sp)),
           SizedBox(width: 4.w),
           Text(
             '$variantCount',
