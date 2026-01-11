@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -174,35 +173,33 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: NestedScrollViewPlus(
-        controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          // SliverAppBar with filter tabs or search field
-          SliverAppBar(
-            pinned: true,
-            floating: false,
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            elevation: innerBoxIsScrolled ? 1 : 0,
-            titleSpacing: 0,
-            title: _isSearching
-                ? _buildSearchField()
-                : _buildFilterTabs(),
-            actions: [
-              IconButton(
-                icon: Icon(_isSearching ? Icons.close : Icons.search),
-                onPressed: _toggleSearch,
-              ),
-            ],
-          ),
-          // Instagram-style pull-to-refresh
-          CupertinoSliverRefreshControl(
-            onRefresh: () async {
-              await ref.read(logPostPaginatedListProvider.notifier).refresh();
-            },
-          ),
-        ],
-        body: NotificationListener<ScrollNotification>(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(logPostPaginatedListProvider.notifier).refresh();
+        },
+        child: NestedScrollViewPlus(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            // SliverAppBar with filter tabs or search field
+            SliverAppBar(
+              pinned: true,
+              floating: false,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              elevation: innerBoxIsScrolled ? 1 : 0,
+              titleSpacing: 0,
+              title: _isSearching
+                  ? _buildSearchField()
+                  : _buildFilterTabs(),
+              actions: [
+                IconButton(
+                  icon: Icon(_isSearching ? Icons.close : Icons.search),
+                  onPressed: _toggleSearch,
+                ),
+              ],
+            ),
+          ],
+          body: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             if (notification is ScrollUpdateNotification) {
               final metrics = notification.metrics;
@@ -220,6 +217,7 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
                 error: (error, stack) => _buildErrorState(error),
               );
             },
+            ),
           ),
         ),
       ),
