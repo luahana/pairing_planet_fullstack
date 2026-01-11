@@ -149,16 +149,32 @@ public class RecipeService {
 
         // 변형 및 로그 리스트 조회
         List<RecipeSummaryDto> variants = recipeRepository.findByParentRecipeIdAndIsDeletedFalse(recipe.getId())
-                .stream().map(this::convertToSummary).toList();
+                .stream()
+                .limit(6)  // Limit to 6 for "View All" detection (show 5, detect more if 6)
+                .map(this::convertToSummary)
+                .toList();
 
         List<LogPostSummaryDto> logs = recipeLogRepository.findAllByRecipeId(recipe.getId())
-                .stream().map(rl -> new LogPostSummaryDto(
-                        rl.getLogPost().getPublicId(),
-                        rl.getLogPost().getTitle(),
-                        rl.getOutcome(),
-                        null, // 대표이미지 생략
-                        null  // 작성자 생략
-                )).toList();
+                .stream()
+                .limit(6)  // Limit to 6 for "See More" detection (show 5, detect more if 6)
+                .map(rl -> {
+                    var logPost = rl.getLogPost();
+                    // Get first image URL as thumbnail (images ordered by displayOrder ASC)
+                    String thumbnailUrl = logPost.getImages().isEmpty()
+                            ? null
+                            : urlPrefix + "/" + logPost.getImages().get(0).getStoredFilename();
+                    // Get creator name
+                    String logCreatorName = userRepository.findById(logPost.getCreatorId())
+                            .map(user -> user.getUsername())
+                            .orElse(null);
+                    return new LogPostSummaryDto(
+                            logPost.getPublicId(),
+                            logPost.getTitle(),
+                            rl.getOutcome(),
+                            thumbnailUrl,
+                            logCreatorName
+                    );
+                }).toList();
 
         // P1: 저장 여부 확인
         Boolean isSavedByCurrentUser = (userId != null)

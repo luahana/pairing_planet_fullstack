@@ -119,6 +119,20 @@ public class LogPostService {
         return logs.map(this::convertToLogSummary);
     }
 
+    /**
+     * 특정 레시피에 달린 로그 목록 조회 (페이지네이션)
+     * @param recipePublicId Recipe public ID
+     * @param pageable Pagination info
+     */
+    @Transactional(readOnly = true)
+    public Slice<LogPostSummaryDto> getLogsByRecipe(UUID recipePublicId, Pageable pageable) {
+        Recipe recipe = recipeRepository.findByPublicId(recipePublicId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
+        return recipeLogRepository.findByRecipeIdOrderByCreatedAtDesc(recipe.getId(), pageable)
+                .map(rl -> convertToLogSummary(rl.getLogPost()));
+    }
+
     @Transactional(readOnly = true)
     public LogPostDetailResponseDto getLogDetail(UUID publicId) {
         return getLogDetail(publicId, null);

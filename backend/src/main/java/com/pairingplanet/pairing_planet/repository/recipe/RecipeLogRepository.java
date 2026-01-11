@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -12,6 +15,10 @@ public interface RecipeLogRepository extends JpaRepository<RecipeLog, Long> {
     // 특정 레시피에 달린 모든 후기 로그 조회
     @Query("SELECT rl FROM RecipeLog rl JOIN FETCH rl.logPost WHERE rl.recipe.id = :recipeId")
     List<RecipeLog> findAllByRecipeId(@Param("recipeId") Long recipeId);
+
+    // 특정 레시피에 달린 로그 조회 (페이지네이션)
+    @Query("SELECT rl FROM RecipeLog rl JOIN FETCH rl.logPost lp WHERE rl.recipe.id = :recipeId AND lp.isDeleted = false ORDER BY lp.createdAt DESC")
+    Slice<RecipeLog> findByRecipeIdOrderByCreatedAtDesc(@Param("recipeId") Long recipeId, Pageable pageable);
 
     /**
      * [해결] 특정 레시피 노드에 달린 로그 개수 조회

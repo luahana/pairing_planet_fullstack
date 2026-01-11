@@ -25,35 +25,53 @@ class RecentLogsGallery extends StatelessWidget {
       return _buildEmptyState();
     }
 
+    // Show only first 5 logs, use 6th to detect if there are more
+    final displayLogs = logs.take(5).toList();
+    final hasMore = logs.length > 5;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section header
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'recipe.recentLogs.title'.tr(),
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (logs.length > 3)
-                TextButton(
-                  onPressed: () {
-                    // Navigate to full log list (future feature)
-                  },
-                  child: Text(
-                    'recipe.recentLogs.viewAll'.tr(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'recipe.recentLogs.title'.tr(),
                     style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 13.sp,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (hasMore)
+                    TextButton(
+                      onPressed: () {
+                        // Navigate to recipe-filtered log list
+                        context.push('${RouteConstants.logPosts}?recipeId=$recipeId');
+                      },
+                      child: Text(
+                        'recipe.recentLogs.viewAll'.tr(),
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'recipe.recentLogs.subtitle'.tr(),
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: Colors.grey[600],
                 ),
+              ),
             ],
           ),
         ),
@@ -65,9 +83,9 @@ class RecentLogsGallery extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            itemCount: logs.length,
+            itemCount: displayLogs.length,
             itemBuilder: (context, index) {
-              return _buildLogCard(context, logs[index]);
+              return _buildLogCard(context, displayLogs[index]);
             },
           ),
         ),

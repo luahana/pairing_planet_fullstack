@@ -258,6 +258,9 @@
       "otherVariations": "Other Variations",
       "current": "Current"
     },
+    "variants": {
+      "viewAll": "View All"
+    },
     "action": {
       "logRecord": "Log Record",
       "logSubtitle": "I tried this!",
@@ -310,7 +313,8 @@
       "parent": "Parent"
     },
     "recentLogs": {
-      "title": "Recent Cooking Logs",
+      "title": "See How Others Made It",
+      "subtitle": "Get inspired by the community",
       "viewAll": "View All",
       "emptyTitle": "No cooking logs yet",
       "emptySubtitle": "Be the first to cook this recipe!"

@@ -187,6 +187,80 @@ class RecipeControllerTest extends BaseIntegrationTest {
                             .header("Authorization", "Bearer " + token))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("Should limit variants to 6 in recipe detail response")
+        void getRecipeDetail_LimitsVariantsTo6() throws Exception {
+            String token = testJwtTokenProvider.createAccessToken(testUser.getPublicId(), "USER");
+
+            // Create parent recipe
+            Recipe parentRecipe = Recipe.builder()
+                    .title("Parent Recipe")
+                    .description("Parent Description")
+                    .culinaryLocale("ko-KR")
+                    .foodMaster(testFood)
+                    .creatorId(testUser.getId())
+                    .build();
+            recipeRepository.save(parentRecipe);
+
+            // Create 8 variant recipes
+            for (int i = 0; i < 8; i++) {
+                Recipe variant = Recipe.builder()
+                        .title("Variant " + i)
+                        .description("Variant Description " + i)
+                        .culinaryLocale("ko-KR")
+                        .foodMaster(testFood)
+                        .creatorId(testUser.getId())
+                        .parentRecipe(parentRecipe)
+                        .rootRecipe(parentRecipe)
+                        .build();
+                recipeRepository.save(variant);
+            }
+
+            // Get recipe detail
+            mockMvc.perform(get("/api/v1/recipes/" + parentRecipe.getPublicId())
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.variants").isArray())
+                    .andExpect(jsonPath("$.variants.length()").value(6)); // Limited to 6
+        }
+
+        @Test
+        @DisplayName("Should return all variants when less than 6")
+        void getRecipeDetail_ReturnsAllVariantsWhenLessThan6() throws Exception {
+            String token = testJwtTokenProvider.createAccessToken(testUser.getPublicId(), "USER");
+
+            // Create parent recipe
+            Recipe parentRecipe = Recipe.builder()
+                    .title("Parent Recipe")
+                    .description("Parent Description")
+                    .culinaryLocale("ko-KR")
+                    .foodMaster(testFood)
+                    .creatorId(testUser.getId())
+                    .build();
+            recipeRepository.save(parentRecipe);
+
+            // Create only 3 variant recipes
+            for (int i = 0; i < 3; i++) {
+                Recipe variant = Recipe.builder()
+                        .title("Variant " + i)
+                        .description("Variant Description " + i)
+                        .culinaryLocale("ko-KR")
+                        .foodMaster(testFood)
+                        .creatorId(testUser.getId())
+                        .parentRecipe(parentRecipe)
+                        .rootRecipe(parentRecipe)
+                        .build();
+                recipeRepository.save(variant);
+            }
+
+            // Get recipe detail
+            mockMvc.perform(get("/api/v1/recipes/" + parentRecipe.getPublicId())
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.variants").isArray())
+                    .andExpect(jsonPath("$.variants.length()").value(3)); // All 3 returned
+        }
     }
 
     @Nested

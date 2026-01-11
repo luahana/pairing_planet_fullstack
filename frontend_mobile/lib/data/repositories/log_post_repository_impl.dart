@@ -88,6 +88,27 @@ class LogPostRepositoryImpl implements LogPostRepository {
   }
 
   @override
+  Future<Either<Failure, SliceResponse<LogPostSummary>>> getLogsByRecipe({
+    required String recipeId,
+    int page = 0,
+    int size = 20,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final sliceDto = await remoteDataSource.getLogsByRecipe(
+          recipeId: recipeId,
+          page: page,
+          size: size,
+        );
+        return Right(sliceDto.toEntity((dto) => dto.toEntity()));
+      } catch (e) {
+        return Left(ServerFailure(e.toString()));
+      }
+    }
+    return Left(ConnectionFailure());
+  }
+
+  @override
   Future<Either<Failure, LogPostDetail>> updateLog(
     String publicId, {
     String? title,

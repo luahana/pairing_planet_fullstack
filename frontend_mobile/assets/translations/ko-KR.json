@@ -258,6 +258,9 @@
       "otherVariations": "다른 변형들",
       "current": "현재"
     },
+    "variants": {
+      "viewAll": "모두 보기"
+    },
     "action": {
       "logRecord": "로그 기록",
       "logSubtitle": "나도 만들어봤어요!",
@@ -306,7 +309,8 @@
       "parent": "부모"
     },
     "recentLogs": {
-      "title": "최근 요리 기록",
+      "title": "다른 사람들은 이렇게 만들었어요",
+      "subtitle": "커뮤니티에서 영감을 얻으세요",
       "viewAll": "모두 보기",
       "emptyTitle": "아직 요리 기록이 없어요",
       "emptySubtitle": "첫 번째로 이 레시피를 요리해보세요!"

@@ -576,7 +576,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
             // Invalidate profile providers so they refresh when user visits profile
             ref.invalidate(myRecipesProvider);
             ref.invalidate(myProfileProvider);
-            context.go(ApiEndpoints.recipeDetail(newId));
+            // Navigate to the newly created recipe detail page
+            context.go(RouteConstants.recipeDetailPath(newId));
           }
         },
         error: (error, _) => ScaffoldMessenger.of(context)

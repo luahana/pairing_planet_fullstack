@@ -38,6 +38,10 @@ class RecipeFamilySection extends StatelessWidget {
   Widget _buildVariationsSection(BuildContext context) {
     if (variants.isEmpty) return const SizedBox.shrink();
 
+    // Show only first 5 variants, use 6th to detect if there are more
+    final displayVariants = variants.take(5).toList();
+    final hasMore = variants.length > 5;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -76,6 +80,26 @@ class RecipeFamilySection extends StatelessWidget {
                     ),
                   ),
                 ),
+                const Spacer(),
+                if (hasMore)
+                  TextButton(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      context.push(RouteConstants.recipeStarPath(currentRecipeId));
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'recipe.variants.viewAll'.tr(),
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -86,13 +110,13 @@ class RecipeFamilySection extends StatelessWidget {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-              itemCount: variants.length,
+              itemCount: displayVariants.length,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: EdgeInsets.only(
-                    right: index < variants.length - 1 ? 10.w : 0,
+                    right: index < displayVariants.length - 1 ? 10.w : 0,
                   ),
-                  child: _VariantMiniCard(variant: variants[index]),
+                  child: _VariantMiniCard(variant: displayVariants[index]),
                 );
               },
             ),

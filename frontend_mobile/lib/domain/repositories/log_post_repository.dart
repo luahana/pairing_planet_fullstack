@@ -20,6 +20,13 @@ abstract class LogPostRepository {
     List<String>? outcomes,
   });
 
+  // 특정 레시피의 로그 리스트 조회
+  Future<Either<Failure, SliceResponse<LogPostSummary>>> getLogsByRecipe({
+    required String recipeId,
+    int page = 0,
+    int size = 20,
+  });
+
   // 로그 수정
   Future<Either<Failure, LogPostDetail>> updateLog(
     String publicId, {

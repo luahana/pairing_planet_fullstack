@@ -7,6 +7,7 @@ class ApiEndpoints {
   static String recipeModifiable(String id) => '/recipes/$id/modifiable'; // Recipe edit/delete check
 
   static const String logPosts = '/log_posts'; //
+  static String logsByRecipe(String recipeId) => '/log_posts/recipe/$recipeId'; // Logs for a specific recipe
 
   // Feed 관련
   static const String homeFeed = '/home'; //

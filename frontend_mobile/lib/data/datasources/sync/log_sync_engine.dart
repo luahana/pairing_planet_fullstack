@@ -11,6 +11,7 @@ import 'package:pairing_planet2_frontend/domain/entities/log_post/create_log_pos
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_providers.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_list_provider.dart';
 import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
+import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
 
 /// Background sync engine for processing the sync queue
 /// Handles offline-first log creation with automatic retry
@@ -184,6 +185,10 @@ class LogSyncEngine {
           _ref.invalidate(logPostPaginatedListProvider);
           _ref.invalidate(myLogsProvider);
           _ref.invalidate(myProfileProvider);
+          // Invalidate recipe detail to refresh "See How Others Made It" section
+          if (payload.recipePublicId != null && payload.recipePublicId!.isNotEmpty) {
+            _ref.invalidate(recipeDetailWithTrackingProvider(payload.recipePublicId!));
+          }
         },
       );
     } else {

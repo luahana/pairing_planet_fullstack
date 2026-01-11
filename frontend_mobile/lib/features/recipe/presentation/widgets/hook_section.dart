@@ -196,14 +196,17 @@ class _HookSectionState extends ConsumerState<HookSection> {
         ),
         SizedBox(height: 16.h),
 
-        _buildTextField(
-          controller: widget.descriptionController,
-          label: 'recipe.hook.description'.tr(),
-          hint: 'recipe.hook.descriptionHint'.tr(),
-          icon: Icons.notes,
-          maxLines: 3,
-        ),
-        SizedBox(height: 16.h),
+        // Hide description field for variant recipes
+        if (!widget.isReadOnly) ...[
+          _buildTextField(
+            controller: widget.descriptionController,
+            label: 'recipe.hook.description'.tr(),
+            hint: 'recipe.hook.descriptionHint'.tr(),
+            icon: Icons.notes,
+            maxLines: 3,
+          ),
+          SizedBox(height: 16.h),
+        ],
 
         // Culinary locale dropdown (always editable, even in variant mode)
         LocaleDropdown(

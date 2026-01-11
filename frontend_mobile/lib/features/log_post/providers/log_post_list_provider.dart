@@ -9,12 +9,14 @@ class LogPostListState {
   final bool hasNext;
   final String? searchQuery;
   final LogFilterState? filterState;
+  final String? recipeId;
 
   LogPostListState({
     required this.items,
     required this.hasNext,
     this.searchQuery,
     this.filterState,
+    this.recipeId,
   });
 }
 
@@ -194,4 +196,80 @@ class LogPostListNotifier extends AsyncNotifier<LogPostListState> {
 
 final logPostPaginatedListProvider = AsyncNotifierProvider<LogPostListNotifier, LogPostListState>(() {
   return LogPostListNotifier();
+});
+
+/// Provider for logs filtered by recipe (used by "See More" from recipe detail)
+class RecipeLogsNotifier extends AutoDisposeFamilyAsyncNotifier<LogPostListState, String> {
+  int _currentPage = 0;
+  bool _hasNext = true;
+  bool _isFetchingNext = false;
+
+  @override
+  Future<LogPostListState> build(String recipeId) async {
+    _currentPage = 0;
+    _hasNext = true;
+
+    final items = await _fetchPage(0, recipeId);
+    return LogPostListState(
+      items: items,
+      hasNext: _hasNext,
+      recipeId: recipeId,
+    );
+  }
+
+  Future<List<LogPostSummary>> _fetchPage(int page, String recipeId) async {
+    final useCase = ref.read(getLogPostListUseCaseProvider);
+    final result = await useCase(
+      page: page,
+      size: 20,
+      recipeId: recipeId,
+    );
+
+    return result.fold(
+      (failure) => throw failure,
+      (sliceResponse) {
+        _hasNext = sliceResponse.hasNext;
+        return sliceResponse.content;
+      },
+    );
+  }
+
+  Future<void> fetchNextPage() async {
+    if (_isFetchingNext || !_hasNext) return;
+
+    final recipeId = arg;
+    _isFetchingNext = true;
+    try {
+      final currentState = state.value;
+      if (currentState == null) return;
+
+      _currentPage++;
+      final newItems = await _fetchPage(_currentPage, recipeId);
+
+      final allItems = [...currentState.items, ...newItems];
+      final uniqueItems = <String, LogPostSummary>{};
+      for (final item in allItems) {
+        uniqueItems[item.id] = item;
+      }
+
+      state = AsyncValue.data(LogPostListState(
+        items: uniqueItems.values.toList(),
+        hasNext: _hasNext,
+        recipeId: recipeId,
+      ));
+    } finally {
+      _isFetchingNext = false;
+    }
+  }
+
+  Future<void> refresh() async {
+    _currentPage = 0;
+    _hasNext = true;
+    ref.invalidateSelf();
+  }
+}
+
+final recipeLogsProvider = AsyncNotifierProvider.autoDispose
+    .family<RecipeLogsNotifier, LogPostListState, String>(() {
+  return RecipeLogsNotifier();
 });
