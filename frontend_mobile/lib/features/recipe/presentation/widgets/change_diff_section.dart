@@ -6,14 +6,10 @@ import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 /// GitHub-style diff section showing what changed from parent recipe
 class ChangeDiffSection extends StatefulWidget {
   final Map<String, dynamic> changeDiff;
-  final List<String>? changeCategories;
-  final String? changeReason;
 
   const ChangeDiffSection({
     super.key,
     required this.changeDiff,
-    this.changeCategories,
-    this.changeReason,
   });
 
   @override
@@ -21,7 +17,16 @@ class ChangeDiffSection extends StatefulWidget {
 }
 
 class _ChangeDiffSectionState extends State<ChangeDiffSection> {
-  bool _isExpanded = true;
+  bool _isExpanded = false;
+
+  bool _hasChanges(Map<String, dynamic> diff) {
+    final added = diff['added'] as List<dynamic>?;
+    final removed = diff['removed'] as List<dynamic>?;
+    final modified = diff['modified'] as List<dynamic>?;
+    return (added?.isNotEmpty ?? false) ||
+        (removed?.isNotEmpty ?? false) ||
+        (modified?.isNotEmpty ?? false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,63 +49,42 @@ class _ChangeDiffSectionState extends State<ChangeDiffSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
-            child: Padding(
-              padding: EdgeInsets.all(12.r),
-              child: Row(
-                children: [
-                  Icon(Icons.compare_arrows, size: 20.sp, color: AppColors.diffModified),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'recipe.diff.whatChanged'.tr(),
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
+          // Header with toggle
+          Padding(
+            padding: EdgeInsets.all(12.r),
+            child: Row(
+              children: [
+                Icon(Icons.compare_arrows, size: 20.sp, color: AppColors.diffModified),
+                SizedBox(width: 8.w),
+                Text(
+                  'recipe.diff.whatChanged'.tr(),
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const Spacer(),
-                  // Change category chips
-                  if (widget.changeCategories != null && widget.changeCategories!.isNotEmpty)
-                    ...widget.changeCategories!.take(2).map((cat) => Padding(
-                      padding: EdgeInsets.only(right: 4.w),
-                      child: _ChangeCategoryChip(category: cat),
-                    )),
-                  Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: AppColors.textSecondary,
+                ),
+                const Spacer(),
+                // Toggle button
+                TextButton.icon(
+                  onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                  icon: Icon(
+                    _isExpanded ? Icons.visibility_off : Icons.visibility,
+                    size: 16.sp,
                   ),
-                ],
-              ),
+                  label: Text(
+                    _isExpanded ? 'recipe.diff.hide'.tr() : 'recipe.diff.show'.tr(),
+                    style: TextStyle(fontSize: 12.sp),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
             ),
           ),
-          // Change reason (if provided)
-          if (widget.changeReason != null && widget.changeReason!.isNotEmpty && _isExpanded) ...[
-            const Divider(height: 1),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.format_quote, size: 16.sp, color: AppColors.textSecondary),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      widget.changeReason!,
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontStyle: FontStyle.italic,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          // Content
+          // Content (toggled)
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: Column(
@@ -128,50 +112,6 @@ class _ChangeDiffSectionState extends State<ChangeDiffSection> {
             duration: const Duration(milliseconds: 200),
           ),
         ],
-      ),
-    );
-  }
-
-  bool _hasChanges(Map<String, dynamic> diff) {
-    final added = diff['added'] as List<dynamic>?;
-    final removed = diff['removed'] as List<dynamic>?;
-    final modified = diff['modified'] as List<dynamic>?;
-    return (added?.isNotEmpty ?? false) ||
-        (removed?.isNotEmpty ?? false) ||
-        (modified?.isNotEmpty ?? false);
-  }
-}
-
-/// Change category chip
-class _ChangeCategoryChip extends StatelessWidget {
-  final String category;
-
-  const _ChangeCategoryChip({required this.category});
-
-  @override
-  Widget build(BuildContext context) {
-    final (color, label) = switch (category.toUpperCase()) {
-      'INGREDIENT' => (AppColors.diffAdded, 'recipe.category.ingredient'.tr()),
-      'TECHNIQUE' => (AppColors.primary, 'recipe.category.technique'.tr()),
-      'AMOUNT' => (AppColors.diffModified, 'recipe.category.amount'.tr()),
-      'SEASONING' => (AppColors.rating, 'recipe.category.seasoning'.tr()),
-      _ => (AppColors.textSecondary, category),
-    };
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4.r),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        '+$label',
-        style: TextStyle(
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w500,
-          color: color,
-        ),
       ),
     );
   }

@@ -14,7 +14,6 @@ import 'package:pairing_planet2_frontend/features/log_post/presentation/widgets/
 import 'package:pairing_planet2_frontend/features/log_post/providers/quick_log_draft_provider.dart';
 import '../../providers/recipe_providers.dart';
 import '../widgets/recent_logs_gallery.dart';
-import '../widgets/variants_gallery.dart';
 import '../widgets/hashtag_chips.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../widgets/locale_badge.dart';
@@ -130,7 +129,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   children: [
                     _buildImageHeader(recipe),
                     Padding(
-                      padding: EdgeInsets.all(20.r),
+                      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -179,6 +178,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     // - For variants: Shows "Based on" with root recipe
                     // - For originals with variants: Shows "Variations"
                     if (recipe.rootInfo != null || recipe.variants.isNotEmpty) ...[
+                      SizedBox(height: 8.h),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20.w),
                         child: RecipeFamilySection(
@@ -190,14 +190,57 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                       ),
                       SizedBox(height: 20.h),
                     ],
+                    // Change Reason Section (for variant recipes)
+                    if (recipe.isVariant && recipe.changeReason != null && recipe.changeReason!.isNotEmpty) ...[
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 40.w),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '"',
+                              style: TextStyle(
+                                fontSize: 28.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                                height: 0.8,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Flexible(
+                              child: Text(
+                                recipe.changeReason!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 15.sp,
+                                  fontStyle: FontStyle.italic,
+                                  color: AppColors.primary,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              '"',
+                              style: TextStyle(
+                                fontSize: 28.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                                height: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
                     // Change Diff Section (for variant recipes)
                     if (recipe.isVariant && recipe.hasChanges) ...[
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20.w),
                         child: ChangeDiffSection(
                           changeDiff: recipe.changeDiff!,
-                          changeCategories: recipe.changeCategories,
-                          changeReason: recipe.changeReason,
                         ),
                       ),
                       SizedBox(height: 20.h),
@@ -207,43 +250,41 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: KitchenProofIngredients(
                         ingredients: recipe.ingredients,
-                        changeDiff: recipe.changeDiff,
-                        showDiffBadges: recipe.isVariant,
                       ),
                     ),
                     SizedBox(height: 24.h),
                     // Steps Section
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.format_list_numbered, size: 20.sp),
-                              SizedBox(width: 8.w),
-                              Text(
-                                'recipe.steps'.tr(),
-                                style: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.bold,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        padding: EdgeInsets.all(16.r),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.format_list_numbered, size: 20.sp),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  'recipe.steps'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 16.h),
-                          ...recipe.steps.map((step) => _buildStepItem(step)),
-                        ],
+                              ],
+                            ),
+                            SizedBox(height: 16.h),
+                            ...recipe.steps.asMap().entries.map((entry) => _buildStepItem(entry.value, entry.key + 1)),
+                          ],
+                        ),
                       ),
                     ),
-                    // Variants Gallery section (only for ROOT recipes with variants)
-                    if (recipe.variants.isNotEmpty && !recipe.isVariant) ...[
-                      SizedBox(height: 24.h),
-                      VariantsGallery(
-                        variants: recipe.variants,
-                        recipeId: recipe.publicId,
-                      ),
-                    ],
                     // Recent Logs Gallery section
                     SizedBox(height: 24.h),
                     RecentLogsGallery(
@@ -342,7 +383,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     );
   }
 
-  Widget _buildStepItem(dynamic step) {
+  Widget _buildStepItem(dynamic step, int stepNumber) {
     return Padding(
       padding: EdgeInsets.only(bottom: 24.h),
       child: Column(
@@ -354,7 +395,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 radius: 12.r,
                 backgroundColor: AppColors.primary,
                 child: Text(
-                  "${step.stepNumber}",
+                  "$stepNumber",
                   style: TextStyle(color: Colors.white, fontSize: 12.sp),
                 ),
               ),

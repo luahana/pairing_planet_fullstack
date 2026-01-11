@@ -106,7 +106,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       });
     }
     // 💡 기존 단계 복사 (수정 불가 마킹)
-    for (var step in p.steps) {
+    for (int i = 0; i < p.steps.length; i++) {
+      final step = p.steps[i];
       _steps.add({
         'stepNumber': step.stepNumber,
         'description': step.description,
@@ -114,6 +115,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
         'imagePublicId': step.imagePublicId,
         'isOriginal': true,
         'isDeleted': false,
+        'originalIndex': i,
       });
     }
   }
@@ -459,6 +461,22 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       }
     }
 
+    // Track step reordering
+    final reorderedSteps = <Map<String, String>>[];
+    int currentPosition = 0;
+    for (final step in _steps) {
+      if (step['isOriginal'] == true && step['isDeleted'] != true) {
+        final originalIndex = step['originalIndex'] as int?;
+        if (originalIndex != null && originalIndex != currentPosition) {
+          reorderedSteps.add({
+            'from': 'Step ${originalIndex + 1}',
+            'to': 'Step ${currentPosition + 1}',
+          });
+        }
+        currentPosition++;
+      }
+    }
+
     return {
       'ingredients': {
         'removed': removedIngredients,
@@ -468,7 +486,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       'steps': {
         'removed': removedSteps,
         'added': addedSteps,
-        'modified': <Map<String, String>>[],
+        'modified': reorderedSteps,
       },
     };
   }
