@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nested_scroll_view_plus/nested_scroll_view_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -79,72 +78,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: profileAsync.when(
-        data: (profile) => NestedScrollViewPlus(
-          controller: _scrollController,
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            // Pinned app bar
-            SliverAppBar(
-              pinned: true,
-              floating: false,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              elevation: innerBoxIsScrolled ? 1 : 0,
-              centerTitle: false,
-              title: const AppLogo(),
-              actions: [
-                IconButton(
-                  icon: Icon(Icons.settings_outlined, size: 22.sp),
-                  onPressed: () => context.push(RouteConstants.settings),
+        data: (profile) => RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(myProfileProvider);
+            ref.invalidate(cookingDnaProvider);
+            ref.invalidate(myRecipesProvider);
+            ref.invalidate(myLogsProvider);
+            ref.invalidate(savedRecipesProvider);
+            ref.invalidate(savedLogsProvider);
+          },
+          child: NestedScrollViewPlus(
+            controller: _scrollController,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              // Pinned app bar
+              SliverAppBar(
+                pinned: true,
+                floating: false,
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+                elevation: innerBoxIsScrolled ? 1 : 0,
+                centerTitle: false,
+                title: const AppLogo(),
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.settings_outlined, size: 22.sp),
+                    onPressed: () => context.push(RouteConstants.settings),
+                  ),
+                ],
+              ),
+              // Header content - sizes naturally to content
+              SliverToBoxAdapter(
+                child: CookingDnaHeader(
+                  profile: profile,
+                  cookingDna: cookingDnaState.data,
+                  isLoading: cookingDnaState.isLoading,
+                  onRecipesTap: () => _tabController.animateTo(0),
+                  onLogsTap: () => _tabController.animateTo(1),
                 ),
+              ),
+              // Sticky Tab Bar
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickyTabBarDelegate(
+                  TabBar(
+                    controller: _tabController,
+                    labelColor: AppColors.primary,
+                    unselectedLabelColor: Colors.grey[600],
+                    indicatorColor: AppColors.primary,
+                    indicatorWeight: 3.h,
+                    tabs: [
+                      Tab(text: 'profile.myRecipes'.tr()),
+                      Tab(text: 'profile.myLogs'.tr()),
+                      Tab(text: 'profile.saved'.tr()),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            body: TabBarView(
+              controller: _tabController,
+              children: const [
+                _MyRecipesTab(key: PageStorageKey<String>('my_recipes')),
+                _MyLogsTab(key: PageStorageKey<String>('my_logs')),
+                _SavedTab(key: PageStorageKey<String>('saved')),
               ],
             ),
-            // Instagram-style pull-to-refresh - grows from 0 height, pushes content down
-            CupertinoSliverRefreshControl(
-              onRefresh: () async {
-                ref.invalidate(myProfileProvider);
-                ref.invalidate(cookingDnaProvider);
-                ref.invalidate(myRecipesProvider);
-                ref.invalidate(myLogsProvider);
-                ref.invalidate(savedRecipesProvider);
-                ref.invalidate(savedLogsProvider);
-              },
-            ),
-            // Header content - sizes naturally to content
-            SliverToBoxAdapter(
-              child: CookingDnaHeader(
-                profile: profile,
-                cookingDna: cookingDnaState.data,
-                isLoading: cookingDnaState.isLoading,
-                onRecipesTap: () => _tabController.animateTo(0),
-                onLogsTap: () => _tabController.animateTo(1),
-              ),
-            ),
-            // Sticky Tab Bar
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _StickyTabBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: AppColors.primary,
-                  unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: AppColors.primary,
-                  indicatorWeight: 3.h,
-                  tabs: [
-                    Tab(text: 'profile.myRecipes'.tr()),
-                    Tab(text: 'profile.myLogs'.tr()),
-                    Tab(text: 'profile.saved'.tr()),
-                  ],
-                ),
-              ),
-            ),
-          ],
-          body: TabBarView(
-            controller: _tabController,
-            children: const [
-              _MyRecipesTab(key: PageStorageKey<String>('my_recipes')),
-              _MyLogsTab(key: PageStorageKey<String>('my_logs')),
-              _SavedTab(key: PageStorageKey<String>('saved')),
-            ],
           ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -167,35 +166,33 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: NestedScrollViewPlus(
-        controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          // SliverAppBar with filter tabs
-          SliverAppBar(
-            pinned: true,
-            floating: false,
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            elevation: innerBoxIsScrolled ? 1 : 0,
-            titleSpacing: 0,
-            title: _buildFilterTabs(),
-            actions: [
-              _buildSortButton(),
-              const CompactViewModeToggle(),
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () => context.push(RouteConstants.search),
-              ),
-            ],
-          ),
-          // Instagram-style pull-to-refresh
-          CupertinoSliverRefreshControl(
-            onRefresh: () async {
-              await ref.read(recipeListProvider.notifier).refresh();
-            },
-          ),
-        ],
-        body: NotificationListener<ScrollNotification>(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(recipeListProvider.notifier).refresh();
+        },
+        child: NestedScrollViewPlus(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            // SliverAppBar with filter tabs
+            SliverAppBar(
+              pinned: true,
+              floating: false,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              elevation: innerBoxIsScrolled ? 1 : 0,
+              titleSpacing: 0,
+              title: _buildFilterTabs(),
+              actions: [
+                _buildSortButton(),
+                const CompactViewModeToggle(),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () => context.push(RouteConstants.search),
+                ),
+              ],
+            ),
+          ],
+          body: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             if (notification is ScrollUpdateNotification) {
               final metrics = notification.metrics;
@@ -214,6 +211,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                 error: (error, stack) => _buildErrorBody(error),
               );
             },
+          ),
           ),
         ),
       ),

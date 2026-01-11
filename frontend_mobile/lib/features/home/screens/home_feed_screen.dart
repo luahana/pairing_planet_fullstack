@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -31,7 +30,7 @@ class HomeFeedScreen extends ConsumerStatefulWidget {
 
 class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
   final ScrollController _scrollController = ScrollController();
-  double _titleOpacity = 0.0;
+  final ValueNotifier<double> _titleOpacity = ValueNotifier<double>(0.0);
 
   @override
   void initState() {
@@ -40,10 +39,11 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
   }
 
   void _updateTitleOpacity() {
+    if (!_scrollController.hasClients) return;
     final maxScroll = 100.h - kToolbarHeight;
     final opacity = (_scrollController.offset / maxScroll).clamp(0.0, 1.0);
-    if (opacity != _titleOpacity) {
-      setState(() => _titleOpacity = opacity);
+    if (opacity != _titleOpacity.value) {
+      _titleOpacity.value = opacity;
     }
   }
 
@@ -51,6 +51,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
   void dispose() {
     _scrollController.removeListener(_updateTitleOpacity);
     _scrollController.dispose();
+    _titleOpacity.dispose();
     super.dispose();
   }
 
@@ -105,22 +106,17 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
   }
 
   Widget _buildContent(HomeFeedState feedState, String greeting, String displayName) {
-    return NestedScrollViewPlus(
-      controller: _scrollController,
-      headerSliverBuilder: (context, innerBoxIsScrolled) => [
-        // SliverAppBar with greeting and search
-        _buildSliverAppBar(greeting, displayName, innerBoxIsScrolled),
-        // Instagram-style pull-to-refresh
-        CupertinoSliverRefreshControl(
-          onRefresh: () async {
-            await ref.read(homeFeedProvider.notifier).refresh();
-          },
-        ),
-      ],
-      body: Builder(
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref.read(homeFeedProvider.notifier).refresh();
+      },
+      child: NestedScrollViewPlus(
+        controller: _scrollController,
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          _buildSliverAppBar(greeting, displayName, innerBoxIsScrolled),
+        ],
+        body: Builder(
         builder: (context) {
-          // IMPORTANT: Always return CustomScrollView to coordinate with
-          // NestedScrollViewPlus + CupertinoSliverRefreshControl
           // Show skeleton if loading with no data
           if (feedState.isLoading && feedState.data == null) {
             return CustomScrollView(
@@ -154,9 +150,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
               ],
             );
           }
-          // Normal content - return CustomScrollView with proper slivers
+          // Normal content
           return _buildContentBody(feedState);
         },
+      ),
       ),
     );
   }
@@ -272,8 +269,12 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
       elevation: innerBoxIsScrolled ? 1 : 0,
       expandedHeight: 100.h,
       centerTitle: false,
-      title: Opacity(
-        opacity: _titleOpacity,
+      title: ValueListenableBuilder<double>(
+        valueListenable: _titleOpacity,
+        builder: (context, opacity, child) => Opacity(
+          opacity: opacity,
+          child: child,
+        ),
         child: const AppLogo(),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -343,8 +344,12 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
         ),
       ),
       actions: [
-        Opacity(
-          opacity: _titleOpacity,
+        ValueListenableBuilder<double>(
+          valueListenable: _titleOpacity,
+          builder: (context, opacity, child) => Opacity(
+            opacity: opacity,
+            child: child,
+          ),
           child: IconButton(
             onPressed: () => context.push(RouteConstants.search),
             icon: const Icon(Icons.search),
