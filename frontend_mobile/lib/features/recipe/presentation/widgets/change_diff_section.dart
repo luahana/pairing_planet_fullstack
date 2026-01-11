@@ -59,7 +59,7 @@ class _ChangeDiffSectionState extends State<ChangeDiffSection> {
                 Text(
                   'recipe.diff.whatChanged'.tr(),
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

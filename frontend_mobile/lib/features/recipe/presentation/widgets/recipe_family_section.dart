@@ -59,7 +59,7 @@ class RecipeFamilySection extends StatelessWidget {
                 Text(
                   'recipe.family.variations'.tr(),
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -169,7 +169,7 @@ class RecipeFamilySection extends StatelessWidget {
                 Text(
                   'recipe.family.basedOn'.tr(),
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

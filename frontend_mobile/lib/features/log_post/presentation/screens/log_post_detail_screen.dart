@@ -310,18 +310,35 @@ class _LogPostDetailScreenState extends ConsumerState<LogPostDetailScreen> {
   Widget _buildImageGallery(List<String?> urls) {
     if (urls.isEmpty) return const SizedBox.shrink();
 
+    // Single image - center it
+    if (urls.length == 1) {
+      return SizedBox(
+        height: 300.h,
+        child: Center(
+          child: AppCachedImage(
+            imageUrl: urls[0],
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: 300.h,
+            borderRadius: 16.r,
+          ),
+        ),
+      );
+    }
+
+    // Multiple images - horizontal scroll with first image centered
+    final screenWidth = MediaQuery.of(context).size.width;
     return SizedBox(
       height: 300.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: urls.length,
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.only(left: screenWidth * 0.1),
         itemBuilder: (context, index) {
           return Padding(
             padding: EdgeInsets.only(right: 12.w),
             child: AppCachedImage(
               imageUrl: urls[index],
-              width: MediaQuery.of(context).size.width * 0.8,
+              width: screenWidth * 0.8,
               height: 300.h,
               borderRadius: 16.r,
             ),
