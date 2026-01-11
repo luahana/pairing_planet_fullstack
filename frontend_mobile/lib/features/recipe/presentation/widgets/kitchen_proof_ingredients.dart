@@ -28,7 +28,6 @@ class KitchenProofIngredients extends ConsumerStatefulWidget {
 
 class _KitchenProofIngredientsState extends ConsumerState<KitchenProofIngredients> {
   final Set<String> _checkedIngredients = {};
-  bool _showDiff = true;
 
   List<Ingredient> get mainIngredients =>
       widget.ingredients.where((i) => i.type == 'MAIN').toList();
@@ -59,7 +58,7 @@ class _KitchenProofIngredientsState extends ConsumerState<KitchenProofIngredient
             checkedIngredients: _checkedIngredients,
             onToggle: _toggleIngredient,
             changeDiff: widget.changeDiff,
-            showDiff: widget.showDiffBadges && _showDiff,
+            showDiff: widget.showDiffBadges,
             measurementPreference: measurementPref,
           ),
         if (secondaryIngredients.isNotEmpty) ...[
@@ -71,7 +70,7 @@ class _KitchenProofIngredientsState extends ConsumerState<KitchenProofIngredient
             checkedIngredients: _checkedIngredients,
             onToggle: _toggleIngredient,
             changeDiff: widget.changeDiff,
-            showDiff: widget.showDiffBadges && _showDiff,
+            showDiff: widget.showDiffBadges,
             measurementPreference: measurementPref,
           ),
         ],
@@ -84,7 +83,7 @@ class _KitchenProofIngredientsState extends ConsumerState<KitchenProofIngredient
             checkedIngredients: _checkedIngredients,
             onToggle: _toggleIngredient,
             changeDiff: widget.changeDiff,
-            showDiff: widget.showDiffBadges && _showDiff,
+            showDiff: widget.showDiffBadges,
             measurementPreference: measurementPref,
           ),
         ],
@@ -104,24 +103,6 @@ class _KitchenProofIngredientsState extends ConsumerState<KitchenProofIngredient
             fontWeight: FontWeight.bold,
           ),
         ),
-        const Spacer(),
-        if (widget.showDiffBadges)
-          TextButton.icon(
-            onPressed: () => setState(() => _showDiff = !_showDiff),
-            icon: Icon(
-              _showDiff ? Icons.visibility : Icons.visibility_off,
-              size: 16.sp,
-            ),
-            label: Text(
-              _showDiff ? 'recipe.diff.hide'.tr() : 'recipe.diff.show'.tr(),
-              style: TextStyle(fontSize: 12.sp),
-            ),
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-          ),
       ],
     );
   }
