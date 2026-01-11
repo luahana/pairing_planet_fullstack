@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 
 /// Badge showing star metrics: variant count and log count
 /// Used on original/root recipe cards to show the "star" (recipe family) size
@@ -41,7 +42,7 @@ class StarPreviewBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '⭐',
+            AppEmojis.recipeFeatured,
             style: TextStyle(fontSize: 12.sp),
           ),
           SizedBox(width: 6.w),
@@ -56,7 +57,7 @@ class StarPreviewBadge extends StatelessWidget {
           if (variantCount > 0) ...[
             SizedBox(width: 8.w),
             Text(
-              '🔀',
+              AppEmojis.recipeVariant,
               style: TextStyle(fontSize: 10.sp),
             ),
             SizedBox(width: 2.w),
@@ -72,7 +73,7 @@ class StarPreviewBadge extends StatelessWidget {
           if (logCount > 0) ...[
             SizedBox(width: 8.w),
             Text(
-              '📝',
+              AppEmojis.recipeLog,
               style: TextStyle(fontSize: 10.sp),
             ),
             SizedBox(width: 2.w),
@@ -93,10 +94,10 @@ class StarPreviewBadge extends StatelessWidget {
   Widget _buildCompact() {
     final parts = <String>[];
     if (variantCount > 0) {
-      parts.add('🔀$variantCount');
+      parts.add('${AppEmojis.recipeVariant}$variantCount');
     }
     if (logCount > 0) {
-      parts.add('📝$logCount');
+      parts.add('${AppEmojis.recipeLog}$logCount');
     }
 
     return Container(
@@ -142,7 +143,7 @@ class BasedOnBadge extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '📍',
+              AppEmojis.recipeBasedOn,
               style: TextStyle(fontSize: 11.sp),
             ),
             SizedBox(width: 4.w),

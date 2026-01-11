@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
@@ -176,7 +177,7 @@ class FeaturedStarCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('⭐', style: TextStyle(fontSize: 12.sp)),
+          Text(AppEmojis.recipeFeatured, style: TextStyle(fontSize: 12.sp)),
           SizedBox(width: 4.w),
           Text(
             'recipe.starLabel'.tr(),
@@ -367,7 +368,7 @@ class FeaturedStarCardHorizontal extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('⭐', style: TextStyle(fontSize: 10.sp)),
+                        Text(AppEmojis.recipeFeatured, style: TextStyle(fontSize: 10.sp)),
                         SizedBox(width: 4.w),
                         Text(
                           '${recipe.variantCount} ${'grid.variants'.tr()}',

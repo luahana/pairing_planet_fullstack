@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/outcome/outcome_badge.dart';
 
@@ -151,7 +152,7 @@ class ProgressOverviewCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('\u{1F525}', style: TextStyle(fontSize: 16.sp)),
+          Text(AppEmojis.streakIndicator, style: TextStyle(fontSize: 16.sp)),
           SizedBox(width: 4.w),
           Text(
             '${stats.currentStreak}',
@@ -315,7 +316,7 @@ class CompactProgressStats extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('\u{1F525}', style: TextStyle(fontSize: 12.sp)),
+                Text(AppEmojis.streakIndicator, style: TextStyle(fontSize: 12.sp)),
                 SizedBox(width: 2.w),
                 Text(
                   '${stats.currentStreak}',
@@ -369,19 +370,19 @@ class StreakCelebration extends StatelessWidget {
 
     if (streak >= 30) {
       message = 'logPost.streak.legendary'.tr();
-      emoji = '\u{1F451}';
+      emoji = AppEmojis.streakLegendary;
     } else if (streak >= 14) {
       message = 'logPost.streak.amazing'.tr();
-      emoji = '\u{1F31F}';
+      emoji = AppEmojis.streakAmazing;
     } else if (streak >= 7) {
       message = 'logPost.streak.great'.tr();
-      emoji = '\u{1F525}';
+      emoji = AppEmojis.streakGreat;
     } else if (streak >= 3) {
       message = 'logPost.streak.nice'.tr();
-      emoji = '\u{2728}';
+      emoji = AppEmojis.streakNice;
     } else {
       message = 'logPost.streak.started'.tr();
-      emoji = '\u{1F3AF}';
+      emoji = AppEmojis.streakStarted;
     }
 
     return Container(

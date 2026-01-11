@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 
 /// Outcome types for cooking logs with associated styling
 enum LogOutcome {
@@ -17,11 +18,11 @@ enum LogOutcome {
   String get emoji {
     switch (this) {
       case LogOutcome.success:
-        return '\u{1F60A}'; // 😊
+        return AppEmojis.outcomeSuccess;
       case LogOutcome.partial:
-        return '\u{1F610}'; // 😐
+        return AppEmojis.outcomePartial;
       case LogOutcome.failed:
-        return '\u{1F622}'; // 😢
+        return AppEmojis.outcomeFailed;
     }
   }
 
@@ -37,8 +38,8 @@ enum LogOutcome {
 
   /// Get emoji for outcome string value.
   /// Returns default emoji if outcome is null or unknown.
-  static String getEmoji(String? outcome, {String defaultEmoji = '\u{1F373}'}) {
+  static String getEmoji(String? outcome, {String? defaultEmoji}) {
     final logOutcome = fromString(outcome);
-    return logOutcome?.emoji ?? defaultEmoji;
+    return logOutcome?.emoji ?? defaultEmoji ?? AppEmojis.outcomeDefault;
   }
 }

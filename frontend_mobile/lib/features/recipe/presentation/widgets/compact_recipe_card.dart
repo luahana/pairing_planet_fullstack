@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
@@ -122,7 +123,7 @@ class CompactRecipeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
-        isOriginal ? '📌' : '🔀',
+        isOriginal ? AppEmojis.recipeOriginal : AppEmojis.recipeVariant,
         style: TextStyle(fontSize: 10.sp),
       ),
     );
@@ -278,7 +279,7 @@ class CompactRecipeCardFixed extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
-        isOriginal ? '📌' : '🔀',
+        isOriginal ? AppEmojis.recipeOriginal : AppEmojis.recipeVariant,
         style: TextStyle(fontSize: 10.sp),
       ),
     );

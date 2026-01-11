@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 
 /// Ingredient preview data for browse cards
@@ -56,14 +57,14 @@ class IngredientPreviewChips extends StatelessWidget {
         children: [
           if (mainIngredients.isNotEmpty)
             _buildCategoryRow(
-              icon: '🥩',
+              icon: AppEmojis.ingredientMain,
               label: 'Main',
               items: mainIngredients,
             ),
           if (secondaryIngredients.isNotEmpty) ...[
             if (mainIngredients.isNotEmpty) SizedBox(height: 6.h),
             _buildCategoryRow(
-              icon: '🥬',
+              icon: AppEmojis.ingredientSecondary,
               label: 'Side',
               items: secondaryIngredients,
             ),
@@ -72,7 +73,7 @@ class IngredientPreviewChips extends StatelessWidget {
             if (mainIngredients.isNotEmpty || secondaryIngredients.isNotEmpty)
               SizedBox(height: 6.h),
             _buildCategoryRow(
-              icon: '🌶️',
+              icon: AppEmojis.ingredientSeasoning,
               label: 'Season',
               items: seasoningIngredients,
             ),

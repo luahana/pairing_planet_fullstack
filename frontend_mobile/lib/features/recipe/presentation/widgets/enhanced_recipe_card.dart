@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/search/highlighted_text.dart';
@@ -159,7 +160,7 @@ class EnhancedRecipeCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            isOriginal ? '📌' : '🔀',
+            isOriginal ? AppEmojis.recipeOriginal : AppEmojis.recipeVariant,
             style: TextStyle(fontSize: 11.sp),
           ),
           SizedBox(width: 4.w),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/constants/app_emojis.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
@@ -101,7 +102,7 @@ class StarNode extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
-                        '📌',
+                        AppEmojis.recipeOriginal,
                         style: TextStyle(fontSize: 10.sp),
                       ),
                     ),
@@ -131,7 +132,7 @@ class StarNode extends StatelessWidget {
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(
-        '🔀',
+        AppEmojis.recipeVariant,
         style: TextStyle(fontSize: 8.sp),
       ),
     );
@@ -287,7 +288,7 @@ class StarNodeCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            isRoot ? '📌' : '🔀',
+            isRoot ? AppEmojis.recipeOriginal : AppEmojis.recipeVariant,
             style: TextStyle(fontSize: 10.sp),
           ),
           SizedBox(width: 4.w),
