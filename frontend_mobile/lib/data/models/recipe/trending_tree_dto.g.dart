@@ -10,7 +10,7 @@ TrendingTreeDto _$TrendingTreeDtoFromJson(Map<String, dynamic> json) =>
     TrendingTreeDto(
       rootRecipeId: json['rootRecipeId'] as String,
       title: json['title'] as String,
-      foodName: json['foodName'] as String?,
+      foodName: _parseFoodName(json['foodName']),
       culinaryLocale: json['culinaryLocale'] as String,
       thumbnail: json['thumbnail'] as String?,
       variantCount: (json['variantCount'] as num).toInt(),
