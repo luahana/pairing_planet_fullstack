@@ -4,6 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// A reusable AppBar with integrated search functionality.
 /// Toggles between a title view and a search input field.
+///
+/// @Deprecated Use [EnhancedSearchAppBar] instead which provides
+/// search history overlay and suggestions.
+/// See: lib/core/widgets/search/enhanced_search_app_bar.dart
+@Deprecated('Use EnhancedSearchAppBar instead for search history and overlay support')
 class SearchAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
   final String hintText;

@@ -13,6 +13,7 @@ class SearchSuggestionsOverlay extends StatelessWidget {
   final ValueChanged<String> onRemoveTap;
   final VoidCallback onClearAllTap;
   final double width;
+  final Offset offset;
 
   const SearchSuggestionsOverlay({
     super.key,
@@ -23,6 +24,7 @@ class SearchSuggestionsOverlay extends StatelessWidget {
     required this.onRemoveTap,
     required this.onClearAllTap,
     required this.width,
+    this.offset = const Offset(0, kToolbarHeight),
   });
 
   @override
@@ -37,7 +39,7 @@ class SearchSuggestionsOverlay extends StatelessWidget {
       child: CompositedTransformFollower(
         link: layerLink,
         showWhenUnlinked: false,
-        offset: const Offset(0, kToolbarHeight),
+        offset: offset,
         child: Material(
           elevation: 4,
           borderRadius: BorderRadius.circular(12.r),

@@ -16,6 +16,7 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.d
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/compact_recipe_card.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/enhanced_recipe_card.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/view_mode_toggle.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search/hero_search_icon.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/browse_filter_provider.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_list_provider.dart';
 
@@ -185,9 +186,9 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
               actions: [
                 _buildSortButton(),
                 const CompactViewModeToggle(),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () => context.push(RouteConstants.search),
+                HeroSearchIcon(
+                  onTap: () => context.push(RouteConstants.search),
+                  heroTag: 'search-hero',
                 ),
               ],
             ),
