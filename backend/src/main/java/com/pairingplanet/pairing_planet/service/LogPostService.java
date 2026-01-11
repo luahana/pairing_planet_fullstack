@@ -213,9 +213,8 @@ public class LogPostService {
                 .map(User::getUsername)
                 .orElse("Unknown");
 
-        // 2. [추가] 음식 이름 추출 (JSONB 맵에서 현재 레시피 로케일 기준)
-        String foodName = recipe.getFoodMaster().getName()
-                .getOrDefault(recipe.getCulinaryLocale(), "Unknown Food");
+        // 2. [추가] 음식 이름 추출 (FoodMaster의 fallback 로직 사용)
+        String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
 
         // 3. 썸네일 URL 추출 (첫 번째 THUMBNAIL 이미지)
         String thumbnail = recipe.getImages().stream()

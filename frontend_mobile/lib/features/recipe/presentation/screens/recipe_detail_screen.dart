@@ -281,36 +281,41 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                       ),
                     ),
                     SizedBox(height: 24.h),
-                    // Steps Section
+                    // Steps Section - header outside, content in box (matching Ingredients style)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        padding: EdgeInsets.all(16.r),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.format_list_numbered, size: 20.sp),
-                                SizedBox(width: 8.w),
-                                Text(
-                                  'recipe.steps'.tr(),
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header outside box
+                          Row(
+                            children: [
+                              Icon(Icons.format_list_numbered, size: 20.sp),
+                              SizedBox(width: 8.w),
+                              Text(
+                                'recipe.steps'.tr(),
+                                style: TextStyle(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12.h),
+                          // Steps content in box
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: AppColors.border),
                             ),
-                            SizedBox(height: 16.h),
-                            ...recipe.steps.asMap().entries.map((entry) => _buildStepItem(entry.value, entry.key + 1)),
-                          ],
-                        ),
+                            padding: EdgeInsets.all(16.r),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: recipe.steps.asMap().entries.map((entry) => _buildStepItem(entry.value, entry.key + 1)).toList(),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     // Hashtags section
