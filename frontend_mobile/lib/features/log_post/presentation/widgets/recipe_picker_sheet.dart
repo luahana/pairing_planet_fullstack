@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/providers/recently_viewed_provider.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search/enhanced_search_field.dart';
+import 'package:pairing_planet2_frontend/data/datasources/search/search_local_data_source.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
 
@@ -35,25 +37,19 @@ class RecipePickerSheet extends ConsumerStatefulWidget {
 }
 
 class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
-  final _searchController = TextEditingController();
-  final _searchFocusNode = FocusNode();
+  final LayerLink _layerLink = LayerLink();
   List<RecipeSummary> _searchResults = [];
   bool _isSearching = false;
   bool _isLoading = false;
   String? _errorMessage;
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    super.dispose();
-  }
+  String _currentQuery = '';
 
   Future<void> _searchRecipes(String query) async {
     if (query.trim().isEmpty) {
       setState(() {
         _searchResults = [];
         _isSearching = false;
+        _currentQuery = '';
       });
       return;
     }
@@ -62,6 +58,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
       _isLoading = true;
       _isSearching = true;
       _errorMessage = null;
+      _currentQuery = query;
     });
 
     try {
@@ -92,6 +89,14 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
         _isLoading = false;
       });
     }
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchResults = [];
+      _isSearching = false;
+      _currentQuery = '';
+    });
   }
 
   void _selectRecipe(RecipeSummary recipe) {
@@ -144,48 +149,44 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
               ],
             ),
           ),
-          // Search bar
+          // Search bar with enhanced search field
           Padding(
             padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-            child: TextField(
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              decoration: InputDecoration(
-                hintText: 'recipePicker.searchHint'.tr(),
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          _searchRecipes('');
-                        },
-                        icon: Icon(Icons.clear, size: 20.sp),
-                        color: AppColors.textSecondary,
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 12.h,
-                ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              onChanged: (value) {
-                setState(() {}); // Update clear button visibility
-                // Debounce search
-                Future.delayed(const Duration(milliseconds: 300), () {
-                  if (_searchController.text == value) {
-                    _searchRecipes(value);
-                  }
-                });
-              },
-              textInputAction: TextInputAction.search,
-              onSubmitted: _searchRecipes,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 12.w),
+                    child: Icon(
+                      Icons.search,
+                      color: AppColors.textSecondary,
+                      size: 20.sp,
+                    ),
+                  ),
+                  Expanded(
+                    child: CompositedTransformTarget(
+                      link: _layerLink,
+                      child: EnhancedSearchField(
+                        hintText: 'recipePicker.searchHint'.tr(),
+                        onSearch: _searchRecipes,
+                        onClear: _clearSearch,
+                        currentQuery: _currentQuery,
+                        searchType: SearchType.recipe,
+                        autofocus: false,
+                        layerLink: _layerLink,
+                        overlayOffset: Offset(0, 48.h),
+                        overlayWidth: MediaQuery.of(context).size.width - 64.w,
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        textStyle: TextStyle(fontSize: 16.sp),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           // Content

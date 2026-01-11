@@ -13,6 +13,8 @@ import 'package:pairing_planet2_frontend/features/auth/providers/auth_provider.d
 import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/browse_filter_provider.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_logo.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search/hero_search_bar.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search/hero_search_icon.dart';
 import '../providers/home_feed_provider.dart';
 import '../widgets/cache_status_banner.dart';
 import '../widgets/section_header.dart';
@@ -308,35 +310,11 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
                   ),
                 ),
                 SizedBox(height: 12.h),
-                // Search bar - taps navigate to dedicated search page
-                GestureDetector(
+                // Search bar - taps navigate to dedicated search page with Hero animation
+                HeroSearchBar(
                   onTap: () => context.push(RouteConstants.search),
-                  child: Container(
-                    height: 44.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 12.w),
-                        Icon(
-                          Icons.search,
-                          color: AppColors.textSecondary,
-                          size: 20.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'home.searchHint'.tr(),
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  hintText: 'home.searchHint'.tr(),
+                  heroTag: 'search-hero',
                 ),
               ],
             ),
@@ -350,9 +328,9 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
             opacity: opacity,
             child: child,
           ),
-          child: IconButton(
-            onPressed: () => context.push(RouteConstants.search),
-            icon: const Icon(Icons.search),
+          child: HeroSearchIcon(
+            onTap: () => context.push(RouteConstants.search),
+            heroTag: 'search-icon-hero',
           ),
         ),
         IconButton(

@@ -522,7 +522,8 @@
     "clearAll": "전체 삭제",
     "clearHistory": "기록 삭제",
     "trendingThisWeek": "이번 주 인기",
-    "browseByCuisine": "요리 스타일로 찾기"
+    "browseByCuisine": "요리 스타일로 찾기",
+    "startTyping": "검색어를 입력하세요"
   },
   "speedDial": {
     "newRecipe": "새 레시피",

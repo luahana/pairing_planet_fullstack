@@ -526,7 +526,8 @@
     "clearAll": "Clear All",
     "clearHistory": "Clear history",
     "trendingThisWeek": "Trending This Week",
-    "browseByCuisine": "Browse by Cuisine"
+    "browseByCuisine": "Browse by Cuisine",
+    "startTyping": "Start typing to search recipes"
   },
   "speedDial": {
     "newRecipe": "New Recipe",

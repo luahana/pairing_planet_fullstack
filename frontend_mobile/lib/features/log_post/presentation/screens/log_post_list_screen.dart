@@ -19,6 +19,7 @@ import 'package:pairing_planet2_frontend/features/log_post/providers/log_post_li
 import 'package:pairing_planet2_frontend/features/log_post/providers/log_filter_provider.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/outcome/outcome_badge.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search/hero_search_icon.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/widgets/log_empty_state.dart';
 import 'package:pairing_planet2_frontend/features/log_post/presentation/widgets/sync_status_indicator.dart';
 
@@ -31,19 +32,10 @@ class LogPostListScreen extends ConsumerStatefulWidget {
 
 class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
   final ScrollController _scrollController = ScrollController();
-  final TextEditingController _searchController = TextEditingController();
-  bool _isSearching = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Note: Pagination is now handled via NotificationListener in the body
-  }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -59,49 +51,6 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
 
   LogOutcome _getOutcome(String? outcome) {
     return LogOutcome.fromString(outcome) ?? LogOutcome.partial;
-  }
-
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-      if (!_isSearching) {
-        _searchController.clear();
-        ref.read(logPostPaginatedListProvider.notifier).clearSearch();
-      }
-    });
-  }
-
-  Widget _buildSearchField() {
-    return TextField(
-      controller: _searchController,
-      autofocus: true,
-      decoration: InputDecoration(
-        hintText: 'logPost.searchHint'.tr(),
-        hintStyle: TextStyle(color: Colors.grey[400]),
-        border: InputBorder.none,
-        contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
-        prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20.sp),
-        suffixIcon: _searchController.text.isNotEmpty
-            ? IconButton(
-                icon: Icon(Icons.clear, size: 20.sp),
-                onPressed: () {
-                  _searchController.clear();
-                  ref.read(logPostPaginatedListProvider.notifier).clearSearch();
-                  setState(() {});
-                },
-              )
-            : null,
-      ),
-      style: TextStyle(fontSize: 16.sp),
-      onChanged: (value) {
-        ref.read(logPostPaginatedListProvider.notifier).search(value);
-        setState(() {});
-      },
-      textInputAction: TextInputAction.search,
-      onSubmitted: (value) {
-        ref.read(logPostPaginatedListProvider.notifier).search(value);
-      },
-    );
   }
 
   Widget _buildFilterTabs() {
@@ -164,13 +113,6 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
 
     final logPostsAsync = ref.watch(logPostPaginatedListProvider);
 
-    // Sync search controller with current query
-    final currentQuery = logPostsAsync.valueOrNull?.searchQuery;
-    if (currentQuery != null && currentQuery.isNotEmpty && !_isSearching) {
-      _isSearching = true;
-      _searchController.text = currentQuery;
-    }
-
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: RefreshIndicator(
@@ -180,21 +122,19 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
         child: NestedScrollViewPlus(
           controller: _scrollController,
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            // SliverAppBar with filter tabs or search field
+            // SliverAppBar with filter tabs and search button
             SliverAppBar(
               pinned: true,
               floating: false,
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
-              elevation: innerBoxIsScrolled ? 1 : 0,
+              scrolledUnderElevation: innerBoxIsScrolled ? 1 : 0,
               titleSpacing: 0,
-              title: _isSearching
-                  ? _buildSearchField()
-                  : _buildFilterTabs(),
+              title: _buildFilterTabs(),
               actions: [
-                IconButton(
-                  icon: Icon(_isSearching ? Icons.close : Icons.search),
-                  onPressed: _toggleSearch,
+                HeroSearchIcon(
+                  onTap: () => context.push(RouteConstants.search),
+                  heroTag: 'search-hero',
                 ),
               ],
             ),

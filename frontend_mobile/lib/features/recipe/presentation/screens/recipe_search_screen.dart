@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,17 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
-import 'package:pairing_planet2_frontend/core/providers/search_history_provider.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/empty_states/search_empty_state.dart';
+import 'package:pairing_planet2_frontend/core/widgets/search/enhanced_search_field.dart';
 import 'package:pairing_planet2_frontend/core/widgets/search/highlighted_text.dart';
-import 'package:pairing_planet2_frontend/core/widgets/search/recent_search_tile.dart';
 import 'package:pairing_planet2_frontend/core/widgets/skeletons/skeleton_loader.dart';
+import 'package:pairing_planet2_frontend/data/datasources/search/search_local_data_source.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_list_provider.dart';
 
-/// Dedicated recipe search screen with recent searches, trending, and results.
+/// Dedicated recipe search screen with search history overlay and results.
 class RecipeSearchScreen extends ConsumerStatefulWidget {
   const RecipeSearchScreen({super.key});
 
@@ -26,10 +24,8 @@ class RecipeSearchScreen extends ConsumerStatefulWidget {
 }
 
 class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
-  Timer? _debounce;
+  final LayerLink _layerLink = LayerLink();
 
   String _currentQuery = '';
   bool _hasSearched = false;
@@ -37,21 +33,13 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-focus search field on page load
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
-
     // Infinite scroll listener
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
-    _focusNode.dispose();
     _scrollController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
@@ -62,61 +50,39 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
     }
   }
 
-  void _onSearchChanged(String query) {
-    setState(() {
-      _currentQuery = query;
-    });
-
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      if (query.trim().isNotEmpty) {
-        _hasSearched = true;
-        ref.read(recipeListProvider.notifier).search(query.trim());
-        // Add to search history
-        ref.read(recipeSearchHistoryProvider.notifier).addSearch(query.trim());
-      }
-    });
-  }
-
-  void _onSearchSubmitted(String query) {
+  void _onSearch(String query) {
     if (query.trim().isNotEmpty) {
-      _hasSearched = true;
+      setState(() {
+        _hasSearched = true;
+        _currentQuery = query;
+      });
       ref.read(recipeListProvider.notifier).search(query.trim());
-      ref.read(recipeSearchHistoryProvider.notifier).addSearch(query.trim());
-      _focusNode.unfocus();
     }
   }
 
-  void _onRecentSearchTap(String term) {
-    HapticFeedback.selectionClick();
-    _searchController.text = term;
-    _currentQuery = term;
-    _hasSearched = true;
-    ref.read(recipeListProvider.notifier).search(term);
-    ref.read(recipeSearchHistoryProvider.notifier).addSearch(term);
-    _focusNode.unfocus();
+  void _onTextChanged(String query) {
+    setState(() {
+      _currentQuery = query;
+    });
   }
 
   void _clearSearch() {
-    _searchController.clear();
     setState(() {
       _currentQuery = '';
       _hasSearched = false;
     });
     ref.read(recipeListProvider.notifier).clearSearch();
-    _focusNode.requestFocus();
   }
 
   @override
   Widget build(BuildContext context) {
-    final searchHistory = ref.watch(recipeSearchHistoryProvider);
     final recipesAsync = ref.watch(recipeListProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildSearchAppBar(),
-      body: _currentQuery.isEmpty || !_hasSearched
-          ? _buildDiscoveryContent(searchHistory)
+      body: !_hasSearched || _currentQuery.isEmpty
+          ? _buildEmptyContent()
           : _buildSearchResults(recipesAsync),
     );
   }
@@ -129,29 +95,27 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
         icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
         onPressed: () => context.pop(),
       ),
-      title: TextField(
-        controller: _searchController,
-        focusNode: _focusNode,
-        onChanged: _onSearchChanged,
-        onSubmitted: _onSearchSubmitted,
-        style: TextStyle(fontSize: 16.sp),
-        decoration: InputDecoration(
-          hintText: 'search.placeholder'.tr(),
-          hintStyle: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 16.sp,
+      title: Hero(
+        tag: 'search-hero',
+        child: Material(
+          color: Colors.transparent,
+          child: CompositedTransformTarget(
+            link: _layerLink,
+            child: EnhancedSearchField(
+              hintText: 'search.placeholder'.tr(),
+              onSearch: _onSearch,
+              onClear: _clearSearch,
+              currentQuery: _currentQuery,
+              searchType: SearchType.recipe,
+              autofocus: true,
+              layerLink: _layerLink,
+              overlayOffset: const Offset(0, kToolbarHeight),
+              overlayWidth: MediaQuery.of(context).size.width - 100.w,
+              onTextChanged: _onTextChanged,
+            ),
           ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
         ),
       ),
-      actions: [
-        if (_currentQuery.isNotEmpty)
-          IconButton(
-            icon: Icon(Icons.close, color: Colors.grey[600], size: 22.sp),
-            onPressed: _clearSearch,
-          ),
-      ],
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(1.h),
         child: Container(
@@ -162,69 +126,31 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
     );
   }
 
-  /// Discovery content shown when search is empty.
-  Widget _buildDiscoveryContent(List<String> searchHistory) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(vertical: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Recent Searches
-          if (searchHistory.isNotEmpty) ...[
-            _buildRecentSearchesSection(searchHistory),
-            SizedBox(height: 24.h),
+  /// Empty content shown before searching.
+  Widget _buildEmptyContent() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.r),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search,
+              size: 64.sp,
+              color: Colors.grey[300],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'search.startTyping'.tr(),
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentSearchesSection(List<String> history) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'search.recentSearches'.tr(),
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ref.read(recipeSearchHistoryProvider.notifier).clearAll();
-                },
-                child: Text(
-                  'search.clearAll'.tr(),
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
-        SizedBox(height: 8.h),
-        // Recent search items
-        ...history.take(5).map((term) => RecentSearchTile(
-          term: term,
-          query: _currentQuery.isNotEmpty ? _currentQuery : null,
-          onTap: () => _onRecentSearchTap(term),
-          onRemove: () {
-            HapticFeedback.lightImpact();
-            ref.read(recipeSearchHistoryProvider.notifier).removeSearch(term);
-          },
-        )),
-      ],
+      ),
     );
   }
 
