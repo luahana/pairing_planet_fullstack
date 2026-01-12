@@ -498,194 +498,35 @@ User logs in within 30 days?
 
 ---
 
-### [FEAT-030]: Autocomplete Category Filtering
+### [INFRA-001]: AWS Dev Environment with ALB
 
 **Status:** ✅ Done
 **Branch:** `dev`
 
-**Description:** Category-based autocomplete with multilingual support for recipe ingredient and dish search.
+**Description:** AWS infrastructure for dev environment with Application Load Balancer for stable DNS endpoint, RDS PostgreSQL database, and ECS Fargate deployment.
 
 **Acceptance Criteria:**
-- [x] Filter autocomplete by type (DISH, MAIN, SECONDARY, SEASONING)
-- [x] MAIN type includes both MAIN_INGREDIENT and SECONDARY_INGREDIENT results
-- [x] Multilingual support (7 languages: en-US, ko-KR, ja-JP, zh-CN, es-ES, fr-FR, de-DE)
-- [x] CJK single-character search (Korean, Japanese, Chinese work with 1 character)
-- [x] pg_trgm fuzzy search for 3+ character queries
-- [x] Prefix search fallback for CJK locales with short keywords
-- [x] Score-based result ordering
-- [x] Redis caching with graceful database fallback
-- [x] Comprehensive test coverage (35+ tests)
+- [x] VPC with public subnets (no NAT for cost savings)
+- [x] ALB with HTTP listener for stable DNS endpoint
+- [x] ECS Fargate service with auto-deployment
+- [x] RDS PostgreSQL with snapshot restore capability
+- [x] S3 bucket for images with public read access
+- [x] Firebase credentials integrated for social login
+- [x] All secrets managed via AWS Secrets Manager
 
 **Technical Notes:**
-- Backend:
-  - `AutocompleteService.java`: Search logic with CJK locale detection
-  - `AutocompleteItemRepository.java`: Native queries with pg_trgm and ILIKE
-  - `AutocompleteItem.java`: Entity with JSONB multilingual `name` field
-  - `V20__create_autocomplete_items.sql`: Table + 105 items with translations
-  - `V21__autocomplete_type_to_varchar.sql`: Enum to VARCHAR migration
-- API: `GET /api/v1/autocomplete?keyword={}&locale={}&type={}`
-- Type mapping:
-  - `DISH` → dishes only
-  - `MAIN` → main + secondary ingredients (merged results)
-  - `SECONDARY` → secondary ingredients only
-  - `SEASONING` → seasonings only
-- CJK optimization: Uses prefix search (ILIKE) for ko-KR, ja-JP, zh-CN with < 3 chars
+- ALB DNS: `pairing-planet-dev-alb-857509432.us-east-2.elb.amazonaws.com`
+- HTTP only (no HTTPS) for dev environment to save costs
+- RDS snapshot restore support for disaster recovery
+- Terraform modules: `vpc`, `alb`, `ecs`, `rds`, `secrets`
+- Mobile app configured to use ALB endpoint
 
----
-
-### [FEAT-031]: Gamification Level Display on User Profile
-
-**Status:** ✅ Done
-**Branch:** `dev`
-
-**Description:** Display user's gamification level and title on their public profile page. Users can see the level (Lv.1-26+) and tier title (Beginner → Master Chef) when viewing another user's profile.
-
-**Acceptance Criteria:**
-- [x] Show level badge (Lv.X) on user profile header
-- [x] Show tier title (Beginner Cook, Home Cook, etc.)
-- [x] Color-coded by tier (Grey → Green → Blue → Purple → Orange → Gold)
-- [x] Level calculated from user's recipes and cooking logs
-- [x] Comprehensive test coverage (backend + frontend)
-
-**Technical Notes:**
-- Backend:
-  - `UserDto.java`: Added `level` (int) and `levelName` (String) fields
-  - `UserService.getUserProfile()`: Calculates level from user's XP
-  - `CookingDnaService`: Public methods for XP/level calculation
-  - XP formula: 50/recipe + 30/success + 15/partial + 5/failed
-- Frontend:
-  - `LevelBadge` widget with color-coded level display
-  - `UserProfileScreen`: Shows LevelBadge below username
-  - `UserDto`: Added level and levelName fields
-- Level Tiers:
-  | Level | Tier | Color |
-  |-------|------|-------|
-  | 1-5 | Beginner | Grey |
-  | 6-10 | Home Cook | Green |
-  | 11-15 | Skilled Cook | Blue |
-  | 16-20 | Home Chef | Purple |
-  | 21-25 | Expert Chef | Orange |
-  | 26+ | Master Chef | Gold |
-- Tests:
-  - `CookingDnaServiceTest.java`: Unit tests for XP/level calculation
-  - `UserServiceTest.java`: Integration tests for profile with level
-  - `UserControllerTest.java`: API response includes level fields
-  - `level_badge_test.dart`: Widget tests for color/rendering
-  - `level_badge_golden_test.dart`: Visual regression tests
-  - `user_dto_test.dart`: JSON serialization tests
-
----
-
-### [FEAT-032]: Servings and Cooking Time
-
-**Status:** ✅ Done
-**Branch:** `dev`
-
-**Description:** Add servings count and cooking time range to recipes for better meal planning. Users can specify how many servings a recipe makes and approximate cooking time.
-
-**Acceptance Criteria:**
-- [x] Servings selector (1-12, default: 2)
-- [x] Cooking time dropdown with 5 ranges (Under 15min, 15-30min, 30min-1hr, 1-2hr, Over 2hr)
-- [x] Display on recipe detail screen with icons
-- [x] Editable in recipe create/edit screens
-- [x] Inherited from parent recipe in variation mode
-- [x] Translations (en-US, ko-KR)
-
-**Technical Notes:**
-- Backend:
-  - `CookingTimeRange.java` enum with 5 values
-  - `V23__add_servings_and_cooking_time_range.sql` migration
-  - Fields added to Recipe entity, all DTOs, RecipeService
-- Frontend:
-  - `cooking_time_range.dart` constants
-  - `ServingsCookingTimeSection` widget with stepper and dropdown
-  - Updated create/edit/detail screens
-- Defaults: 2 servings, MIN_30_TO_60 (30min-1hour) cooking time
-
----
-
-### [FEAT-033]: Variation Page UX Improvements
-
-**Status:** ✅ Done
-**Branch:** `dev`
-
-**Description:** Enhanced UX for recipe variation creation with clear visual distinction between inherited and new content, and editable hashtags.
-
-**Acceptance Criteria:**
-- [x] Orange background theme for editable/interactive elements
-- [x] Editable hashtags with inherited/new visual distinction
-- [x] Delete inherited hashtags with restore capability
-- [x] Title field left empty (not auto-populated from parent)
-- [x] Less saturated orange for interactive buttons (orange[300])
-- [x] Consistent orange theme across all editable sections
-
-**Technical Notes:**
-- Frontend:
-  - `app_colors.dart`: Added `editableBackground` (orange[50]), `editableBorder` (orange[100]), `inheritedInteractive` (orange[300])
-  - `hashtag_input_section.dart`: Changed from `List<String>` to `List<Map<String, dynamic>>` with `isOriginal`/`isDeleted` flags
-  - Updated: `ingredient_section.dart`, `step_section.dart`, `hook_section.dart`, `servings_cooking_time_section.dart`, `locale_dropdown.dart`
-  - Also updated: `log_post_create_screen.dart`, `log_edit_sheet.dart`, `hashtag_step.dart` for hashtag consistency
-
----
-
-### [FEAT-034]: Image Upload Status Blocking
-
-**Status:** ✅ Done
-**Branch:** `dev`
-
-**Description:** Prevent recipe submission when images are still uploading or have failed, with clear visual feedback about upload status.
-
-**Acceptance Criteria:**
-- [x] Status banner showing upload progress (orange) or errors (red)
-- [x] Submit button disabled during active uploads
-- [x] Submit button disabled when upload errors exist
-- [x] Users can retry failed uploads or remove them to proceed
-- [x] Applied to both recipe create and edit screens
-- [x] Translations (en-US, ko-KR)
-
-**Technical Notes:**
-- Frontend:
-  - `recipe_create_screen.dart`: Added `_hasUploadingImages`, `_hasUploadErrors`, `_uploadStatusCounts` getters and `_buildUploadStatusBanner()` widget
-  - `recipe_edit_screen.dart`: Same changes
-  - Translation keys: `recipe.uploadingPhotos`, `recipe.uploadFailed`
-- UX Flow:
-  - Images uploading → Orange banner with spinner + count
-  - Images failed → Red banner with error icon + retry guidance
-  - All success → Banner hidden, submit enabled
-
----
-
-### [FEAT-035]: Profile Navigation Bar Visibility
-
-**Status:** ✅ Done
-**Branch:** `dev`
-
-**Description:** Keep the bottom navigation bar visible when viewing other users' profiles, matching the UX pattern used by Instagram, Twitter, and other social apps.
-
-**User Story:** As a user browsing other users' profiles, I want the bottom navigation bar to stay visible so I can quickly return to any main tab without tapping "back" multiple times.
-
-**Research Findings:**
-- How Instagram does it: Profile pages keep bottom nav visible, tapping nav icons returns to tab root
-- How Twitter/X does it: Same pattern - bottom nav always visible on profiles
-- Industry standard: All major social apps keep bottom nav visible on user profile pages
-
-**Acceptance Criteria:**
-- [x] Bottom nav visible on UserProfileScreen
-- [x] Bottom nav visible on FollowersListScreen
-- [x] Tapping nav icon navigates directly to tab root (Home, Recipes, Logs, Profile)
-- [x] No tab highlighted when viewing user profiles (currentIndex = -1)
-- [x] Level progress ring shown for authenticated users
-- [x] Unit tests for navigation logic
-
-**Technical Notes:**
-- Frontend:
-  - `user_profile_screen.dart`: Added `CustomBottomNavBar` to Scaffold, `_navigateToTab()` method
-  - `followers_list_screen.dart`: Same changes
-  - Uses `context.go()` (not push) to navigate to tab roots - clears profile from stack
-  - `currentIndex: -1` means no tab is highlighted when on profile screens
-- Why not nested shell routes: Attempted but caused GoRouter duplicate key errors with `StatefulShellRoute`
-- Tests:
-  - `profile_bottom_nav_test.dart`: Route mapping and configuration tests (10 tests)
+**Files Modified:**
+- `backend/terraform/environments/dev/main.tf` - Added ALB module, Firebase secret
+- `backend/terraform/modules/alb/main.tf` - HTTP-only support
+- `backend/terraform/modules/ecs/main.tf` - Added Firebase credentials secret
+- `backend/terraform/modules/rds/main.tf` - Snapshot restore support
+- `frontend_mobile/lib/config/app_config.dart` - AWS endpoint for dev
 
 ---
 
@@ -802,6 +643,269 @@ User logs in within 30 days?
 - Conversion rates (to base units):
   - Volume → ML: CUP=240, TBSP=15, TSP=5, FL_OZ=30
   - Weight → G: OZ=28.35, LB=453.59, KG=1000
+
+---
+
+## Website Features 🌐
+
+> Next.js website with SEO focus. Mirrors mobile app functionality.
+> **Tech Stack:** Next.js (App Router), Tailwind CSS, Firebase Auth, TypeScript
+
+---
+
+### [WEB-001]: SEO Infrastructure
+
+**Status:** 📋 Planned
+
+**Description:** Core SEO setup enabling recipe pages to rank in search engines.
+
+**User Story:** As a potential user, I want to find Pairing Planet recipes through Google search, so that I can discover the platform organically.
+
+**Research Findings:**
+- How AllRecipes does it: SSR pages, JSON-LD Recipe schema, comprehensive meta tags
+- Industry standard: Google Recipe rich results require structured data (name, image, author, ingredients)
+- Pitfall to avoid: Client-side rendering kills SEO; must use SSR/SSG
+
+**Acceptance Criteria:**
+- [ ] Server-side rendering for recipe/log detail pages
+- [ ] JSON-LD structured data (Recipe schema) on recipe pages
+- [ ] Dynamic meta tags (title, description, og:*, twitter:*)
+- [ ] Sitemap.xml generation (automated)
+- [ ] robots.txt configuration
+- [ ] Canonical URLs on all pages
+- [ ] Google Search Console integration
+
+**Technical Notes:**
+- Next.js App Router with `generateMetadata()` for dynamic meta
+- JSON-LD via `<script type="application/ld+json">`
+- next-sitemap for automated sitemap generation
+- ISR revalidation every 5 minutes for list pages
+
+---
+
+### [WEB-002]: Recipe Pages (Public)
+
+**Status:** 📋 Planned
+
+**Description:** Public recipe pages optimized for SEO and user experience.
+
+**Acceptance Criteria:**
+- [ ] Recipe detail page with SSR (`/recipes/[publicId]`)
+- [ ] Image gallery/carousel
+- [ ] Ingredients list grouped by type (MAIN, SECONDARY, SEASONING)
+- [ ] Numbered cooking steps
+- [ ] Variants tree display (link to parent/root recipe)
+- [ ] Cooking logs preview section
+- [ ] Recipe search/list page with pagination
+- [ ] Filter by cooking style
+- [ ] Responsive layout matching mobile design
+
+**Technical Notes:**
+- Route: `/recipes/[publicId]` with `generateStaticParams` for popular recipes
+- API: `GET /api/v1/recipes/{publicId}` for detail
+- API: `GET /api/v1/recipes` with pagination for list
+
+---
+
+### [WEB-003]: Log Post Pages (Public)
+
+**Status:** 📋 Planned
+
+**Description:** Public cooking log pages showcasing user cooking attempts.
+
+**Acceptance Criteria:**
+- [ ] Log detail page with SSR (`/logs/[publicId]`)
+- [ ] Outcome display with emoji (SUCCESS 😊 / PARTIAL 😐 / FAILED 😢)
+- [ ] Photo gallery
+- [ ] Link to associated recipe
+- [ ] Log list page with filters (by outcome)
+- [ ] Search logs by content
+
+**Technical Notes:**
+- Route: `/logs/[publicId]`
+- API: `GET /api/v1/log_posts/{publicId}` for detail
+
+---
+
+### [WEB-004]: User Authentication
+
+**Status:** 📋 Planned
+
+**Description:** Google OAuth sign-in via Firebase, mirroring mobile app flow.
+
+**Acceptance Criteria:**
+- [ ] Google Sign-In button (Firebase Auth)
+- [ ] Firebase token → Backend JWT exchange
+- [ ] JWT storage in HTTP-only cookies (secure)
+- [ ] Token refresh mechanism
+- [ ] Protected route middleware
+- [ ] Guest browsing mode (view-only)
+- [ ] Sign out functionality
+
+**Technical Notes:**
+- Firebase Auth SDK for Web
+- Flow: Google popup → Firebase ID token → `POST /api/v1/auth/social-login` → JWT pair
+- Middleware checks for valid JWT on protected routes
+- Refresh token rotation via `POST /api/v1/auth/reissue`
+
+---
+
+### [WEB-005]: Recipe Management (Auth Required)
+
+**Status:** 📋 Planned
+
+**Description:** Create, edit, and delete recipes (with ownership and relationship restrictions).
+
+**Acceptance Criteria:**
+- [ ] Multi-step recipe creation form
+- [ ] Add title, description, cooking style
+- [ ] Add ingredients (name, amount, type)
+- [ ] Add steps with optional images
+- [ ] Image upload with preview
+- [ ] Create variation from existing recipe (pre-filled form)
+- [ ] Change tracking for variations (diff, categories, reason)
+- [ ] Edit recipe (owner only, if no variants/logs exist)
+- [ ] Delete recipe (owner only, if no variants/logs exist)
+- [ ] Clear error message when edit/delete blocked
+
+**Technical Notes:**
+- API: `POST /api/v1/recipes` for create
+- API: `GET /api/v1/recipes/{publicId}/modifiable` to check permissions
+- API: `PUT /api/v1/recipes/{publicId}` for edit
+- API: `DELETE /api/v1/recipes/{publicId}` for delete
+- Show lock icon and reason when modification blocked
+
+---
+
+### [WEB-006]: Log Post Management (Auth Required)
+
+**Status:** 📋 Planned
+
+**Description:** Create, edit, and delete cooking log posts.
+
+**Acceptance Criteria:**
+- [ ] Create log form (select recipe, outcome, notes, photos)
+- [ ] Image upload with preview
+- [ ] Hashtag input
+- [ ] Edit log (owner only) - content, outcome, hashtags
+- [ ] Delete log with confirmation (owner only, soft delete)
+
+**Technical Notes:**
+- API: `POST /api/v1/log_posts` for create
+- API: `PUT /api/v1/log_posts/{publicId}` for edit
+- API: `DELETE /api/v1/log_posts/{publicId}` for delete
+- Images are read-only after creation (same as mobile)
+
+---
+
+### [WEB-007]: User Profile
+
+**Status:** 📋 Planned
+
+**Description:** User profile page with content tabs and social features.
+
+**Acceptance Criteria:**
+- [ ] Profile page (`/users/[publicId]`)
+- [ ] Profile photo, username display
+- [ ] Follower/following counts
+- [ ] Tabs: My Recipes, My Logs, Saved
+- [ ] Follow/unfollow button
+- [ ] Followers list modal
+- [ ] Following list modal
+- [ ] Own profile: Settings link
+- [ ] Profile edit (birthday, gender, language)
+
+**Technical Notes:**
+- API: `GET /api/v1/users/{userId}` for profile
+- API: `GET /api/v1/users/me` for own profile
+- API: `POST/DELETE /api/v1/users/{userId}/follow`
+- My Profile at `/profile` (shortcut to own profile)
+
+---
+
+### [WEB-008]: Search & Discovery
+
+**Status:** 📋 Planned
+
+**Description:** Search functionality for recipes and logs.
+
+**Acceptance Criteria:**
+- [ ] Search bar in header
+- [ ] Recipe search by title, description, ingredients
+- [ ] Log search by content
+- [ ] Autocomplete suggestions
+- [ ] Recent search history (local storage)
+- [ ] Clear history option
+- [ ] Home feed with trending recipes
+
+**Technical Notes:**
+- API: `GET /api/v1/recipes?q={query}` with pg_trgm fuzzy search
+- API: `GET /api/v1/log_posts?q={query}`
+- API: `GET /api/v1/autocomplete` for suggestions
+- Debounce search input (300ms)
+
+---
+
+### [WEB-009]: Save/Bookmark
+
+**Status:** 📋 Planned
+
+**Description:** Save recipes and logs to personal collection.
+
+**Acceptance Criteria:**
+- [ ] Save button on recipe detail
+- [ ] Save button on log detail
+- [ ] Toggle save/unsave
+- [ ] Optimistic UI update
+- [ ] Saved tab in profile
+- [ ] Login prompt for guests
+
+**Technical Notes:**
+- API: `POST/DELETE /api/v1/recipes/{publicId}/save`
+- API: `POST/DELETE /api/v1/log_posts/{publicId}/save`
+- API: `GET /api/v1/recipes/saved` and `GET /api/v1/log_posts/saved`
+
+---
+
+### [WEB-010]: Internationalization (i18n)
+
+**Status:** 📋 Planned
+
+**Description:** Multi-language support for global users.
+
+**Supported Languages (7 total):**
+| Code | Language | Priority |
+|------|----------|----------|
+| en | English | Primary |
+| ko | Korean | Primary |
+| ja | Japanese | Secondary |
+| zh | Chinese (Simplified) | Secondary |
+| es | Spanish | Secondary |
+| fr | French | Secondary |
+| it | Italian | Secondary |
+
+**Acceptance Criteria:**
+- [ ] Language switcher in settings/header
+- [ ] All UI strings translatable
+- [ ] 7 locales: en, ko, ja, zh, es, fr, it
+- [ ] URL-based locale (e.g., `/ko/recipes/...`, `/ja/recipes/...`)
+- [ ] SEO: hreflang tags for all language variants
+- [ ] Persist language preference
+- [ ] Browser locale detection for default language
+- [ ] Fallback to English for missing translations
+
+**Technical Notes:**
+- next-intl or next-i18next for i18n
+- Translation files in `src/i18n/`:
+  - `en.json` (English - base)
+  - `ko.json` (Korean)
+  - `ja.json` (Japanese)
+  - `zh.json` (Chinese Simplified)
+  - `es.json` (Spanish)
+  - `fr.json` (French)
+  - `it.json` (Italian)
+- Match mobile app translation keys where applicable
+- Consider translation management tool (Crowdin, Lokalise) for community contributions
 
 ---
 
@@ -934,6 +1038,8 @@ adb reverse tcp:9000 tcp:9000  # MinIO images
 
 # 📊 FEATURE INDEX
 
+## Mobile App Features
+
 | ID | Feature | Status |
 |----|---------|--------|
 | FEAT-001 | Social Login | ✅ |
@@ -966,3 +1072,19 @@ adb reverse tcp:9000 tcp:9000  # MinIO images
 | FEAT-034 | Image Upload Status | ✅ |
 | FEAT-035 | Profile Navigation Bar | ✅ |
 | FEAT-036 | Isar Migration & Performance | ✅ |
+| INFRA-001 | AWS Dev Environment with ALB | ✅ |
+
+## Website Features
+
+| ID | Feature | Status |
+|----|---------|--------|
+| WEB-001 | SEO Infrastructure | 📋 |
+| WEB-002 | Recipe Pages (Public) | 📋 |
+| WEB-003 | Log Post Pages (Public) | 📋 |
+| WEB-004 | User Authentication | 📋 |
+| WEB-005 | Recipe Management | 📋 |
+| WEB-006 | Log Post Management | 📋 |
+| WEB-007 | User Profile | 📋 |
+| WEB-008 | Search & Discovery | 📋 |
+| WEB-009 | Save/Bookmark | 📋 |
+| WEB-010 | Internationalization | 📋 |

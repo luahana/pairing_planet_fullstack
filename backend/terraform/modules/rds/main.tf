@@ -63,18 +63,21 @@ resource "aws_db_parameter_group" "main" {
 resource "aws_db_instance" "main" {
   identifier = "${var.project_name}-${var.environment}-db"
 
-  # Engine configuration
+  # Restore from snapshot if provided
+  snapshot_identifier = var.snapshot_identifier
+
+  # Engine configuration (some ignored when restoring from snapshot)
   engine               = "postgres"
   engine_version       = var.engine_version
   instance_class       = var.instance_class
-  allocated_storage    = var.allocated_storage
+  allocated_storage    = var.snapshot_identifier == null ? var.allocated_storage : null
   max_allocated_storage = var.max_allocated_storage
   storage_type         = "gp3"
   storage_encrypted    = true
 
-  # Database configuration
-  db_name  = var.database_name
-  username = var.master_username
+  # Database configuration (ignored when restoring from snapshot)
+  db_name  = var.snapshot_identifier == null ? var.database_name : null
+  username = var.snapshot_identifier == null ? var.master_username : null
   password = var.master_password
   port     = 5432
 

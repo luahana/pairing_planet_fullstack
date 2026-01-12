@@ -233,6 +233,10 @@ resource "aws_ecs_task_definition" "main" {
         {
           name      = "S3_BUCKET"
           valueFrom = "${var.s3_secret_arn}:bucket::"
+        },
+        {
+          name      = "FIREBASE_CREDENTIALS"
+          valueFrom = "${var.firebase_secret_arn}:credentials::"
         }
       ]
 
