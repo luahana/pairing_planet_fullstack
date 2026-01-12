@@ -32,5 +32,9 @@ public record CreateRecipeRequestDto(
         Map<String, Object> changeDiff,
         String changeReason,
         // Hashtags (e.g., ["vegetarian", "quick-meal", "spicy"])
-        List<String> hashtags
+        List<String> hashtags,
+        // Servings (default: 2)
+        Integer servings,
+        // Cooking time range (e.g., "UNDER_15_MIN", "MIN_15_TO_30", etc.)
+        String cookingTimeRange
 ) {}

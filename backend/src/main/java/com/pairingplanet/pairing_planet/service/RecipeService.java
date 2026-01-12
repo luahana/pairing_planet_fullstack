@@ -7,6 +7,7 @@ import com.pairingplanet.pairing_planet.domain.entity.recipe.Recipe;
 import com.pairingplanet.pairing_planet.domain.entity.recipe.RecipeIngredient;
 import com.pairingplanet.pairing_planet.domain.entity.recipe.RecipeStep;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
+import com.pairingplanet.pairing_planet.domain.enums.CookingTimeRange;
 import com.pairingplanet.pairing_planet.domain.enums.SuggestionStatus;
 import com.pairingplanet.pairing_planet.dto.log_post.LogPostSummaryDto;
 import com.pairingplanet.pairing_planet.dto.log_post.RecentActivityDto;
@@ -94,6 +95,16 @@ public class RecipeService {
         Map<String, Object> changeDiff = req.changeDiff() != null ? req.changeDiff() : new HashMap<>();
         List<String> changeCategories = categoryDetectionService.detectCategories(changeDiff);
 
+        // Parse cooking time range from request
+        CookingTimeRange cookingTimeRange = CookingTimeRange.MIN_30_TO_60; // Default
+        if (req.cookingTimeRange() != null && !req.cookingTimeRange().isBlank()) {
+            try {
+                cookingTimeRange = CookingTimeRange.valueOf(req.cookingTimeRange());
+            } catch (IllegalArgumentException ignored) {
+                // Use default if invalid
+            }
+        }
+
         Recipe recipe = Recipe.builder()
                 .title(req.title())
                 .description(req.description())
@@ -106,6 +117,8 @@ public class RecipeService {
                 .changeDiff(changeDiff)
                 .changeReason(req.changeReason())
                 .changeCategories(changeCategories)
+                .servings(req.servings() != null ? req.servings() : 2)
+                .cookingTimeRange(cookingTimeRange)
                 .build();
 
         recipeRepository.save(recipe);
@@ -369,7 +382,9 @@ public class RecipeService {
                 logCount,
                 recipe.getParentRecipe() != null ? recipe.getParentRecipe().getPublicId() : null,
                 recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null,
-                rootTitle
+                rootTitle,
+                recipe.getServings() != null ? recipe.getServings() : 2,
+                recipe.getCookingTimeRange() != null ? recipe.getCookingTimeRange().name() : "MIN_30_TO_60"
         );
     }
 
@@ -549,6 +564,18 @@ public class RecipeService {
         recipe.setDescription(req.description());
         if (req.culinaryLocale() != null && !req.culinaryLocale().isBlank()) {
             recipe.setCulinaryLocale(req.culinaryLocale());
+        }
+
+        // Update servings and cooking time
+        if (req.servings() != null) {
+            recipe.setServings(req.servings());
+        }
+        if (req.cookingTimeRange() != null && !req.cookingTimeRange().isBlank()) {
+            try {
+                recipe.setCookingTimeRange(CookingTimeRange.valueOf(req.cookingTimeRange()));
+            } catch (IllegalArgumentException ignored) {
+                // Keep existing value if invalid
+            }
         }
 
         // Update ingredients (clear and re-add)

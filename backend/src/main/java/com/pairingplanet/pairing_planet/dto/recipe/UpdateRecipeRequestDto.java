@@ -23,5 +23,9 @@ public record UpdateRecipeRequestDto(
         List<StepDto> steps,
         @NotEmpty(message = "완성 사진은 최소 1장 이상 필요합니다")
         List<UUID> imagePublicIds,
-        List<String> hashtags
+        List<String> hashtags,
+        // Servings (default: 2)
+        Integer servings,
+        // Cooking time range (e.g., "UNDER_15_MIN", "MIN_15_TO_30", etc.)
+        String cookingTimeRange
 ) {}

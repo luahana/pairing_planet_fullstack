@@ -139,6 +139,8 @@ class RecipeDraft {
   final List<String> hashtags;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int servings;
+  final String cookingTimeRange;
 
   RecipeDraft({
     required this.id,
@@ -153,6 +155,8 @@ class RecipeDraft {
     required this.hashtags,
     required this.createdAt,
     required this.updatedAt,
+    this.servings = 2,
+    this.cookingTimeRange = 'MIN_30_TO_60',
   });
 
   /// Check if draft has expired (older than 7 days)
@@ -181,7 +185,9 @@ class RecipeDraft {
         listEquals(ingredients, other.ingredients) &&
         listEquals(steps, other.steps) &&
         listEquals(images, other.images) &&
-        listEquals(hashtags, other.hashtags);
+        listEquals(hashtags, other.hashtags) &&
+        servings == other.servings &&
+        cookingTimeRange == other.cookingTimeRange;
   }
 
   @override
@@ -195,5 +201,7 @@ class RecipeDraft {
         Object.hashAll(steps),
         Object.hashAll(images),
         Object.hashAll(hashtags),
+        servings,
+        cookingTimeRange,
       );
 }

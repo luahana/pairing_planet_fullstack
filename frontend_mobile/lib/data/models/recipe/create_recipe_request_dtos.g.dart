@@ -31,6 +31,8 @@ CreateRecipeRequestDto _$CreateRecipeRequestDtoFromJson(
       hashtags: (json['hashtags'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
+      servings: (json['servings'] as num?)?.toInt() ?? 2,
+      cookingTimeRange: json['cookingTimeRange'] as String? ?? 'MIN_30_TO_60',
     );
 
 Map<String, dynamic> _$CreateRecipeRequestDtoToJson(
@@ -50,4 +52,6 @@ Map<String, dynamic> _$CreateRecipeRequestDtoToJson(
       'changeDiff': instance.changeDiff,
       'changeReason': instance.changeReason,
       'hashtags': instance.hashtags,
+      'servings': instance.servings,
+      'cookingTimeRange': instance.cookingTimeRange,
     };

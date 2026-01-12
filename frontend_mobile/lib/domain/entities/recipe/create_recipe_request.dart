@@ -18,6 +18,9 @@ class CreateRecipeRequest {
   final String? changeReason;
   // Hashtags
   final List<String>? hashtags;
+  // Servings and cooking time
+  final int servings;
+  final String cookingTimeRange;
 
   CreateRecipeRequest({
     required this.title,
@@ -34,5 +37,7 @@ class CreateRecipeRequest {
     this.changeDiff,
     this.changeReason,
     this.hashtags,
+    this.servings = 2,
+    this.cookingTimeRange = 'MIN_30_TO_60',
   });
 }

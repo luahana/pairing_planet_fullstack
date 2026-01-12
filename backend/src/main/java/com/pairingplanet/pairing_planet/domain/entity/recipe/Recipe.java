@@ -4,6 +4,7 @@ import com.pairingplanet.pairing_planet.domain.entity.common.BaseEntity;
 import com.pairingplanet.pairing_planet.domain.entity.food.FoodMaster;
 import com.pairingplanet.pairing_planet.domain.entity.hashtag.Hashtag;
 import com.pairingplanet.pairing_planet.domain.entity.image.Image;
+import com.pairingplanet.pairing_planet.domain.enums.CookingTimeRange;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -32,6 +33,14 @@ public class Recipe extends BaseEntity {
     private String description;
     private Integer cookingTime;
     private String difficulty;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cooking_time_range")
+    @Builder.Default
+    private CookingTimeRange cookingTimeRange = CookingTimeRange.MIN_30_TO_60;
+
+    @Builder.Default
+    private Integer servings = 2;
 
     @Builder.Default
     private Integer savedCount = 0;

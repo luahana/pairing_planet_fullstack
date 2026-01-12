@@ -202,6 +202,8 @@ class RecipeDraftDto {
   final List<String> hashtags;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int servings;
+  final String cookingTimeRange;
 
   RecipeDraftDto({
     required this.id,
@@ -216,6 +218,8 @@ class RecipeDraftDto {
     required this.hashtags,
     required this.createdAt,
     required this.updatedAt,
+    this.servings = 2,
+    this.cookingTimeRange = 'MIN_30_TO_60',
   });
 
   factory RecipeDraftDto.fromJson(Map<String, dynamic> json) {
@@ -238,6 +242,8 @@ class RecipeDraftDto {
       hashtags: (json['hashtags'] as List<dynamic>).cast<String>(),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      servings: json['servings'] as int? ?? 2,
+      cookingTimeRange: json['cookingTimeRange'] as String? ?? 'MIN_30_TO_60',
     );
   }
 
@@ -254,6 +260,8 @@ class RecipeDraftDto {
         'hashtags': hashtags,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
+        'servings': servings,
+        'cookingTimeRange': cookingTimeRange,
       };
 
   factory RecipeDraftDto.fromEntity(RecipeDraft entity) {
@@ -271,6 +279,8 @@ class RecipeDraftDto {
       hashtags: entity.hashtags,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      servings: entity.servings,
+      cookingTimeRange: entity.cookingTimeRange,
     );
   }
 
@@ -288,6 +298,8 @@ class RecipeDraftDto {
       hashtags: hashtags,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      servings: servings,
+      cookingTimeRange: cookingTimeRange,
     );
   }
 }

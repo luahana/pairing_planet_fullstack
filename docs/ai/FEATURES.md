@@ -576,6 +576,34 @@ User logs in within 30 days?
 
 ---
 
+### [FEAT-032]: Servings and Cooking Time
+
+**Status:** ✅ Done
+**Branch:** `dev`
+
+**Description:** Add servings count and cooking time range to recipes for better meal planning. Users can specify how many servings a recipe makes and approximate cooking time.
+
+**Acceptance Criteria:**
+- [x] Servings selector (1-12, default: 2)
+- [x] Cooking time dropdown with 5 ranges (Under 15min, 15-30min, 30min-1hr, 1-2hr, Over 2hr)
+- [x] Display on recipe detail screen with icons
+- [x] Editable in recipe create/edit screens
+- [x] Inherited from parent recipe in variation mode
+- [x] Translations (en-US, ko-KR)
+
+**Technical Notes:**
+- Backend:
+  - `CookingTimeRange.java` enum with 5 values
+  - `V23__add_servings_and_cooking_time_range.sql` migration
+  - Fields added to Recipe entity, all DTOs, RecipeService
+- Frontend:
+  - `cooking_time_range.dart` constants
+  - `ServingsCookingTimeSection` widget with stepper and dropdown
+  - Updated create/edit/detail screens
+- Defaults: 2 servings, MIN_30_TO_60 (30min-1hour) cooking time
+
+---
+
 ## Planned 📋
 
 ### [FEAT-016]: Improved Onboarding
@@ -799,3 +827,5 @@ User logs in within 30 days?
 | FEAT-028 | Cooking Style | ✅ |
 | FEAT-029 | International Measurement Units | 📋 |
 | FEAT-030 | Autocomplete Category Filtering | ✅ |
+| FEAT-031 | Gamification Level Display | ✅ |
+| FEAT-032 | Servings & Cooking Time | ✅ |

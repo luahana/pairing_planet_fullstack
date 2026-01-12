@@ -336,6 +336,18 @@
       "linkCopied": "링크가 복사되었습니다",
       "comingSoon": "{platform} 공유는 준비 중입니다. 링크가 복사되었습니다."
     },
+    "servings": {
+      "label": "인분",
+      "count": "{count}인분"
+    },
+    "cookingTime": {
+      "label": "조리 시간",
+      "UNDER_15_MIN": "15분 미만",
+      "MIN_15_TO_30": "15-30분",
+      "MIN_30_TO_60": "30분-1시간",
+      "HOUR_1_TO_2": "1-2시간",
+      "OVER_2_HOURS": "2시간 이상"
+    },
     "cooking": {
       "step": "{total}단계 중 {current}단계",
       "stepNumber": "{number}단계",

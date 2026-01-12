@@ -15,6 +15,7 @@ import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dar
 import '../widgets/hook_section.dart';
 import '../widgets/step_section.dart';
 import '../widgets/hashtag_input_section.dart';
+import '../widgets/servings_cooking_time_section.dart';
 
 /// Recipe edit screen for modifying an existing recipe.
 /// Only available when the recipe has no child variants or associated logs.
@@ -40,6 +41,10 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
 
   bool _isLoading = false;
   bool _dataInitialized = false;
+
+  // Servings and cooking time
+  int _servings = 2;
+  String _cookingTimeRange = 'MIN_30_TO_60';
 
   @override
   void initState() {
@@ -109,6 +114,10 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
 
     // Load hashtags (extract names from Hashtag entities)
     _hashtags.addAll(recipe.hashtags.map((h) => h.name));
+
+    // Load servings and cooking time
+    _servings = recipe.servings;
+    _cookingTimeRange = recipe.cookingTimeRange;
   }
 
   void _addIngredient(String type) {
@@ -229,6 +238,8 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
             .map((img) => img.publicId!)
             .toList(),
         hashtags: _hashtags.isNotEmpty ? _hashtags : null,
+        servings: _servings,
+        cookingTimeRange: _cookingTimeRange,
       );
 
       await ref.read(recipeUpdateProvider.notifier).updateRecipe(
@@ -308,6 +319,13 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
                                 _finishedImages.insert(newIndex, item);
                               });
                             },
+                          ),
+                          SizedBox(height: 32.h),
+                          ServingsCookingTimeSection(
+                            servings: _servings,
+                            cookingTimeRange: _cookingTimeRange,
+                            onServingsChanged: (value) => setState(() => _servings = value),
+                            onCookingTimeChanged: (value) => setState(() => _cookingTimeRange = value),
                           ),
                           SizedBox(height: 24.h),
                           HashtagInputSection(

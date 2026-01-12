@@ -22,6 +22,8 @@ RecipeSummaryDto _$RecipeSummaryDtoFromJson(Map<String, dynamic> json) =>
       parentPublicId: json['parentPublicId'] as String?,
       rootPublicId: json['rootPublicId'] as String?,
       rootTitle: json['rootTitle'] as String?,
+      servings: (json['servings'] as num?)?.toInt(),
+      cookingTimeRange: json['cookingTimeRange'] as String?,
     );
 
 Map<String, dynamic> _$RecipeSummaryDtoToJson(RecipeSummaryDto instance) =>
@@ -40,4 +42,6 @@ Map<String, dynamic> _$RecipeSummaryDtoToJson(RecipeSummaryDto instance) =>
       'parentPublicId': instance.parentPublicId,
       'rootPublicId': instance.rootPublicId,
       'rootTitle': instance.rootTitle,
+      'servings': instance.servings,
+      'cookingTimeRange': instance.cookingTimeRange,
     };

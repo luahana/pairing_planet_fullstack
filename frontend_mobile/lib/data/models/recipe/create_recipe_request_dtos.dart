@@ -23,6 +23,9 @@ class CreateRecipeRequestDto {
   final String? changeReason;
   // Hashtags
   final List<String>? hashtags;
+  // Servings and cooking time
+  final int servings;
+  final String cookingTimeRange;
 
   CreateRecipeRequestDto({
     required this.title,
@@ -39,6 +42,8 @@ class CreateRecipeRequestDto {
     this.changeDiff,
     this.changeReason,
     this.hashtags,
+    this.servings = 2,
+    this.cookingTimeRange = 'MIN_30_TO_60',
   }) {
     if (food1MasterPublicId == null &&
         (newFoodName == null || newFoodName!.trim().isEmpty)) {
@@ -69,6 +74,8 @@ class CreateRecipeRequestDto {
       changeDiff: request.changeDiff,
       changeReason: request.changeReason,
       hashtags: request.hashtags,
+      servings: request.servings,
+      cookingTimeRange: request.cookingTimeRange,
     );
   }
 }

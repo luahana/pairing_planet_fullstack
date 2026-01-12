@@ -13,6 +13,8 @@ class RecipeSummary {
   final String? parentPublicId;
   final String? rootPublicId;
   final String? rootTitle; // For displaying root recipe link in variants
+  final int servings;
+  final String cookingTimeRange;
 
   RecipeSummary({
     required this.publicId,
@@ -29,6 +31,8 @@ class RecipeSummary {
     this.parentPublicId,
     this.rootPublicId,
     this.rootTitle,
+    this.servings = 2,
+    this.cookingTimeRange = 'MIN_30_TO_60',
   });
 
   bool get isVariant => rootPublicId != null;

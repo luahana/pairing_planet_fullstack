@@ -15,6 +15,8 @@ class UpdateRecipeRequestDto {
   final List<StepDto> steps;
   final List<String> imagePublicIds;
   final List<String>? hashtags;
+  final int? servings;
+  final String? cookingTimeRange;
 
   UpdateRecipeRequestDto({
     required this.title,
@@ -24,6 +26,8 @@ class UpdateRecipeRequestDto {
     required this.steps,
     required this.imagePublicIds,
     this.hashtags,
+    this.servings,
+    this.cookingTimeRange,
   });
 
   factory UpdateRecipeRequestDto.fromJson(Map<String, dynamic> json) =>
@@ -41,6 +45,8 @@ class UpdateRecipeRequestDto {
       steps: request.steps.map((e) => StepDto.fromEntity(e)).toList(),
       imagePublicIds: request.imagePublicIds,
       hashtags: request.hashtags,
+      servings: request.servings,
+      cookingTimeRange: request.cookingTimeRange,
     );
   }
 }
