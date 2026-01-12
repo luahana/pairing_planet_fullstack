@@ -60,6 +60,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
+  Future<void> loginWithApple() async {
+    final result = await _loginUseCase.executeAppleLogin();
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) => state = AuthState(
+        status: AuthStatus.unauthenticated,
+        errorMessage: failure.toString(),
+      ),
+      (_) => state = AuthState(status: AuthStatus.authenticated),
+    );
+  }
+
   Future<void> logout() async {
     final result = await _logoutUseCase.execute();
 

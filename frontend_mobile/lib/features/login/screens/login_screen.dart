@@ -67,6 +67,23 @@ class LoginScreen extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: 16.h),
+              // Apple Sign-In button
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton.icon(
+                  icon: Icon(Icons.apple, size: 24.sp),
+                  label: Text('login.appleLogin'.tr()),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    await ref.read(authStateProvider.notifier).loginWithApple();
+                  },
+                ),
+              ),
+              SizedBox(height: 16.h),
               // Browse as Guest button
               SizedBox(
                 width: double.infinity,

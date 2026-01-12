@@ -27,7 +27,12 @@ class PlatformUrlResolver {
   /// Adjusts any URL containing local dev hostnames (10.0.2.2 or localhost)
   /// to use the correct hostname for the current platform.
   /// Use this for image URLs, API URLs, or any other network resources.
+  /// Note: Real IP addresses (like 10.0.0.x) are not modified.
   static String adjustUrlForPlatform(String url) {
+    // Don't modify URLs with real IP addresses (for real device testing)
+    if (_hasRealIpAddress(url)) {
+      return url;
+    }
     if (Platform.isIOS) {
       // iOS simulator uses localhost
       return url.replaceAll('10.0.2.2', 'localhost');
@@ -36,6 +41,13 @@ class PlatformUrlResolver {
       return url.replaceAll('localhost', '10.0.2.2');
     }
     return url;
+  }
+
+  /// Check if URL contains a real IP address (not localhost or 10.0.2.2)
+  static bool _hasRealIpAddress(String url) {
+    // Match IP addresses but exclude 10.0.2.2 (Android emulator)
+    final ipRegex = RegExp(r'\b(?!10\.0\.2\.2)\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b');
+    return ipRegex.hasMatch(url);
   }
 
   static String _getDefaultLocalUrl() {

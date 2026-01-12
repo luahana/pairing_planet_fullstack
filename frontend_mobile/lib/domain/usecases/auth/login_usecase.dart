@@ -21,4 +21,17 @@ class LoginUseCase {
     // 2. 백엔드 서버에 인증 요청 및 토큰 저장
     return await _repository.socialLogin(firebaseIdToken);
   }
+
+  /// Apple 로그인을 수행하는 비즈니스 로직
+  Future<Either<Failure, Unit>> executeAppleLogin() async {
+    // 1. 파이어베이스로부터 ID 토큰 획득
+    final String? firebaseIdToken = await _socialAuthService.signInWithApple();
+
+    if (firebaseIdToken == null) {
+      return Left(ServerFailure("Apple 로그인에 실패했습니다."));
+    }
+
+    // 2. 백엔드 서버에 인증 요청 및 토큰 저장
+    return await _repository.socialLogin(firebaseIdToken);
+  }
 }
