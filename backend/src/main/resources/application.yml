@@ -12,6 +12,8 @@ spring:
   jackson:
     date-format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
     time-zone: UTC
+    # Include all fields even if null
+    default-property-inclusion: always
     # ISO-8601 형식을 사용하도록 설정
     serialization:
       write-dates-as-timestamps: false

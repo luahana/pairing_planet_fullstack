@@ -5,10 +5,13 @@ import com.pairingplanet.pairing_planet.domain.entity.log_post.LogPost;
 import com.pairingplanet.pairing_planet.domain.entity.recipe.Recipe;
 import com.pairingplanet.pairing_planet.domain.entity.recipe.RecipeLog;
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
+import com.pairingplanet.pairing_planet.dto.user.UpdateProfileRequestDto;
 import com.pairingplanet.pairing_planet.dto.user.UserDto;
 import com.pairingplanet.pairing_planet.repository.food.FoodMasterRepository;
 import com.pairingplanet.pairing_planet.repository.log_post.LogPostRepository;
 import com.pairingplanet.pairing_planet.repository.recipe.RecipeRepository;
+import com.pairingplanet.pairing_planet.repository.user.UserRepository;
+import com.pairingplanet.pairing_planet.security.UserPrincipal;
 import com.pairingplanet.pairing_planet.support.BaseIntegrationTest;
 import com.pairingplanet.pairing_planet.support.TestUserFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +40,9 @@ class UserServiceTest extends BaseIntegrationTest {
 
     @Autowired
     private FoodMasterRepository foodMasterRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private User testUser;
     private FoodMaster testFood;
@@ -183,6 +189,91 @@ class UserServiceTest extends BaseIntegrationTest {
             logPost.setRecipeLog(recipeLog);
 
             logPostRepository.save(logPost);
+        }
+    }
+
+    @Nested
+    @DisplayName("defaultFoodStyle preference")
+    class DefaultFoodStyleTests {
+
+        @Test
+        @DisplayName("Should return null defaultFoodStyle for new user")
+        void newUser_HasNullDefaultFoodStyle() {
+            UserDto result = userService.getUserProfile(testUser.getPublicId());
+
+            assertThat(result.defaultFoodStyle()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should update defaultFoodStyle in profile")
+        void updateProfile_WithDefaultFoodStyle_Success() {
+            UserPrincipal principal = new UserPrincipal(testUser);
+            UpdateProfileRequestDto request = new UpdateProfileRequestDto(
+                    null, null, null, null, null, null, null, "KR"
+            );
+
+            UserDto result = userService.updateProfile(principal, request);
+
+            assertThat(result.defaultFoodStyle()).isEqualTo("KR");
+        }
+
+        @Test
+        @DisplayName("Should persist defaultFoodStyle after update")
+        void updateProfile_DefaultFoodStyle_Persisted() {
+            UserPrincipal principal = new UserPrincipal(testUser);
+            UpdateProfileRequestDto request = new UpdateProfileRequestDto(
+                    null, null, null, null, null, null, null, "JP"
+            );
+
+            userService.updateProfile(principal, request);
+
+            // Verify in database
+            User updated = userRepository.findById(testUser.getId()).orElseThrow();
+            assertThat(updated.getDefaultFoodStyle()).isEqualTo("JP");
+        }
+
+        @Test
+        @DisplayName("Should return defaultFoodStyle in UserDto after update")
+        void getUserProfile_ReturnsDefaultFoodStyle() {
+            // Set up user with defaultFoodStyle
+            testUser.setDefaultFoodStyle("US");
+            userRepository.save(testUser);
+
+            UserDto result = userService.getUserProfile(testUser.getPublicId());
+
+            assertThat(result.defaultFoodStyle()).isEqualTo("US");
+        }
+
+        @Test
+        @DisplayName("Should accept 'other' as valid food style")
+        void updateProfile_OtherFoodStyle_Success() {
+            UserPrincipal principal = new UserPrincipal(testUser);
+            UpdateProfileRequestDto request = new UpdateProfileRequestDto(
+                    null, null, null, null, null, null, null, "other"
+            );
+
+            UserDto result = userService.updateProfile(principal, request);
+
+            assertThat(result.defaultFoodStyle()).isEqualTo("other");
+        }
+
+        @Test
+        @DisplayName("Should accept various ISO country codes")
+        void updateProfile_VariousCountryCodes_Success() {
+            UserPrincipal principal = new UserPrincipal(testUser);
+
+            // Test multiple country codes
+            String[] countryCodes = {"KR", "US", "JP", "CN", "IT", "FR", "TH", "IN"};
+
+            for (String code : countryCodes) {
+                UpdateProfileRequestDto request = new UpdateProfileRequestDto(
+                        null, null, null, null, null, null, null, code
+                );
+
+                UserDto result = userService.updateProfile(principal, request);
+
+                assertThat(result.defaultFoodStyle()).isEqualTo(code);
+            }
         }
     }
 }

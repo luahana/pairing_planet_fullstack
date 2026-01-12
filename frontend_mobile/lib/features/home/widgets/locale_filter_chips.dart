@@ -1,8 +1,39 @@
+import 'package:country_picker/country_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/locale_dropdown.dart';
+
+/// Popular cooking style options for filtering
+class _FilterStyleOption {
+  final String countryCode;
+  final String labelKey;
+
+  const _FilterStyleOption(this.countryCode, this.labelKey);
+
+  String get flagEmoji {
+    if (countryCode == 'other') return '🌍';
+    try {
+      return CountryParser.parseCountryCode(countryCode).flagEmoji;
+    } catch (_) {
+      return '🌍';
+    }
+  }
+}
+
+/// Popular filter options
+const _filterOptions = [
+  _FilterStyleOption('KR', 'locale.korean'),
+  _FilterStyleOption('US', 'locale.american'),
+  _FilterStyleOption('JP', 'locale.japanese'),
+  _FilterStyleOption('CN', 'locale.chinese'),
+  _FilterStyleOption('IT', 'locale.italian'),
+  _FilterStyleOption('MX', 'locale.mexican'),
+  _FilterStyleOption('TH', 'locale.thai'),
+  _FilterStyleOption('IN', 'locale.indian'),
+  _FilterStyleOption('FR', 'locale.french'),
+  _FilterStyleOption('other', 'locale.other'),
+];
 
 /// Horizontal scrollable filter chips for culinary locale selection
 class LocaleFilterChips extends StatelessWidget {
@@ -31,12 +62,12 @@ class LocaleFilterChips extends StatelessWidget {
           ),
           SizedBox(width: 8.w),
           // Locale chips
-          ...CulinaryLocale.options.map((locale) => Padding(
+          ..._filterOptions.map((option) => Padding(
                 padding: EdgeInsets.only(right: 8.w),
                 child: _buildChip(
-                  label: '${locale.flagEmoji} ${locale.labelKey.tr()}',
-                  isSelected: selectedLocale == locale.code,
-                  onTap: () => onLocaleChanged(locale.code),
+                  label: '${option.flagEmoji} ${option.labelKey.tr()}',
+                  isSelected: selectedLocale == option.countryCode,
+                  onTap: () => onLocaleChanged(option.countryCode),
                 ),
               )),
         ],

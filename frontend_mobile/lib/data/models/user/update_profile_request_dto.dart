@@ -11,6 +11,7 @@ class UpdateProfileRequestDto {
   final String? preferredDietaryId;
   final bool? marketingAgreed;
   final String? locale;  // ko-KR, en-US
+  final String? defaultFoodStyle;  // ISO country code (e.g., "KR", "US")
 
   UpdateProfileRequestDto({
     this.username,
@@ -20,6 +21,7 @@ class UpdateProfileRequestDto {
     this.preferredDietaryId,
     this.marketingAgreed,
     this.locale,
+    this.defaultFoodStyle,
   });
 
   factory UpdateProfileRequestDto.fromJson(Map<String, dynamic> json) =>

@@ -186,5 +186,117 @@ void main() {
       expect(json['publicId'], 'test-id');
       expect(json['title'], 'Test');
     });
+
+    group('foodName and hashtags fields', () {
+      test('should create DTO with foodName and hashtags', () {
+        // Act
+        final dto = LogPostSummaryDto(
+          publicId: 'test-id',
+          title: 'Test Log',
+          outcome: 'SUCCESS',
+          foodName: '김치찌개',
+          hashtags: ['매운맛', '겨울음식', '한식'],
+        );
+
+        // Assert
+        expect(dto.foodName, '김치찌개');
+        expect(dto.hashtags, ['매운맛', '겨울음식', '한식']);
+      });
+
+      test('should handle null foodName and hashtags', () {
+        // Act
+        final dto = LogPostSummaryDto(
+          publicId: 'test-id',
+          title: 'Test',
+        );
+
+        // Assert
+        expect(dto.foodName, isNull);
+        expect(dto.hashtags, isNull);
+      });
+
+      test('should handle empty hashtags list', () {
+        // Act
+        final dto = LogPostSummaryDto(
+          publicId: 'test-id',
+          title: 'Test',
+          hashtags: [],
+        );
+
+        // Assert
+        expect(dto.hashtags, isEmpty);
+      });
+
+      test('fromJson should parse foodName and hashtags', () {
+        // Arrange
+        final json = {
+          'publicId': 'json-id',
+          'title': 'Test',
+          'foodName': 'Kimchi Stew',
+          'hashtags': ['spicy', 'korean'],
+        };
+
+        // Act
+        final dto = LogPostSummaryDto.fromJson(json);
+
+        // Assert
+        expect(dto.foodName, 'Kimchi Stew');
+        expect(dto.hashtags, ['spicy', 'korean']);
+      });
+
+      test('toJson should include foodName and hashtags', () {
+        // Arrange
+        final dto = LogPostSummaryDto(
+          publicId: 'test-id',
+          title: 'Test',
+          foodName: 'Bibimbap',
+          hashtags: ['rice', 'healthy'],
+        );
+
+        // Act
+        final json = dto.toJson();
+
+        // Assert
+        expect(json['foodName'], 'Bibimbap');
+        expect(json['hashtags'], ['rice', 'healthy']);
+      });
+
+      test('toEntity should preserve foodName and hashtags', () {
+        // Arrange
+        final dto = LogPostSummaryDto(
+          publicId: 'test-id',
+          title: 'Test',
+          foodName: 'Bulgogi',
+          hashtags: ['beef', 'grilled'],
+        );
+
+        // Act
+        final entity = dto.toEntity();
+
+        // Assert
+        expect(entity.foodName, 'Bulgogi');
+        expect(entity.hashtags, ['beef', 'grilled']);
+      });
+
+      test('fromSyncQueueItem should include hashtags from payload', () {
+        // Arrange
+        final syncItem = SyncQueueItem(
+          id: 'sync-123',
+          type: SyncOperationType.createLogPost,
+          payload:
+              '{"title":"Quick Log","content":"Test","outcome":"SUCCESS","localPhotoPaths":[],"hashtags":["homemade","delicious"]}',
+          status: SyncStatus.pending,
+          createdAt: DateTime.now(),
+          retryCount: 0,
+        );
+
+        // Act
+        final dto = LogPostSummaryDto.fromSyncQueueItem(syncItem);
+
+        // Assert
+        expect(dto.hashtags, ['homemade', 'delicious']);
+        expect(dto.foodName, isNull); // Not available from sync queue
+      });
+    });
   });
 }

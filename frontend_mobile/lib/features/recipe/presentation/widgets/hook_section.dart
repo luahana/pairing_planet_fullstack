@@ -12,7 +12,7 @@ import 'package:pairing_planet2_frontend/domain/entities/autocomplete/autocomple
 import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 import '../../../../core/providers/image_providers.dart';
 import '../../../../core/theme/app_colors.dart';
-import 'locale_dropdown.dart';
+import 'food_style_dropdown.dart';
 
 class HookSection extends ConsumerStatefulWidget {
   final TextEditingController titleController;
@@ -212,8 +212,8 @@ class _HookSectionState extends ConsumerState<HookSection> {
           SizedBox(height: 16.h),
         ],
 
-        // Culinary locale dropdown (always editable, even in variant mode)
-        LocaleDropdown(
+        // Food style dropdown (always editable, even in variant mode)
+        FoodStyleDropdown(
           value: widget.localeController.text.isNotEmpty
               ? widget.localeController.text
               : null,

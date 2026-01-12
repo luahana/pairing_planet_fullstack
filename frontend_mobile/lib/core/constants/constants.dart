@@ -81,6 +81,7 @@ class RouteConstants {
   static String recipeStarPath(String id) => '/recipes/$id/star';
   static String recipeVariationsPath(String id) => '/recipes/$id/variations';
   static String logPostDetailPath(String id) => '/log_post/$id';
+
   static String userProfilePath(String userId) => '/users/$userId';
   static String followersPath(String userId) => '/users/$userId/followers';
 }
