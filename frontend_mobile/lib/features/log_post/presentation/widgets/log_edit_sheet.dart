@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pairing_planet2_frontend/core/providers/image_providers.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_input_styles.dart';
 import 'package:pairing_planet2_frontend/core/widgets/image_source_sheet.dart';
 import 'package:pairing_planet2_frontend/core/widgets/reorderable_image_picker.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_detail.dart';
@@ -128,18 +129,76 @@ class _LogEditSheetState extends ConsumerState<LogEditSheet> {
     });
   }
 
+  /// Check if any images are currently uploading
+  bool get _hasUploadingImages {
+    return _images.any((img) => img.status == UploadStatus.uploading);
+  }
+
+  /// Check if any images have upload errors
+  bool get _hasUploadErrors {
+    return _images.any((img) => img.status == UploadStatus.error);
+  }
+
+  /// Get counts for status display
+  (int uploading, int errors) get _uploadStatusCounts {
+    int uploading = 0;
+    int errors = 0;
+    for (final img in _images) {
+      if (img.status == UploadStatus.uploading) uploading++;
+      if (img.status == UploadStatus.error) errors++;
+    }
+    return (uploading, errors);
+  }
+
+  Widget _buildUploadStatusBanner() {
+    final (uploading, errors) = _uploadStatusCounts;
+    if (uploading == 0 && errors == 0) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: errors > 0 ? Colors.red[50] : Colors.orange[50],
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(
+          color: errors > 0 ? Colors.red[200]! : Colors.orange[200]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          if (uploading > 0) ...[
+            SizedBox(
+              width: 16.w,
+              height: 16.w,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'logPost.uploadingPhotos'.tr(namedArgs: {'count': '$uploading'}),
+                style: TextStyle(fontSize: 13.sp),
+              ),
+            ),
+          ] else if (errors > 0) ...[
+            Icon(Icons.error_outline, color: Colors.red, size: 18.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'logPost.uploadFailed'.tr(namedArgs: {'count': '$errors'}),
+                style: TextStyle(color: Colors.red[700], fontSize: 13.sp),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Future<void> _saveChanges() async {
     if (_contentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('logPost.memoHint'.tr())),
-      );
-      return;
-    }
-
-    // Check if any image is still uploading
-    if (_images.any((img) => img.status == UploadStatus.uploading)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('logPost.waitForUpload'.tr())),
       );
       return;
     }
@@ -293,11 +352,7 @@ class _LogEditSheetState extends ConsumerState<LogEditSheet> {
                   SizedBox(height: 12.h),
                   Container(
                     padding: EdgeInsets.all(16.r),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
+                    decoration: AppInputStyles.editableBoxDecoration,
                     child: TextField(
                       controller: _contentController,
                       maxLines: 5,
@@ -337,34 +392,42 @@ class _LogEditSheetState extends ConsumerState<LogEditSheet> {
                 color: Colors.white,
                 border: Border(top: BorderSide(color: Colors.grey[200]!)),
               ),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _isLoading ? null : _saveChanges,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildUploadStatusBanner(),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: (_isLoading || _hasUploadingImages || _hasUploadErrors)
+                          ? null
+                          : _saveChanges,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? SizedBox(
+                              width: 20.w,
+                              height: 20.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'common.save'.tr(),
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
-                  child: _isLoading
-                      ? SizedBox(
-                          width: 20.w,
-                          height: 20.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          'common.save'.tr(),
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
+                ],
               ),
             ),
           ],

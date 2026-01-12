@@ -18,6 +18,7 @@ public record UserDto(
         Gender gender,
         LocalDate birthDate,
         String locale,           // 언어 설정: ko-KR, en-US
+        String defaultFoodStyle, // 기본 요리 스타일: ISO country code (e.g., "KR", "US")
         int followerCount,
         int followingCount,
         long recipeCount,        // Number of recipes created by user
@@ -57,6 +58,7 @@ public record UserDto(
                 .gender(user.getGender())
                 .birthDate(user.getBirthDate())
                 .locale(user.getLocale())
+                .defaultFoodStyle(user.getDefaultFoodStyle())
                 .followerCount(user.getFollowerCount())
                 .followingCount(user.getFollowingCount())
                 .recipeCount(recipeCount)

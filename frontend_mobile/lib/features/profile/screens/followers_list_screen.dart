@@ -302,6 +302,7 @@ class _FollowerListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: () => context.push(RouteConstants.userProfilePath(follower.publicId)),
       leading: CircleAvatar(
         radius: 24.r,
         backgroundImage: follower.profileImageUrl != null

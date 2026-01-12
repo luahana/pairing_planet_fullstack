@@ -295,6 +295,51 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
     }
   }
 
+  /// Check if any images are currently uploading
+  bool get _hasUploadingImages {
+    if (_finishedImages.any((img) => img.status == UploadStatus.uploading)) {
+      return true;
+    }
+    for (final step in _steps) {
+      final uploadItem = step['uploadItem'] as UploadItem?;
+      if (uploadItem?.status == UploadStatus.uploading) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Check if any images have upload errors
+  bool get _hasUploadErrors {
+    if (_finishedImages.any((img) => img.status == UploadStatus.error)) {
+      return true;
+    }
+    for (final step in _steps) {
+      final uploadItem = step['uploadItem'] as UploadItem?;
+      if (uploadItem?.status == UploadStatus.error) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Get counts for status display
+  (int uploading, int errors) get _uploadStatusCounts {
+    int uploading = 0;
+    int errors = 0;
+
+    for (final img in _finishedImages) {
+      if (img.status == UploadStatus.uploading) uploading++;
+      if (img.status == UploadStatus.error) errors++;
+    }
+    for (final step in _steps) {
+      final uploadItem = step['uploadItem'] as UploadItem?;
+      if (uploadItem?.status == UploadStatus.uploading) uploading++;
+      if (uploadItem?.status == UploadStatus.error) errors++;
+    }
+    return (uploading, errors);
+  }
+
   @override
   Widget build(BuildContext context) {
     final recipeAsync = ref.watch(recipeDetailProvider(widget.recipeId));
@@ -413,32 +458,87 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
         title: Text('recipe.editTitle'.tr()),
       );
 
+  /// Build upload status banner to show uploading/error states
+  Widget _buildUploadStatusBanner() {
+    final (uploading, errors) = _uploadStatusCounts;
+
+    if (uploading == 0 && errors == 0) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h, left: 20.w, right: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: errors > 0 ? Colors.red[50] : Colors.orange[50],
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(
+          color: errors > 0 ? Colors.red[200]! : Colors.orange[200]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          if (uploading > 0) ...[
+            SizedBox(
+              width: 16.w,
+              height: 16.w,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'recipe.uploadingPhotos'.tr(namedArgs: {'count': '$uploading'}),
+                style: TextStyle(fontSize: 13.sp),
+              ),
+            ),
+          ] else if (errors > 0) ...[
+            Icon(Icons.error_outline, color: Colors.red, size: 18.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'recipe.uploadFailed'.tr(namedArgs: {'count': '$errors'}),
+                style: TextStyle(color: Colors.red[700], fontSize: 13.sp),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildSubmitButton() {
     final bool hasBaseInfo =
         _titleController.text.isNotEmpty && _ingredients.isNotEmpty;
+    final bool canSubmit = hasBaseInfo && !_isLoading && !_hasUploadingImages && !_hasUploadErrors;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56.h,
-        child: ElevatedButton(
-          onPressed: hasBaseInfo && !_isLoading ? _handleSubmit : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-          ),
-          child: Text(
-            _isLoading ? 'recipe.updating'.tr() : 'recipe.update'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildUploadStatusBanner(),
+        Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 30.h),
+          child: SizedBox(
+            width: double.infinity,
+            height: 56.h,
+            child: ElevatedButton(
+              onPressed: canSubmit ? _handleSubmit : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+              ),
+              child: Text(
+                _isLoading ? 'recipe.updating'.tr() : 'recipe.update'.tr(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

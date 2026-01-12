@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_input_styles.dart';
 import 'package:pairing_planet2_frontend/core/widgets/outcome/outcome_badge.dart';
 import 'package:pairing_planet2_frontend/features/log_post/providers/quick_log_draft_provider.dart';
 
@@ -62,12 +63,8 @@ class _NotesStepState extends ConsumerState<NotesStep> {
           TextField(
             controller: _notesController,
             maxLines: 3,
-            decoration: InputDecoration(
+            decoration: AppInputStyles.editableInputDecoration(
               hintText: 'logPost.quickLog.notesHint'.tr(),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              contentPadding: EdgeInsets.all(16.r),
             ),
             onChanged: (value) {
               ref.read(quickLogDraftProvider.notifier).updateNotes(value);

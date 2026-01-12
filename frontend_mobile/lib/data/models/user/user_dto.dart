@@ -11,6 +11,7 @@ class UserDto {
   final String? gender;
   final String? birthDate;
   final String? locale;  // 언어 설정: ko-KR, en-US
+  final String? defaultFoodStyle;  // 기본 요리 스타일: ISO country code (e.g., "KR", "US")
   final int followerCount;
   final int followingCount;
   final int recipeCount;  // Number of recipes created by user
@@ -26,6 +27,7 @@ class UserDto {
     this.gender,
     this.birthDate,
     this.locale,
+    this.defaultFoodStyle,
     this.followerCount = 0,
     this.followingCount = 0,
     this.recipeCount = 0,

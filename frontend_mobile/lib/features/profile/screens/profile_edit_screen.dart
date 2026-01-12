@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:country_picker/country_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
@@ -8,6 +10,7 @@ import 'package:pairing_planet2_frontend/core/network/dio_provider.dart';
 import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
 import 'package:pairing_planet2_frontend/core/services/toast_service.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_input_styles.dart';
 import 'package:pairing_planet2_frontend/data/datasources/user/user_remote_data_source.dart';
 import 'package:pairing_planet2_frontend/data/models/user/update_profile_request_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/user/user_dto.dart';
@@ -26,6 +29,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   String? _selectedGender;
   String? _selectedLocale;
   String? _originalLocale;  // Track original locale to detect changes
+  String? _selectedFoodStyle;  // ISO country code (e.g., "KR", "US")
   bool _isLoading = false;
   bool _hasChanges = false;
 
@@ -67,8 +71,20 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _selectedGender = profile.user.gender;
         _selectedLocale = profile.user.locale ?? ref.read(localeProvider);
         _originalLocale = _selectedLocale;  // Store original locale
+        // Initialize food style from profile or derive from device locale
+        _selectedFoodStyle = profile.user.defaultFoodStyle ?? _getDefaultFoodStyleFromDevice();
       });
     });
+  }
+
+  /// Get default food style from device locale
+  String _getDefaultFoodStyleFromDevice() {
+    final deviceLocale = Platform.localeName; // e.g., "ko_KR", "en_US"
+    final parts = deviceLocale.split('_');
+    if (parts.length >= 2) {
+      return parts[1].toUpperCase(); // "KR", "US"
+    }
+    return 'US'; // fallback
   }
 
   @override
@@ -140,6 +156,20 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           SizedBox(height: 16.h),
           Text(
             'profile.languageHint'.tr(),
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: Colors.grey[600],
+            ),
+          ),
+          SizedBox(height: 24.h),
+
+          // Default Food Style Section
+          _buildSectionTitle('foodStyle.preference'.tr()),
+          SizedBox(height: 8.h),
+          _buildFoodStylePicker(),
+          SizedBox(height: 8.h),
+          Text(
+            'foodStyle.preferenceHelper'.tr(),
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey[600],
@@ -276,6 +306,128 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
 
+  Widget _buildFoodStylePicker() {
+    Country? country;
+    if (_selectedFoodStyle != null && _selectedFoodStyle != 'other') {
+      try {
+        country = CountryParser.parseCountryCode(_selectedFoodStyle!);
+      } catch (_) {
+        // Invalid code, ignore
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: _showFoodStylePicker,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            decoration: AppInputStyles.editableBoxDecoration,
+            child: Row(
+              children: [
+                if (country != null) ...[
+                  Text(country.flagEmoji, style: TextStyle(fontSize: 20.sp)),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'foodStyle.style'.tr(),
+                    style: TextStyle(fontSize: 16.sp),
+                  ),
+                ] else if (_selectedFoodStyle == 'other') ...[
+                  Text('🌍', style: TextStyle(fontSize: 20.sp)),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'foodStyle.other'.tr(),
+                    style: TextStyle(fontSize: 16.sp),
+                  ),
+                ] else ...[
+                  Text(
+                    'foodStyle.select'.tr(),
+                    style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                  ),
+                ],
+                const Spacer(),
+                Icon(Icons.arrow_drop_down, color: Colors.grey[700]),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        // "Other/International" option button
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedFoodStyle = 'other';
+              _hasChanges = true;
+            });
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: _selectedFoodStyle == 'other'
+                  ? AppColors.editableBackground
+                  : Colors.grey[50],
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
+                color: _selectedFoodStyle == 'other'
+                    ? AppColors.editableBorder
+                    : Colors.grey[200]!,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('🌍', style: TextStyle(fontSize: 16.sp)),
+                SizedBox(width: 6.w),
+                Text(
+                  'foodStyle.other'.tr(),
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: _selectedFoodStyle == 'other'
+                        ? AppColors.primary
+                        : Colors.grey[600],
+                    fontWeight: _selectedFoodStyle == 'other'
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showFoodStylePicker() {
+    showCountryPicker(
+      context: context,
+      showPhoneCode: false,
+      onSelect: (Country country) {
+        setState(() {
+          _selectedFoodStyle = country.countryCode;
+          _hasChanges = true;
+        });
+      },
+      countryListTheme: CountryListThemeData(
+        backgroundColor: Colors.white,
+        textStyle: TextStyle(fontSize: 16.sp, color: Colors.black87),
+        searchTextStyle: TextStyle(fontSize: 16.sp, color: Colors.black87),
+        bottomSheetHeight: MediaQuery.of(context).size.height * 0.7,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        inputDecoration: InputDecoration(
+          hintText: 'foodStyle.searchHint'.tr(),
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _saveProfile() async {
     setState(() {
       _isLoading = true;
@@ -291,6 +443,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             ? '${_selectedBirthDate!.year}-${_selectedBirthDate!.month.toString().padLeft(2, '0')}-${_selectedBirthDate!.day.toString().padLeft(2, '0')}'
             : null,
         locale: _selectedLocale,
+        defaultFoodStyle: _selectedFoodStyle,
       );
 
       await dataSource.updateProfile(request);

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_input_styles.dart';
 import 'package:pairing_planet2_frontend/core/widgets/image_source_sheet.dart';
 import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 import '../../../../core/providers/image_providers.dart';
@@ -171,21 +172,47 @@ class _StepSectionState extends ConsumerState<StepSection> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        TextButton.icon(
+        _buildActionButton(
           onPressed: widget.onAddStep,
-          icon: Icon(Icons.add, size: 20.sp),
-          label: Text('steps.addStep'.tr()),
+          icon: Icons.add,
+          label: 'steps.addStep'.tr(),
         ),
-        SizedBox(width: 8.w),
-        TextButton.icon(
+        SizedBox(width: 12.w),
+        _buildActionButton(
           onPressed: _pickMultipleStepImages,
-          icon: Icon(Icons.photo_library, size: 20.sp),
-          label: Text('steps.addMultiple'.tr()),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
-          ),
+          icon: Icons.photo_library,
+          label: 'steps.addMultiple'.tr(),
         ),
       ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required String label,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        decoration: AppInputStyles.addButtonDecoration,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18.sp, color: AppColors.inheritedInteractive),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -222,6 +249,8 @@ class _StepSectionState extends ConsumerState<StepSection> {
   Widget _buildImageSlot(int index, Map<String, dynamic> step) {
     final item = step['uploadItem'] as UploadItem?;
     final String? remoteUrl = step['imageUrl'];
+    final bool isOriginal = step['isOriginal'] ?? false;
+    final bool hasImage = item?.file != null || (remoteUrl != null && remoteUrl.isNotEmpty);
 
     return GestureDetector(
       onTap: () => ImageSourceSheet.show(
@@ -232,8 +261,9 @@ class _StepSectionState extends ConsumerState<StepSection> {
         width: 60.w,
         height: 60.w,
         decoration: BoxDecoration(
+          color: hasImage ? null : (isOriginal ? Colors.grey[100] : AppColors.editableBackground),
           borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: isOriginal ? Colors.grey[300]! : AppColors.editableBorder),
           image: (item?.file != null)
               ? DecorationImage(image: FileImage(item!.file!), fit: BoxFit.cover)
               : (remoteUrl != null && remoteUrl.isNotEmpty)
@@ -244,7 +274,7 @@ class _StepSectionState extends ConsumerState<StepSection> {
               : null,
         ),
         child: (item == null && (remoteUrl == null || remoteUrl.isEmpty))
-            ? Icon(Icons.camera_alt, size: 20.sp, color: Colors.grey)
+            ? Icon(Icons.camera_alt, size: 20.sp, color: isOriginal ? Colors.grey : AppColors.inheritedInteractive)
             : null,
       ),
     );

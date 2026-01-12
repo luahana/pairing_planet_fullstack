@@ -1,8 +1,39 @@
+import 'package:country_picker/country_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/locale_dropdown.dart';
+
+/// Popular cooking style options for browsing
+class _CookingStyleOption {
+  final String countryCode;
+  final String labelKey;
+
+  const _CookingStyleOption(this.countryCode, this.labelKey);
+
+  String get flagEmoji {
+    if (countryCode == 'other') return '🌍';
+    try {
+      return CountryParser.parseCountryCode(countryCode).flagEmoji;
+    } catch (_) {
+      return '🌍';
+    }
+  }
+}
+
+/// Popular cooking styles for discovery
+const _popularStyles = [
+  _CookingStyleOption('KR', 'locale.korean'),
+  _CookingStyleOption('US', 'locale.american'),
+  _CookingStyleOption('JP', 'locale.japanese'),
+  _CookingStyleOption('CN', 'locale.chinese'),
+  _CookingStyleOption('IT', 'locale.italian'),
+  _CookingStyleOption('MX', 'locale.mexican'),
+  _CookingStyleOption('TH', 'locale.thai'),
+  _CookingStyleOption('IN', 'locale.indian'),
+  _CookingStyleOption('FR', 'locale.french'),
+  _CookingStyleOption('other', 'locale.other'),
+];
 
 /// Horizontal scrollable chips for browsing by cooking style/cuisine.
 class CookingStyleChips extends StatelessWidget {
@@ -37,14 +68,14 @@ class CookingStyleChips extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16.w),
-            itemCount: CulinaryLocale.options.length,
+            itemCount: _popularStyles.length,
             separatorBuilder: (context, index) => SizedBox(width: 10.w),
             itemBuilder: (context, index) {
-              final locale = CulinaryLocale.options[index];
+              final style = _popularStyles[index];
               return _CuisineStyleChip(
-                emoji: locale.flagEmoji,
-                label: locale.labelKey.tr(),
-                onTap: () => onStyleSelected(locale.labelKey.tr()),
+                emoji: style.flagEmoji,
+                label: style.labelKey.tr(),
+                onTap: () => onStyleSelected(style.labelKey.tr()),
               );
             },
           ),

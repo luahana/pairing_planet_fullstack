@@ -96,6 +96,54 @@ class UserControllerTest extends BaseIntegrationTest {
                             .content("{}"))
                     .andExpect(status().isUnauthorized());
         }
+
+        @Test
+        @DisplayName("Should update defaultFoodStyle via API")
+        void updateMyProfile_WithDefaultFoodStyle_ReturnsUpdatedProfile() throws Exception {
+            User user = testUserFactory.createTestUser();
+            String token = testJwtTokenProvider.createAccessToken(user.getPublicId(), "USER");
+
+            String requestBody = "{\"defaultFoodStyle\":\"KR\"}";
+
+            mockMvc.perform(patch("/api/v1/users/me")
+                            .header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.defaultFoodStyle").value("KR"));
+        }
+
+        @Test
+        @DisplayName("Should accept ISO country codes like US, JP")
+        void updateMyProfile_ValidCountryCodes_Success() throws Exception {
+            User user = testUserFactory.createTestUser();
+            String token = testJwtTokenProvider.createAccessToken(user.getPublicId(), "USER");
+
+            String requestBody = "{\"defaultFoodStyle\":\"JP\"}";
+
+            mockMvc.perform(patch("/api/v1/users/me")
+                            .header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.defaultFoodStyle").value("JP"));
+        }
+
+        @Test
+        @DisplayName("Should accept 'other' as valid food style")
+        void updateMyProfile_OtherFoodStyle_Success() throws Exception {
+            User user = testUserFactory.createTestUser();
+            String token = testJwtTokenProvider.createAccessToken(user.getPublicId(), "USER");
+
+            String requestBody = "{\"defaultFoodStyle\":\"other\"}";
+
+            mockMvc.perform(patch("/api/v1/users/me")
+                            .header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.defaultFoodStyle").value("other"));
+        }
     }
 
     @Nested

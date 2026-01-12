@@ -34,6 +34,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String locale;
 
+    @Column(name = "default_food_style", length = 5)
+    private String defaultFoodStyle; // ISO country code (e.g., "KR", "US", "JP")
+
     @Enumerated(EnumType.STRING)
     @Column(name = "measurement_preference", length = 20)
     @Builder.Default

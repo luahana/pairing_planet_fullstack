@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_input_styles.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 
@@ -71,12 +72,8 @@ class ReorderableImagePicker extends StatelessWidget {
               child: Container(
                 width: 100.w,
                 height: 100.w,
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: const Icon(Icons.add_a_photo, color: Colors.grey),
+                decoration: AppInputStyles.addButtonDecoration,
+                child: Icon(Icons.add_a_photo, color: AppColors.inheritedInteractive),
               ),
             ),
           ),

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_input_styles.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/image_source_sheet.dart';
 import 'package:pairing_planet2_frontend/core/widgets/reorderable_image_picker.dart';
@@ -84,6 +85,27 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
       final item = _images.removeAt(oldIndex);
       _images.insert(newIndex, item);
     });
+  }
+
+  /// Check if any images are currently uploading
+  bool get _hasUploadingImages {
+    return _images.any((img) => img.status == UploadStatus.uploading);
+  }
+
+  /// Check if any images have upload errors
+  bool get _hasUploadErrors {
+    return _images.any((img) => img.status == UploadStatus.error);
+  }
+
+  /// Get counts for status display
+  (int uploading, int errors) get _uploadStatusCounts {
+    int uploading = 0;
+    int errors = 0;
+    for (final img in _images) {
+      if (img.status == UploadStatus.uploading) uploading++;
+      if (img.status == UploadStatus.error) errors++;
+    }
+    return (uploading, errors);
   }
 
   Future<void> _submit() async {
@@ -323,11 +345,7 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
   Widget _buildContentField() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
+      decoration: AppInputStyles.editableBoxDecoration,
       child: TextField(
         controller: _contentController,
         maxLines: 5,
@@ -340,29 +358,81 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
     );
   }
 
-  Widget _buildSubmitButton() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56.h,
-        child: ElevatedButton(
-          onPressed: _isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
+  Widget _buildUploadStatusBanner() {
+    final (uploading, errors) = _uploadStatusCounts;
+    if (uploading == 0 && errors == 0) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h, left: 20.w, right: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: errors > 0 ? Colors.red[50] : Colors.orange[50],
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(
+          color: errors > 0 ? Colors.red[200]! : Colors.orange[200]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          if (uploading > 0) ...[
+            SizedBox(
+              width: 16.w,
+              height: 16.w,
+              child: const CircularProgressIndicator(strokeWidth: 2),
             ),
-          ),
-          child: Text(
-            _isLoading ? 'logPost.submitting'.tr() : 'logPost.submit'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'logPost.uploadingPhotos'.tr(namedArgs: {'count': '$uploading'}),
+                style: TextStyle(fontSize: 13.sp),
+              ),
+            ),
+          ] else if (errors > 0) ...[
+            Icon(Icons.error_outline, color: Colors.red, size: 18.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'logPost.uploadFailed'.tr(namedArgs: {'count': '$errors'}),
+                style: TextStyle(color: Colors.red[700], fontSize: 13.sp),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    final bool canSubmit = !_isLoading && !_hasUploadingImages && !_hasUploadErrors;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildUploadStatusBanner(),
+        Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 30.h),
+          child: SizedBox(
+            width: double.infinity,
+            height: 56.h,
+            child: ElevatedButton(
+              onPressed: canSubmit ? _submit : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+              ),
+              child: Text(
+                _isLoading ? 'logPost.submitting'.tr() : 'logPost.submit'.tr(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

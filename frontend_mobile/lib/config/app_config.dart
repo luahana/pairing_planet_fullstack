@@ -17,7 +17,9 @@ class AppConfig {
 
   static const dev = AppConfig._(
     environment: Environment.dev,
-    baseUrl: 'https://api-dev.pairingplanet.com/api/v1',
+    // For Android emulator use 10.0.2.2, for iOS simulator use localhost
+    // For real device, use your machine's IP address (e.g., 192.168.x.x)
+    baseUrl: 'http://10.0.2.2:4001/api/v1',
     googleServerClientId:
         '823521388124-786gfugmb3pr2bo002bj9ggn5vju13om.apps.googleusercontent.com',
     bannerColor: Colors.red,

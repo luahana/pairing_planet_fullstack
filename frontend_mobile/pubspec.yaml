@@ -55,6 +55,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_dotenv: ^6.0.0
   easy_localization: ^3.0.8
+  country_picker: ^2.0.26  # Country selection with flags
   firebase_core: ^4.3.0
   firebase_crashlytics: ^5.0.6
   firebase_analytics: ^12.1.0
