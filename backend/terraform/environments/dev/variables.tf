@@ -102,3 +102,9 @@ variable "s3_region" {
   type        = string
   default     = "us-east-2"
 }
+
+variable "rds_snapshot_identifier" {
+  description = "RDS snapshot to restore from (for disaster recovery)"
+  type        = string
+  default     = null
+}

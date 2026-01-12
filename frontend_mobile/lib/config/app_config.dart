@@ -17,10 +17,8 @@ class AppConfig {
 
   static const dev = AppConfig._(
     environment: Environment.dev,
-    // For physical device with adb reverse: use localhost
-    // For Android emulator: use 10.0.2.2
-    // For real device without adb: use your machine's IP (e.g., 192.168.x.x)
-    baseUrl: 'http://localhost:4001/api/v1',
+    // AWS dev environment
+    baseUrl: 'http://pairing-planet-dev-alb-857509432.us-east-2.elb.amazonaws.com/api/v1',
     googleServerClientId:
         '823521388124-786gfugmb3pr2bo002bj9ggn5vju13om.apps.googleusercontent.com',
     bannerColor: Colors.red,

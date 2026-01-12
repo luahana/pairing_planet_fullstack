@@ -111,3 +111,8 @@ variable "s3_secret_arn" {
   description = "ARN of the S3 secret"
   type        = string
 }
+
+variable "firebase_secret_arn" {
+  description = "ARN of the Firebase secret"
+  type        = string
+}

@@ -76,3 +76,9 @@ variable "backup_retention_period" {
   type        = number
   default     = 7
 }
+
+variable "snapshot_identifier" {
+  description = "DB snapshot to restore from. If provided, restores from snapshot instead of creating new DB."
+  type        = string
+  default     = null
+}

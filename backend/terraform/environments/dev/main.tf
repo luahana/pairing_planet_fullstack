@@ -12,14 +12,13 @@ terraform {
   }
 
   # Backend configuration for state storage
-  # Uncomment after creating the S3 bucket and DynamoDB table
-  # backend "s3" {
-  #   bucket         = "pairing-planet-terraform-state"
-  #   key            = "dev/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true
-  #   dynamodb_table = "pairing-planet-terraform-locks"
-  # }
+  backend "s3" {
+    bucket         = "pairing-planet-terraform-state"
+    key            = "dev/terraform.tfstate"
+    region         = "us-east-2"
+    encrypt        = true
+    dynamodb_table = "pairing-planet-terraform-locks"
+  }
 }
 
 provider "aws" {
@@ -103,9 +102,23 @@ module "rds" {
   master_password         = var.db_password
   multi_az                = false
   backup_retention_period = 0  # Free tier doesn't support backups
+  snapshot_identifier     = var.rds_snapshot_identifier
 }
 
-# ECS Module - Public IP, no ALB
+# ALB Module - For stable DNS endpoint (HTTP only, no custom domain)
+module "alb" {
+  source = "../../modules/alb"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+  container_port    = 4000
+  health_check_path = "/actuator/health"
+  certificate_arn   = null  # No HTTPS for dev, HTTP only
+}
+
+# ECS Module - With ALB for stable DNS
 module "ecs" {
   source = "../../modules/ecs"
 
@@ -119,12 +132,12 @@ module "ecs" {
   task_cpu       = 512
   task_memory    = 1024
   desired_count  = 1
-  assign_public_ip = true # Direct public access for dev
+  assign_public_ip = true # Still need public IP since no NAT gateway
 
-  # No ALB for dev
-  alb_security_group_id = null
-  target_group_arn      = null
-  use_code_deploy       = false
+  # ALB configuration
+  alb_security_group_id = module.alb.security_group_id
+  target_group_arn      = module.alb.target_group_blue_arn
+  use_code_deploy       = false  # No blue-green for dev
 
   # S3 bucket for application
   s3_bucket = var.s3_bucket
@@ -136,4 +149,5 @@ module "ecs" {
   oauth_secret_arn      = module.secrets.oauth_secret_arn
   encryption_secret_arn = module.secrets.encryption_secret_arn
   s3_secret_arn         = module.secrets.s3_secret_arn
+  firebase_secret_arn   = module.secrets.firebase_secret_arn
 }
