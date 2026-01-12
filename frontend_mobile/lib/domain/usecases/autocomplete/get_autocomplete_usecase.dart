@@ -10,8 +10,9 @@ class GetAutocompleteUseCase {
 
   Future<Either<Failure, List<AutocompleteResult>>> execute(
     String keyword,
-    String locale,
-  ) async {
-    return await _repository.getAutocomplete(keyword, locale);
+    String locale, {
+    String? type,
+  }) async {
+    return await _repository.getAutocomplete(keyword, locale, type: type);
   }
 }

@@ -102,6 +102,8 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
     final currentLocale = ref.watch(localeProvider);
     // 💡 기존 재료인지 확인 (수정 불가 제약용)
     final bool isOriginal = ingredient['isOriginal'] ?? false;
+    // Get ingredient type for autocomplete filtering
+    final String ingredientType = ingredient['type'] ?? 'MAIN';
 
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
@@ -119,7 +121,7 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
                 }
                 final result = await ref
                     .read(getAutocompleteUseCaseProvider)
-                    .execute(textEditingValue.text, currentLocale);
+                    .execute(textEditingValue.text, currentLocale, type: ingredientType);
                 return result.fold(
                   (_) => const Iterable.empty(),
                   (list) => list,

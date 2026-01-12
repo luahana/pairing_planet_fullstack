@@ -12,10 +12,15 @@ class AutocompleteRepositoryImpl implements AutocompleteRepository {
   @override
   Future<Either<Failure, List<AutocompleteResult>>> getAutocomplete(
     String keyword,
-    String locale,
-  ) async {
+    String locale, {
+    String? type,
+  }) async {
     try {
-      final dtos = await _remoteDataSource.getAutocomplete(keyword, locale);
+      final dtos = await _remoteDataSource.getAutocomplete(
+        keyword,
+        locale,
+        type: type,
+      );
       return Right(dtos.map((dto) => dto.toEntity()).toList());
     } catch (e) {
       return Left(ServerFailure(e.toString()));

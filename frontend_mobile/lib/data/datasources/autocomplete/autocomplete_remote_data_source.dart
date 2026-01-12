@@ -8,13 +8,15 @@ class AutocompleteRemoteDataSource {
 
   Future<List<AutocompleteDto>> getAutocomplete(
     String keyword,
-    String locale,
-  ) async {
+    String locale, {
+    String? type,
+  }) async {
     final response = await _dio.get(
-      '/autocomplete', //
+      '/autocomplete',
       queryParameters: {
         'keyword': keyword,
-        'locale': locale, //
+        'locale': locale,
+        if (type != null) 'type': type,
       },
     );
 

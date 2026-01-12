@@ -158,7 +158,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
             }
             final result = await ref
                 .read(getAutocompleteUseCaseProvider)
-                .execute(textEditingValue.text, currentLocale);
+                .execute(textEditingValue.text, currentLocale, type: 'DISH');
             return result.fold((_) => const Iterable.empty(), (list) => list);
           },
           onSelected: (selection) {
