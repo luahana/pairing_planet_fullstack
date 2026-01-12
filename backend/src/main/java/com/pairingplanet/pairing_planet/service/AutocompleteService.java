@@ -2,8 +2,7 @@ package com.pairingplanet.pairing_planet.service;
 
 import com.pairingplanet.pairing_planet.dto.autocomplete.AutocompleteDto;
 import com.pairingplanet.pairing_planet.dto.autocomplete.AutocompleteProjectionDto;
-import com.pairingplanet.pairing_planet.repository.food.FoodCategoryRepository;
-import com.pairingplanet.pairing_planet.repository.food.FoodMasterRepository;
+import com.pairingplanet.pairing_planet.repository.autocomplete.AutocompleteItemRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.Limit;
@@ -24,38 +23,53 @@ public class AutocompleteService {
     @Autowired(required = false)
     private RedisTemplate<String, String> redisTemplate;
 
-    private final FoodMasterRepository foodMasterRepository;
-    private final FoodCategoryRepository foodCategoryRepository;
+    private final AutocompleteItemRepository autocompleteItemRepository;
 
     private static final String AUTOCOMPLETE_KEY_PREFIX = "autocomplete:";
     private static final String DELIMITER = "::";
-    private static final int MAX_RESULTS = 10; // 최대 반환 개수
+    private static final int MAX_RESULTS = 10;
 
     /**
-     * 검색 (Redis ZRANGEBYLEX 활용)
-     * O(log N + M) 속도로 매우 빠름
+     * Search with optional type filter
      */
-    public List<AutocompleteDto> search(String keyword, String locale) {
+    public List<AutocompleteDto> search(String keyword, String locale, String type) {
         if (keyword == null || keyword.isBlank()) return List.of();
 
-        // 1. Redis에서 직접 UUID가 포함된 결과 추출 (DB 접근 0)
-        List<AutocompleteDto> redisResults = searchRedis(keyword, locale);
+        // Map frontend type to autocomplete type
+        String mappedType = mapToAutocompleteType(type);
+
+        // 1. Try Redis first
+        List<AutocompleteDto> redisResults = searchRedis(keyword, locale, mappedType);
 
         if (!redisResults.isEmpty()) {
             return redisResults;
         }
 
-        // 2. Redis에 없을 때만 DB Fuzzy 검색 수행
-        // pg_trgm 인덱스를 사용하여 텍스트 유사도 검색 최적화
-        return searchDbWithFuzzy(keyword, locale);
+        // 2. Fallback to DB fuzzy search
+        return searchDbWithFuzzy(keyword, locale, mappedType);
     }
 
-    private List<AutocompleteDto> searchRedis(String prefix, String locale) {
+    /**
+     * Map frontend ingredient type to autocomplete type
+     */
+    private String mapToAutocompleteType(String frontendType) {
+        if (frontendType == null) return null;
+        return switch (frontendType.toUpperCase()) {
+            case "DISH" -> "DISH";
+            case "MAIN" -> "MAIN_INGREDIENT";
+            case "SECONDARY" -> "SECONDARY_INGREDIENT";
+            case "SEASONING" -> "SEASONING";
+            default -> frontendType.toUpperCase();
+        };
+    }
+
+    private List<AutocompleteDto> searchRedis(String prefix, String locale, String type) {
         if (redisTemplate == null) {
-            return List.of(); // Redis not available, fall back to DB
+            return List.of();
         }
 
-        String key = AUTOCOMPLETE_KEY_PREFIX + locale;
+        // Build key: autocomplete:{locale}:{type} or autocomplete:{locale} if no type
+        String key = buildRedisKey(locale, type);
         Range<String> range = Range.rightOpen(prefix, prefix + "\uffff");
         Limit limit = Limit.limit().count(50);
 
@@ -71,52 +85,56 @@ public class AutocompleteService {
                 .collect(Collectors.toList());
     }
 
-    // DB Fuzzy Search 로직 (기존 Repository 활용)
-    private List<AutocompleteDto> searchDbWithFuzzy(String keyword, String locale) {
-        List<AutocompleteDto> fallbackResults = new ArrayList<>();
-        PageRequest limit = PageRequest.of(0, 5); // DB는 무거우니까 조금만 가져옴
+    private List<AutocompleteDto> searchDbWithFuzzy(String keyword, String locale, String type) {
+        PageRequest limit = PageRequest.of(0, MAX_RESULTS);
 
-        // 1. 카테고리 오타 검색
-        List<AutocompleteProjectionDto> categories = foodCategoryRepository.searchByNameWithFuzzy(keyword, locale, limit);
-        fallbackResults.addAll(categories.stream()
+        List<AutocompleteProjectionDto> results;
+        if (type != null) {
+            results = autocompleteItemRepository.searchByTypeAndNameWithFuzzy(
+                    type, keyword, locale, limit);
+        } else {
+            results = autocompleteItemRepository.searchByNameWithFuzzy(keyword, locale, limit);
+        }
+
+        return results.stream()
                 .map(this::convertProjection)
-                .toList());
-
-        // 2. 음식 오타 검색
-        List<AutocompleteProjectionDto> foods = foodMasterRepository.searchByNameWithFuzzy(keyword, locale, limit);
-        fallbackResults.addAll(foods.stream()
-                .map(this::convertProjection)
-                .toList());
-
-        // 점수순 정렬
-        fallbackResults.sort(Comparator.comparing(AutocompleteDto::score).reversed());
-        return fallbackResults;
+                .sorted(Comparator.comparing(AutocompleteDto::score).reversed())
+                .collect(Collectors.toList());
     }
 
     /**
-     * 데이터 추가/갱신 (Sync용)
+     * Add item to Redis (for sync)
      * Format: "Name::Type::Id::Score"
      */
     public void add(String locale, String name, String type, UUID publicId, Double score) {
         if (redisTemplate == null) {
-            return; // Redis not available
+            return;
         }
 
-        String key = AUTOCOMPLETE_KEY_PREFIX + locale;
-        // 성능 포인트: 불필요한 객체 생성을 줄이기 위해 String.join 사용
+        String key = buildRedisKey(locale, type);
         String value = name + DELIMITER + type + DELIMITER + publicId.toString() + DELIMITER + score;
 
         redisTemplate.opsForZSet().add(key, value, 0);
     }
 
     /**
-     * 전체 삭제 (초기화용)
+     * Clear all autocomplete data for a locale
      */
     public void clear(String locale) {
         if (redisTemplate == null) {
-            return; // Redis not available
+            return;
         }
-        redisTemplate.delete(AUTOCOMPLETE_KEY_PREFIX + locale);
+        // Clear type-specific keys
+        for (String type : List.of("DISH", "MAIN_INGREDIENT", "SECONDARY_INGREDIENT", "SEASONING")) {
+            redisTemplate.delete(buildRedisKey(locale, type));
+        }
+    }
+
+    private String buildRedisKey(String locale, String type) {
+        if (type == null) {
+            return AUTOCOMPLETE_KEY_PREFIX + locale;
+        }
+        return AUTOCOMPLETE_KEY_PREFIX + locale + ":" + type;
     }
 
     private AutocompleteDto parse(String raw) {
@@ -125,7 +143,7 @@ public class AutocompleteService {
             return AutocompleteDto.builder()
                     .name(parts[0])
                     .type(parts[1])
-                    .publicId(UUID.fromString(parts[2])) // 성능: UUID.fromString은 매우 빠른 비트 연산 기반임
+                    .publicId(UUID.fromString(parts[2]))
                     .score(Double.parseDouble(parts[3]))
                     .build();
         } catch (Exception e) {
@@ -133,13 +151,11 @@ public class AutocompleteService {
         }
     }
 
-    // --- Helper ---
-
     private AutocompleteDto convertProjection(AutocompleteProjectionDto p) {
         return AutocompleteDto.builder()
                 .publicId(p.getPublicId())
                 .name(p.getName())
-                .type(p.getType()) // "FOOD" or "CATEGORY" from query
+                .type(p.getType())
                 .score(p.getScore())
                 .build();
     }

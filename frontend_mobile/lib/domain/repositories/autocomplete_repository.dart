@@ -5,6 +5,7 @@ import 'package:pairing_planet2_frontend/domain/entities/autocomplete/autocomple
 abstract class AutocompleteRepository {
   Future<Either<Failure, List<AutocompleteResult>>> getAutocomplete(
     String keyword,
-    String locale,
-  );
+    String locale, {
+    String? type,
+  });
 }
