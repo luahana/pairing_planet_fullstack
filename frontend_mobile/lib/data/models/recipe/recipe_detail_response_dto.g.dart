@@ -49,6 +49,8 @@ RecipeDetailResponseDto _$RecipeDetailResponseDtoFromJson(
           ?.map((e) => e as String)
           .toList(),
       changeReason: _parseChangeReason(json['changeReason']),
+      servings: (json['servings'] as num?)?.toInt(),
+      cookingTimeRange: json['cookingTimeRange'] as String?,
     );
 
 Map<String, dynamic> _$RecipeDetailResponseDtoToJson(
@@ -75,4 +77,6 @@ Map<String, dynamic> _$RecipeDetailResponseDtoToJson(
       'changeDiff': instance.changeDiff,
       'changeCategories': instance.changeCategories,
       'changeReason': instance.changeReason,
+      'servings': instance.servings,
+      'cookingTimeRange': instance.cookingTimeRange,
     };

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/constants/cooking_time_range.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/login_prompt_sheet.dart';
@@ -178,6 +179,25 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                 fontWeight: recipe.creatorPublicId != null ? FontWeight.w500 : FontWeight.normal,
                               ),
                             ),
+                          ),
+                          SizedBox(height: 12.h),
+                          // Servings and cooking time info
+                          Row(
+                            children: [
+                              Icon(Icons.people_outline, size: 16.sp, color: Colors.grey[600]),
+                              SizedBox(width: 4.w),
+                              Text(
+                                'recipe.servings.count'.tr(namedArgs: {'count': recipe.servings.toString()}),
+                                style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+                              ),
+                              SizedBox(width: 16.w),
+                              Icon(Icons.timer_outlined, size: 16.sp, color: Colors.grey[600]),
+                              SizedBox(width: 4.w),
+                              Text(
+                                CookingTimeRange.fromCode(recipe.cookingTimeRange).translationKey.tr(),
+                                style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+                              ),
+                            ],
                           ),
                           if (!recipe.isVariant && recipe.description != null && recipe.description!.isNotEmpty) ...[
                             SizedBox(height: 20.h),

@@ -340,6 +340,18 @@
       "linkCopied": "Link copied",
       "comingSoon": "{platform} sharing is coming soon. Link copied."
     },
+    "servings": {
+      "label": "Servings",
+      "count": "{count} servings"
+    },
+    "cookingTime": {
+      "label": "Cooking Time",
+      "UNDER_15_MIN": "Under 15 min",
+      "MIN_15_TO_30": "15-30 min",
+      "MIN_30_TO_60": "30 min - 1 hour",
+      "HOUR_1_TO_2": "1-2 hours",
+      "OVER_2_HOURS": "Over 2 hours"
+    },
     "cooking": {
       "step": "Step {current} of {total}",
       "stepNumber": "Step {number}",

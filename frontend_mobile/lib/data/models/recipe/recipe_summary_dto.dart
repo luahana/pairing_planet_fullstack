@@ -19,6 +19,8 @@ class RecipeSummaryDto {
   final String? parentPublicId;
   final String? rootPublicId;
   final String? rootTitle; // Root recipe title for variants
+  final int? servings;
+  final String? cookingTimeRange;
 
   RecipeSummaryDto({
     required this.publicId,
@@ -35,6 +37,8 @@ class RecipeSummaryDto {
     this.parentPublicId,
     this.rootPublicId,
     this.rootTitle,
+    this.servings,
+    this.cookingTimeRange,
   });
 
   factory RecipeSummaryDto.fromJson(Map<String, dynamic> json) =>
@@ -57,5 +61,7 @@ class RecipeSummaryDto {
     parentPublicId: parentPublicId,
     rootPublicId: rootPublicId,
     rootTitle: rootTitle,
+    servings: servings ?? 2,
+    cookingTimeRange: cookingTimeRange ?? 'MIN_30_TO_60',
   );
 }

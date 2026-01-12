@@ -23,6 +23,7 @@ import '../widgets/draft_status_indicator.dart';
 import '../widgets/continue_draft_dialog.dart';
 import '../widgets/change_reason_field.dart';
 import '../widgets/recipe_submit_button.dart';
+import '../widgets/servings_cooking_time_section.dart';
 import '../../../../core/utils/form_validators.dart';
 
 class RecipeCreateScreen extends ConsumerStatefulWidget {
@@ -53,6 +54,10 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
   bool _isLoading = false;
   String? _draftId;
   bool _draftChecked = false;
+
+  // Servings and cooking time
+  int _servings = 2;
+  String _cookingTimeRange = 'MIN_30_TO_60';
 
   @override
   void initState() {
@@ -93,6 +98,10 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     _localeController.text = p.culinaryLocale ?? "ko-KR"; // Inherit locale from parent
 
     _food1MasterPublicId = p.foodMasterPublicId;
+
+    // Copy servings and cooking time from parent
+    _servings = p.servings;
+    _cookingTimeRange = p.cookingTimeRange;
 
     // 💡 기존 재료 복사 (수정 불가 마킹)
     for (var ing in p.ingredients) {
@@ -191,6 +200,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       hashtags: _hashtags,
       createdAt: now,
       updatedAt: now,
+      servings: _servings,
+      cookingTimeRange: _cookingTimeRange,
     );
   }
 
@@ -306,6 +317,10 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     // Restore hashtags
     _hashtags.clear();
     _hashtags.addAll(draft.hashtags);
+
+    // Restore servings and cooking time
+    _servings = draft.servings;
+    _cookingTimeRange = draft.cookingTimeRange;
 
     setState(() {});
   }
@@ -559,6 +574,8 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
         changeDiff: changeDiff,
         changeReason: isVariantMode ? _changeReasonController.text.trim() : null,
         hashtags: _hashtags.isNotEmpty ? _hashtags : null,
+        servings: _servings,
+        cookingTimeRange: _cookingTimeRange,
       );
 
       // Use the new provider with analytics tracking
@@ -638,6 +655,14 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                           _finishedImages.insert(newIndex, item);
                         });
                       },
+                    ),
+
+                    SizedBox(height: 32.h),
+                    ServingsCookingTimeSection(
+                      servings: _servings,
+                      cookingTimeRange: _cookingTimeRange,
+                      onServingsChanged: (value) => setState(() => _servings = value),
+                      onCookingTimeChanged: (value) => setState(() => _cookingTimeRange = value),
                     ),
 
                     SizedBox(height: 32.h),

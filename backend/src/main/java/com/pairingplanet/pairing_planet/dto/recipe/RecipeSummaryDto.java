@@ -16,5 +16,7 @@ public record RecipeSummaryDto(
         Integer logCount,      // Activity count: number of cooking logs
         UUID parentPublicId,
         UUID rootPublicId,
-        String rootTitle       // Root recipe title for variants (lineage display)
+        String rootTitle,      // Root recipe title for variants (lineage display)
+        Integer servings,      // Number of servings
+        String cookingTimeRange // Cooking time range enum
 ) {}

@@ -248,7 +248,9 @@ public class LogPostService {
                 logCount,
                 recipe.getParentRecipe() != null ? recipe.getParentRecipe().getPublicId() : null,
                 recipe.getRootRecipe() != null ? recipe.getRootRecipe().getPublicId() : null,
-                rootTitle
+                rootTitle,
+                recipe.getServings() != null ? recipe.getServings() : 2,
+                recipe.getCookingTimeRange() != null ? recipe.getCookingTimeRange().name() : "MIN_30_TO_60"
         );
     }
 

@@ -11,6 +11,8 @@ class UpdateRecipeRequest {
   final List<RecipeStep> steps;
   final List<String> imagePublicIds;
   final List<String>? hashtags;
+  final int? servings;
+  final String? cookingTimeRange;
 
   UpdateRecipeRequest({
     required this.title,
@@ -20,5 +22,7 @@ class UpdateRecipeRequest {
     required this.steps,
     required this.imagePublicIds,
     this.hashtags,
+    this.servings,
+    this.cookingTimeRange,
   });
 }

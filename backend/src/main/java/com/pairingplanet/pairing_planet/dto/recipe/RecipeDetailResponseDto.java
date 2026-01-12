@@ -32,7 +32,10 @@ public record RecipeDetailResponseDto(
         // Living Blueprint: Diff fields for variation tracking
         Map<String, Object> changeDiff,      // Ingredient/step changes from parent
         List<String> changeCategories,       // Auto-detected: INGREDIENT, TECHNIQUE, AMOUNT, SEASONING
-        String changeReason                  // User-provided reason for changes
+        String changeReason,                 // User-provided reason for changes
+        // Servings and cooking time
+        Integer servings,                    // Number of servings (default: 2)
+        String cookingTimeRange              // Cooking time range enum (e.g., "MIN_30_TO_60")
 ) {
     public static RecipeDetailResponseDto from(Recipe recipe, List<RecipeSummaryDto> variants, List<LogPostSummaryDto> logs, String urlPrefix, Boolean isSavedByCurrentUser, UUID creatorPublicId, String creatorName) {
         Recipe root = recipe.getRootRecipe();
@@ -44,7 +47,7 @@ public record RecipeDetailResponseDto(
                         nameMap.values().stream().findFirst().orElse("Unknown Food")));
         UUID currentFoodMasterPublicId = recipe.getFoodMaster().getPublicId();
 
-        // 2. 루트 레시피 정보 생성 (14개 필드 생성자 대응)
+        // 2. 루트 레시피 정보 생성 (16개 필드 생성자 대응)
         RecipeSummaryDto rootInfo = (root != null) ? new RecipeSummaryDto(
                 root.getPublicId(), // 1. publicId (UUID)
                 // 2. foodName (String): 현재 로케일 -> 한국어 -> 첫 번째 이름 순으로 시도
@@ -62,10 +65,12 @@ public record RecipeDetailResponseDto(
                 0,    // 11. logCount (상세 카드 내 생략)
                 null, // 12. parentPublicId
                 null, // 13. rootPublicId
-                null  // 14. rootTitle (root itself has no root)
+                null, // 14. rootTitle (root itself has no root)
+                root.getServings() != null ? root.getServings() : 2, // 15. servings
+                root.getCookingTimeRange() != null ? root.getCookingTimeRange().name() : "MIN_30_TO_60" // 16. cookingTimeRange
         ) : null;
 
-        // 3. 부모 레시피 정보 생성 (14개 필드 생성자 대응)
+        // 3. 부모 레시피 정보 생성 (16개 필드 생성자 대응)
         RecipeSummaryDto parentInfo = (parent != null) ? new RecipeSummaryDto(
                 parent.getPublicId(),
                 parent.getFoodMaster().getName().getOrDefault(parent.getCulinaryLocale(), "Unknown Food"),
@@ -80,7 +85,9 @@ public record RecipeDetailResponseDto(
                 0,    // logCount
                 null, // parentPublicId
                 null, // rootPublicId
-                null  // rootTitle
+                null, // rootTitle
+                parent.getServings() != null ? parent.getServings() : 2, // servings
+                parent.getCookingTimeRange() != null ? parent.getCookingTimeRange().name() : "MIN_30_TO_60" // cookingTimeRange
         ) : null;
 
         // 4. 이미지 리스트 변환
@@ -126,6 +133,8 @@ public record RecipeDetailResponseDto(
                 .changeDiff(recipe.getChangeDiff())
                 .changeCategories(recipe.getChangeCategories())
                 .changeReason(recipe.getChangeReason())
+                .servings(recipe.getServings() != null ? recipe.getServings() : 2)
+                .cookingTimeRange(recipe.getCookingTimeRange() != null ? recipe.getCookingTimeRange().name() : "MIN_30_TO_60")
                 .build();
     }
 }

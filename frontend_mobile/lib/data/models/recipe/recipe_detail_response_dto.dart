@@ -51,6 +51,10 @@ class RecipeDetailResponseDto {
   @JsonKey(fromJson: _parseChangeReason)
   final String? changeReason;
 
+  // Servings and cooking time
+  final int? servings;
+  final String? cookingTimeRange;
+
   RecipeDetailResponseDto({
     required this.publicId,
     required this.foodName,
@@ -73,6 +77,8 @@ class RecipeDetailResponseDto {
     this.changeDiff,
     this.changeCategories,
     this.changeReason,
+    this.servings,
+    this.cookingTimeRange,
   });
 
   factory RecipeDetailResponseDto.fromJson(Map<String, dynamic> json) =>
@@ -112,5 +118,7 @@ class RecipeDetailResponseDto {
     changeDiff: changeDiff,
     changeCategories: changeCategories,
     changeReason: changeReason,
+    servings: servings ?? 2,
+    cookingTimeRange: cookingTimeRange ?? 'MIN_30_TO_60',
   );
 }

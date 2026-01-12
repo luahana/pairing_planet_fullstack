@@ -24,6 +24,8 @@ UpdateRecipeRequestDto _$UpdateRecipeRequestDtoFromJson(
       hashtags: (json['hashtags'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
+      servings: (json['servings'] as num?)?.toInt(),
+      cookingTimeRange: json['cookingTimeRange'] as String?,
     );
 
 Map<String, dynamic> _$UpdateRecipeRequestDtoToJson(
@@ -36,4 +38,6 @@ Map<String, dynamic> _$UpdateRecipeRequestDtoToJson(
       'steps': instance.steps,
       'imagePublicIds': instance.imagePublicIds,
       'hashtags': instance.hashtags,
+      'servings': instance.servings,
+      'cookingTimeRange': instance.cookingTimeRange,
     };

@@ -30,6 +30,10 @@ class RecipeDetail {
   final List<String>? changeCategories;
   final String? changeReason;
 
+  // Servings and cooking time
+  final int servings;
+  final String cookingTimeRange;
+
   RecipeDetail({
     required this.publicId,
     required this.foodName,
@@ -53,6 +57,8 @@ class RecipeDetail {
     this.changeDiff,
     this.changeCategories,
     this.changeReason,
+    this.servings = 2,
+    this.cookingTimeRange = 'MIN_30_TO_60',
   });
 
   /// Check if this recipe is a variant (has a parent)
