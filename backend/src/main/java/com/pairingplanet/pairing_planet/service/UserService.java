@@ -136,6 +136,11 @@ public class UserService {
             user.setLocale(request.locale());
         }
 
+        // 6. 기본 요리 스타일 업데이트
+        if (request.defaultFoodStyle() != null) {
+            user.setDefaultFoodStyle(request.defaultFoodStyle());
+        }
+
         return UserDto.from(user, urlPrefix);
     }
 
