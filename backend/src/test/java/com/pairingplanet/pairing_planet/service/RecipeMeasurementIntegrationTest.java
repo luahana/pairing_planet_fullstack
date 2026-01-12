@@ -94,10 +94,12 @@ class RecipeMeasurementIntegrationTest extends BaseIntegrationTest {
                     List.of(), // images
                     null, // changeCategory
                     null, // parentPublicId
-                    null, // newFoodName
+                    null, // rootPublicId
                     null, // changeDiff
                     null, // changeReason
-                    null  // hashtags
+                    null, // hashtags
+                    null, // servings
+                    null  // cookingTimeRange
             );
 
             // Act
@@ -135,7 +137,7 @@ class RecipeMeasurementIntegrationTest extends BaseIntegrationTest {
                     List.of(legacyIngredient),
                     List.of(new StepDto(1, "Add salt", null, null)),
                     List.of(),
-                    null, null, null, null, null, null
+                    null, null, null, null, null, null, null, null
             );
 
             // Act
@@ -182,7 +184,7 @@ class RecipeMeasurementIntegrationTest extends BaseIntegrationTest {
                     List.of(structuredIngredient, legacyIngredient),
                     List.of(new StepDto(1, "Combine", null, null)),
                     List.of(),
-                    null, null, null, null, null, null
+                    null, null, null, null, null, null, null, null
             );
 
             // Act
