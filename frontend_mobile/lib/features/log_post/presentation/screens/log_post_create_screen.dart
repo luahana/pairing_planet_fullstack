@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -36,10 +37,13 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
   String _selectedOutcome = 'SUCCESS'; // 💡 요리 결과 (SUCCESS, PARTIAL, FAILED)
   bool _isLoading = false;
   bool _isSubmitting = false; // Guard against double submission
+  Timer? _debounceTimer; // Debounce timer for submit button
+  static const _debounceMs = 500; // 500ms debounce
 
   @override
   void dispose() {
     _contentController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -109,8 +113,22 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
     return (uploading, errors);
   }
 
+  /// Debounced submit - prevents rapid double-taps
+  void _onSubmitPressed() {
+    // Cancel any pending debounce
+    _debounceTimer?.cancel();
+
+    // If already submitting, ignore completely
+    if (_isSubmitting) return;
+
+    // Debounce: wait 500ms before actually submitting
+    _debounceTimer = Timer(const Duration(milliseconds: _debounceMs), () {
+      _submit();
+    });
+  }
+
   Future<void> _submit() async {
-    // Guard against double submission (sync check before async work)
+    // Guard against double submission
     if (_isSubmitting) return;
     _isSubmitting = true;
 
@@ -413,7 +431,8 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
   }
 
   Widget _buildSubmitButton() {
-    final bool canSubmit = !_isLoading && !_hasUploadingImages && !_hasUploadErrors;
+    // Disable button during loading, uploading, errors, OR when already submitting
+    final bool canSubmit = !_isLoading && !_isSubmitting && !_hasUploadingImages && !_hasUploadErrors;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -424,7 +443,7 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen> {
             width: double.infinity,
             height: 56.h,
             child: ElevatedButton(
-              onPressed: canSubmit ? _submit : null,
+              onPressed: canSubmit ? _onSubmitPressed : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
