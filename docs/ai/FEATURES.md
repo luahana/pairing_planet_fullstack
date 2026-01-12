@@ -498,6 +498,41 @@ User logs in within 30 days?
 
 ---
 
+### [FEAT-030]: Autocomplete Category Filtering
+
+**Status:** ✅ Done
+**Branch:** `dev`
+
+**Description:** Category-based autocomplete with multilingual support for recipe ingredient and dish search.
+
+**Acceptance Criteria:**
+- [x] Filter autocomplete by type (DISH, MAIN, SECONDARY, SEASONING)
+- [x] SECONDARY type includes both SECONDARY_INGREDIENT and MAIN_INGREDIENT results
+- [x] Multilingual support (7 languages: en-US, ko-KR, ja-JP, zh-CN, es-ES, fr-FR, de-DE)
+- [x] CJK single-character search (Korean, Japanese, Chinese work with 1 character)
+- [x] pg_trgm fuzzy search for 3+ character queries
+- [x] Prefix search fallback for CJK locales with short keywords
+- [x] Score-based result ordering
+- [x] Redis caching with graceful database fallback
+- [x] Comprehensive test coverage (35+ tests)
+
+**Technical Notes:**
+- Backend:
+  - `AutocompleteService.java`: Search logic with CJK locale detection
+  - `AutocompleteItemRepository.java`: Native queries with pg_trgm and ILIKE
+  - `AutocompleteItem.java`: Entity with JSONB multilingual `name` field
+  - `V20__create_autocomplete_items.sql`: Table + 105 items with translations
+  - `V21__autocomplete_type_to_varchar.sql`: Enum to VARCHAR migration
+- API: `GET /api/v1/autocomplete?keyword={}&locale={}&type={}`
+- Type mapping:
+  - `DISH` → dishes only
+  - `MAIN` → main ingredients only
+  - `SECONDARY` → secondary + main ingredients (merged results)
+  - `SEASONING` → seasonings only
+- CJK optimization: Uses prefix search (ILIKE) for ko-KR, ja-JP, zh-CN with < 3 chars
+
+---
+
 ## Planned 📋
 
 ### [FEAT-016]: Improved Onboarding
@@ -720,3 +755,4 @@ User logs in within 30 days?
 | FEAT-027 | Edit/Delete Log Posts | ✅ |
 | FEAT-028 | Cooking Style | ✅ |
 | FEAT-029 | International Measurement Units | 📋 |
+| FEAT-030 | Autocomplete Category Filtering | ✅ |
