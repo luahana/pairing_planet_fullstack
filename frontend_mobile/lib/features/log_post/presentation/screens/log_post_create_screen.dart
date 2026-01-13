@@ -47,20 +47,32 @@ class _LogPostCreateScreenState extends ConsumerState<LogPostCreateScreen>
   // 💡 1. 이미지 선택 및 업로드 로직 (HookSection과 동일 패턴)
   Future<void> _pickImage(ImageSource source) async {
     if (_images.length >= 3) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('logPost.maxPhotosError'.tr())));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('logPost.maxPhotosError'.tr())),
+      );
       return;
     }
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: source,
-      imageQuality: 70,
-    );
-    if (image != null) {
-      final newItem = UploadItem(file: File(image.path));
-      setState(() => _images.add(newItem));
-      _handleImageUpload(newItem);
+
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+      );
+
+      if (!mounted) return;
+
+      if (image != null) {
+        final newItem = UploadItem(file: File(image.path));
+        setState(() => _images.add(newItem));
+        _handleImageUpload(newItem);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('image.permissionDenied'.tr())),
+      );
     }
   }
 

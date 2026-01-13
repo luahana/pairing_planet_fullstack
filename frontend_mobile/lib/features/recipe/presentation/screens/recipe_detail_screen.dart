@@ -513,13 +513,107 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   Widget _buildImageHeader(RecipeDetail recipe) {
-    return AppCachedImage(
-      imageUrl: recipe.imageUrls.isNotEmpty
-          ? recipe.imageUrls.first
-          : 'https://via.placeholder.com/400x250',
-      width: double.infinity,
+    if (recipe.imageUrls.isEmpty) {
+      return AppCachedImage(
+        imageUrl: 'https://via.placeholder.com/400x250',
+        width: double.infinity,
+        height: 300.h,
+        borderRadius: 0,
+      );
+    }
+
+    if (recipe.imageUrls.length == 1) {
+      return AppCachedImage(
+        imageUrl: recipe.imageUrls.first,
+        width: double.infinity,
+        height: 300.h,
+        borderRadius: 0,
+      );
+    }
+
+    // Multiple images - show carousel
+    return _ImageCarousel(
+      imageUrls: recipe.imageUrls,
       height: 300.h,
-      borderRadius: 0,
+    );
+  }
+}
+
+class _ImageCarousel extends StatefulWidget {
+  final List<String> imageUrls;
+  final double height;
+
+  const _ImageCarousel({
+    required this.imageUrls,
+    required this.height,
+  });
+
+  @override
+  State<_ImageCarousel> createState() => _ImageCarouselState();
+}
+
+class _ImageCarouselState extends State<_ImageCarousel> {
+  int _currentIndex = 0;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: widget.height,
+      child: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.imageUrls.length,
+            onPageChanged: (index) {
+              setState(() => _currentIndex = index);
+            },
+            itemBuilder: (context, index) {
+              return AppCachedImage(
+                imageUrl: widget.imageUrls[index],
+                width: double.infinity,
+                height: widget.height,
+                borderRadius: 0,
+              );
+            },
+          ),
+          // Page indicator dots
+          Positioned(
+            bottom: 12.h,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.imageUrls.length,
+                (index) => Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                  width: _currentIndex == index ? 10.w : 8.w,
+                  height: _currentIndex == index ? 10.w : 8.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentIndex == index
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

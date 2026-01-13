@@ -578,7 +578,8 @@
     "camera": "Camera",
     "gallery": "Gallery",
     "delete": "Delete",
-    "permissionDenied": "Permission required"
+    "permissionDenied": "Permission required",
+    "maxPhotosError": "Maximum {count} photos allowed"
   },
   "locale": {
     "korean": "Korean-style",

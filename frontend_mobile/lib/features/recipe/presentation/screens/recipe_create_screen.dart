@@ -151,8 +151,13 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Capture notifier before disposal to avoid "ref after disposed" error
     if (!isVariantMode) {
-      ref.read(recipeDraftProvider.notifier).stopAutoSave();
+      try {
+        ref.read(recipeDraftProvider.notifier).stopAutoSave();
+      } catch (_) {
+        // Ignore if already disposed
+      }
     }
     _titleController.dispose();
     _foodNameController.dispose();
