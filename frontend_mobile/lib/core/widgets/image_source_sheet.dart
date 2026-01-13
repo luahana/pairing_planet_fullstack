@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,23 +32,26 @@ class ImageSourceSheet extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16.h),
             child: Text(
-              "사진 추가",
+              'image.selectSource'.tr(),
               style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
           ),
           ListTile(
             leading: const Icon(Icons.photo_camera),
-            title: const Text("카메라로 촬영"),
-            onTap: () {
+            title: Text('image.camera'.tr()),
+            onTap: () async {
               Navigator.pop(context);
+              // Small delay to ensure modal is fully dismissed before opening camera
+              await Future.delayed(const Duration(milliseconds: 100));
               onSourceSelected(ImageSource.camera);
             },
           ),
           ListTile(
             leading: const Icon(Icons.photo_library),
-            title: const Text("갤러리에서 선택"),
-            onTap: () {
+            title: Text('image.gallery'.tr()),
+            onTap: () async {
               Navigator.pop(context);
+              await Future.delayed(const Duration(milliseconds: 100));
               onSourceSelected(ImageSource.gallery);
             },
           ),

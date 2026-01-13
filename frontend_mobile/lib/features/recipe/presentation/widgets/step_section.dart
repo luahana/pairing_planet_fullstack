@@ -37,6 +37,28 @@ class StepSection extends ConsumerStatefulWidget {
 
 class _StepSectionState extends ConsumerState<StepSection> {
   static const int _maxBatchImages = 10;
+
+  @override
+  void didUpdateWidget(StepSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Trigger uploads for any pending items (batch-added images)
+    _uploadPendingImages();
+  }
+
+  void _uploadPendingImages() {
+    for (int i = 0; i < widget.steps.length; i++) {
+      final step = widget.steps[i];
+      final item = step['uploadItem'] as UploadItem?;
+      // Upload if item has file but hasn't been uploaded yet (status is initial)
+      if (item != null &&
+          item.file != null &&
+          item.status == UploadStatus.initial &&
+          step['imagePublicId'] == null) {
+        _handleStepImageUpload(i, item);
+      }
+    }
+  }
+
   Future<void> _pickStepImage(int index, ImageSource source) async {
     if (widget.steps[index]['isOriginal'] == true) return; // 💡 기존 이미지는 수정 불가
 

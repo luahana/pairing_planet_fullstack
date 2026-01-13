@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -35,7 +36,7 @@ class _ImageUploadSectionState extends ConsumerState<ImageUploadSection> {
   Future<void> _pickImage(ImageSource source) async {
     if (widget.images.length >= widget.maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('최대 ${widget.maxImages}장까지 업로드 가능합니다.')),
+        SnackBar(content: Text('image.maxPhotosError'.tr(namedArgs: {'count': '${widget.maxImages}'}))),
       );
       return;
     }
