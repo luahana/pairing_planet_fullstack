@@ -19,6 +19,7 @@ void main() {
   late MockAuthRemoteDataSource mockRemoteDataSource;
   late MockAuthLocalDataSource mockLocalDataSource;
   late MockSocialAuthService mockSocialAuthService;
+  late MockFcmService mockFcmService;
   late String Function() getCurrentLocale;
 
   setUpAll(() {
@@ -30,12 +31,14 @@ void main() {
     mockRemoteDataSource = MockAuthRemoteDataSource();
     mockLocalDataSource = MockAuthLocalDataSource();
     mockSocialAuthService = MockSocialAuthService();
+    mockFcmService = MockFcmService();
     getCurrentLocale = () => 'en-US';
 
     repository = AuthRepositoryImpl(
       mockRemoteDataSource,
       mockLocalDataSource,
       mockSocialAuthService,
+      mockFcmService,
       getCurrentLocale,
     );
   });
@@ -173,6 +176,8 @@ void main() {
         // Arrange
         when(() => mockLocalDataSource.clearAll())
             .thenAnswer((_) async {});
+        when(() => mockFcmService.deleteToken())
+            .thenAnswer((_) async {});
         when(() => mockSocialAuthService.signOut())
             .thenAnswer((_) async {});
 
@@ -182,6 +187,7 @@ void main() {
         // Assert
         expect(result, const Right(unit));
         verify(() => mockLocalDataSource.clearAll()).called(1);
+        verify(() => mockFcmService.deleteToken()).called(1);
         verify(() => mockSocialAuthService.signOut()).called(1);
       });
 
@@ -201,9 +207,25 @@ void main() {
         );
       });
 
+      test('should return Left(ServerFailure) when FCM token deletion fails', () async {
+        // Arrange
+        when(() => mockLocalDataSource.clearAll())
+            .thenAnswer((_) async {});
+        when(() => mockFcmService.deleteToken())
+            .thenThrow(Exception('FCM error'));
+
+        // Act
+        final result = await repository.logout();
+
+        // Assert
+        expect(result.isLeft(), true);
+      });
+
       test('should return Left(ServerFailure) when social sign out fails', () async {
         // Arrange
         when(() => mockLocalDataSource.clearAll())
+            .thenAnswer((_) async {});
+        when(() => mockFcmService.deleteToken())
             .thenAnswer((_) async {});
         when(() => mockSocialAuthService.signOut())
             .thenThrow(Exception('Social auth error'));

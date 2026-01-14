@@ -4,7 +4,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/core/network/dio_provider.dart';
 import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
+import 'package:pairing_planet2_frontend/core/services/phone_auth_service.dart';
 import 'package:pairing_planet2_frontend/core/services/social_auth_service.dart';
+import 'package:pairing_planet2_frontend/features/notification/providers/notification_provider.dart';
 import 'package:pairing_planet2_frontend/core/services/storage_service.dart';
 import 'package:pairing_planet2_frontend/data/datasources/user/user_remote_data_source.dart';
 import 'package:pairing_planet2_frontend/data/models/user/accept_legal_terms_request_dto.dart';
@@ -16,7 +18,15 @@ import 'package:pairing_planet2_frontend/data/repositories/auth_repository_impl.
 import 'package:pairing_planet2_frontend/domain/repositories/auth_repository.dart';
 
 // --- State 정의 ---
-enum AuthStatus { authenticated, unauthenticated, guest, initial, needsLegalAcceptance }
+enum AuthStatus {
+  authenticated,
+  unauthenticated,
+  guest,
+  initial,
+  needsAgeVerification,
+  needsLegalAcceptance,
+  needsPhoneVerification, // Korean PIPA compliance
+}
 
 class AuthState extends Equatable {
   // 💡 Equatable 상속
@@ -36,6 +46,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
   final StorageService _storageService;
   final UserRemoteDataSource _userRemoteDataSource;
+  final PhoneAuthService _phoneAuthService;
+  final String Function() _getCurrentLocale;
 
   // Pending action to execute after login (for guest -> authenticated flow)
   VoidCallback? _pendingAction;
@@ -46,11 +58,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required AuthRepository repository,
     required StorageService storageService,
     required UserRemoteDataSource userRemoteDataSource,
+    required PhoneAuthService phoneAuthService,
+    required String Function() getCurrentLocale,
   }) : _loginUseCase = loginUseCase,
        _logoutUseCase = logoutUseCase,
        _repository = repository,
        _storageService = storageService,
        _userRemoteDataSource = userRemoteDataSource,
+       _phoneAuthService = phoneAuthService,
+       _getCurrentLocale = getCurrentLocale,
        super(AuthState(status: AuthStatus.initial)) {
     checkAuthStatus();
   }
@@ -83,8 +99,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  /// Check if user has accepted legal terms from backend and set appropriate state
+  /// Check age verification, then legal terms acceptance
   Future<void> _checkLegalAcceptanceAndSetState() async {
+    // First check age verification (COPPA compliance)
+    final hasVerifiedAge = await _storageService.hasVerifiedAge();
+    if (!mounted) return;
+
+    if (!hasVerifiedAge) {
+      state = AuthState(status: AuthStatus.needsAgeVerification);
+      return;
+    }
+
+    // Then check legal terms
     try {
       final profile = await _userRemoteDataSource.getMyProfile();
       if (!mounted) return;
@@ -102,7 +128,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await _storageService.saveLegalAcceptance(
           marketingAgreed: user.marketingAgreed ?? false,
         );
-        state = AuthState(status: AuthStatus.authenticated);
+        // Check if Korean user needs phone verification
+        await _checkPhoneVerificationAndSetState();
       } else {
         state = AuthState(status: AuthStatus.needsLegalAcceptance);
       }
@@ -112,11 +139,40 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (!mounted) return;
 
       if (hasAccepted) {
-        state = AuthState(status: AuthStatus.authenticated);
+        // Check if Korean user needs phone verification
+        await _checkPhoneVerificationAndSetState();
       } else {
         state = AuthState(status: AuthStatus.needsLegalAcceptance);
       }
     }
+  }
+
+  /// Check if Korean user needs phone verification (PIPA compliance)
+  Future<void> _checkPhoneVerificationAndSetState() async {
+    final locale = _getCurrentLocale();
+    final isKorean = locale.startsWith('ko');
+
+    if (isKorean && !_phoneAuthService.isPhoneVerified) {
+      // Korean user without phone verification
+      state = AuthState(status: AuthStatus.needsPhoneVerification);
+    } else {
+      state = AuthState(status: AuthStatus.authenticated);
+    }
+  }
+
+  /// Called after phone verification is complete or skipped
+  Future<void> confirmPhoneVerification() async {
+    if (!mounted) return;
+    state = AuthState(status: AuthStatus.authenticated);
+  }
+
+  /// Confirm age verification (user is 13+)
+  Future<void> confirmAgeVerification() async {
+    await _storageService.saveAgeVerification();
+    if (!mounted) return;
+
+    // After age verification, check legal acceptance
+    await _checkLegalAcceptanceAndSetState();
   }
 
   /// Called after user accepts legal terms - syncs to backend and local storage
@@ -134,12 +190,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storageService.saveLegalAcceptance(marketingAgreed: marketingAgreed);
 
       if (!mounted) return;
-      state = AuthState(status: AuthStatus.authenticated);
+      // Check if Korean user needs phone verification before marking as authenticated
+      await _checkPhoneVerificationAndSetState();
     } catch (e) {
       // Still save locally even if backend fails - will sync on next login
       await _storageService.saveLegalAcceptance(marketingAgreed: marketingAgreed);
       if (!mounted) return;
-      state = AuthState(status: AuthStatus.authenticated);
+      // Check if Korean user needs phone verification before marking as authenticated
+      await _checkPhoneVerificationAndSetState();
     }
   }
 
@@ -216,12 +274,13 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final remote = ref.read(authRemoteDataSourceProvider);
   final local = ref.read(authLocalDataSourceProvider);
   final social = ref.read(socialAuthServiceProvider);
+  final fcmService = ref.read(fcmServiceProvider);
 
-  // 💡 현재 에러가 발생한 지점: 마지막 인자로 ref를 그대로 넘겨줍니다.
   return AuthRepositoryImpl(
     remote,
     local,
     social,
+    fcmService,
     () => ref.read(localeProvider),
   );
 });
@@ -252,5 +311,7 @@ final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     repository: ref.read(authRepositoryProvider),
     storageService: ref.read(storageServiceProvider),
     userRemoteDataSource: ref.read(userRemoteDataSourceForAuthProvider),
+    phoneAuthService: ref.read(phoneAuthServiceProvider),
+    getCurrentLocale: () => ref.read(localeProvider),
   );
 });

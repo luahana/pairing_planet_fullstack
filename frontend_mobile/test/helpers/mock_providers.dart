@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pairing_planet2_frontend/core/network/network_info.dart';
+import 'package:pairing_planet2_frontend/core/services/fcm_service.dart';
+import 'package:pairing_planet2_frontend/core/services/phone_auth_service.dart';
 import 'package:pairing_planet2_frontend/core/services/media_service.dart';
 import 'package:pairing_planet2_frontend/core/services/social_auth_service.dart';
 import 'package:pairing_planet2_frontend/core/services/storage_service.dart';
@@ -75,6 +77,10 @@ class MockNetworkInfo extends Mock implements NetworkInfo {}
 class MockSocialAuthService extends Mock implements SocialAuthService {}
 
 class MockStorageService extends Mock implements StorageService {}
+
+class MockFcmService extends Mock implements FcmService {}
+
+class MockPhoneAuthService extends Mock implements PhoneAuthService {}
 
 // ============================================================
 // UseCase Mocks

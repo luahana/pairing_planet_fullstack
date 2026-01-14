@@ -61,7 +61,9 @@ class RouteConstants {
   static const String splash = '/splash';
   static const String home = '/';
   static const String login = '/login';
+  static const String ageVerification = '/age-verification';
   static const String legalAgreement = '/legal-agreement';
+  static const String phoneVerification = '/phone-verification';
   static const String recipeCreate = '/recipe/create';
   static const String recipeEdit = '/recipe/edit/:id'; // Recipe edit screen
   static const String recipes = '/recipes';
@@ -84,6 +86,8 @@ class RouteConstants {
 
   // Settings 관련
   static const String blockedUsers = '/settings/blocked-users';
+  static const String notificationSettings = '/settings/notifications';
+  static const String dataExport = '/settings/data-export';
 
   // Top-level recipe routes (with :id parameter for router)
   static const String recipeDetailFull = '/recipes/:id';

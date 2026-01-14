@@ -424,11 +424,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             ),
               ],
             ),
-            // FAB for cooking mode - positioned right side, 1/3 from bottom
+            // FAB for cooking mode - positioned right side, above bottom bar
             if (recipe.steps.isNotEmpty)
               Positioned(
                 right: 16.w,
-                bottom: MediaQuery.of(context).size.height / 3,
+                bottom: MediaQuery.of(context).size.height * 0.4,
                 child: FloatingActionButton(
                   onPressed: () => _handleCookingPress(context, recipe),
                   backgroundColor: AppColors.primary,

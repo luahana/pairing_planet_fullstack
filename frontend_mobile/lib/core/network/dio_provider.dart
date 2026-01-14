@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pairing_planet2_frontend/config/app_config.dart';
 import 'package:pairing_planet2_frontend/core/config/platform_url_resolver.dart';
@@ -36,15 +37,16 @@ final dioProvider = Provider<Dio>((ref) {
   );
 
   // 1. 로깅 인터셉터 (가장 바깥쪽에서 모든 흐름을 기록)
+  // SECURITY: Disable detailed logging in release mode to prevent data leaks
   dio.interceptors.add(
     TalkerDioLogger(
       talker: talker, // 💡 core/utils/logger.dart의 전역 talker 사용
-      settings: const TalkerDioLoggerSettings(
-        printRequestHeaders: true,
+      settings: TalkerDioLoggerSettings(
+        printRequestHeaders: !kReleaseMode,
         printResponseHeaders: false,
-        printResponseMessage: true,
-        printRequestData: true,
-        printResponseData: true,
+        printResponseMessage: !kReleaseMode,
+        printRequestData: !kReleaseMode, // Disable in production - may contain sensitive data
+        printResponseData: !kReleaseMode, // Disable in production - may contain sensitive data
       ),
     ),
   );

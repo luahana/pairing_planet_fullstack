@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/providers/consent_preferences_provider.dart';
 import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
 import 'package:pairing_planet2_frontend/core/providers/measurement_preference_provider.dart';
 import 'package:pairing_planet2_frontend/core/network/dio_provider.dart';
@@ -53,15 +54,20 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.notifications_outlined,
             title: 'settings.notifications'.tr(),
             subtitle: 'settings.notificationsSubtitle'.tr(),
-            onTap: () {
-              // TODO: Navigate to notifications settings
-            },
+            onTap: () => context.push(RouteConstants.notificationSettings),
           ),
 
           SizedBox(height: 24.h),
 
           // Account Section
           _buildSectionHeader('settings.account'.tr()),
+          _buildSettingsTile(
+            context,
+            icon: Icons.phone_android,
+            title: 'settings.phoneVerification'.tr(),
+            subtitle: 'settings.phoneVerificationSubtitle'.tr(),
+            onTap: () => context.push(RouteConstants.phoneVerification),
+          ),
           _buildSettingsTile(
             context,
             icon: Icons.block,
@@ -74,6 +80,38 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.logout,
             title: 'settings.logout'.tr(),
             onTap: () => _showLogoutDialog(context, ref),
+          ),
+
+          SizedBox(height: 24.h),
+
+          // Privacy Section (GDPR/CCPA)
+          _buildSectionHeader('settings.privacy'.tr()),
+          _buildSettingsTile(
+            context,
+            icon: Icons.analytics_outlined,
+            title: 'settings.analyticsPreferences'.tr(),
+            subtitle: 'settings.analyticsSubtitle'.tr(),
+            onTap: () => _showAnalyticsPreferencesDialog(context, ref),
+          ),
+          _buildSettingsTile(
+            context,
+            icon: Icons.do_not_disturb_on_outlined,
+            title: 'settings.doNotSell'.tr(),
+            subtitle: 'settings.doNotSellSubtitle'.tr(),
+            onTap: () => _showDoNotSellDialog(context, ref),
+          ),
+          _buildSettingsTile(
+            context,
+            icon: Icons.campaign_outlined,
+            title: 'legal.marketingPreferences'.tr(),
+            onTap: () => _showMarketingPreferencesDialog(context, ref),
+          ),
+          _buildSettingsTile(
+            context,
+            icon: Icons.download_outlined,
+            title: 'settings.downloadMyData'.tr(),
+            subtitle: 'settings.downloadMyDataSubtitle'.tr(),
+            onTap: () => context.push(RouteConstants.dataExport),
           ),
 
           SizedBox(height: 24.h),
@@ -97,12 +135,6 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.code,
             title: 'legal.licenses'.tr(),
             onTap: () => _showLicensePage(context),
-          ),
-          _buildSettingsTile(
-            context,
-            icon: Icons.campaign_outlined,
-            title: 'legal.marketingPreferences'.tr(),
-            onTap: () => _showMarketingPreferencesDialog(context, ref),
           ),
 
           SizedBox(height: 40.h),
@@ -338,6 +370,20 @@ class SettingsScreen extends ConsumerWidget {
       builder: (dialogContext) => _MarketingPreferencesDialog(ref: ref),
     );
   }
+
+  void _showAnalyticsPreferencesDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => _AnalyticsPreferencesDialog(ref: ref),
+    );
+  }
+
+  void _showDoNotSellDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => _DoNotSellDialog(ref: ref),
+    );
+  }
 }
 
 class _MarketingPreferencesDialog extends ConsumerStatefulWidget {
@@ -407,6 +453,142 @@ class _MarketingPreferencesDialogState
                 ),
               ],
             ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('common.done'.tr()),
+        ),
+      ],
+    );
+  }
+}
+
+/// Dialog for managing analytics preferences (GDPR)
+class _AnalyticsPreferencesDialog extends ConsumerWidget {
+  final WidgetRef ref;
+
+  const _AnalyticsPreferencesDialog({required this.ref});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final consentState = ref.watch(consentPreferencesProvider);
+    final analyticsEnabled = consentState.analyticsConsent ?? false;
+
+    return AlertDialog(
+      title: Text('settings.analyticsPreferences'.tr()),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'settings.analyticsDescription'.tr(),
+            style: TextStyle(fontSize: 14.sp, color: Colors.grey[700]),
+          ),
+          SizedBox(height: 16.h),
+          SwitchListTile(
+            title: Text(
+              'settings.enableAnalytics'.tr(),
+              style: TextStyle(fontSize: 14.sp),
+            ),
+            subtitle: Text(
+              'settings.enableAnalyticsSubtitle'.tr(),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+            ),
+            value: analyticsEnabled,
+            onChanged: (value) {
+              ref
+                  .read(consentPreferencesProvider.notifier)
+                  .setAnalyticsConsent(value);
+            },
+            activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+            thumbColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return AppColors.primary;
+              }
+              return null;
+            }),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('common.done'.tr()),
+        ),
+      ],
+    );
+  }
+}
+
+/// Dialog for CCPA "Do Not Sell My Personal Information" preference
+class _DoNotSellDialog extends ConsumerWidget {
+  final WidgetRef ref;
+
+  const _DoNotSellDialog({required this.ref});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final consentState = ref.watch(consentPreferencesProvider);
+    final doNotSell = consentState.ccpaDoNotSell;
+
+    return AlertDialog(
+      title: Text('settings.doNotSell'.tr()),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'settings.doNotSellDescription'.tr(),
+            style: TextStyle(fontSize: 14.sp, color: Colors.grey[700]),
+          ),
+          SizedBox(height: 16.h),
+          SwitchListTile(
+            title: Text(
+              'settings.doNotSellToggle'.tr(),
+              style: TextStyle(fontSize: 14.sp),
+            ),
+            subtitle: Text(
+              'settings.doNotSellToggleSubtitle'.tr(),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+            ),
+            value: doNotSell,
+            onChanged: (value) {
+              ref
+                  .read(consentPreferencesProvider.notifier)
+                  .setCcpaDoNotSell(value);
+            },
+            activeTrackColor: Colors.red.withValues(alpha: 0.5),
+            thumbColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return Colors.red;
+              }
+              return null;
+            }),
+          ),
+          if (doNotSell) ...[
+            SizedBox(height: 8.h),
+            Container(
+              padding: EdgeInsets.all(12.r),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 20.sp, color: Colors.orange[700]),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'settings.doNotSellNote'.tr(),
+                      style: TextStyle(fontSize: 12.sp, color: Colors.orange[800]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
