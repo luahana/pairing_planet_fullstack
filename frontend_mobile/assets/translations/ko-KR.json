@@ -134,6 +134,31 @@
       "lessons": "교훈",
       "recipes": "레시피",
       "logs": "로그"
+    },
+    "block": "차단",
+    "unblock": "차단 해제",
+    "report": "신고",
+    "blockConfirmTitle": "사용자를 차단하시겠습니까?",
+    "blockConfirmMessage": "상대방은 내 콘텐츠를 볼 수 없고 나를 팔로우할 수 없습니다. 나도 상대방의 콘텐츠를 볼 수 없습니다.",
+    "unblockConfirmTitle": "차단을 해제하시겠습니까?",
+    "unblockConfirmMessage": "이 사용자는 다시 내 콘텐츠를 보고 팔로우할 수 있습니다.",
+    "blocked": "사용자가 차단되었습니다",
+    "unblocked": "차단이 해제되었습니다",
+    "reportTitle": "사용자 신고",
+    "reportSubmitted": "신고가 접수되었습니다",
+    "blockedUsers": "차단된 사용자",
+    "noBlockedUsers": "차단된 사용자가 없습니다"
+  },
+  "report": {
+    "selectReason": "신고 사유를 선택해 주세요",
+    "descriptionHint": "추가 설명 (선택사항)",
+    "submit": "신고하기",
+    "reason": {
+      "spam": "스팸",
+      "harassment": "괴롭힘 또는 왕따",
+      "inappropriateContent": "부적절한 콘텐츠",
+      "impersonation": "사칭",
+      "other": "기타"
     }
   },
   "login": {
@@ -647,6 +672,7 @@
     "measurementUnits": "계량 단위",
     "logout": "로그아웃",
     "logoutConfirm": "정말 로그아웃 하시겠습니까?",
+    "blockedUsersSubtitle": "차단한 사용자 관리",
     "deleteAccount": "계정 삭제",
     "deleteAccountSubtitle": "데이터가 영구적으로 삭제됩니다",
     "deleteWarningTitle": "계정을 삭제하시겠습니까?",

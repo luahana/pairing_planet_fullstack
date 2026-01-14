@@ -6,6 +6,7 @@ import com.pairingplanet.pairing_planet.domain.entity.user.UserFollowId;
 import com.pairingplanet.pairing_planet.dto.follow.FollowListResponse;
 import com.pairingplanet.pairing_planet.dto.follow.FollowStatusResponse;
 import com.pairingplanet.pairing_planet.dto.follow.FollowerDto;
+import com.pairingplanet.pairing_planet.repository.user.UserBlockRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserFollowRepository;
 import com.pairingplanet.pairing_planet.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 public class FollowService {
 
     private final UserFollowRepository userFollowRepository;
+    private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
@@ -48,6 +50,11 @@ public class FollowService {
         // Cannot follow yourself
         if (followerId.equals(followingId)) {
             throw new IllegalArgumentException("Cannot follow yourself");
+        }
+
+        // Check if there's a block relationship between users
+        if (userBlockRepository.existsBlockBetweenUsers(followerId, followingId)) {
+            throw new IllegalArgumentException("Cannot follow a blocked user or a user who blocked you");
         }
 
         // Check if already following

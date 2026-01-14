@@ -13,6 +13,7 @@ import 'package:pairing_planet2_frontend/features/profile/providers/user_profile
 import 'package:pairing_planet2_frontend/features/profile/widgets/follow_button.dart';
 import 'package:pairing_planet2_frontend/features/profile/widgets/level_badge.dart';
 import 'package:pairing_planet2_frontend/features/profile/widgets/profile_shared.dart';
+import 'package:pairing_planet2_frontend/features/profile/widgets/user_action_menu.dart';
 import 'package:pairing_planet2_frontend/features/profile/widgets/tabs/user_recipes_tab.dart';
 import 'package:pairing_planet2_frontend/features/profile/widgets/tabs/user_logs_tab.dart';
 import 'package:pairing_planet2_frontend/core/widgets/custom_bottom_nav_bar.dart';
@@ -119,6 +120,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                     color: AppColors.primary,
                   ),
                 ),
+                actions: _buildAppBarActions(user),
               ),
               // Profile Header
               SliverToBoxAdapter(
@@ -247,6 +249,25 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
         ],
       ),
     );
+  }
+
+  List<Widget> _buildAppBarActions(UserDto user) {
+    // Check if this is the current user's own profile
+    final myProfile = ref.read(myProfileProvider);
+    final currentUserId = myProfile.valueOrNull?.user.id;
+    final isOwnProfile = currentUserId == widget.userId;
+
+    if (isOwnProfile) return [];
+
+    return [
+      UserActionMenu(
+        userId: widget.userId,
+        onBlocked: () {
+          // Invalidate providers when user is blocked
+          ref.invalidate(userProfileProvider(widget.userId));
+        },
+      ),
+    ];
   }
 
   Widget _buildStatColumn(String count, String label, VoidCallback onTap) {

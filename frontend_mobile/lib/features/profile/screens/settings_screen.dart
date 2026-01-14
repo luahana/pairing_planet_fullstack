@@ -62,6 +62,13 @@ class SettingsScreen extends ConsumerWidget {
           _buildSectionHeader('settings.account'.tr()),
           _buildSettingsTile(
             context,
+            icon: Icons.block,
+            title: 'profile.blockedUsers'.tr(),
+            subtitle: 'settings.blockedUsersSubtitle'.tr(),
+            onTap: () => context.push(RouteConstants.blockedUsers),
+          ),
+          _buildSettingsTile(
+            context,
             icon: Icons.logout,
             title: 'settings.logout'.tr(),
             onTap: () => _showLogoutDialog(context, ref),
