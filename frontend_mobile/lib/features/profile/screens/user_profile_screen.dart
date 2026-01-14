@@ -112,10 +112,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                   onPressed: () => context.pop(),
                 ),
                 title: Text(
-                  user.username,
+                  '@${user.username}',
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -222,25 +223,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          // Username and level
+          // Level badge
           Align(
             alignment: Alignment.centerLeft,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.username,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                LevelBadge(
-                  level: user.level,
-                  levelName: user.levelName,
-                ),
-              ],
+            child: LevelBadge(
+              level: user.level,
+              levelName: user.levelName,
             ),
           ),
           SizedBox(height: 12.h),
