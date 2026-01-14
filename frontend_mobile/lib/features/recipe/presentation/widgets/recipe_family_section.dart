@@ -7,6 +7,7 @@ import 'package:pairing_planet2_frontend/core/constants/app_icons.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
+import 'package:pairing_planet2_frontend/core/widgets/unified_recipe_card.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
 
 /// Recipe Family Section - Shows lineage context
@@ -92,21 +93,49 @@ class RecipeFamilySection extends StatelessWidget {
           if (variants.isEmpty)
             _buildEmptyVariationsState()
           else
-            SizedBox(
-              height: 100.h,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-                itemCount: displayVariants.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      right: index < displayVariants.length - 1 ? 10.w : 0,
-                    ),
-                    child: _VariantMiniCard(variant: displayVariants[index]),
-                  );
-                },
-              ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final cardWidth = constraints.maxWidth * 0.75;
+                return SizedBox(
+                  height: 140.h,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                    itemCount: displayVariants.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          right: index < displayVariants.length - 1 ? 12.w : 0,
+                        ),
+                        child: Container(
+                          width: cardWidth,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: UnifiedRecipeCard(
+                              recipe: displayVariants[index],
+                              isVertical: false,
+                              showFoodName: false,
+                              showDescription: false,
+                              showMetrics: false,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -260,83 +289,3 @@ class _RootRecipeCard extends StatelessWidget {
   }
 }
 
-/// Mini card for variant in horizontal list
-class _VariantMiniCard extends StatelessWidget {
-  final RecipeSummary variant;
-
-  const _VariantMiniCard({required this.variant});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        context.push(RouteConstants.recipeDetailPath(variant.publicId));
-      },
-      child: Container(
-        width: 140.w,
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            // Thumbnail
-            ClipRRect(
-              borderRadius: BorderRadius.horizontal(left: Radius.circular(9.r)),
-              child: SizedBox(
-                width: 50.w,
-                height: double.infinity,
-                child: variant.thumbnailUrl != null && variant.thumbnailUrl!.isNotEmpty
-                    ? AppCachedImage(
-                        imageUrl: variant.thumbnailUrl!,
-                        width: 50.w,
-                        height: double.infinity,
-                        borderRadius: 0,
-                      )
-                    : Container(
-                        color: Colors.grey[200],
-                        child: Icon(Icons.restaurant, size: 20.sp, color: Colors.grey),
-                      ),
-              ),
-            ),
-            // Content
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(8.r),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Title
-                    Text(
-                      variant.title,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4.h),
-                    // Creator
-                    Text(
-                      '@${variant.creatorName}',
-                      style: TextStyle(
-                        fontSize: 9.sp,
-                        color: AppColors.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
