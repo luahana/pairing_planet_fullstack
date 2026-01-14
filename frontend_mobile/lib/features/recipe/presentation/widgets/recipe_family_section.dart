@@ -6,10 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/app_icons.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
-import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
+import 'package:pairing_planet2_frontend/core/widgets/recipe_link_card.dart';
 import 'package:pairing_planet2_frontend/core/widgets/unified_recipe_card.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
-import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/locale_badge.dart';
 
 /// Recipe Family Section - Shows lineage context
 /// - For variants: Shows "Based on" with root recipe
@@ -209,91 +208,14 @@ class RecipeFamilySection extends StatelessWidget {
           ),
           const Divider(height: 1),
           // Root recipe card
-          _RootRecipeCard(rootInfo: rootInfo!),
+          RecipeLinkCard(
+            publicId: rootInfo!.publicId,
+            title: rootInfo!.title,
+            creatorName: rootInfo!.creatorName,
+            thumbnailUrl: rootInfo!.thumbnailUrl,
+            culinaryLocale: rootInfo!.culinaryLocale,
+          ),
         ],
-      ),
-    );
-  }
-}
-
-/// Root recipe card - prominent display
-class _RootRecipeCard extends StatelessWidget {
-  final RecipeSummary rootInfo;
-
-  const _RootRecipeCard({required this.rootInfo});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        context.push(RouteConstants.recipeDetailPath(rootInfo.publicId));
-      },
-      child: Padding(
-        padding: EdgeInsets.all(12.r),
-        child: Row(
-          children: [
-            // Thumbnail
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.r),
-              child: SizedBox(
-                width: 50.w,
-                height: 50.w,
-                child: rootInfo.thumbnailUrl != null && rootInfo.thumbnailUrl!.isNotEmpty
-                    ? AppCachedImage(
-                        imageUrl: rootInfo.thumbnailUrl!,
-                        width: 50.w,
-                        height: 50.w,
-                        borderRadius: 8.r,
-                      )
-                    : Container(
-                        color: Colors.grey[200],
-                        child: Icon(Icons.restaurant, size: 24.sp, color: Colors.grey),
-                      ),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            // Recipe info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          rootInfo.title,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (rootInfo.culinaryLocale.isNotEmpty) ...[
-                        SizedBox(width: 8.w),
-                        LocaleBadge(
-                          localeCode: rootInfo.culinaryLocale,
-                          showLabel: false,
-                          fontSize: 12.sp,
-                        ),
-                      ],
-                    ],
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    '@${rootInfo.creatorName}',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
