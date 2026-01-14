@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pairing_planet2_frontend/core/widgets/search/enhanced_search_field.dart';
 import 'package:pairing_planet2_frontend/data/datasources/search/search_local_data_source.dart';
 
@@ -36,7 +35,6 @@ class EnhancedSearchAppBar extends ConsumerStatefulWidget
 }
 
 class _EnhancedSearchAppBarState extends ConsumerState<EnhancedSearchAppBar> {
-  final LayerLink _layerLink = LayerLink();
   bool _showSearchField = false;
 
   @override
@@ -72,36 +70,30 @@ class _EnhancedSearchAppBarState extends ConsumerState<EnhancedSearchAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        title: _showSearchField
-            ? EnhancedSearchField(
-                hintText: widget.hintText,
-                onSearch: widget.onSearch,
-                onClear: widget.onClear,
-                currentQuery: widget.currentQuery,
-                searchType: widget.searchType,
-                autofocus: true,
-                layerLink: _layerLink,
-                overlayOffset: const Offset(0, kToolbarHeight),
-                overlayWidth: MediaQuery.of(context).size.width - 32.w,
-              )
-            : Text(
-                widget.title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-        actions: [
-          if (widget.actions != null && !_showSearchField) ...widget.actions!,
-          IconButton(
-            icon: Icon(_showSearchField ? Icons.close : Icons.search),
-            onPressed: _toggleSearch,
-          ),
-        ],
-      ),
+    return AppBar(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      elevation: 0,
+      title: _showSearchField
+          ? EnhancedSearchField(
+              hintText: widget.hintText,
+              onSearch: widget.onSearch,
+              onClear: widget.onClear,
+              currentQuery: widget.currentQuery,
+              searchType: widget.searchType,
+              autofocus: true,
+            )
+          : Text(
+              widget.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+      actions: [
+        if (widget.actions != null && !_showSearchField) ...widget.actions!,
+        IconButton(
+          icon: Icon(_showSearchField ? Icons.close : Icons.search),
+          onPressed: _toggleSearch,
+        ),
+      ],
     );
   }
 }

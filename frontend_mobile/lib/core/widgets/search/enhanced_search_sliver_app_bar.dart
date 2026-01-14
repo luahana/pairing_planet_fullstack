@@ -86,7 +86,6 @@ class EnhancedSearchSliverAppBar extends ConsumerStatefulWidget {
 
 class _EnhancedSearchSliverAppBarState
     extends ConsumerState<EnhancedSearchSliverAppBar> {
-  final LayerLink _layerLink = LayerLink();
   bool _isSearching = false;
 
   @override
@@ -132,16 +131,13 @@ class _EnhancedSearchSliverAppBarState
       foregroundColor: widget.foregroundColor ?? Colors.black,
       scrolledUnderElevation: widget.scrolledUnderElevation,
       titleSpacing: widget.titleSpacing ?? (_isSearching ? 0 : null),
-      title: CompositedTransformTarget(
-        link: _layerLink,
-        child: _isSearching
-            ? _buildSearchField()
-            : (widget.titleWidget ??
-                Text(
-                  widget.title!,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                )),
-      ),
+      title: _isSearching
+          ? _buildSearchField()
+          : (widget.titleWidget ??
+              Text(
+                widget.title!,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              )),
       actions: [
         if (widget.actions != null && !_isSearching) ...widget.actions!,
         IconButton(
@@ -162,8 +158,6 @@ class _EnhancedSearchSliverAppBarState
         currentQuery: widget.currentQuery,
         searchType: widget.searchType,
         autofocus: true,
-        layerLink: _layerLink,
-        overlayOffset: const Offset(0, kToolbarHeight),
       ),
     );
   }

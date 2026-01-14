@@ -37,7 +37,6 @@ class RecipePickerSheet extends ConsumerStatefulWidget {
 }
 
 class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
-  final LayerLink _layerLink = LayerLink();
   List<RecipeSummary> _searchResults = [];
   bool _isSearching = false;
   bool _isLoading = false;
@@ -168,21 +167,15 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
                     ),
                   ),
                   Expanded(
-                    child: CompositedTransformTarget(
-                      link: _layerLink,
-                      child: EnhancedSearchField(
-                        hintText: 'recipePicker.searchHint'.tr(),
-                        onSearch: _searchRecipes,
-                        onClear: _clearSearch,
-                        currentQuery: _currentQuery,
-                        searchType: SearchType.recipe,
-                        autofocus: false,
-                        layerLink: _layerLink,
-                        overlayOffset: Offset(0, 48.h),
-                        overlayWidth: MediaQuery.of(context).size.width - 64.w,
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        textStyle: TextStyle(fontSize: 16.sp),
-                      ),
+                    child: EnhancedSearchField(
+                      hintText: 'recipePicker.searchHint'.tr(),
+                      onSearch: _searchRecipes,
+                      onClear: _clearSearch,
+                      currentQuery: _currentQuery,
+                      searchType: SearchType.recipe,
+                      autofocus: false,
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      textStyle: TextStyle(fontSize: 16.sp),
                     ),
                   ),
                 ],
