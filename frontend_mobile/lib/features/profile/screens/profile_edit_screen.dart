@@ -33,6 +33,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   bool _isLoading = false;
   bool _hasChanges = false;
 
+  // Bio and social links
+  final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _youtubeController = TextEditingController();
+  final TextEditingController _instagramController = TextEditingController();
+  String? _bioError;
+  String? _youtubeError;
+  String? _instagramError;
+
   // Gender options - keys for translation
   static const List<String> _genderKeys = ['MALE', 'FEMALE', 'OTHER'];
 
@@ -60,6 +68,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _bioController.dispose();
+    _youtubeController.dispose();
+    _instagramController.dispose();
+    super.dispose();
+  }
+
   void _initializeFromProfile() {
     final profileAsync = ref.read(myProfileProvider);
     profileAsync.whenData((profile) {
@@ -73,6 +89,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _originalLocale = _selectedLocale;  // Store original locale
         // Initialize food style from profile or derive from device locale
         _selectedFoodStyle = profile.user.defaultFoodStyle ?? _getDefaultFoodStyleFromDevice();
+        // Initialize bio and social links
+        _bioController.text = profile.user.bio ?? '';
+        _youtubeController.text = profile.user.youtubeUrl ?? '';
+        _instagramController.text = profile.user.instagramHandle ?? '';
       });
     });
   }
@@ -175,6 +195,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               color: Colors.grey[600],
             ),
           ),
+          SizedBox(height: 24.h),
+
+          // Bio Section
+          _buildSectionTitle('profile.bio'.tr()),
+          SizedBox(height: 8.h),
+          _buildBioField(),
+          SizedBox(height: 24.h),
+
+          // Social Links Section
+          _buildSectionTitle('profile.socialLinks'.tr()),
+          SizedBox(height: 8.h),
+          _buildYoutubeField(),
+          SizedBox(height: 12.h),
+          _buildInstagramField(),
+          SizedBox(height: 32.h),
         ],
       ),
     );
@@ -428,6 +463,135 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
 
+  Widget _buildBioField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _bioController,
+          maxLength: 150,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: 'profile.bioHint'.tr(),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.primary),
+            ),
+            errorText: _bioError,
+          ),
+          onChanged: (value) {
+            setState(() {
+              _hasChanges = true;
+              _bioError = _validateBio(value);
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildYoutubeField() {
+    return TextField(
+      controller: _youtubeController,
+      decoration: InputDecoration(
+        prefixIcon: Icon(Icons.play_circle_outline, color: Colors.red[600]),
+        hintText: 'profile.youtubeHint'.tr(),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: AppColors.primary),
+        ),
+        errorText: _youtubeError,
+      ),
+      onChanged: (value) {
+        setState(() {
+          _hasChanges = true;
+          _youtubeError = _validateYoutubeUrl(value);
+        });
+      },
+    );
+  }
+
+  Widget _buildInstagramField() {
+    return TextField(
+      controller: _instagramController,
+      decoration: InputDecoration(
+        prefixIcon: Icon(Icons.camera_alt_outlined, color: const Color(0xFFE4405F)),
+        hintText: 'profile.instagramHint'.tr(),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: AppColors.primary),
+        ),
+        errorText: _instagramError,
+      ),
+      onChanged: (value) {
+        setState(() {
+          _hasChanges = true;
+          _instagramError = _validateInstagramHandle(value);
+        });
+      },
+    );
+  }
+
+  String? _validateBio(String value) {
+    if (value.length > 150) {
+      return 'profile.bioTooLong'.tr();
+    }
+    return null;
+  }
+
+  String? _validateYoutubeUrl(String value) {
+    if (value.isEmpty) return null;
+    final regex = RegExp(
+      r'^(https?://)?(www\.)?(youtube\.com/(channel/|c/|user/|@)[\w-]+|youtu\.be/[\w-]+)/?$',
+    );
+    if (!regex.hasMatch(value)) {
+      return 'profile.invalidYoutubeUrl'.tr();
+    }
+    return null;
+  }
+
+  String? _validateInstagramHandle(String value) {
+    if (value.isEmpty) return null;
+    final handleRegex = RegExp(r'^@?[a-zA-Z0-9._]{1,30}$');
+    final urlRegex = RegExp(
+      r'^(https?://)?(www\.)?instagram\.com/[a-zA-Z0-9._]{1,30}/?$',
+    );
+    if (!handleRegex.hasMatch(value) && !urlRegex.hasMatch(value)) {
+      return 'profile.invalidInstagramHandle'.tr();
+    }
+    return null;
+  }
+
   Future<void> _saveProfile() async {
     setState(() {
       _isLoading = true;
@@ -444,6 +608,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             : null,
         locale: _selectedLocale,
         defaultFoodStyle: _selectedFoodStyle,
+        bio: _bioController.text.isNotEmpty ? _bioController.text : null,
+        youtubeUrl: _youtubeController.text.isNotEmpty ? _youtubeController.text : null,
+        instagramHandle: _instagramController.text.isNotEmpty ? _instagramController.text : null,
       );
 
       await dataSource.updateProfile(request);

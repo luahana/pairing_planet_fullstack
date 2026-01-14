@@ -18,6 +18,9 @@ class UserDto {
   final int logCount;     // Number of logs created by user
   final int level;        // Gamification level (1-26+)
   final String levelName; // Level title (beginner, homeCook, etc.)
+  final String? bio;      // User bio/description (max 150 chars)
+  final String? youtubeUrl;  // YouTube channel URL
+  final String? instagramHandle;  // Instagram handle (without @)
 
   UserDto({
     required this.id,
@@ -34,6 +37,9 @@ class UserDto {
     this.logCount = 0,
     this.level = 1,
     this.levelName = 'beginner',
+    this.bio,
+    this.youtubeUrl,
+    this.instagramHandle,
   });
 
   factory UserDto.fromJson(Map<String, dynamic> json) => _$UserDtoFromJson(json);

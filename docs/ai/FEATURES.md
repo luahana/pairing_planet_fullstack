@@ -597,6 +597,54 @@ User logs in within 30 days?
 
 ---
 
+### [FEAT-038]: Profile Bio & Social Links
+
+**Status:** ✅ Done
+**Branch:** `dev`
+
+**Description:** Users can add a bio/description and social media links (YouTube, Instagram) to their profile. Designed for App Store/Play Store compliance with security measures.
+
+**User Story:** As a user, I want to add a bio and social media links to my profile, so that other users can learn about me and find my content on other platforms.
+
+**Research Findings:**
+- How Instagram does it: Bio (150 chars), website link, opens in external browser
+- App Store compliance: External links must open in system browser (not WebView) for security
+- Security: HTML sanitization, URL validation, HTTPS enforcement
+
+**Acceptance Criteria:**
+- [x] Bio field (max 150 characters) in profile edit
+- [x] YouTube URL field with validation
+- [x] Instagram handle/URL field with validation
+- [x] Display bio on own profile (cooking_dna_header)
+- [x] Display bio on other users' profiles (user_profile_screen)
+- [x] Social link buttons (YouTube red, Instagram pink) open external browser
+- [x] Backend sanitization (HTML stripping, URL normalization)
+- [x] Translations in both English and Korean
+
+**Technical Notes:**
+- Backend:
+  - `V27__add_user_bio_and_social_links.sql` - Migration for bio, youtube_url, instagram_handle columns
+  - `User.java` - Entity fields with length constraints
+  - `UserDto.java` - Fields for API response
+  - `UpdateProfileRequestDto.java` - @Size(max=150) for bio, @Pattern regex for YouTube/Instagram validation
+  - `UserService.java` - `sanitizeBio()` (HTML stripping), `normalizeYoutubeUrl()` (HTTPS), `normalizeInstagramHandle()` (extract handle from URL)
+- Frontend:
+  - `pubspec.yaml` - Added `url_launcher: ^6.2.5`
+  - `url_launcher_utils.dart` - Utility for launching external URLs with `LaunchMode.externalApplication`
+  - `user_dto.dart` / `update_profile_request_dto.dart` - New fields
+  - `profile_edit_screen.dart` - Bio TextField (150 char counter), YouTube/Instagram TextFields with validation
+  - `cooking_dna_header.dart` - Bio display + social link buttons (own profile)
+  - `user_profile_screen.dart` - Bio display + social link buttons (other users)
+  - `en-US.json` / `ko-KR.json` - Translation keys for bio, socialLinks, validation messages
+
+**Security Features:**
+- HTML tag stripping prevents XSS in bio
+- Strict regex validation for YouTube/Instagram URLs
+- HTTPS enforcement for all URLs
+- `LaunchMode.externalApplication` opens links in system browser (App Store compliant)
+
+---
+
 ## Planned 📋
 
 ### [FEAT-016]: Improved Onboarding
@@ -1112,6 +1160,7 @@ adb reverse tcp:9000 tcp:9000  # MinIO images
 | FEAT-035 | Profile Navigation Bar | ✅ |
 | FEAT-036 | Isar Migration & Performance | ✅ |
 | FEAT-037 | Duplicate Submission Prevention | ✅ |
+| FEAT-038 | Profile Bio & Social Links | ✅ |
 | INFRA-001 | AWS Dev Environment with ALB | ✅ |
 
 ## Website Features

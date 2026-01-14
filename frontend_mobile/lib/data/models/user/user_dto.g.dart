@@ -21,6 +21,9 @@ UserDto _$UserDtoFromJson(Map<String, dynamic> json) => UserDto(
       logCount: (json['logCount'] as num?)?.toInt() ?? 0,
       level: (json['level'] as num?)?.toInt() ?? 1,
       levelName: json['levelName'] as String? ?? 'beginner',
+      bio: json['bio'] as String?,
+      youtubeUrl: json['youtubeUrl'] as String?,
+      instagramHandle: json['instagramHandle'] as String?,
     );
 
 Map<String, dynamic> _$UserDtoToJson(UserDto instance) => <String, dynamic>{
@@ -38,4 +41,7 @@ Map<String, dynamic> _$UserDtoToJson(UserDto instance) => <String, dynamic>{
       'logCount': instance.logCount,
       'level': instance.level,
       'levelName': instance.levelName,
+      'bio': instance.bio,
+      'youtubeUrl': instance.youtubeUrl,
+      'instagramHandle': instance.instagramHandle,
     };
