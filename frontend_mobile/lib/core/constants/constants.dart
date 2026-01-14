@@ -36,6 +36,14 @@ class ApiEndpoints {
   static String followers(String userId) => '/users/$userId/followers';
   static String following(String userId) => '/users/$userId/following';
 
+  // Block 관련
+  static String block(String userId) => '/users/$userId/block';
+  static String blockStatus(String userId) => '/users/$userId/block-status';
+  static const String blockedUsers = '/users/me/blocked';
+
+  // Report 관련
+  static String report(String userId) => '/users/$userId/report';
+
   // Analytics 관련
   static const String events = '/events'; // 단일 이벤트 추적
   static const String eventsBatch = '/events/batch'; // 배치 이벤트 추적
@@ -68,6 +76,9 @@ class RouteConstants {
 
   // Follow 관련
   static const String followers = '/users/:userId/followers';
+
+  // Settings 관련
+  static const String blockedUsers = '/settings/blocked-users';
 
   // Top-level recipe routes (with :id parameter for router)
   static const String recipeDetailFull = '/recipes/:id';

@@ -18,6 +18,7 @@ import 'package:pairing_planet2_frontend/features/profile/screens/settings_scree
 import 'package:pairing_planet2_frontend/features/profile/screens/delete_account_screen.dart';
 import 'package:pairing_planet2_frontend/features/profile/screens/followers_list_screen.dart';
 import 'package:pairing_planet2_frontend/features/profile/screens/user_profile_screen.dart';
+import 'package:pairing_planet2_frontend/features/profile/screens/blocked_users_screen.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart'; // 💡 추가
 import 'package:pairing_planet2_frontend/features/notification/screens/notification_inbox_screen.dart';
 import 'package:pairing_planet2_frontend/features/splash/screens/splash_screen.dart';
@@ -77,6 +78,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           RouteConstants.logPostCreate,
           RouteConstants.profileEdit,
           RouteConstants.settings,
+          RouteConstants.blockedUsers,
           RouteConstants.deleteAccount,
         ];
 
@@ -210,6 +212,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RouteConstants.settings,
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: RouteConstants.blockedUsers,
+        name: 'blocked_users',
+        builder: (context, state) => const BlockedUsersScreen(),
       ),
       GoRoute(
         path: RouteConstants.deleteAccount,

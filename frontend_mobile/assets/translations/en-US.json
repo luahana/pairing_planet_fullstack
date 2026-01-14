@@ -134,6 +134,31 @@
       "lessons": "Lessons",
       "recipes": "Recipes",
       "logs": "Logs"
+    },
+    "block": "Block",
+    "unblock": "Unblock",
+    "report": "Report",
+    "blockConfirmTitle": "Block User?",
+    "blockConfirmMessage": "They won't be able to see your content or follow you. You won't see their content either.",
+    "unblockConfirmTitle": "Unblock User?",
+    "unblockConfirmMessage": "This user will be able to see your content and follow you again.",
+    "blocked": "User blocked",
+    "unblocked": "User unblocked",
+    "reportTitle": "Report User",
+    "reportSubmitted": "Report submitted",
+    "blockedUsers": "Blocked Users",
+    "noBlockedUsers": "No blocked users"
+  },
+  "report": {
+    "selectReason": "Why are you reporting this user?",
+    "descriptionHint": "Additional details (optional)",
+    "submit": "Submit Report",
+    "reason": {
+      "spam": "Spam",
+      "harassment": "Harassment or bullying",
+      "inappropriateContent": "Inappropriate content",
+      "impersonation": "Impersonation",
+      "other": "Other"
     }
   },
   "login": {
@@ -651,6 +676,7 @@
     "measurementUnits": "Measurement Units",
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
+    "blockedUsersSubtitle": "Manage users you've blocked",
     "deleteAccount": "Delete Account",
     "deleteAccountSubtitle": "Permanently remove your data",
     "deleteWarningTitle": "Delete your account?",
