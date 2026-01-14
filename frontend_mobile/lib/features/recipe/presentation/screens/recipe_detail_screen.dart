@@ -146,20 +146,27 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Only show variant tag for variants (not for originals)
+                          if (recipe.isVariant) ...[
+                            _buildLineageTag(recipe),
+                            SizedBox(height: 12.h),
+                          ],
+                          // Recipe title with cooking style badge
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _buildLineageTag(recipe),
+                              Expanded(
+                                child: Text(
+                                  recipe.title,
+                                  style: TextStyle(
+                                    fontSize: 26.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                               SizedBox(width: 8.w),
                               LocaleBadgeStyled(localeCode: recipe.culinaryLocale),
                             ],
-                          ),
-                          SizedBox(height: 12.h),
-                          Text(
-                            recipe.title,
-                            style: TextStyle(
-                              fontSize: 26.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
                           ),
                           SizedBox(height: 4.h),
                           GestureDetector(

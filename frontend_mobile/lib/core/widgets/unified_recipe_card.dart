@@ -19,6 +19,9 @@ import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/lo
 class UnifiedRecipeCard extends ConsumerWidget {
   final RecipeSummary recipe;
   final bool showUsername;
+  final bool showFoodName;
+  final bool showDescription;
+  final bool showMetrics;
   final bool isVertical;
   final VoidCallback? onTap;
 
@@ -26,6 +29,9 @@ class UnifiedRecipeCard extends ConsumerWidget {
     super.key,
     required this.recipe,
     this.showUsername = true,
+    this.showFoodName = true,
+    this.showDescription = true,
+    this.showMetrics = true,
     this.isVertical = false,
     this.onTap,
   });
@@ -116,7 +122,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 1. Food name (dish name) with type icon
-                      if (recipe.foodName.isNotEmpty) ...[
+                      if (showFoodName && recipe.foodName.isNotEmpty) ...[
                         RecipeTypeLabel(
                           foodName: recipe.foodName,
                           isVariant: recipe.isVariant,
@@ -165,7 +171,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
                       ],
 
                       // 4. Description (truncated)
-                      if (recipe.description.isNotEmpty) ...[
+                      if (showDescription && recipe.description.isNotEmpty) ...[
                         Text(
                           recipe.description,
                           style: TextStyle(
@@ -193,7 +199,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
                   ),
 
                   // 6. Metrics row (variants and logs) - fixed at bottom
-                  _buildMetricsRow(),
+                  if (showMetrics) _buildMetricsRow(),
                 ],
               ),
             ),
@@ -237,7 +243,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Food name (dish name) with type icon
-              if (recipe.foodName.isNotEmpty) ...[
+              if (showFoodName && recipe.foodName.isNotEmpty) ...[
                 RecipeTypeLabel(
                   foodName: recipe.foodName,
                   isVariant: recipe.isVariant,
@@ -286,7 +292,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
               ],
 
               // 4. Description (truncated)
-              if (recipe.description.isNotEmpty) ...[
+              if (showDescription && recipe.description.isNotEmpty) ...[
                 Text(
                   recipe.description,
                   style: TextStyle(
@@ -314,7 +320,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
               ],
 
               // 6. Metrics row (variants and logs)
-              _buildMetricsRow(),
+              if (showMetrics) _buildMetricsRow(),
             ],
           ),
         ),
