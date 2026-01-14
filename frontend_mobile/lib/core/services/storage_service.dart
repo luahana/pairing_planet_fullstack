@@ -12,6 +12,8 @@ class StorageService {
   static const _privacyAcceptedKey = 'privacy_accepted_at';
   static const _privacyVersionKey = 'privacy_version';
   static const _marketingAgreedKey = 'marketing_agreed';
+  static const _ageVerifiedKey = 'age_verified';
+  static const _ageVerifiedAtKey = 'age_verified_at';
 
   // --- Access Token 관련 ---
 
@@ -88,5 +90,26 @@ class StorageService {
     await _storage.delete(key: _privacyAcceptedKey);
     await _storage.delete(key: _privacyVersionKey);
     await _storage.delete(key: _marketingAgreedKey);
+  }
+
+  // --- Age Verification 관련 (COPPA Compliance) ---
+
+  /// Save age verification confirmation
+  Future<void> saveAgeVerification() async {
+    final now = DateTime.now().toIso8601String();
+    await _storage.write(key: _ageVerifiedKey, value: 'true');
+    await _storage.write(key: _ageVerifiedAtKey, value: now);
+  }
+
+  /// Check if user has verified their age (13+)
+  Future<bool> hasVerifiedAge() async {
+    final verified = await _storage.read(key: _ageVerifiedKey);
+    return verified == 'true';
+  }
+
+  /// Clear age verification (for testing)
+  Future<void> clearAgeVerification() async {
+    await _storage.delete(key: _ageVerifiedKey);
+    await _storage.delete(key: _ageVerifiedAtKey);
   }
 }

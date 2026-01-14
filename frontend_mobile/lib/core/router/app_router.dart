@@ -10,7 +10,9 @@ import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/
 import 'package:pairing_planet2_frontend/features/log_post/presentation/screens/recipe_logs_screen.dart';
 import 'package:pairing_planet2_frontend/features/home/screens/home_feed_screen.dart';
 import 'package:pairing_planet2_frontend/features/login/screens/login_screen.dart';
+import 'package:pairing_planet2_frontend/features/login/screens/age_verification_screen.dart';
 import 'package:pairing_planet2_frontend/features/login/screens/legal_agreement_screen.dart';
+import 'package:pairing_planet2_frontend/features/login/screens/phone_verification_screen.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/screens/recipe_create_screen.dart';
 import 'package:pairing_planet2_frontend/features/recipe/presentation/screens/recipe_list_screen.dart';
 import 'package:pairing_planet2_frontend/features/profile/screens/profile_screen.dart';
@@ -22,6 +24,8 @@ import 'package:pairing_planet2_frontend/features/profile/screens/user_profile_s
 import 'package:pairing_planet2_frontend/features/profile/screens/blocked_users_screen.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_detail.dart'; // 💡 추가
 import 'package:pairing_planet2_frontend/features/notification/screens/notification_inbox_screen.dart';
+import 'package:pairing_planet2_frontend/features/notification/screens/notification_settings_screen.dart';
+import 'package:pairing_planet2_frontend/features/profile/screens/data_export_screen.dart';
 import 'package:pairing_planet2_frontend/features/splash/screens/splash_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/recipe/presentation/screens/recipe_detail_screen.dart';
@@ -58,6 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final location = state.matchedLocation;
       final isLoggingIn = location == RouteConstants.login;
       final isSplash = location == RouteConstants.splash;
+      final isAgeVerification = location == RouteConstants.ageVerification;
       final isLegalAgreement = location == RouteConstants.legalAgreement;
 
       // Skip redirect for splash screen - it handles its own navigation
@@ -65,6 +70,14 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Wait for auth check to complete
       if (status == AuthStatus.initial) return null;
+
+      // User needs to verify age -> redirect to age verification screen
+      if (status == AuthStatus.needsAgeVerification) {
+        if (!isAgeVerification) {
+          return RouteConstants.ageVerification;
+        }
+        return null;
+      }
 
       // User needs to accept legal terms -> redirect to legal agreement screen
       if (status == AuthStatus.needsLegalAcceptance) {
@@ -74,8 +87,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Authenticated user on login or legal page -> go home
-      if (status == AuthStatus.authenticated && (isLoggingIn || isLegalAgreement)) {
+      // Korean user needs phone verification -> redirect to phone verification screen
+      final isPhoneVerification = location == RouteConstants.phoneVerification;
+      if (status == AuthStatus.needsPhoneVerification) {
+        if (!isPhoneVerification) {
+          return RouteConstants.phoneVerification;
+        }
+        return null;
+      }
+
+      // Authenticated user on login, age verification, or legal page -> go home
+      // Note: Phone verification is allowed for authenticated users (from settings for optional re-verification)
+      if (status == AuthStatus.authenticated &&
+          (isLoggingIn || isAgeVerification || isLegalAgreement)) {
         return RouteConstants.home;
       }
 
@@ -122,9 +146,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
+        path: RouteConstants.ageVerification,
+        name: 'age_verification',
+        builder: (context, state) => const AgeVerificationScreen(),
+      ),
+      GoRoute(
         path: RouteConstants.legalAgreement,
         name: 'legal_agreement',
         builder: (context, state) => const LegalAgreementScreen(),
+      ),
+      GoRoute(
+        path: RouteConstants.phoneVerification,
+        name: 'phone_verification',
+        builder: (context, state) {
+          final isOptional = state.uri.queryParameters['optional'] != 'false';
+          return PhoneVerificationScreen(isOptional: isOptional);
+        },
       ),
       GoRoute(
         path: RouteConstants.recipeCreate,
@@ -242,6 +279,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RouteConstants.blockedUsers,
         name: 'blocked_users',
         builder: (context, state) => const BlockedUsersScreen(),
+      ),
+      GoRoute(
+        path: RouteConstants.notificationSettings,
+        name: 'notification_settings',
+        builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: RouteConstants.dataExport,
+        name: 'data_export',
+        builder: (context, state) => const DataExportScreen(),
       ),
       GoRoute(
         path: RouteConstants.deleteAccount,

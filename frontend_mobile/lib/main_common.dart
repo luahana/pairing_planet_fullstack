@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -15,8 +16,10 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 import 'package:pairing_planet2_frontend/config/app_config.dart';
 import 'package:pairing_planet2_frontend/core/data/recipe_seed_data.dart';
+import 'package:pairing_planet2_frontend/core/providers/consent_preferences_provider.dart';
 import 'package:pairing_planet2_frontend/core/providers/isar_provider.dart';
 import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
+import 'package:pairing_planet2_frontend/core/widgets/consent_banner_widget.dart';
 import 'package:pairing_planet2_frontend/core/router/app_router.dart';
 import 'package:pairing_planet2_frontend/core/services/fcm_service.dart';
 import 'package:pairing_planet2_frontend/core/services/toast_service.dart';
@@ -35,6 +38,10 @@ Future<void> mainCommon(AppConfig config, FirebaseOptions firebaseOptions) async
 
   // Initialize Firebase with environment-specific options
   await Firebase.initializeApp(options: firebaseOptions);
+
+  // GDPR Compliance: Disable analytics by default until consent is given
+  // This will be re-enabled by ConsentPreferencesNotifier if user has consented
+  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(false);
 
   // Set up FCM background message handler
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -153,6 +160,9 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
+  bool _showConsentBanner = false;
+  bool _consentChecked = false;
+
   @override
   void initState() {
     super.initState();
@@ -212,6 +222,17 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final config = AppConfig.current;
+    final consentState = ref.watch(consentPreferencesProvider);
+
+    // Check if we need to show consent banner (only once per build cycle)
+    if (!_consentChecked && consentState.needsConsentBanner) {
+      _consentChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _showConsentBanner = true);
+        }
+      });
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final currentLocale = context.locale;
@@ -233,17 +254,34 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
           locale: context.locale,
           theme: AppTheme.lightTheme,
           routerConfig: router,
-          builder: (context, child) {
+          builder: (context, appChild) {
+            Widget result = appChild ?? const SizedBox.shrink();
+
             // Add environment banner for non-production
             if (config.bannerColor != null) {
-              return Banner(
+              result = Banner(
                 message: config.environmentName,
                 location: BannerLocation.topEnd,
                 color: config.bannerColor!,
-                child: child ?? const SizedBox.shrink(),
+                child: result,
               );
             }
-            return child ?? const SizedBox.shrink();
+
+            // Show consent banner overlay if needed
+            if (_showConsentBanner) {
+              result = Stack(
+                children: [
+                  result,
+                  ConsentBannerWidget(
+                    onConsentGiven: () {
+                      setState(() => _showConsentBanner = false);
+                    },
+                  ),
+                ],
+              );
+            }
+
+            return result;
           },
         );
       },

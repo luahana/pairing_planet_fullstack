@@ -21,6 +21,7 @@ void main() {
   late MockAuthRepository mockAuthRepository;
   late MockStorageService mockStorageService;
   late MockUserRemoteDataSource mockUserRemoteDataSource;
+  late MockPhoneAuthService mockPhoneAuthService;
 
   // Test data
   final testUserDtoWithAcceptedTerms = UserDto(
@@ -63,6 +64,7 @@ void main() {
     mockAuthRepository = MockAuthRepository();
     mockStorageService = MockStorageService();
     mockUserRemoteDataSource = MockUserRemoteDataSource();
+    mockPhoneAuthService = MockPhoneAuthService();
 
     // Default: reissueToken fails (unauthenticated state)
     when(() => mockAuthRepository.reissueToken())
@@ -82,12 +84,21 @@ void main() {
     when(() => mockStorageService.saveLegalAcceptance(marketingAgreed: any(named: 'marketingAgreed')))
         .thenAnswer((_) async {});
 
+    // Default: age verified
+    when(() => mockStorageService.hasVerifiedAge())
+        .thenAnswer((_) async => true);
+
+    // Default: phone not verified (non-Korean locale won't need it)
+    when(() => mockPhoneAuthService.isPhoneVerified).thenReturn(false);
+
     authNotifier = AuthNotifier(
       loginUseCase: mockLoginUseCase,
       logoutUseCase: mockLogoutUseCase,
       repository: mockAuthRepository,
       storageService: mockStorageService,
       userRemoteDataSource: mockUserRemoteDataSource,
+      phoneAuthService: mockPhoneAuthService,
+      getCurrentLocale: () => 'en-US', // Non-Korean by default
     );
   });
 
@@ -112,6 +123,8 @@ void main() {
           repository: mockAuthRepository,
           storageService: mockStorageService,
           userRemoteDataSource: mockUserRemoteDataSource,
+          phoneAuthService: mockPhoneAuthService,
+          getCurrentLocale: () => 'en-US',
         );
 
         // Wait for the async checkAuthStatus to complete
@@ -133,6 +146,8 @@ void main() {
           repository: mockAuthRepository,
           storageService: mockStorageService,
           userRemoteDataSource: mockUserRemoteDataSource,
+          phoneAuthService: mockPhoneAuthService,
+          getCurrentLocale: () => 'en-US',
         );
 
         // Wait for the async checkAuthStatus to complete
@@ -296,6 +311,103 @@ void main() {
 
         // Assert
         expect(authNotifier.state.status, AuthStatus.unauthenticated);
+      });
+    });
+
+    group('Korean phone verification', () {
+      test('should require phone verification for Korean locale after legal acceptance', () async {
+        // Arrange - Korean locale user without phone verification
+        when(() => mockAuthRepository.reissueToken())
+            .thenAnswer((_) async => const Right(unit));
+        when(() => mockPhoneAuthService.isPhoneVerified).thenReturn(false);
+
+        final koreanNotifier = AuthNotifier(
+          loginUseCase: mockLoginUseCase,
+          logoutUseCase: mockLogoutUseCase,
+          repository: mockAuthRepository,
+          storageService: mockStorageService,
+          userRemoteDataSource: mockUserRemoteDataSource,
+          phoneAuthService: mockPhoneAuthService,
+          getCurrentLocale: () => 'ko-KR', // Korean locale
+        );
+
+        // Wait for async checkAuthStatus to complete
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Assert - should require phone verification for Korean users
+        expect(koreanNotifier.state.status, AuthStatus.needsPhoneVerification);
+      });
+
+      test('should set authenticated for Korean locale if phone is already verified', () async {
+        // Arrange - Korean locale user with phone already verified
+        when(() => mockAuthRepository.reissueToken())
+            .thenAnswer((_) async => const Right(unit));
+        when(() => mockPhoneAuthService.isPhoneVerified).thenReturn(true);
+
+        final koreanVerifiedNotifier = AuthNotifier(
+          loginUseCase: mockLoginUseCase,
+          logoutUseCase: mockLogoutUseCase,
+          repository: mockAuthRepository,
+          storageService: mockStorageService,
+          userRemoteDataSource: mockUserRemoteDataSource,
+          phoneAuthService: mockPhoneAuthService,
+          getCurrentLocale: () => 'ko-KR', // Korean locale
+        );
+
+        // Wait for async checkAuthStatus to complete
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Assert - should be authenticated since phone is already verified
+        expect(koreanVerifiedNotifier.state.status, AuthStatus.authenticated);
+      });
+
+      test('should not require phone verification for non-Korean locale', () async {
+        // Arrange - US locale user
+        when(() => mockAuthRepository.reissueToken())
+            .thenAnswer((_) async => const Right(unit));
+        when(() => mockPhoneAuthService.isPhoneVerified).thenReturn(false);
+
+        final usNotifier = AuthNotifier(
+          loginUseCase: mockLoginUseCase,
+          logoutUseCase: mockLogoutUseCase,
+          repository: mockAuthRepository,
+          storageService: mockStorageService,
+          userRemoteDataSource: mockUserRemoteDataSource,
+          phoneAuthService: mockPhoneAuthService,
+          getCurrentLocale: () => 'en-US', // US locale
+        );
+
+        // Wait for async checkAuthStatus to complete
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Assert - should be authenticated for non-Korean locale
+        expect(usNotifier.state.status, AuthStatus.authenticated);
+      });
+
+      test('should set authenticated after confirmPhoneVerification', () async {
+        // Arrange - start with phone verification required
+        when(() => mockAuthRepository.reissueToken())
+            .thenAnswer((_) async => const Right(unit));
+        when(() => mockPhoneAuthService.isPhoneVerified).thenReturn(false);
+
+        final koreanNotifier = AuthNotifier(
+          loginUseCase: mockLoginUseCase,
+          logoutUseCase: mockLogoutUseCase,
+          repository: mockAuthRepository,
+          storageService: mockStorageService,
+          userRemoteDataSource: mockUserRemoteDataSource,
+          phoneAuthService: mockPhoneAuthService,
+          getCurrentLocale: () => 'ko-KR',
+        );
+
+        await Future.delayed(const Duration(milliseconds: 50));
+        expect(koreanNotifier.state.status, AuthStatus.needsPhoneVerification);
+
+        // Act - confirm phone verification
+        await koreanNotifier.confirmPhoneVerification();
+
+        // Assert - should now be authenticated
+        expect(koreanNotifier.state.status, AuthStatus.authenticated);
       });
     });
   });
