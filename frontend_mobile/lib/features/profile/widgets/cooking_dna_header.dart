@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/utils/url_launcher_utils.dart';
 import 'package:pairing_planet2_frontend/data/models/user/cooking_dna_dto.dart';
 import 'package:pairing_planet2_frontend/data/models/user/my_profile_response_dto.dart';
 import 'xp_progress_bar.dart';
@@ -32,9 +33,24 @@ class CookingDnaHeader extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile avatar and username
-          _buildProfileSection(context),
+          // Row 1: Avatar + Stats
+          _buildAvatarAndStats(context),
+          SizedBox(height: 12.h),
+          // Row 2: Username
+          Text(
+            profile.user.username,
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          // Row 3-4: Bio and social links
+          if (_hasBioOrSocialLinks) ...[
+            SizedBox(height: 4.h),
+            _buildBioAndSocialLinks(context),
+          ],
           SizedBox(height: 16.h),
           // XP Progress bar
           if (cookingDna != null)
@@ -50,62 +66,57 @@ class CookingDnaHeader extends StatelessWidget {
             _buildXpProgressSkeleton()
           else
             _buildXpProgressPlaceholder(),
-          SizedBox(height: 16.h),
-          // Profile stats (followers, following, recipes, logs)
-          _buildProfileStats(context),
         ],
       ),
     );
   }
 
-  Widget _buildProfileSection(BuildContext context) {
+  Widget _buildAvatarAndStats(BuildContext context) {
     return Row(
       children: [
         // Avatar
         CircleAvatar(
-          radius: 32.r,
+          radius: 40.r,
           backgroundColor: Colors.grey[200],
           backgroundImage: profile.user.profileImageUrl != null
               ? NetworkImage(profile.user.profileImageUrl!)
               : null,
           child: profile.user.profileImageUrl == null
-              ? Icon(Icons.person, size: 32.sp, color: Colors.grey[400])
+              ? Icon(Icons.person, size: 40.sp, color: Colors.grey[400])
               : null,
         ),
-        SizedBox(width: 16.w),
-        // Username and level badge
+        SizedBox(width: 20.w),
+        // Stats
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(
-                profile.user.username,
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
+              _buildTappableStatItem(
+                context,
+                'profile.followers'.tr(),
+                profile.user.followerCount,
+                () => context.push(RouteConstants.followersPath(profile.user.id)),
+              ),
+              _buildTappableStatItem(
+                context,
+                'profile.following'.tr(),
+                profile.user.followingCount,
+                () => context.push(
+                  '${RouteConstants.followersPath(profile.user.id)}?tab=1',
                 ),
               ),
-              if (cookingDna != null) ...[
-                SizedBox(height: 4.h),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 8.w,
-                    vertical: 2.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getLevelColor(cookingDna!.level).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    'profile.${cookingDna!.levelName}'.tr(),
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: _getLevelColor(cookingDna!.level),
-                    ),
-                  ),
-                ),
-              ],
+              _buildTappableStatItem(
+                context,
+                'profile.recipes'.tr(),
+                profile.recipeCount,
+                onRecipesTap,
+              ),
+              _buildTappableStatItem(
+                context,
+                'profile.logs'.tr(),
+                profile.logCount,
+                onLogsTap,
+              ),
             ],
           ),
         ),
@@ -113,44 +124,103 @@ class CookingDnaHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileStats(BuildContext context) {
-    return Row(
+  /// Check if user has bio or social links to display
+  bool get _hasBioOrSocialLinks {
+    final user = profile.user;
+    return (user.bio != null && user.bio!.isNotEmpty) ||
+        (user.youtubeUrl != null && user.youtubeUrl!.isNotEmpty) ||
+        (user.instagramHandle != null && user.instagramHandle!.isNotEmpty);
+  }
+
+  /// Build bio and social links section
+  Widget _buildBioAndSocialLinks(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: _buildTappableStatItem(
-            context,
-            'profile.followers'.tr(),
-            profile.user.followerCount,
-            () => context.push(RouteConstants.followersPath(profile.user.id)),
-          ),
-        ),
-        Expanded(
-          child: _buildTappableStatItem(
-            context,
-            'profile.following'.tr(),
-            profile.user.followingCount,
-            () => context.push(
-              '${RouteConstants.followersPath(profile.user.id)}?tab=1',
+        // Bio
+        if (profile.user.bio != null && profile.user.bio!.isNotEmpty) ...[
+          Text(
+            profile.user.bio!,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AppColors.textPrimary,
+              height: 1.4,
             ),
           ),
-        ),
-        Expanded(
-          child: _buildTappableStatItem(
-            context,
-            'profile.recipes'.tr(),
-            profile.recipeCount,
-            onRecipesTap,
-          ),
-        ),
-        Expanded(
-          child: _buildTappableStatItem(
-            context,
-            'profile.logs'.tr(),
-            profile.logCount,
-            onLogsTap,
-          ),
-        ),
+          if (_hasSocialLinks) SizedBox(height: 8.h),
+        ],
+        // Social links
+        if (_hasSocialLinks) _buildSocialLinksRow(),
       ],
+    );
+  }
+
+  bool get _hasSocialLinks {
+    final user = profile.user;
+    return (user.youtubeUrl != null && user.youtubeUrl!.isNotEmpty) ||
+        (user.instagramHandle != null && user.instagramHandle!.isNotEmpty);
+  }
+
+  Widget _buildSocialLinksRow() {
+    return Row(
+      children: [
+        if (profile.user.youtubeUrl != null &&
+            profile.user.youtubeUrl!.isNotEmpty)
+          _buildSocialButton(
+            icon: Icons.play_circle_filled,
+            color: const Color(0xFFFF0000), // YouTube red
+            label: 'YouTube',
+            onTap: () => UrlLauncherUtils.launchYoutube(profile.user.youtubeUrl!),
+          ),
+        if (profile.user.youtubeUrl != null &&
+            profile.user.youtubeUrl!.isNotEmpty &&
+            profile.user.instagramHandle != null &&
+            profile.user.instagramHandle!.isNotEmpty)
+          SizedBox(width: 8.w),
+        if (profile.user.instagramHandle != null &&
+            profile.user.instagramHandle!.isNotEmpty)
+          _buildSocialButton(
+            icon: Icons.camera_alt,
+            color: const Color(0xFFE1306C), // Instagram pink
+            label: 'Instagram',
+            onTap: () =>
+                UrlLauncherUtils.launchInstagram(profile.user.instagramHandle!),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16.sp, color: color),
+            SizedBox(width: 4.w),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -161,7 +231,7 @@ class CookingDnaHeader extends StatelessWidget {
     VoidCallback? onTap,
   ) {
     final child = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           count.toString(),
@@ -172,17 +242,14 @@ class CookingDnaHeader extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
         ),
-        SizedBox(height: 4.h),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: 11.sp,
-              color: Colors.grey[600],
-            ),
+        SizedBox(height: 2.h),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: Colors.grey[600],
           ),
         ),
       ],
@@ -192,15 +259,6 @@ class CookingDnaHeader extends StatelessWidget {
       return GestureDetector(onTap: onTap, child: child);
     }
     return child;
-  }
-
-  Color _getLevelColor(int level) {
-    if (level <= 5) return const Color(0xFF78909C);
-    if (level <= 10) return const Color(0xFF4CAF50);
-    if (level <= 15) return const Color(0xFF2196F3);
-    if (level <= 20) return const Color(0xFF9C27B0);
-    if (level <= 25) return const Color(0xFFFF9800);
-    return const Color(0xFFFFD700);
   }
 
   // Skeleton widgets for loading state

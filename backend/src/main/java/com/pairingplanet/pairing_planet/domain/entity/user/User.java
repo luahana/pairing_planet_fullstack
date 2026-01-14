@@ -77,4 +77,13 @@ public class User extends BaseEntity {
 
     @Column(name = "delete_scheduled_at")
     private Instant deleteScheduledAt;
+
+    @Column(name = "bio", length = 150)
+    private String bio;
+
+    @Column(name = "youtube_url", length = 255)
+    private String youtubeUrl;
+
+    @Column(name = "instagram_handle", length = 30)
+    private String instagramHandle;
 }

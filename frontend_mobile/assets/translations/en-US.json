@@ -147,7 +147,17 @@
     "reportTitle": "Report User",
     "reportSubmitted": "Report submitted",
     "blockedUsers": "Blocked Users",
-    "noBlockedUsers": "No blocked users"
+    "noBlockedUsers": "No blocked users",
+    "bio": "Bio",
+    "bioHint": "Tell us about yourself (max 150 characters)",
+    "bioTooLong": "Bio cannot exceed 150 characters",
+    "socialLinks": "Social Links",
+    "youtubeLabel": "YouTube",
+    "youtubeHint": "Your YouTube channel URL",
+    "invalidYoutubeUrl": "Invalid YouTube URL format",
+    "instagramLabel": "Instagram",
+    "instagramHint": "Your Instagram handle",
+    "invalidInstagramHandle": "Invalid Instagram handle format"
   },
   "report": {
     "selectReason": "Why are you reporting this user?",

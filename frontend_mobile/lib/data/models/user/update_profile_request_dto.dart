@@ -12,6 +12,9 @@ class UpdateProfileRequestDto {
   final bool? marketingAgreed;
   final String? locale;  // ko-KR, en-US
   final String? defaultFoodStyle;  // ISO country code (e.g., "KR", "US")
+  final String? bio;  // User bio/description (max 150 chars)
+  final String? youtubeUrl;  // YouTube channel URL
+  final String? instagramHandle;  // Instagram handle
 
   UpdateProfileRequestDto({
     this.username,
@@ -22,6 +25,9 @@ class UpdateProfileRequestDto {
     this.marketingAgreed,
     this.locale,
     this.defaultFoodStyle,
+    this.bio,
+    this.youtubeUrl,
+    this.instagramHandle,
   });
 
   factory UpdateProfileRequestDto.fromJson(Map<String, dynamic> json) =>

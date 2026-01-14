@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nested_scroll_view_plus/nested_scroll_view_plus.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
 import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
+import 'package:pairing_planet2_frontend/core/utils/url_launcher_utils.dart';
 import 'package:pairing_planet2_frontend/data/models/user/user_dto.dart';
 import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
 import 'package:pairing_planet2_frontend/features/profile/providers/follow_provider.dart';
@@ -225,7 +226,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           // Level badge
           Align(
             alignment: Alignment.centerLeft,
@@ -234,6 +235,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
               levelName: user.levelName,
             ),
           ),
+          // Bio and social links
+          if (_hasBioOrSocialLinks(user)) ...[
+            SizedBox(height: 4.h),
+            _buildBioAndSocialLinks(user),
+          ],
           SizedBox(height: 12.h),
           // Follow button (only show if not own profile)
           if (!isOwnProfile)
@@ -248,6 +254,99 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  bool _hasBioOrSocialLinks(UserDto user) {
+    return (user.bio != null && user.bio!.isNotEmpty) ||
+        (user.youtubeUrl != null && user.youtubeUrl!.isNotEmpty) ||
+        (user.instagramHandle != null && user.instagramHandle!.isNotEmpty);
+  }
+
+  bool _hasSocialLinks(UserDto user) {
+    return (user.youtubeUrl != null && user.youtubeUrl!.isNotEmpty) ||
+        (user.instagramHandle != null && user.instagramHandle!.isNotEmpty);
+  }
+
+  Widget _buildBioAndSocialLinks(UserDto user) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Bio
+        if (user.bio != null && user.bio!.isNotEmpty) ...[
+          Text(
+            user.bio!,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AppColors.textPrimary,
+              height: 1.4,
+            ),
+          ),
+          if (_hasSocialLinks(user)) SizedBox(height: 8.h),
+        ],
+        // Social links
+        if (_hasSocialLinks(user)) _buildSocialLinksRow(user),
+      ],
+    );
+  }
+
+  Widget _buildSocialLinksRow(UserDto user) {
+    return Row(
+      children: [
+        if (user.youtubeUrl != null && user.youtubeUrl!.isNotEmpty)
+          _buildSocialButton(
+            icon: Icons.play_circle_filled,
+            color: const Color(0xFFFF0000),
+            label: 'YouTube',
+            onTap: () => UrlLauncherUtils.launchYoutube(user.youtubeUrl!),
+          ),
+        if (user.youtubeUrl != null &&
+            user.youtubeUrl!.isNotEmpty &&
+            user.instagramHandle != null &&
+            user.instagramHandle!.isNotEmpty)
+          SizedBox(width: 8.w),
+        if (user.instagramHandle != null && user.instagramHandle!.isNotEmpty)
+          _buildSocialButton(
+            icon: Icons.camera_alt,
+            color: const Color(0xFFE1306C),
+            label: 'Instagram',
+            onTap: () => UrlLauncherUtils.launchInstagram(user.instagramHandle!),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16.sp, color: color),
+            SizedBox(width: 4.w),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

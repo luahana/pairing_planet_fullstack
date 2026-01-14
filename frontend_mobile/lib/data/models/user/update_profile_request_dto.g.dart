@@ -17,6 +17,9 @@ UpdateProfileRequestDto _$UpdateProfileRequestDtoFromJson(
       marketingAgreed: json['marketingAgreed'] as bool?,
       locale: json['locale'] as String?,
       defaultFoodStyle: json['defaultFoodStyle'] as String?,
+      bio: json['bio'] as String?,
+      youtubeUrl: json['youtubeUrl'] as String?,
+      instagramHandle: json['instagramHandle'] as String?,
     );
 
 Map<String, dynamic> _$UpdateProfileRequestDtoToJson(
@@ -30,4 +33,7 @@ Map<String, dynamic> _$UpdateProfileRequestDtoToJson(
       'marketingAgreed': instance.marketingAgreed,
       'locale': instance.locale,
       'defaultFoodStyle': instance.defaultFoodStyle,
+      'bio': instance.bio,
+      'youtubeUrl': instance.youtubeUrl,
+      'instagramHandle': instance.instagramHandle,
     };

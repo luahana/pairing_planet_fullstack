@@ -147,7 +147,17 @@
     "reportTitle": "사용자 신고",
     "reportSubmitted": "신고가 접수되었습니다",
     "blockedUsers": "차단된 사용자",
-    "noBlockedUsers": "차단된 사용자가 없습니다"
+    "noBlockedUsers": "차단된 사용자가 없습니다",
+    "bio": "소개",
+    "bioHint": "자기소개를 작성해주세요 (최대 150자)",
+    "bioTooLong": "소개는 150자를 초과할 수 없습니다",
+    "socialLinks": "소셜 링크",
+    "youtubeLabel": "YouTube",
+    "youtubeHint": "YouTube 채널 URL",
+    "invalidYoutubeUrl": "올바르지 않은 YouTube URL 형식입니다",
+    "instagramLabel": "Instagram",
+    "instagramHint": "Instagram 계정",
+    "invalidInstagramHandle": "올바르지 않은 Instagram 계정 형식입니다"
   },
   "report": {
     "selectReason": "신고 사유를 선택해 주세요",

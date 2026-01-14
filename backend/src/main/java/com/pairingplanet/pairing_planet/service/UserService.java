@@ -141,7 +141,61 @@ public class UserService {
             user.setDefaultFoodStyle(request.defaultFoodStyle());
         }
 
+        // 7. Bio update with sanitization
+        if (request.bio() != null) {
+            user.setBio(sanitizeBio(request.bio()));
+        }
+
+        // 8. YouTube URL update with normalization
+        if (request.youtubeUrl() != null) {
+            user.setYoutubeUrl(normalizeYoutubeUrl(request.youtubeUrl()));
+        }
+
+        // 9. Instagram handle update with normalization
+        if (request.instagramHandle() != null) {
+            user.setInstagramHandle(normalizeInstagramHandle(request.instagramHandle()));
+        }
+
         return UserDto.from(user, urlPrefix);
+    }
+
+    /**
+     * Sanitize bio text - remove HTML tags and normalize whitespace
+     */
+    private String sanitizeBio(String bio) {
+        if (bio == null || bio.isBlank()) return null;
+        // Remove HTML tags, normalize whitespace, trim
+        return bio.replaceAll("<[^>]*>", "")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    /**
+     * Normalize YouTube URL - ensure HTTPS prefix
+     */
+    private String normalizeYoutubeUrl(String url) {
+        if (url == null || url.isBlank()) return null;
+        url = url.trim();
+        // Ensure HTTPS prefix
+        if (!url.startsWith("http")) {
+            url = "https://" + url;
+        }
+        return url.replace("http://", "https://");
+    }
+
+    /**
+     * Normalize Instagram handle - extract handle from URL, remove @ prefix
+     */
+    private String normalizeInstagramHandle(String handle) {
+        if (handle == null || handle.isBlank()) return null;
+        handle = handle.trim();
+        // If it's a full URL, extract handle
+        if (handle.contains("instagram.com/")) {
+            handle = handle.replaceAll(".*instagram\\.com/", "")
+                    .replaceAll("[/?].*", "");
+        }
+        // Remove @ prefix if present, store clean handle
+        return handle.startsWith("@") ? handle.substring(1) : handle;
     }
 
     /**

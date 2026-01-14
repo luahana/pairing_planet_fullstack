@@ -24,7 +24,10 @@ public record UserDto(
         long recipeCount,        // Number of recipes created by user
         long logCount,           // Number of logs created by user
         int level,               // Gamification level (1-26+)
-        String levelName         // Level title (beginner, homeCook, etc.)
+        String levelName,        // Level title (beginner, homeCook, etc.)
+        String bio,              // User bio/description (max 150 chars)
+        String youtubeUrl,       // YouTube channel URL
+        String instagramHandle   // Instagram handle (without @)
 ) {
     public static UserDto from(User user, String urlPrefix) {
         return from(user, urlPrefix, 0, 0, 1, "beginner");
@@ -65,6 +68,9 @@ public record UserDto(
                 .logCount(logCount)
                 .level(level)
                 .levelName(levelName)
+                .bio(user.getBio())
+                .youtubeUrl(user.getYoutubeUrl())
+                .instagramHandle(user.getInstagramHandle())
                 .build();
     }
 }
