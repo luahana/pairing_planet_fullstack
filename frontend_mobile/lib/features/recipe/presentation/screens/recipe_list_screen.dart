@@ -90,78 +90,10 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   ref.read(browseFilterProvider.notifier).setTypeFilter(RecipeTypeFilter.variants);
                 },
               ),
-              const Spacer(),
-              _buildSortButton(ref),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSortButton(WidgetRef ref) {
-    final filterState = ref.watch(browseFilterProvider);
-    final currentSort = filterState.sortOption;
-    final isActive = currentSort != RecipeSortOption.recent;
-
-    return SizedBox(
-      height: 24.h,
-      width: 24.w,
-      child: PopupMenuButton<RecipeSortOption>(
-        padding: EdgeInsets.zero,
-        iconSize: 20.sp,
-        icon: Icon(
-          Icons.sort,
-          size: 20.sp,
-          color: isActive ? AppColors.primary : Colors.black,
-        ),
-        tooltip: 'filter.sort'.tr(),
-        onSelected: (option) {
-          HapticFeedback.selectionClick();
-          ref.read(browseFilterProvider.notifier).setSortOption(option);
-        },
-        offset: Offset(0, 30.h),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-      itemBuilder: (context) => [
-        _buildSortMenuItem(RecipeSortOption.recent, 'filter.sortRecent'.tr(), Icons.access_time, currentSort),
-        _buildSortMenuItem(RecipeSortOption.trending, 'filter.sortTrending'.tr(), Icons.trending_up, currentSort),
-        _buildSortMenuItem(RecipeSortOption.mostForked, 'filter.sortMostForked'.tr(), Icons.call_split, currentSort),
-      ],
-      ),
-    );
-  }
-
-  PopupMenuItem<RecipeSortOption> _buildSortMenuItem(
-    RecipeSortOption option,
-    String label,
-    IconData icon,
-    RecipeSortOption currentSort,
-  ) {
-    final isSelected = currentSort == option;
-    return PopupMenuItem<RecipeSortOption>(
-      value: option,
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 18.sp,
-            color: isSelected ? AppColors.primary : Colors.grey[600],
-          ),
-          SizedBox(width: 8.w),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: isSelected ? AppColors.primary : Colors.grey[800],
-            ),
-          ),
-          if (isSelected) ...[
-            const Spacer(),
-            Icon(Icons.check, size: 18.sp, color: AppColors.primary),
-          ],
-        ],
-      ),
     );
   }
 
