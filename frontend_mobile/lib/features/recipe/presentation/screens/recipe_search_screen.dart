@@ -14,6 +14,8 @@ import 'package:pairing_planet2_frontend/core/widgets/skeletons/skeleton_loader.
 import 'package:pairing_planet2_frontend/data/datasources/search/search_local_data_source.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_summary.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_summary.dart';
+import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/search_filter_chips.dart';
+import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/search_history_view.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/search_results_provider.dart';
 
 /// Unified search screen supporting recipes and log posts with sorting options.
@@ -32,12 +34,16 @@ class RecipeSearchScreen extends ConsumerStatefulWidget {
   /// Filter log posts by specific recipe (for recipe detail View More)
   final String? recipeId;
 
+  /// Initial filter mode: 'recipes', 'logs', 'hashtags'
+  final String? initialFilterMode;
+
   const RecipeSearchScreen({
     super.key,
     this.initialQuery,
     this.sort,
     this.contentType,
     this.recipeId,
+    this.initialFilterMode,
   });
 
   @override
@@ -46,24 +52,29 @@ class RecipeSearchScreen extends ConsumerStatefulWidget {
 
 class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
   final ScrollController _scrollController = ScrollController();
-  final LayerLink _layerLink = LayerLink();
 
   String _currentQuery = '';
   bool _hasSearched = false;
+  bool _showHistoryView = true;
 
   /// Get provider params based on widget configuration.
   SearchParams get _searchParams => SearchParams(
         sort: widget.sort,
         contentType: widget.contentType,
         recipeId: widget.recipeId,
+        initialFilterMode: widget.initialFilterMode,
       );
 
-  /// Whether this is a "View More" mode (has sort/contentType but no initial query).
+  /// Whether browse mode is enabled (any filterMode or sort provided).
+  bool get _hasBrowseFilterMode =>
+      widget.initialFilterMode != null || widget.sort != null;
+
+  /// Whether this is a "View More" or "browse" mode.
   bool get _isViewMoreMode =>
-      (widget.sort != null || widget.contentType != null) &&
+      (widget.sort != null || widget.contentType != null || widget.initialFilterMode != null) &&
       (widget.initialQuery == null || widget.initialQuery!.isEmpty);
 
-  /// Get context-aware title based on sort/contentType.
+  /// Get context-aware title based on sort/contentType/filterMode.
   String get _screenTitle {
     // If user has typed a query, show "Search Results"
     if (_hasSearched && _currentQuery.isNotEmpty) {
@@ -77,7 +88,7 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
     if (widget.sort == 'recent') {
       return 'search.freshUploads'.tr();
     }
-    if (widget.contentType == 'logPosts') {
+    if (widget.contentType == 'logPosts' || widget.initialFilterMode == 'logs') {
       return 'search.cookingLogs'.tr();
     }
 
@@ -89,8 +100,14 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
 
+    // Hide history view in View More mode
+    if (_isViewMoreMode) {
+      _showHistoryView = false;
+    }
+
     // Auto-search if initial query provided (e.g., from hashtag tap)
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      _showHistoryView = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _onSearch(widget.initialQuery!);
       });
@@ -115,6 +132,7 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
       setState(() {
         _hasSearched = true;
         _currentQuery = query;
+        _showHistoryView = false;
       });
       ref.read(searchResultsProvider(_searchParams).notifier).search(query.trim());
     }
@@ -134,14 +152,42 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
     ref.read(searchResultsProvider(_searchParams).notifier).clearSearch();
   }
 
+  void _showHistory() {
+    if (!_showHistoryView) {
+      setState(() {
+        _showHistoryView = true;
+      });
+    }
+  }
+
+  void _handleBackButton() {
+    if (_showHistoryView && _hasSearched) {
+      // Hide history view, show previous results
+      setState(() {
+        _showHistoryView = false;
+      });
+    } else {
+      // Navigate back
+      context.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final resultsAsync = ref.watch(searchResultsProvider(_searchParams));
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: _buildBody(resultsAsync),
+    return PopScope(
+      canPop: !(_showHistoryView && _hasSearched),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          _handleBackButton();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(),
+        body: _buildBody(resultsAsync),
+      ),
     );
   }
 
@@ -153,7 +199,7 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: _handleBackButton,
         ),
         title: Text(
           _screenTitle,
@@ -170,6 +216,7 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
             onPressed: () {
               setState(() {
                 _hasSearched = true;
+                _showHistoryView = true;
               });
             },
           ),
@@ -187,26 +234,21 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-        onPressed: () => context.pop(),
+        onPressed: _handleBackButton,
       ),
       title: Hero(
         tag: 'search-hero',
         child: Material(
           color: Colors.transparent,
-          child: CompositedTransformTarget(
-            link: _layerLink,
-            child: EnhancedSearchField(
-              hintText: 'search.placeholder'.tr(),
-              onSearch: _onSearch,
-              onClear: _clearSearch,
-              currentQuery: _currentQuery,
-              searchType: SearchType.recipe,
-              autofocus: !_isViewMoreMode,
-              layerLink: _layerLink,
-              overlayOffset: const Offset(0, kToolbarHeight),
-              overlayWidth: MediaQuery.of(context).size.width - 100.w,
-              onTextChanged: _onTextChanged,
-            ),
+          child: EnhancedSearchField(
+            hintText: 'search.placeholder'.tr(),
+            onSearch: _onSearch,
+            onClear: _clearSearch,
+            currentQuery: _currentQuery,
+            searchType: SearchType.recipe,
+            autofocus: _showHistoryView,
+            onTextChanged: _onTextChanged,
+            onFocus: _showHistory,
           ),
         ),
       ),
@@ -218,45 +260,51 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
   }
 
   Widget _buildBody(AsyncValue<SearchResultsState> resultsAsync) {
-    // View More mode: always show results (auto-fetched by provider)
+    // Show history view when requested (from search icon tap or focus)
+    if (_showHistoryView) {
+      return SearchHistoryView(
+        currentQuery: _currentQuery,
+        onSearchSelected: _onSearch,
+        searchType: SearchType.recipe,
+      );
+    }
+
+    // View More mode or browse mode: show results with optional filter chips
     if (_isViewMoreMode) {
+      // Show filter chips in browse mode (filterMode provided)
+      if (_hasBrowseFilterMode) {
+        return Column(
+          children: [
+            SearchFilterChips(
+              currentMode: resultsAsync.value?.filterMode ?? SearchFilterMode.recipes,
+              onFilterChanged: _onFilterChanged,
+            ),
+            Expanded(child: _buildSearchResults(resultsAsync)),
+          ],
+        );
+      }
       return _buildSearchResults(resultsAsync);
     }
 
-    // Search mode: show empty content until user searches
-    if (!_hasSearched || _currentQuery.isEmpty) {
-      return _buildEmptyContent();
-    }
-
-    return _buildSearchResults(resultsAsync);
+    // Show filter chips above results when user has searched
+    return Column(
+      children: [
+        SearchFilterChips(
+          currentMode: resultsAsync.value?.filterMode ?? SearchFilterMode.recipes,
+          onFilterChanged: _onFilterChanged,
+        ),
+        Expanded(child: _buildSearchResults(resultsAsync)),
+      ],
+    );
   }
 
-  /// Empty content shown before searching.
-  Widget _buildEmptyContent() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(32.r),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search,
-              size: 64.sp,
-              color: Colors.grey[300],
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'search.startTyping'.tr(),
-              style: TextStyle(
-                fontSize: 16.sp,
-                color: Colors.grey[500],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
+  void _onFilterChanged(SearchFilterMode mode) {
+    // Reset scroll position
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+    // Update filter in provider
+    ref.read(searchResultsProvider(_searchParams).notifier).setFilterMode(mode);
   }
 
   /// Whether currently showing log posts.
