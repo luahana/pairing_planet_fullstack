@@ -26,14 +26,14 @@ void main() {
         title: 'Test Log 1',
         outcome: 'SUCCESS',
         thumbnailUrl: 'https://example.com/thumb1.jpg',
-        creatorName: 'user1',
+        userName: 'user1',
       ),
       LogPostSummary(
         id: 'log-2',
         title: 'Test Log 2',
         outcome: 'PARTIAL',
         thumbnailUrl: 'https://example.com/thumb2.jpg',
-        creatorName: 'user2',
+        userName: 'user2',
       ),
     ];
 

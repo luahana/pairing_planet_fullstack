@@ -71,9 +71,9 @@ class FeaturedEvolvedCard extends StatelessWidget {
                       color: Colors.white,
                     ),
                     SizedBox(height: 4.h),
-                    if (tree.creatorName != null)
+                    if (tree.userName != null)
                       ClickableUsername(
-                        username: tree.creatorName!,
+                        username: tree.userName!,
                         userPublicId: tree.creatorPublicId,
                         fontSize: 13.sp,
                         color: AppColors.secondary,

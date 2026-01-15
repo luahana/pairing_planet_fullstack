@@ -28,7 +28,7 @@ export function RecipeJsonLd({ recipe }: RecipeJsonLdProps) {
     image: recipe.images.map((img) => img.imageUrl),
     author: {
       '@type': 'Person',
-      name: recipe.creatorName || 'Anonymous',
+      name: recipe.userName || 'Anonymous',
     },
     recipeIngredient: recipe.ingredients.map((ing) =>
       ing.amount ? `${ing.amount} ${ing.name}` : ing.name,

@@ -68,9 +68,9 @@ export function LogCard({ log }: LogCardProps) {
         </h3>
 
         {/* Creator */}
-        {log.creatorName && (
+        {log.userName && (
           <p className="text-sm text-[var(--text-secondary)] mt-2">
-            by {log.creatorName}
+            by {log.userName}
           </p>
         )}
 

@@ -9,7 +9,7 @@ class RecipeDetail {
   final String foodName;
   final String foodMasterPublicId;
   final String? creatorPublicId;
-  final String creatorName;
+  final String userName;
   final String title;
   final String? description;
   final String? culinaryLocale;
@@ -39,7 +39,7 @@ class RecipeDetail {
     required this.foodName,
     required this.foodMasterPublicId,
     this.creatorPublicId,
-    required this.creatorName,
+    required this.userName,
     required this.title,
     required this.description,
     this.culinaryLocale,

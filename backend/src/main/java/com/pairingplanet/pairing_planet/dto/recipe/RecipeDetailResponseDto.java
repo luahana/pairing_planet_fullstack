@@ -18,7 +18,7 @@ public record RecipeDetailResponseDto(
         String foodName,              // [추가] UI 상단 표시용
         UUID foodMasterPublicId,      // [추가] 음식 상세 이동용
         UUID creatorPublicId,         // Creator's publicId for profile navigation
-        String creatorName,           // [추가] 레시피 작성자 이름
+        String userName,           // [추가] 레시피 작성자 이름
         String changeCategory,
         RecipeSummaryDto rootInfo,    // 11개 필드 규격 적용 필요
         RecipeSummaryDto parentInfo,  // 11개 필드 규격 적용 필요
@@ -37,7 +37,7 @@ public record RecipeDetailResponseDto(
         Integer servings,                    // Number of servings (default: 2)
         String cookingTimeRange              // Cooking time range enum (e.g., "MIN_30_TO_60")
 ) {
-    public static RecipeDetailResponseDto from(Recipe recipe, List<RecipeSummaryDto> variants, List<LogPostSummaryDto> logs, String urlPrefix, Boolean isSavedByCurrentUser, UUID creatorPublicId, String creatorName, UUID rootCreatorPublicId, String rootCreatorName) {
+    public static RecipeDetailResponseDto from(Recipe recipe, List<RecipeSummaryDto> variants, List<LogPostSummaryDto> logs, String urlPrefix, Boolean isSavedByCurrentUser, UUID creatorPublicId, String userName, UUID rootCreatorPublicId, String rootCreatorName) {
         Recipe root = recipe.getRootRecipe();
         Recipe parent = recipe.getParentRecipe();
 
@@ -66,7 +66,7 @@ public record RecipeDetailResponseDto(
                 root.getDescription(), // 5. description
                 root.getCulinaryLocale(), // 6. culinaryLocale
                 rootCreatorPublicId, // 7. creatorPublicId
-                rootCreatorName, // 8. creatorName
+                rootCreatorName, // 8. userName
                 rootThumbnail, // 9. thumbnail
                 0,    // 10. variantCount (상세 카드 내 생략)
                 0,    // 11. logCount (상세 카드 내 생략)
@@ -87,7 +87,7 @@ public record RecipeDetailResponseDto(
                 parent.getDescription(),
                 parent.getCulinaryLocale(),
                 null, // creatorPublicId
-                null, // creatorName
+                null, // userName
                 null, // thumbnail
                 0,    // variantCount
                 0,    // logCount
@@ -121,7 +121,7 @@ public record RecipeDetailResponseDto(
                 .foodName(currentFoodName) // [적용]
                 .foodMasterPublicId(currentFoodMasterPublicId) // [적용]
                 .creatorPublicId(creatorPublicId) // Creator's publicId for profile navigation
-                .creatorName(creatorName) // [적용]
+                .userName(userName) // [적용]
                 .changeCategory(recipe.getChangeCategory())
                 .rootInfo(rootInfo)
                 .parentInfo(parentInfo)

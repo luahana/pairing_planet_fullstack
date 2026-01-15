@@ -129,7 +129,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
               actions: [
                 HeroSearchIcon(
                   onTap: () => context.push(RouteConstants.search),
-                  heroTag: 'search-hero',
+                  heroTag: 'search-hero-recipe',
                 ),
               ],
               bottom: PreferredSize(

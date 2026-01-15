@@ -124,10 +124,10 @@ class VariantsGallery extends StatelessWidget {
             SizedBox(height: 4.h),
             // Creator name
             Text(
-              "@${variant.creatorName}",
+              "@${variant.userName}",
               style: TextStyle(
                 fontSize: 11.sp,
-                color: Colors.grey[600],
+                color: AppColors.secondary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

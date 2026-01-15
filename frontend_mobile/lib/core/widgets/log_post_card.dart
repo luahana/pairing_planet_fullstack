@@ -112,10 +112,10 @@ class LogPostCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       )
                     else if (showUsername &&
-                        log.creatorName != null &&
-                        log.creatorName!.isNotEmpty)
+                        log.userName != null &&
+                        log.userName!.isNotEmpty)
                       ClickableUsername(
-                        username: log.creatorName!,
+                        username: log.userName!,
                         userPublicId: log.creatorPublicId,
                         fontSize: 11.sp,
                         showPersonIcon: true,

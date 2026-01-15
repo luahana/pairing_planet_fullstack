@@ -74,9 +74,9 @@ class SmallEvolvedCard extends StatelessWidget {
                       color: Colors.white,
                     ),
                     SizedBox(height: 2.h),
-                    if (tree.creatorName != null)
+                    if (tree.userName != null)
                       ClickableUsername(
-                        username: tree.creatorName!,
+                        username: tree.userName!,
                         userPublicId: tree.creatorPublicId,
                         fontSize: 10.sp,
                         color: AppColors.secondary,

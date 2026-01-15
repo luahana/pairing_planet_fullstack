@@ -12,7 +12,7 @@ class TrendingTreeDto {
   final int variantCount;
   final int logCount;
   final String? latestChangeSummary;
-  final String? creatorName;
+  final String? userName;
   final String? creatorPublicId;
 
   TrendingTreeDto({
@@ -24,7 +24,7 @@ class TrendingTreeDto {
     required this.variantCount,
     required this.logCount,
     this.latestChangeSummary,
-    this.creatorName,
+    this.userName,
     this.creatorPublicId,
   });
 

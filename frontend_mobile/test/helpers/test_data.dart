@@ -35,7 +35,7 @@ class TestRecipeData {
     String? publicId,
     String? title,
     String? foodName,
-    String? creatorName,
+    String? userName,
     int variantCount = 0,
     int logCount = 0,
   }) {
@@ -46,7 +46,7 @@ class TestRecipeData {
       description: 'A delicious recipe passed down from my grandmother.',
       culinaryLocale: 'ko-KR',
       thumbnailUrl: 'https://example.com/recipe-thumb.jpg',
-      creatorName: creatorName ?? 'chef_kim',
+      userName: userName ?? 'chef_kim',
       variantCount: variantCount,
       logCount: logCount,
     );
@@ -58,7 +58,7 @@ class TestRecipeData {
       (i) => createRecipeSummary(
         publicId: 'recipe-$i',
         title: 'Recipe $i',
-        creatorName: 'user$i',
+        userName: 'user$i',
       ),
     );
   }
@@ -88,7 +88,7 @@ class TestLogPostData {
     String? id,
     String? title,
     String? outcome,
-    String? creatorName,
+    String? userName,
     DateTime? createdAt,
   }) {
     return LogPostSummary(
@@ -96,7 +96,7 @@ class TestLogPostData {
       title: title ?? 'My Cooking Log',
       outcome: outcome ?? 'SUCCESS',
       thumbnailUrl: 'https://example.com/log-thumb.jpg',
-      creatorName: creatorName ?? 'home_cook',
+      userName: userName ?? 'home_cook',
       createdAt: createdAt ?? DateTime.now(),
     );
   }
@@ -109,7 +109,7 @@ class TestLogPostData {
         id: 'log-$i',
         title: 'Log $i',
         outcome: outcomes[i % 3],
-        creatorName: 'user$i',
+        userName: 'user$i',
       ),
     );
   }

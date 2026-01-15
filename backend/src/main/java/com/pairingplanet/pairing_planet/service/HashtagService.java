@@ -235,7 +235,7 @@ public class HashtagService {
         // 1. Creator info
         User creator = userRepository.findById(recipe.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         // 2. Food name from JSONB map
         String foodName = getFoodName(recipe);
@@ -270,7 +270,7 @@ public class HashtagService {
                 recipe.getDescription(),
                 recipe.getCulinaryLocale(),
                 creatorPublicId,
-                creatorName,
+                userName,
                 thumbnail,
                 variantCount,
                 logCount,
@@ -300,7 +300,7 @@ public class HashtagService {
         // 1. Creator info
         User creator = userRepository.findById(logPost.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : null;
+        String userName = creator != null ? creator.getUsername() : null;
 
         // 2. Thumbnail URL (first image)
         String thumbnailUrl = logPost.getImages().stream()
@@ -331,7 +331,7 @@ public class HashtagService {
                 outcome,
                 thumbnailUrl,
                 creatorPublicId,
-                creatorName,
+                userName,
                 foodName,
                 hashtags,
                 isVariant

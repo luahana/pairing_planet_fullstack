@@ -8,7 +8,7 @@ class RecentActivityDto {
   final String logPublicId;
   final String outcome;
   final String? thumbnailUrl;
-  final String creatorName;
+  final String userName;
   final String recipeTitle;
   final String recipePublicId;
   final String foodName;
@@ -19,7 +19,7 @@ class RecentActivityDto {
     required this.logPublicId,
     required this.outcome,
     this.thumbnailUrl,
-    required this.creatorName,
+    required this.userName,
     required this.recipeTitle,
     required this.recipePublicId,
     required this.foodName,
@@ -37,7 +37,7 @@ class RecentActivityDto {
         title: foodName.isNotEmpty ? foodName : recipeTitle,
         outcome: outcome,
         thumbnailUrl: thumbnailUrl,
-        creatorName: creatorName,
+        userName: userName,
         foodName: foodName,
         hashtags: hashtags,
         createdAt: createdAt,

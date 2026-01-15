@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nested_scroll_view_plus/nested_scroll_view_plus.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/theme/app_colors.dart';
 import 'package:pairing_planet2_frontend/core/widgets/app_cached_image.dart';
 import 'package:pairing_planet2_frontend/core/widgets/skeletons/log_post_card_skeleton.dart';
 import 'package:pairing_planet2_frontend/domain/entities/log_post/log_post_summary.dart';
@@ -203,12 +204,12 @@ class _RecipeLogsScreenState extends ConsumerState<RecipeLogsScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 2.h),
-                      if (logPost.creatorName != null)
+                      if (logPost.userName != null)
                         Text(
-                          "@${logPost.creatorName}",
+                          "@${logPost.userName}",
                           style: TextStyle(
                             fontSize: 11.sp,
-                            color: Colors.grey[600],
+                            color: AppColors.secondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

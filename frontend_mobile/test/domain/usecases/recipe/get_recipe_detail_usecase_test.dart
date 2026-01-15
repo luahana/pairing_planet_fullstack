@@ -24,7 +24,7 @@ void main() {
       description: 'A test recipe description',
       foodName: 'Test Food',
       foodMasterPublicId: 'food-master-123',
-      creatorName: 'Test Chef',
+      userName: 'Test Chef',
       ingredients: [],
       steps: [],
       imageUrls: [],

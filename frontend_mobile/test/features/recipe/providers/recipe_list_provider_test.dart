@@ -32,7 +32,7 @@ void main() {
           description: 'A test recipe',
           culinaryLocale: 'ko-KR',
           thumbnailUrl: 'https://example.com/thumb.jpg',
-          creatorName: 'chef1',
+          userName: 'chef1',
           variantCount: 5,
           logCount: 10,
         ),
@@ -72,7 +72,7 @@ void main() {
           description: 'Description',
           culinaryLocale: 'en-US',
           thumbnailUrl: null,
-          creatorName: 'user1',
+          userName: 'user1',
           variantCount: 0,
           logCount: 0,
         ),
@@ -123,7 +123,7 @@ void main() {
           description: 'Description $i',
           culinaryLocale: 'en-US',
           thumbnailUrl: null,
-          creatorName: 'user$i',
+          userName: 'user$i',
           variantCount: i,
           logCount: i * 2,
         ),
@@ -379,7 +379,7 @@ void main() {
         description: 'A delicious family recipe',
         culinaryLocale: 'ko-KR',
         thumbnailUrl: 'https://example.com/thumb.jpg',
-        creatorName: 'chef_kim',
+        userName: 'chef_kim',
         variantCount: 15,
         logCount: 42,
       );
@@ -391,7 +391,7 @@ void main() {
       expect(summary.description, 'A delicious family recipe');
       expect(summary.culinaryLocale, 'ko-KR');
       expect(summary.thumbnailUrl, 'https://example.com/thumb.jpg');
-      expect(summary.creatorName, 'chef_kim');
+      expect(summary.userName, 'chef_kim');
       expect(summary.variantCount, 15);
       expect(summary.logCount, 42);
     });
@@ -405,7 +405,7 @@ void main() {
         description: 'Description',
         culinaryLocale: 'en-US',
         thumbnailUrl: null,
-        creatorName: 'user',
+        userName: 'user',
         variantCount: 0,
         logCount: 0,
       );
@@ -423,7 +423,7 @@ void main() {
         description: 'A spicier variant',
         culinaryLocale: 'ko-KR',
         thumbnailUrl: null,
-        creatorName: 'chef2',
+        userName: 'chef2',
         variantCount: 0,
         logCount: 0,
         parentPublicId: 'recipe-original',
@@ -447,7 +447,7 @@ void main() {
         description: 'The original version',
         culinaryLocale: 'ko-KR',
         thumbnailUrl: null,
-        creatorName: 'chef1',
+        userName: 'chef1',
         variantCount: 5,
         logCount: 10,
       );
@@ -467,7 +467,7 @@ void main() {
         description: 'Very popular',
         culinaryLocale: 'en-US',
         thumbnailUrl: null,
-        creatorName: 'famous_chef',
+        userName: 'famous_chef',
         variantCount: 100,
         logCount: 500,
       );

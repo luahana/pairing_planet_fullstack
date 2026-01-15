@@ -177,7 +177,7 @@ public class LogPostService {
         // 5. 소유자 정보 조회 (edit/delete 권한 확인 및 프로필 링크용)
         User creator = userRepository.findById(logPost.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         // 6. 최종 DTO 생성
         return new LogPostDetailResponseDto(
@@ -191,14 +191,14 @@ public class LogPostService {
                 hashtagDtos,
                 isSavedByCurrentUser,
                 creatorPublicId,
-                creatorName
+                userName
         );
     }
 
     private LogPostSummaryDto convertToLogSummary(LogPost log) {
         User creator = userRepository.findById(log.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         String thumbnailUrl = log.getImages().stream()
                 .findFirst() // 로그의 첫 번째 이미지를 썸네일로 사용
@@ -226,7 +226,7 @@ public class LogPostService {
                 log.getRecipeLog().getOutcome(),
                 thumbnailUrl,
                 creatorPublicId,
-                creatorName,
+                userName,
                 foodName,
                 hashtags,
                 isVariant
@@ -237,7 +237,7 @@ public class LogPostService {
         // 1. 작성자 정보 조회
         User creator = userRepository.findById(recipe.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         // 2. [추가] 음식 이름 추출 (FoodMaster의 fallback 로직 사용)
         String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
@@ -271,7 +271,7 @@ public class LogPostService {
                 recipe.getDescription(),
                 recipe.getCulinaryLocale(),
                 creatorPublicId,
-                creatorName,
+                userName,
                 thumbnail,
                 variantCount,
                 logCount,

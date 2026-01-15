@@ -27,7 +27,7 @@ void main() {
           title: 'Test Log',
           outcome: 'SUCCESS',
           thumbnailUrl: null,
-          creatorName: 'user1',
+          userName: 'user1',
         ),
       ];
 
@@ -67,7 +67,7 @@ void main() {
         title: 'My Cooking Log',
         outcome: 'SUCCESS',
         thumbnailUrl: 'https://example.com/thumb.jpg',
-        creatorName: 'chef_user',
+        userName: 'chef_user',
       );
 
       // Assert
@@ -75,7 +75,7 @@ void main() {
       expect(summary.title, 'My Cooking Log');
       expect(summary.outcome, 'SUCCESS');
       expect(summary.thumbnailUrl, 'https://example.com/thumb.jpg');
-      expect(summary.creatorName, 'chef_user');
+      expect(summary.userName, 'chef_user');
     });
 
     test('should handle null thumbnailUrl', () {
@@ -85,25 +85,25 @@ void main() {
         title: 'No Photo Log',
         outcome: 'PARTIAL',
         thumbnailUrl: null,
-        creatorName: 'user',
+        userName: 'user',
       );
 
       // Assert
       expect(summary.thumbnailUrl, isNull);
     });
 
-    test('should handle null creatorName', () {
+    test('should handle null userName', () {
       // Arrange & Act
       final summary = LogPostSummary(
         id: 'log-789',
         title: 'Anonymous Log',
         outcome: 'FAILED',
         thumbnailUrl: null,
-        creatorName: null,
+        userName: null,
       );
 
       // Assert
-      expect(summary.creatorName, isNull);
+      expect(summary.userName, isNull);
     });
 
     test('should support all outcome types', () {
@@ -114,7 +114,7 @@ void main() {
           title: 'Success',
           outcome: 'SUCCESS',
           thumbnailUrl: null,
-          creatorName: null,
+          userName: null,
         ).outcome,
         'SUCCESS',
       );
@@ -125,7 +125,7 @@ void main() {
           title: 'Partial',
           outcome: 'PARTIAL',
           thumbnailUrl: null,
-          creatorName: null,
+          userName: null,
         ).outcome,
         'PARTIAL',
       );
@@ -136,7 +136,7 @@ void main() {
           title: 'Failed',
           outcome: 'FAILED',
           thumbnailUrl: null,
-          creatorName: null,
+          userName: null,
         ).outcome,
         'FAILED',
       );
@@ -175,7 +175,7 @@ void main() {
           title: 'Log $i',
           outcome: i % 2 == 0 ? 'SUCCESS' : 'PARTIAL',
           thumbnailUrl: null,
-          creatorName: 'user$i',
+          userName: 'user$i',
         ),
       );
 

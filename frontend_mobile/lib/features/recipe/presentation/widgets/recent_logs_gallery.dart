@@ -160,9 +160,9 @@ class RecentLogsGallery extends StatelessWidget {
             ),
             SizedBox(height: 6.h),
             // Creator name
-            if (log.creatorName != null)
+            if (log.userName != null)
               ClickableUsername(
-                username: log.creatorName!,
+                username: log.userName!,
                 userPublicId: log.creatorPublicId,
                 fontSize: 11.sp,
                 showAtPrefix: true,

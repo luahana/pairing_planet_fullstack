@@ -13,7 +13,7 @@ LogPostSummaryDto _$LogPostSummaryDtoFromJson(Map<String, dynamic> json) =>
       outcome: json['outcome'] as String?,
       thumbnailUrl: json['thumbnailUrl'] as String?,
       creatorPublicId: json['creatorPublicId'] as String?,
-      creatorName: json['creatorName'] as String?,
+      userName: json['userName'] as String?,
       foodName: json['foodName'] as String?,
       hashtags: (json['hashtags'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -28,7 +28,7 @@ Map<String, dynamic> _$LogPostSummaryDtoToJson(LogPostSummaryDto instance) =>
       'outcome': instance.outcome,
       'thumbnailUrl': instance.thumbnailUrl,
       'creatorPublicId': instance.creatorPublicId,
-      'creatorName': instance.creatorName,
+      'userName': instance.userName,
       'foodName': instance.foodName,
       'hashtags': instance.hashtags,
       'isVariant': instance.isVariant,

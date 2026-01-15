@@ -14,7 +14,7 @@ export function LogJsonLd({ log }: LogJsonLdProps) {
     datePublished: log.createdAt,
     author: {
       '@type': 'Person',
-      name: log.creatorName || 'Anonymous',
+      name: log.userName || 'Anonymous',
     },
     keywords: log.hashtags.map((h) => h.name).join(', '),
     ...(log.linkedRecipe && {

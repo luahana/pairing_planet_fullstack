@@ -14,7 +14,7 @@ class LinkedRecipeInfo {
   final String publicId;
   final String foodName;
   final String title;
-  final String creatorName;
+  final String userName;
   final String? thumbnailUrl;
   final String? culinaryLocale;
   final String? rootPublicId;
@@ -25,7 +25,7 @@ class LinkedRecipeInfo {
     required this.publicId,
     required this.foodName,
     required this.title,
-    required this.creatorName,
+    required this.userName,
     this.thumbnailUrl,
     this.culinaryLocale,
     this.rootPublicId,
@@ -40,7 +40,7 @@ class LinkedRecipeInfo {
       publicId: summary.publicId,
       foodName: summary.foodName,
       title: summary.title,
-      creatorName: summary.creatorName,
+      userName: summary.userName,
       thumbnailUrl: summary.thumbnailUrl,
       culinaryLocale: summary.culinaryLocale,
       rootPublicId: summary.rootPublicId,
@@ -62,7 +62,7 @@ class LogPostDetail {
   final List<Hashtag> hashtags;
   final bool? isSavedByCurrentUser;
   final String? creatorPublicId; // For ownership check (UUID string)
-  final String? creatorName;     // Creator's username for display
+  final String? userName;     // Creator's username for display
 
   LogPostDetail({
     required this.publicId,
@@ -76,7 +76,7 @@ class LogPostDetail {
     this.hashtags = const [],
     this.isSavedByCurrentUser,
     this.creatorPublicId,
-    this.creatorName,
+    this.userName,
   });
 
   /// Get list of LogImage objects combining URL and publicId

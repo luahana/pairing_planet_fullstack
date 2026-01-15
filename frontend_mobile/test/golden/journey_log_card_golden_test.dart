@@ -105,15 +105,15 @@ void main() {
       final builder = GoldenBuilder.column()
         ..addScenario(
           'With creator',
-          const _LogFooter(creatorName: 'Chef Kim'),
+          const _LogFooter(userName: 'Chef Kim'),
         )
         ..addScenario(
           'Long name',
-          const _LogFooter(creatorName: 'Traditional Korean Chef with a Very Long Name'),
+          const _LogFooter(userName: 'Traditional Korean Chef with a Very Long Name'),
         )
         ..addScenario(
           'No creator',
-          const _LogFooter(creatorName: null),
+          const _LogFooter(userName: null),
         );
 
       await tester.pumpWidgetBuilder(
@@ -328,9 +328,9 @@ class _LogContentSection extends StatelessWidget {
 
 /// Log footer for testing
 class _LogFooter extends StatelessWidget {
-  final String? creatorName;
+  final String? userName;
 
-  const _LogFooter({required this.creatorName});
+  const _LogFooter({required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -342,7 +342,7 @@ class _LogFooter extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (creatorName != null) ...[
+          if (userName != null) ...[
             Icon(
               Icons.person_outline,
               size: 14.sp,
@@ -351,7 +351,7 @@ class _LogFooter extends StatelessWidget {
             SizedBox(width: 4.w),
             Expanded(
               child: Text(
-                creatorName!,
+                userName!,
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey[600],

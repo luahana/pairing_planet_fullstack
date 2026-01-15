@@ -15,7 +15,7 @@ class JourneyLogData {
   final String? content;
   final String? outcome;
   final String? thumbnailUrl;
-  final String? creatorName;
+  final String? userName;
   final String? creatorPublicId;
   final DateTime? createdAt;
   final String? recipeTitle;
@@ -31,7 +31,7 @@ class JourneyLogData {
     this.content,
     this.outcome,
     this.thumbnailUrl,
-    this.creatorName,
+    this.userName,
     this.creatorPublicId,
     this.createdAt,
     this.recipeTitle,
@@ -271,9 +271,9 @@ class JourneyLogCard extends StatelessWidget {
     return Row(
       children: [
         // Creator
-        if (logData.creatorName != null)
+        if (logData.userName != null)
           ClickableUsername(
-            username: logData.creatorName!,
+            username: logData.userName!,
             userPublicId: logData.creatorPublicId,
             fontSize: 12.sp,
             showPersonIcon: true,

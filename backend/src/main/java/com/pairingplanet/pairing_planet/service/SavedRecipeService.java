@@ -77,7 +77,7 @@ public class SavedRecipeService {
     private RecipeSummaryDto convertToSummary(Recipe recipe) {
         User creator = userRepository.findById(recipe.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         String foodName = getFoodName(recipe);
 
@@ -103,7 +103,7 @@ public class SavedRecipeService {
                 recipe.getDescription(),
                 recipe.getCulinaryLocale(),
                 creatorPublicId,
-                creatorName,
+                userName,
                 thumbnail,
                 variantCount,
                 logCount,

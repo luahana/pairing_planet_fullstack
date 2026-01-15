@@ -11,7 +11,7 @@ void main() {
         title: 'Test Log',
         outcome: 'SUCCESS',
         thumbnailUrl: 'https://example.com/image.jpg',
-        creatorName: 'testuser',
+        userName: 'testuser',
       );
 
       // Assert
@@ -19,7 +19,7 @@ void main() {
       expect(dto.title, 'Test Log');
       expect(dto.outcome, 'SUCCESS');
       expect(dto.thumbnailUrl, 'https://example.com/image.jpg');
-      expect(dto.creatorName, 'testuser');
+      expect(dto.userName, 'testuser');
       expect(dto.isPending, isFalse);
     });
 
@@ -56,7 +56,7 @@ void main() {
       expect(dto.title, 'Quick Log');
       expect(dto.outcome, 'SUCCESS');
       expect(dto.thumbnailUrl, 'file:///path/to/photo.jpg');
-      expect(dto.creatorName, isNull);
+      expect(dto.userName, isNull);
       expect(dto.isPending, isTrue);
     });
 
@@ -121,7 +121,7 @@ void main() {
         title: 'Test Log',
         outcome: 'PARTIAL',
         thumbnailUrl: 'https://example.com/img.jpg',
-        creatorName: 'user123',
+        userName: 'user123',
         isPending: true,
       );
 
@@ -133,7 +133,7 @@ void main() {
       expect(entity.title, 'Test Log');
       expect(entity.outcome, 'PARTIAL');
       expect(entity.thumbnailUrl, 'https://example.com/img.jpg');
-      expect(entity.creatorName, 'user123');
+      expect(entity.userName, 'user123');
       expect(entity.isPending, isTrue);
     });
 
@@ -158,7 +158,7 @@ void main() {
         'title': 'From JSON',
         'outcome': 'FAILED',
         'thumbnailUrl': null,
-        'creatorName': 'jsonuser',
+        'userName': 'jsonuser',
       };
 
       // Act

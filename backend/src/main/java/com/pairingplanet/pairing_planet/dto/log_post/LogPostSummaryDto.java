@@ -9,7 +9,7 @@ public record LogPostSummaryDto(
         String outcome,  // SUCCESS, PARTIAL, FAILED
         String thumbnailUrl, // [수정] thumbnail -> thumbnailUrl
         UUID creatorPublicId,  // Creator's publicId for profile navigation
-        String creatorName,
+        String userName,
         String foodName,       // Dish name from linked recipe
         List<String> hashtags,  // Hashtag names
         Boolean isVariant      // Whether the linked recipe is a variant

@@ -26,7 +26,7 @@ LogPostDetailResponseDto _$LogPostDetailResponseDtoFromJson(
           .toList(),
       isSavedByCurrentUser: json['isSavedByCurrentUser'] as bool?,
       creatorPublicId: json['creatorPublicId'] as String?,
-      creatorName: json['creatorName'] as String?,
+      userName: json['userName'] as String?,
     );
 
 Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
@@ -42,5 +42,5 @@ Map<String, dynamic> _$LogPostDetailResponseDtoToJson(
       'hashtags': instance.hashtags?.map((e) => e.toJson()).toList(),
       'isSavedByCurrentUser': instance.isSavedByCurrentUser,
       'creatorPublicId': instance.creatorPublicId,
-      'creatorName': instance.creatorName,
+      'userName': instance.userName,
     };

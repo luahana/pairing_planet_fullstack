@@ -105,15 +105,15 @@ export default async function LogDetailPage({ params }: Props) {
           </h1>
 
           {/* Creator */}
-          {log.creatorName && (
+          {log.userName && (
             <Link
               href={`/users/${log.creatorPublicId}`}
               className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--primary)]"
             >
               <span className="w-8 h-8 bg-[var(--primary-light)] rounded-full flex items-center justify-center text-sm">
-                {log.creatorName[0].toUpperCase()}
+                {log.userName[0].toUpperCase()}
               </span>
-              <span>{log.creatorName}</span>
+              <span>{log.userName}</span>
             </Link>
           )}
 

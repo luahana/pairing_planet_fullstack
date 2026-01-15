@@ -220,7 +220,7 @@ public class RecipeService {
         // 작성자 정보 조회
         User creator = userRepository.findById(recipe.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         // 루트 레시피 작성자 정보 조회
         Recipe rootRecipe = recipe.getRootRecipe();
@@ -232,7 +232,7 @@ public class RecipeService {
             rootCreatorName = rootCreator != null ? rootCreator.getUsername() : "Unknown";
         }
 
-        return RecipeDetailResponseDto.from(recipe, variants, logs, this.urlPrefix, isSavedByCurrentUser, creatorPublicId, creatorName, rootCreatorPublicId, rootCreatorName);
+        return RecipeDetailResponseDto.from(recipe, variants, logs, this.urlPrefix, isSavedByCurrentUser, creatorPublicId, userName, rootCreatorPublicId, rootCreatorName);
     }
 
     @Transactional(readOnly = true)
@@ -379,7 +379,7 @@ public class RecipeService {
         // 1. 작성자 정보 조회
         User creator = userRepository.findById(recipe.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         // 2. 음식 이름 추출 (JSONB 맵에서 현재 로케일에 맞는 이름 찾기)
         String foodName = getFoodName(recipe);
@@ -414,7 +414,7 @@ public class RecipeService {
                 recipe.getDescription(),
                 recipe.getCulinaryLocale(),
                 creatorPublicId,
-                creatorName,
+                userName,
                 thumbnail,
                 variantCount,
                 logCount,
@@ -436,7 +436,7 @@ public class RecipeService {
                 .map(log -> {
                     var recipeLog = log.getRecipeLog();
                     var recipe = recipeLog.getRecipe();
-                    String creatorName = userRepository.findById(log.getCreatorId())
+                    String userName = userRepository.findById(log.getCreatorId())
                             .map(User::getUsername)
                             .orElse("익명");
                     String thumbnailUrl = log.getImages().stream()
@@ -448,7 +448,7 @@ public class RecipeService {
                             .logPublicId(log.getPublicId())
                             .outcome(recipeLog.getOutcome())
                             .thumbnailUrl(thumbnailUrl)
-                            .creatorName(creatorName)
+                            .userName(userName)
                             .recipeTitle(recipe.getTitle())
                             .recipePublicId(recipe.getPublicId())
                             .foodName(getFoodName(recipe))
@@ -476,7 +476,7 @@ public class RecipeService {
                     // Get creator info (handle null creatorId)
                     var creatorOpt = Optional.ofNullable(root.getCreatorId())
                             .flatMap(userRepository::findById);
-                    String creatorName = creatorOpt.map(user -> user.getUsername()).orElse("Unknown");
+                    String userName = creatorOpt.map(user -> user.getUsername()).orElse("Unknown");
                     UUID creatorPublicId = creatorOpt.map(user -> user.getPublicId()).orElse(null);
 
                     return TrendingTreeDto.builder()
@@ -488,7 +488,7 @@ public class RecipeService {
                             .variantCount(variants)
                             .logCount(logs)
                             .latestChangeSummary(root.getDescription())
-                            .creatorName(creatorName)
+                            .userName(userName)
                             .creatorPublicId(creatorPublicId)
                             .build();
                 }).toList();

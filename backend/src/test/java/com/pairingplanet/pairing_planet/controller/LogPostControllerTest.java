@@ -382,14 +382,14 @@ class LogPostControllerTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should include thumbnailUrl and creatorName in response")
+        @DisplayName("Should include thumbnailUrl and userName in response")
         void getLogsByRecipe_IncludesAllFields() throws Exception {
             mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content[0].publicId").exists())
                     .andExpect(jsonPath("$.content[0].title").exists())
                     .andExpect(jsonPath("$.content[0].outcome").exists())
-                    .andExpect(jsonPath("$.content[0].creatorName").value(testUser.getUsername()));
+                    .andExpect(jsonPath("$.content[0].userName").value(testUser.getUsername()));
         }
     }
 }

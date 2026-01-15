@@ -12,7 +12,7 @@ import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/lo
 class RecipeLinkCard extends StatelessWidget {
   final String publicId;
   final String title;
-  final String? creatorName;
+  final String? userName;
   final String? thumbnailUrl;
   final String? culinaryLocale;
 
@@ -20,7 +20,7 @@ class RecipeLinkCard extends StatelessWidget {
     super.key,
     required this.publicId,
     required this.title,
-    this.creatorName,
+    this.userName,
     this.thumbnailUrl,
     this.culinaryLocale,
   });
@@ -84,13 +84,13 @@ class RecipeLinkCard extends StatelessWidget {
                       ],
                     ],
                   ),
-                  if (creatorName != null) ...[
+                  if (userName != null) ...[
                     SizedBox(height: 2.h),
                     Text(
-                      '@$creatorName',
+                      '@$userName',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: AppColors.primary,
+                        color: AppColors.secondary,
                       ),
                     ),
                   ],

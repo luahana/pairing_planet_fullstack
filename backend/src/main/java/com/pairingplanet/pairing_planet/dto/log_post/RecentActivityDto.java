@@ -15,7 +15,7 @@ public record RecentActivityDto(
         UUID logPublicId,
         String outcome,           // SUCCESS, PARTIAL, FAILED
         String thumbnailUrl,      // Log's first image
-        String creatorName,       // Who cooked
+        String userName,       // Who cooked
         String recipeTitle,       // What recipe was followed
         UUID recipePublicId,      // Link to recipe
         String foodName,          // Food name for display

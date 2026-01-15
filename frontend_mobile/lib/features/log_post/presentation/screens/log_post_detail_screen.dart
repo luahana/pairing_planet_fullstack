@@ -475,11 +475,11 @@ class _LogPostDetailScreenState extends ConsumerState<LogPostDetailScreen> {
                 }
               : null,
           child: Text(
-            '@${log.creatorName ?? 'Unknown'}',
+            '@${log.userName ?? 'Unknown'}',
             style: TextStyle(
-              color: hasCreatorId ? AppColors.primary : Colors.grey[600],
+              color: AppColors.secondary,
               fontSize: 13.sp,
-              fontWeight: hasCreatorId ? FontWeight.w500 : FontWeight.normal,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
