@@ -11,18 +11,14 @@ platform :ios do
       path: ENV['PROVISIONING_PROFILE_PATH']
     ) if ENV['PROVISIONING_PROFILE_PATH']
 
-    # Run pod install first (using bundled cocoapods)
+    # Run pod install (using bundled cocoapods)
     cocoapods(
       podfile: "./Podfile",
       repo_update: true
     )
 
-    # Build the Flutter app
-    Dir.chdir("..") do
-      sh("flutter", "build", "ios", "-t", "lib/main_dev.dart", "--release", "--no-codesign", "--no-pub")
-    end
-
-    # Build and sign the IPA
+    # Build using gym directly (avoids flutter build ios ARG_MAX issues)
+    # Flutter's Dart code is compiled by xcodebuild via build phases
     build_app(
       workspace: "Runner.xcworkspace",
       scheme: "Runner",
@@ -39,7 +35,8 @@ platform :ios do
       output_name: "PairingPlanet-dev.ipa",
       clean: true,
       skip_profile_detection: true,
-      codesigning_identity: "Apple Distribution"
+      codesigning_identity: "Apple Distribution",
+      xcargs: "FLUTTER_TARGET=lib/main_dev.dart FLUTTER_BUILD_MODE=release"
     )
 
     # Upload to Firebase App Distribution
@@ -49,13 +46,6 @@ platform :ios do
         groups: "internal-testers",
         release_notes: "Dev build from CI"
       )
-    end
-  end
-
-  desc "Build without signing (for CI debugging)"
-  lane :build_only do
-    Dir.chdir("..") do
-      sh("flutter", "build", "ios", "-t", "lib/main_dev.dart", "--release", "--no-codesign")
     end
   end
 end
