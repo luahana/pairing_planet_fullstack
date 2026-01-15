@@ -11,9 +11,15 @@ platform :ios do
       path: ENV['PROVISIONING_PROFILE_PATH']
     ) if ENV['PROVISIONING_PROFILE_PATH']
 
-    # Build the Flutter app first
+    # Run pod install first (using bundled cocoapods)
+    cocoapods(
+      podfile: "./Podfile",
+      repo_update: true
+    )
+
+    # Build the Flutter app
     Dir.chdir("..") do
-      sh("flutter", "build", "ios", "-t", "lib/main_dev.dart", "--release", "--no-codesign")
+      sh("flutter", "build", "ios", "-t", "lib/main_dev.dart", "--release", "--no-codesign", "--no-pub")
     end
 
     # Build and sign the IPA
