@@ -24,7 +24,7 @@ platform :ios do
     # Build Flutter IPA with signing
     # This builds the full app and exports a signed IPA
     Dir.chdir("..") do
-      sh("flutter", "build", "ipa", "--release", "-t", "lib/main_dev.dart", "--export-options-plist=ios/ExportOptions-dev.plist")
+      sh("flutter build ipa --release -t lib/main_dev.dart --export-options-plist ios/ExportOptions-dev.plist")
     end
 
     # Upload to TestFlight
