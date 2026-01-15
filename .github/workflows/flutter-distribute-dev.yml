@@ -82,15 +82,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Select Xcode and install iOS platform
+      - name: Select Xcode
         run: |
-          # List available Xcode versions
-          ls /Applications | grep Xcode
-          # Use Xcode 16.1
-          sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          # Use Xcode 16.4 which should have iOS platform
+          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
           xcodebuild -version
-          # Download iOS platform (required for macos-15 runners)
-          xcodebuild -downloadPlatform iOS
+          # List available SDKs
+          xcodebuild -showsdks | grep -i ios
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -140,8 +138,12 @@ jobs:
           sed -i '' "s|Pairing Planet Dev AdHoc|$PP_UUID|g" ios/ExportOptions-dev.plist
           cat ios/ExportOptions-dev.plist
 
-      - name: Build Flutter iOS without signing
-        run: flutter build ios -t lib/main_dev.dart --release --no-codesign
+      - name: Prepare Flutter iOS build
+        run: |
+          # Generate iOS build files without full build
+          flutter build ios -t lib/main_dev.dart --release --no-codesign --config-only || true
+          # Run pod install manually
+          cd ios && pod install --repo-update
 
       - name: Archive with xcodebuild
         run: |
