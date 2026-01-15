@@ -112,7 +112,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
             ),
           ],
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         ReorderableImagePicker(
           images: widget.finishedImages,
           maxImages: _maxPhotos,
@@ -126,22 +126,13 @@ class _HookSectionState extends ConsumerState<HookSection> {
         ),
         SizedBox(height: 4.h),
         Text(
-          'recipe.photos.maxInfo'.tr(),
+          '${'recipe.photos.dragToReorder'.tr()} · ${'recipe.photos.maxInfo'.tr()}',
           style: TextStyle(
             fontSize: 12.sp,
             color: Colors.grey[500],
           ),
         ),
-        SizedBox(height: 20.h),
-
-        _buildTextField(
-          controller: widget.titleController,
-          label: 'recipe.hook.title'.tr(),
-          hint: 'recipe.hook.titleHint'.tr(),
-          icon: Icons.title,
-          isRequired: true,
-        ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 24.h),
 
         Row(
           children: [
@@ -199,6 +190,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
               controller: controller,
               focusNode: focusNode,
               hint: 'recipe.hook.foodNameHint'.tr(),
+              maxLength: 50,
               enabled: !widget.isReadOnly,
               // Orange for editable, grey for inherited/read-only
               backgroundColor: widget.isReadOnly
@@ -212,7 +204,17 @@ class _HookSectionState extends ConsumerState<HookSection> {
           optionsViewBuilder: (context, onSelected, options) =>
               _buildOptionsView(onSelected, options),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 24.h),
+
+        _buildTextField(
+          controller: widget.titleController,
+          label: 'recipe.hook.title'.tr(),
+          hint: 'recipe.hook.titleHint'.tr(),
+          icon: Icons.title,
+          isRequired: true,
+          maxLength: 100,
+        ),
+        SizedBox(height: 24.h),
 
         // Hide description field for variant recipes
         if (!widget.isReadOnly) ...[
@@ -222,8 +224,9 @@ class _HookSectionState extends ConsumerState<HookSection> {
             hint: 'recipe.hook.descriptionHint'.tr(),
             icon: Icons.notes,
             maxLines: 3,
+            maxLength: 500,
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 24.h),
         ],
 
         // Food style dropdown (always editable, even in variant mode)
@@ -285,6 +288,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
     required String hint,
     required IconData icon,
     int maxLines = 1,
+    int? maxLength,
     bool isRequired = false,
   }) {
     return Column(
@@ -314,6 +318,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
           controller: controller,
           hint: hint,
           maxLines: maxLines,
+          maxLength: maxLength,
         ),
       ],
     );
@@ -325,6 +330,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
     required String hint,
     FocusNode? focusNode,
     int maxLines = 1,
+    int? maxLength,
     bool enabled = true,
     Color? backgroundColor,
     Color? borderColor,
@@ -345,6 +351,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
         focusNode: focusNode,
         enabled: enabled,
         maxLines: maxLines,
+        maxLength: maxLength,
         style: TextStyle(color: enabled ? Colors.black : Colors.grey[600]),
         decoration: InputDecoration(
           hintText: hint,

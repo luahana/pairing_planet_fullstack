@@ -301,11 +301,7 @@ class _LogPostDetailScreenState extends ConsumerState<LogPostDetailScreen> {
                   children: [
                     SizedBox(height: 20.h),
 
-                    // 2. Metadata row with styled badges
-                    _buildMetadataRow(log),
-
-                    // 2.5. Creator row (clickable username)
-                    SizedBox(height: 12.h),
+                    // 2. Creator row (username + date)
                     _buildCreatorRow(log),
 
                     // 3. Hashtags (after metadata, Instagram-style no header)
@@ -323,8 +319,23 @@ class _LogPostDetailScreenState extends ConsumerState<LogPostDetailScreen> {
                     ],
                     SizedBox(height: 24.h),
 
-                    // 4. Review section with icon header
-                    _buildSectionHeader(Icons.rate_review_outlined, 'logPost.myReview'.tr()),
+                    // 4. Review section with emoji header
+                    Row(
+                      children: [
+                        Text(
+                          LogOutcome.getEmoji(log.outcome),
+                          style: TextStyle(fontSize: 20.sp),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'logPost.memo'.tr(),
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                     SizedBox(height: 12.h),
                     Text(
                       log.content,
@@ -441,70 +452,55 @@ class _LogPostDetailScreenState extends ConsumerState<LogPostDetailScreen> {
     );
   }
 
-  // Creator row (clickable username for profile navigation)
+  // Creator row (clickable username + date)
   Widget _buildCreatorRow(LogPostDetail log) {
     final hasCreatorId = log.creatorPublicId != null;
 
-    return GestureDetector(
-      onTap: hasCreatorId
-          ? () {
-              HapticFeedback.selectionClick();
-              // Check if this is the current user's own profile (same logic as _isCreator)
-              final isOwnProfile = _isCreator(log);
-
-              if (isOwnProfile) {
-                // Navigate to My Profile tab to avoid key conflicts
-                context.go(RouteConstants.profile);
-              } else {
-                // Navigate to other user's profile
-                context.push(RouteConstants.userProfilePath(log.creatorPublicId!));
-              }
-            }
-          : null,
-      child: Text(
-        '@${log.creatorName ?? 'Unknown'}',
-        style: TextStyle(
-          color: hasCreatorId ? AppColors.primary : Colors.grey[600],
-          fontSize: 13.sp,
-          fontWeight: hasCreatorId ? FontWeight.w500 : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  // Metadata row with styled date badge and outcome badge
-  Widget _buildMetadataRow(LogPostDetail log) {
     return Row(
       children: [
-        // Date badge
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.calendar_today, size: 14.sp, color: Colors.grey[600]),
-              SizedBox(width: 4.w),
-              Text(
-                DateFormat('yyyy.MM.dd').format(log.createdAt),
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
+        GestureDetector(
+          onTap: hasCreatorId
+              ? () {
+                  HapticFeedback.selectionClick();
+                  // Check if this is the current user's own profile (same logic as _isCreator)
+                  final isOwnProfile = _isCreator(log);
+
+                  if (isOwnProfile) {
+                    // Navigate to My Profile tab to avoid key conflicts
+                    context.go(RouteConstants.profile);
+                  } else {
+                    // Navigate to other user's profile
+                    context.push(RouteConstants.userProfilePath(log.creatorPublicId!));
+                  }
+                }
+              : null,
+          child: Text(
+            '@${log.creatorName ?? 'Unknown'}',
+            style: TextStyle(
+              color: hasCreatorId ? AppColors.primary : Colors.grey[600],
+              fontSize: 13.sp,
+              fontWeight: hasCreatorId ? FontWeight.w500 : FontWeight.normal,
+            ),
           ),
         ),
         SizedBox(width: 8.w),
-        // Outcome badge
-        OutcomeBadge.fromString(
-          outcomeValue: log.outcome,
-          variant: OutcomeBadgeVariant.compact,
+        Text(
+          '·',
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontSize: 13.sp,
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Text(
+          DateFormat.yMMMd(context.locale.toString()).format(log.createdAt),
+          style: TextStyle(
+            fontSize: 13.sp,
+            color: Colors.grey[600],
+          ),
         ),
       ],
     );
   }
+
 }

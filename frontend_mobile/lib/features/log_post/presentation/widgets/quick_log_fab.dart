@@ -124,7 +124,7 @@ class _QuickLogFABState extends State<QuickLogFAB>
                 ),
                 SizedBox(width: 10.w),
                 Text(
-                  'logPost.quickLog.button'.tr(),
+                  'logPost.quickLog.fabLabel'.tr(),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16.sp,

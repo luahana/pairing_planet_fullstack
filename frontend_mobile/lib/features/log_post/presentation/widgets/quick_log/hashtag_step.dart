@@ -49,23 +49,6 @@ class _HashtagStepState extends ConsumerState<HashtagStep> {
           // Summary of what's been captured
           _DraftSummary(draft: widget.draft),
           SizedBox(height: 24.h),
-          // Hashtag input
-          Text(
-            'logPost.quickLog.addHashtags'.tr(),
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'logPost.quickLog.hashtagsOptional'.tr(),
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Colors.grey[600],
-            ),
-          ),
-          SizedBox(height: 16.h),
           // Hashtag input section
           HashtagInputSection(
             hashtags: _hashtags,

@@ -47,6 +47,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   static const Map<String, String> _localeOptions = {
     'ko-KR': '한국어',
     'en-US': 'English',
+    'zh-CN': '简体中文',
+    'ja-JP': '日本語',
+    'fr-FR': 'Français',
+    'es-ES': 'Español',
+    'it-IT': 'Italiano',
+    'de-DE': 'Deutsch',
+    'ru-RU': 'Русский',
+    'pt-BR': 'Português',
+    'el-GR': 'Ελληνικά',
   };
 
   String _getGenderLabel(String key) {

@@ -40,6 +40,6 @@ enum LogOutcome {
   /// Returns default emoji if outcome is null or unknown.
   static String getEmoji(String? outcome, {String? defaultEmoji}) {
     final logOutcome = fromString(outcome);
-    return logOutcome?.emoji ?? defaultEmoji ?? AppEmojis.outcomeDefault;
+    return logOutcome?.emoji ?? defaultEmoji ?? '';
   }
 }

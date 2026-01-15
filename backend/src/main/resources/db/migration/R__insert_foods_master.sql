@@ -2101,7 +2101,47 @@ INSERT INTO foods_master (category_id, name, description, search_keywords) VALUE
      '김, 조미김, 김구이, gim, seaweed, seaweed paper, 밥도둑, k-food, 도시락김, 마른김')
     ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
 
+-- [102] 요리 - 면 (Global Pasta Classics)
+INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
+    (102, jsonb_build_object('ko-KR', '알리오 올리오', 'en-US', 'Aglio e Olio', 'ja-JP', 'アーリオ・オーリオ', 'zh-CN', '蒜香橄榄油意面', 'it-IT', 'Aglio e Olio', 'de-DE', 'Aglio e Olio', 'fr-FR', 'Aglio e Olio', 'es-ES', 'Aglio e Olio', 'pt-BR', 'Aglio e Olio', 'ru-RU', 'Алио э олио', 'el-GR', 'Αλιο Ολιο'),
+     jsonb_build_object('ko-KR', '마늘과 올리브오일, 페페론치노로 간단하게 만드는 이탈리아 나폴리 지방의 대표적인 파스타', 'en-US', 'Classic Italian pasta from Naples made with garlic, olive oil, and red pepper flakes.'),
+     '알리오올리오, 아리오올리오, aglioelio, 마늘파스타, 오일파스타, 이탈리아파스타, 간단한파스타, 페페론치노') ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
 
+-- [103] 요리 - 고기 (Chinese Braised Meat)
+INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
+    (103, jsonb_build_object('ko-KR', '홍샤오러우', 'en-US', 'Red Braised Pork Belly', 'ja-JP', '紅焼肉', 'zh-CN', '红烧肉', 'it-IT', 'Maiale brasato rosso', 'de-DE', 'Rotgeschmorter Schweinebauch', 'fr-FR', 'Porc braisé rouge', 'es-ES', 'Cerdo estofado rojo', 'pt-BR', 'Barriga de porco braseada', 'ru-RU', 'Хуншаожоу', 'el-GR', 'Κόκκινο μπρεζέ χοιρινό'),
+     jsonb_build_object('ko-KR', '간장과 설탕, 향신료를 넣어 달콤하고 진하게 조린 중국의 대표적인 돼지고기 요리', 'en-US', 'Classic Chinese dish of pork belly braised in soy sauce, sugar, and spices until tender and caramelized.'),
+     '홍샤오러우, 红烧肉, hongshaorou, 중국고기요리, 삼겹살조림, 동파육, 중식요리') ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
+
+-- [106] 요리 - 국물요리 (Japanese Home Cooking)
+INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
+    (106, jsonb_build_object('ko-KR', '니쿠자가', 'en-US', 'Nikujaga', 'ja-JP', '肉じゃが', 'zh-CN', '日式土豆炖肉', 'it-IT', 'Nikujaga', 'de-DE', 'Nikujaga', 'fr-FR', 'Nikujaga', 'es-ES', 'Nikujaga', 'pt-BR', 'Nikujaga', 'ru-RU', 'Никудзяга', 'el-GR', 'Νικουτζάγκα'),
+     jsonb_build_object('ko-KR', '감자와 소고기(또는 돼지고기)를 달콤한 간장 국물에 조린 일본의 대표적인 가정식', 'en-US', 'Traditional Japanese comfort food of meat and potatoes simmered in a sweet soy-based broth.'),
+     '니쿠자가, 肉じゃが, nikujaga, 일본가정식, 감자조림, 고기감자, 일식요리, 오후쿠로노아지') ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
+
+-- [106] 요리 - 국물요리 (French Classic Stew)
+INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
+    (106, jsonb_build_object('ko-KR', '뵈프 부르기뇽', 'en-US', 'Boeuf Bourguignon', 'ja-JP', 'ブッフ・ブルギニョン', 'zh-CN', '勃艮第红酒炖牛肉', 'it-IT', 'Bourguignon di manzo', 'de-DE', 'Boeuf Bourguignon', 'fr-FR', 'Bœuf bourguignon', 'es-ES', 'Ternera a la borgoñona', 'pt-BR', 'Boeuf Bourguignon', 'ru-RU', 'Бёф бургиньон', 'el-GR', 'Μπεφ μπουργκινιόν'),
+     jsonb_build_object('ko-KR', '레드와인과 버섯, 양파를 넣어 오랜 시간 푹 끓인 프랑스 부르고뉴 지방의 전통 소고기 스튜', 'en-US', 'Classic French beef stew braised in red wine with mushrooms, onions, and bacon from the Burgundy region.'),
+     '뵈프부르기뇽, 부르기뇽, boeufbourguignon, 프랑스요리, 와인스튜, 소고기스튜, 프렌치홈쿡') ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
+
+-- [106] 요리 - 국물요리 (Russian Classic Soup)
+INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
+    (106, jsonb_build_object('ko-KR', '보르시', 'en-US', 'Borscht', 'ja-JP', 'ボルシチ', 'zh-CN', '罗宋汤', 'it-IT', 'Borscht', 'de-DE', 'Borschtsch', 'fr-FR', 'Bortsch', 'es-ES', 'Borsch', 'pt-BR', 'Borscht', 'ru-RU', 'Борщ', 'el-GR', 'Μπορς'),
+     jsonb_build_object('ko-KR', '비트 뿌리와 양배추, 고기를 넣어 끓여 사워크림을 곁들이는 동유럽의 대표적인 수프', 'en-US', 'Traditional Eastern European beet soup served with sour cream, a staple of Russian and Ukrainian cuisine.'),
+     '보르시, 보르쉬, borscht, 러시아수프, 비트수프, 사워크림수프, 동유럽요리') ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
+
+-- [106] 요리 - 국물요리 (Brazilian National Dish)
+INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
+    (106, jsonb_build_object('ko-KR', '페이조아다', 'en-US', 'Feijoada', 'ja-JP', 'フェイジョアーダ', 'zh-CN', '巴西黑豆炖肉', 'it-IT', 'Feijoada', 'de-DE', 'Feijoada', 'fr-FR', 'Feijoada', 'es-ES', 'Feijoada', 'pt-BR', 'Feijoada', 'ru-RU', 'Фейжоада', 'el-GR', 'Φεϊζοάδα'),
+     jsonb_build_object('ko-KR', '검은콩과 돼지고기, 소시지를 넣어 푹 끓인 브라질의 대표적인 국민 요리', 'en-US', 'Brazil''s national dish of black beans stewed with pork, sausage, and beef, served with rice and orange slices.'),
+     '페이조아다, feijoada, 브라질요리, 검은콩스튜, 남미요리, 브라질국민음식') ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
+
+-- [109] 요리 - 기타 (Greek Classic Casserole)
+INSERT INTO foods_master (category_id, name, description, search_keywords) VALUES
+    (109, jsonb_build_object('ko-KR', '무사카', 'en-US', 'Moussaka', 'ja-JP', 'ムサカ', 'zh-CN', '穆萨卡', 'it-IT', 'Moussaka', 'de-DE', 'Moussaka', 'fr-FR', 'Moussaka', 'es-ES', 'Musaca', 'pt-BR', 'Moussaka', 'ru-RU', 'Мусака', 'el-GR', 'Μουσακάς'),
+     jsonb_build_object('ko-KR', '가지, 감자, 다진 고기를 겹겹이 쌓고 베샤멜 소스를 얹어 구운 그리스의 대표적인 오븐 요리', 'en-US', 'Traditional Greek casserole of layered eggplant, potato, and spiced meat topped with creamy béchamel sauce.'),
+     '무사카, moussaka, 그리스요리, 가지요리, 지중해요리, 오븐요리, 베샤멜') ON CONFLICT ((name ->> 'ko-KR')) DO NOTHING;
 
 
 

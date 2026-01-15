@@ -131,7 +131,7 @@ class _StepSectionState extends ConsumerState<StepSection> {
           title: 'steps.header'.tr(),
           isRequired: true,
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         // 💡 드래그 앤 드롭 리스트 (active steps only)
         ReorderableListView.builder(
           shrinkWrap: true,
@@ -154,32 +154,39 @@ class _StepSectionState extends ConsumerState<StepSection> {
             return Container(
               key: ValueKey("step_${step['stepNumber']}_$originalIndex"),
               margin: EdgeInsets.only(bottom: 20.h),
+              padding: EdgeInsets.symmetric(vertical: 8.h),
               decoration: BoxDecoration(
                 color: isOriginal ? Colors.grey[50] : Colors.white,
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Step number (draggable)
                   ReorderableDragStartListener(
                     index: index,
-                    child: Icon(
-                      Icons.drag_handle,
-                      // Orange color for inherited steps to show it's interactive
-                      color: isOriginal ? AppColors.inheritedInteractive : Colors.grey,
+                    child: _buildStepNumber(index + 1),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildImageSlot(originalIndex, step),
+                        SizedBox(height: 8.h),
+                        _buildDescriptionField(step, isOriginal),
+                      ],
                     ),
                   ),
-                  SizedBox(width: 8.w),
-                  _buildStepNumber(index + 1),
-                  SizedBox(width: 12.w),
-                  _buildImageSlot(originalIndex, step),
-                  SizedBox(width: 12.w),
-                  Expanded(child: _buildDescriptionField(step, isOriginal)),
-                  IconButton(
-                    onPressed: () => widget.onRemoveStep(originalIndex),
-                    icon: Icon(
-                      Icons.remove_circle_outline,
-                      // Orange color for inherited steps to show it's interactive
-                      color: isOriginal ? AppColors.inheritedInteractive : Colors.redAccent,
+                  GestureDetector(
+                    onTap: () => widget.onRemoveStep(originalIndex),
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 8.w),
+                      child: Icon(
+                        Icons.close,
+                        color: isOriginal ? AppColors.inheritedInteractive : Colors.grey,
+                        size: 18.sp,
+                      ),
                     ),
                   ),
                 ],
@@ -221,7 +228,7 @@ class _StepSectionState extends ConsumerState<StepSection> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'recipe.stepsMaxInfo'.tr(),
+          '${'steps.dragToReorder'.tr()} · ${'recipe.stepsMaxInfo'.tr()}',
           style: TextStyle(
             fontSize: 12.sp,
             color: Colors.grey[500],
@@ -283,12 +290,15 @@ class _StepSectionState extends ConsumerState<StepSection> {
           ..selection = TextSelection.collapsed(
             offset: step["description"]?.length ?? 0,
           ),
+        minLines: 3,
         maxLines: null,
+        maxLength: 500,
         style: TextStyle(
           color: isOriginal ? Colors.grey[600] : Colors.black,
         ),
         decoration: InputDecoration(
           hintText: isOriginal ? "" : 'recipe.step.hintText'.tr(),
+          hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey),
           border: InputBorder.none,
           isDense: true,
           contentPadding: EdgeInsets.symmetric(vertical: 8.h),
@@ -317,20 +327,34 @@ class _StepSectionState extends ConsumerState<StepSection> {
         context: context,
         onSourceSelected: (s) => _pickStepImage(index, s),
       ),
-      child: Container(
-        width: 60.w,
-        height: 60.w,
-        decoration: BoxDecoration(
-          color: hasImage ? null : (isOriginal ? Colors.grey[100] : AppColors.editableBackground),
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: isOriginal ? Colors.grey[300]! : AppColors.editableBorder),
-          image: imageProvider != null
-              ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+      child: AspectRatio(
+        aspectRatio: 1.0, // Square
+        child: Container(
+          decoration: BoxDecoration(
+            color: hasImage ? null : (isOriginal ? Colors.grey[100] : AppColors.editableBackground),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: isOriginal ? Colors.grey[300]! : AppColors.editableBorder),
+            image: imageProvider != null
+                ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+                : null,
+          ),
+          child: (item == null && (remoteUrl == null || remoteUrl.isEmpty))
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.camera_alt, size: 32.sp, color: isOriginal ? Colors.grey : AppColors.inheritedInteractive),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'steps.addPhoto'.tr(),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: isOriginal ? Colors.grey : AppColors.primary,
+                      ),
+                    ),
+                  ],
+                )
               : null,
         ),
-        child: (item == null && (remoteUrl == null || remoteUrl.isEmpty))
-            ? Icon(Icons.camera_alt, size: 20.sp, color: isOriginal ? Colors.grey : AppColors.inheritedInteractive)
-            : null,
       ),
     );
   }

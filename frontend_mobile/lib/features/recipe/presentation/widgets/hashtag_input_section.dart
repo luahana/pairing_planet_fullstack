@@ -115,7 +115,7 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
             ),
           ],
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         // Input field with orange background
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
@@ -139,11 +139,13 @@ class _HashtagInputSectionState extends State<HashtagInputSection> {
                 child: TextField(
                   controller: _controller,
                   focusNode: _focusNode,
+                  maxLength: 30,
                   decoration: InputDecoration(
                     hintText: 'recipe.hashtag.hint'.tr(),
                     hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey),
                     border: InputBorder.none,
                     isDense: true,
+                    counterText: '',
                     contentPadding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   textInputAction: TextInputAction.done,

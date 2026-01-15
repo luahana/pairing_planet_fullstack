@@ -303,6 +303,7 @@
     "addHashtag": "Add hashtag",
     "photos": {
       "title": "Photos",
+      "dragToReorder": "Drag to reorder",
       "maxInfo": "Max 3 photos"
     },
     "addPhoto": "Add photo",
@@ -336,7 +337,7 @@
     "logCountLabel": "{count} logs",
     "offlineData": "Offline data · Last updated: {time}",
     "variantSuffix": "(Variant)",
-    "createNew": "Create New Recipe",
+    "createNew": "New Recipe",
     "createVariantTitle": "Create Variant",
     "changeReasonRequired": "What's different?",
     "changeReasonHint": "What did you change?",
@@ -383,7 +384,6 @@
     },
     "noVariations": "No variations yet",
     "action": {
-      "logRecord": "Log Record",
       "logSubtitle": "I tried this!",
       "createVariation": "Create Variation",
       "variationSubtitle": "Make it my own",
@@ -401,7 +401,7 @@
     "hashtag": {
       "title": "Hashtags",
       "hint": "Enter hashtag and press Enter",
-      "example": "e.g. quick-meal, korean, spicy",
+      "example": "e.g. quick-meal, vegan, spicy",
       "maxError": "You can add up to {max} hashtags",
       "duplicateError": "This hashtag is already added",
       "fromOriginal": "From original",
@@ -413,16 +413,16 @@
       "finishedPhotos": "Photos",
       "thumbnail": "Thumbnail",
       "title": "Title",
-      "titleHint": "Recipe title",
+      "titleHint": "e.g. My grandpa's Aglio olio",
       "foodName": "Dish",
-      "foodNameHint": "e.g. Kimchi Stew",
+      "foodNameHint": "e.g. Aglio olio",
       "description": "Description",
       "descriptionHint": "Optional"
     },
     "ingredient": {
       "name": "Ingredient Name",
       "amount": "Amount",
-      "add": "Add {type}",
+      "add": "Add",
       "deleted": "Deleted",
       "restore": "Restore"
     },
@@ -437,7 +437,7 @@
       "parent": "Parent"
     },
     "recentLogs": {
-      "title": "See How Others Made It",
+      "title": "Cooking Logs",
       "subtitle": "Get inspired by the community",
       "viewMore": "View More",
       "emptyTitle": "No cooking logs yet",
@@ -559,9 +559,9 @@
       }
     },
     "quickLog": {
-      "fabLabel": "Quick Log",
-      "fabHint": "Tap to quickly log your cooking",
-      "button": "Quick Log",
+      "fabLabel": "Cooking Log",
+      "fabHint": "Tap to log your cooking",
+      "button": "Cooking Log",
       "howDidItGo": "How did it go?",
       "tapToSelect": "Tap to select",
       "step": {
@@ -578,7 +578,6 @@
       "linkRecipeHint": "Which recipe did you cook?",
       "searchRecipe": "Search recipes",
       "recentRecipesHint": "Or select from recent recipes",
-      "addNotes": "Add Notes",
       "notesOptional": "Optional - add any notes about your cooking",
       "notesHint": "What would you do differently next time?",
       "addHashtags": "Add Hashtags",
@@ -697,7 +696,7 @@
   },
   "fabAction": {
     "newRecipeSubtitle": "Create a new recipe",
-    "quickLogSubtitle": "Log a cooking session"
+    "quickLogSubtitle": "Record a cooking log"
   },
   "recipePicker": {
     "title": "Select Recipe",
@@ -879,11 +878,13 @@
   "steps": {
     "header": "Steps",
     "addStep": "Add Step",
+    "addPhoto": "Add Photo",
     "addMultiple": "Add Photos",
     "descriptionHint": "Step description",
     "deleted": "Deleted",
     "step": "Step",
-    "restore": "Restore"
+    "restore": "Restore",
+    "dragToReorder": "Drag to reorder"
   },
   "filter": {
     "filters": "Filters",

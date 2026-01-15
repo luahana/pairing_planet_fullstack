@@ -75,7 +75,7 @@ class ActionHubBar extends StatelessWidget {
           Expanded(
             child: _ActionButton(
               icon: AppIcons.logPost,
-              title: 'recipe.action.logRecord'.tr(),
+              title: 'recipe.recentLogs.emptyButton'.tr(),
               onPressed: isLoading ? null : () {
                 HapticFeedback.lightImpact();
                 onLogPressed();

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pairing_planet2_frontend/core/constants/constants.dart';
+import 'package:pairing_planet2_frontend/core/utils/locale_to_country_mapper.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/create_recipe_request.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/ingredient.dart';
 import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_step.dart';
@@ -13,7 +14,6 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_draft.dar
 import 'package:pairing_planet2_frontend/features/recipe/presentation/widgets/ingredient_section.dart';
 import 'package:pairing_planet2_frontend/features/recipe/providers/recipe_providers.dart';
 import 'package:pairing_planet2_frontend/features/profile/providers/profile_provider.dart';
-import 'package:pairing_planet2_frontend/core/providers/locale_provider.dart';
 import 'package:pairing_planet2_frontend/shared/data/model/upload_item_model.dart';
 import 'package:uuid/uuid.dart';
 import '../widgets/hook_section.dart';
@@ -71,11 +71,10 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     } else {
       _addIngredient('MAIN');
       _addStep();
-      // Set default locale and check for existing draft after frame is built
+      // Set default cooking style and check for existing draft after frame is built
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_localeController.text.isEmpty) {
-          final userLocale = ref.read(localeProvider);
-          _localeController.text = userLocale;
+          _setDefaultCookingStyle();
         }
         _checkForExistingDraft();
       });
@@ -137,6 +136,26 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
         'isDeleted': false,
       });
     }
+  }
+
+  /// Set default cooking style from user settings or device locale
+  void _setDefaultCookingStyle() {
+    // Priority 1: User's preferred cooking style from profile settings
+    final profile = ref.read(myProfileProvider).valueOrNull;
+    final userPreferredStyle = profile?.user.defaultFoodStyle;
+
+    if (userPreferredStyle != null && userPreferredStyle.isNotEmpty) {
+      _localeController.text = userPreferredStyle;
+      return;
+    }
+
+    // Priority 2: Derive from device locale
+    _localeController.text = _getCountryCodeFromDeviceLocale();
+  }
+
+  /// Extract ISO country code from device locale
+  String _getCountryCodeFromDeviceLocale() {
+    return LocaleToCountryMapper.getCountryCodeFromDevice();
   }
 
   /// Extract active (non-deleted) hashtag names as a string list for API/draft
@@ -796,7 +815,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                       },
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 24.h),
                     ServingsCookingTimeSection(
                       servings: _servings,
                       cookingTimeRange: _cookingTimeRange,
@@ -810,7 +829,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                       },
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 48.h),
                     IngredientSection(
                       ingredients: _ingredients,
                       onAddIngredient: _addIngredient,
@@ -818,7 +837,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                       onRestoreIngredient: _onRestoreIngredient,
                       onStateChanged: _rebuild,
                     ),
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 48.h),
                     StepSection(
                       steps: _steps,
                       onAddStep: _addStep,
@@ -828,7 +847,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                       onReorder: _onReorderSteps,
                       onStateChanged: _rebuild,
                     ),
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 48.h),
                     HashtagInputSection(
                       hashtags: _hashtags,
                       onHashtagsChanged: (tags) {
@@ -841,7 +860,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
                     ),
 
                     if (isVariantMode) ...[
-                      SizedBox(height: 32.h),
+                      SizedBox(height: 48.h),
                       ChangeReasonField(
                         controller: _changeReasonController,
                         onChanged: () => setState(() {}),

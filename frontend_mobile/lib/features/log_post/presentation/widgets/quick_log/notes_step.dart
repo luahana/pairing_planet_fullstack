@@ -44,25 +44,27 @@ class _NotesStepState extends ConsumerState<NotesStep> {
           _DraftSummary(draft: widget.draft),
           SizedBox(height: 24.h),
           // Notes input
-          Text(
-            'logPost.quickLog.addNotes'.tr(),
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'logPost.quickLog.notesOptional'.tr(),
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Colors.grey[600],
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.rate_review_outlined,
+                size: 20.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'logPost.memo'.tr(),
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 16.h),
           TextField(
             controller: _notesController,
             maxLines: 3,
+            maxLength: 500,
             decoration: AppInputStyles.editableInputDecoration(
               hintText: 'logPost.quickLog.notesHint'.tr(),
             ),

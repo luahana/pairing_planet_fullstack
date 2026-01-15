@@ -91,13 +91,13 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
           Icons.set_meal_outlined,
           isRequired: true,
         ),
-        SizedBox(height: 32.h),
+        SizedBox(height: 24.h),
         _buildCategorySection(
           'recipe.ingredients.secondary'.tr(),
           "SECONDARY",
           Icons.bakery_dining_outlined,
         ),
-        SizedBox(height: 32.h),
+        SizedBox(height: 24.h),
         _buildCategorySection(
           'recipe.ingredients.seasoning'.tr(),
           "SEASONING",
@@ -131,37 +131,30 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MinimalHeader(icon: icon, title: title, isRequired: isRequired),
-        SizedBox(height: 12.h),
-        ...activeItems.map((e) => _buildIngredientRow(e.key)),
-        GestureDetector(
-          onTap: isAtMax ? null : () => widget.onAddIngredient(type),
-          child: Opacity(
-            opacity: isAtMax ? 0.5 : 1.0,
-            child: Row(
-              children: [
-                Icon(Icons.add, size: 18.sp, color: AppColors.primary),
-                SizedBox(width: 4.w),
-                Text(
-                  'recipe.ingredient.add'.tr(namedArgs: {'type': title}),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ],
+        Row(
+          children: [
+            Expanded(
+              child: MinimalHeader(icon: icon, title: title, isRequired: isRequired),
             ),
-          ),
+            Text(
+              _getMaxInfoKey(type).tr(),
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.grey[500],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: isAtMax ? null : () => widget.onAddIngredient(type),
+              child: Opacity(
+                opacity: isAtMax ? 0.5 : 1.0,
+                child: Icon(Icons.add, size: 24.sp, color: AppColors.primary),
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 4.h),
-        Text(
-          _getMaxInfoKey(type).tr(),
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: Colors.grey[500],
-          ),
-        ),
+        SizedBox(height: 8.h),
+        ...activeItems.map((e) => _buildIngredientRow(e.key)),
         if (deletedItems.isNotEmpty) _buildDeletedSection(deletedItems, isAtMax: isAtMax),
       ],
     );
@@ -246,18 +239,18 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
               enabled: !isOriginal,
             ),
           ),
-          SizedBox(width: 2.w),
           // 💡 삭제 버튼은 기존 재료라도 항상 활성화 (빼는 기능)
           // Orange color highlights it as interactive even when fields are disabled
-          IconButton(
-            icon: Icon(
-              Icons.close,
-              color: isOriginal ? AppColors.inheritedInteractive : Colors.grey,
-              size: 18.sp,
+          GestureDetector(
+            onTap: () => widget.onRemoveIngredient(index),
+            child: Padding(
+              padding: EdgeInsets.only(left: 8.w),
+              child: Icon(
+                Icons.close,
+                color: isOriginal ? AppColors.inheritedInteractive : Colors.grey,
+                size: 18.sp,
+              ),
             ),
-            onPressed: () => widget.onRemoveIngredient(index),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
           ),
         ],
       ),
@@ -433,6 +426,7 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
         focusNode: focusNode,
         onChanged: onChanged,
         enabled: enabled, // 💡 TextField 비활성화 적용
+        maxLength: 50,
         style: TextStyle(
           fontSize: 13.sp,
           color: enabled ? Colors.black : Colors.grey[600], // 💡 글자색 변경
@@ -440,6 +434,7 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,
+          counterText: '',
           contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
           hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey),
         ),

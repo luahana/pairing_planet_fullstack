@@ -69,7 +69,7 @@ class FabActionSheet extends StatelessWidget {
               // Quick Log option
               _ActionTile(
                 icon: AppIcons.logPost,
-                title: 'speedDial.quickLog'.tr(),
+                title: 'logPost.quickLog.fabLabel'.tr(),
                 subtitle: 'fabAction.quickLogSubtitle'.tr(),
                 onTap: () {
                   Navigator.pop(context);
