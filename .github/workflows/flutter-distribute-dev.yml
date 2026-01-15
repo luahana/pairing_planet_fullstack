@@ -126,15 +126,12 @@ jobs:
 
       - name: Setup signing config
         run: |
-          # Add profile specifier to xcconfig
-          echo "PROVISIONING_PROFILE_SPECIFIER = $PP_UUID" >> ios/ci.xcconfig
-          cat ios/ci.xcconfig
-
           # Update ExportOptions with profile UUID
           sed -i '' "s|Pairing Planet Dev AdHoc|$PP_UUID|g" ios/ExportOptions-dev.plist
+          cat ios/ExportOptions-dev.plist
 
       - name: Build Flutter iOS without signing
-        run: flutter build ios -t lib/main_dev.dart --release --no-codesign --config-only
+        run: flutter build ios -t lib/main_dev.dart --release --no-codesign
 
       - name: Archive with xcodebuild
         run: |
@@ -143,10 +140,12 @@ jobs:
             -workspace Runner.xcworkspace \
             -scheme Runner \
             -configuration Release \
-            -xcconfig ci.xcconfig \
             -archivePath ../build/ios/archive/Runner.xcarchive \
             -destination 'generic/platform=iOS' \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            DEVELOPMENT_TEAM=DFAR672Q54 \
+            "PROVISIONING_PROFILE_SPECIFIER=$PP_UUID"
 
       - name: Export IPA
         run: |
