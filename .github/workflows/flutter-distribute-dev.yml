@@ -84,8 +84,16 @@ jobs:
 
       - name: Select Xcode
         run: |
-          # Use Xcode 16.4 which should have iOS platform
-          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+          # List available Xcode versions
+          ls /Applications/ | grep -i xcode
+          # Try Xcode 16.2 for better compatibility (16.4 has issues)
+          if [ -d "/Applications/Xcode_16.2.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_16.1.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
+          else
+            sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+          fi
           xcodebuild -version
           # List available SDKs
           xcodebuild -showsdks | grep -i ios
