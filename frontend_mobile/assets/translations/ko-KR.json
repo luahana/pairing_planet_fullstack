@@ -303,6 +303,7 @@
     "addHashtag": "해시태그 추가",
     "photos": {
       "title": "사진",
+      "dragToReorder": "드래그하여 순서 변경",
       "maxInfo": "최대 3장"
     },
     "addPhoto": "사진 추가",
@@ -336,7 +337,7 @@
     "logCountLabel": "{count}개 로그",
     "offlineData": "오프라인 데이터 · 마지막 업데이트: {time}",
     "variantSuffix": "(변형)",
-    "createNew": "새 레시피 등록",
+    "createNew": "새 레시피",
     "createVariantTitle": "레시피 변형하기",
     "changeReasonRequired": "무엇이 달라졌나요?",
     "changeReasonHint": "어떤 점을 바꿨나요?",
@@ -383,7 +384,6 @@
     },
     "noVariations": "아직 변형이 없어요",
     "action": {
-      "logRecord": "로그 기록",
       "logSubtitle": "나도 만들어봤어요!",
       "createVariation": "변형 만들기",
       "variationSubtitle": "나만의 레시피로"
@@ -397,7 +397,7 @@
     "hashtag": {
       "title": "해시태그",
       "hint": "해시태그 입력 후 Enter",
-      "example": "예: 간편요리, 한식, 매운맛",
+      "example": "예: 간편요리, 비건, 매운맛",
       "maxError": "최대 {max}개의 해시태그만 추가할 수 있습니다",
       "duplicateError": "이미 추가된 해시태그입니다",
       "fromOriginal": "원본에서",
@@ -409,7 +409,7 @@
       "finishedPhotos": "사진",
       "thumbnail": "대표 사진",
       "title": "제목",
-      "titleHint": "레시피 제목",
+      "titleHint": "예: 할머니의 김치찌개",
       "foodName": "요리",
       "foodNameHint": "예: 김치찌개",
       "description": "설명",
@@ -418,7 +418,7 @@
     "ingredient": {
       "name": "재료명",
       "amount": "양",
-      "add": "{type} 추가",
+      "add": "추가",
       "deleted": "삭제됨",
       "restore": "복원"
     },
@@ -555,9 +555,9 @@
       }
     },
     "quickLog": {
-      "fabLabel": "빠른 기록",
-      "fabHint": "탭하여 빠르게 기록하기",
-      "button": "빠른 기록",
+      "fabLabel": "요리 기록",
+      "fabHint": "탭하여 요리 기록하기",
+      "button": "요리 기록",
       "howDidItGo": "어떻게 됐나요?",
       "tapToSelect": "탭하여 선택",
       "step": {
@@ -574,7 +574,6 @@
       "linkRecipeHint": "어떤 레시피로 요리했나요?",
       "searchRecipe": "레시피 검색",
       "recentRecipesHint": "또는 최근 레시피에서 선택",
-      "addNotes": "메모 추가",
       "notesOptional": "선택사항 - 요리에 대한 메모를 남겨보세요",
       "notesHint": "다음에는 무엇을 다르게 하시겠어요?",
       "addHashtags": "해시태그 추가",
@@ -693,7 +692,7 @@
   },
   "fabAction": {
     "newRecipeSubtitle": "새로운 레시피 만들기",
-    "quickLogSubtitle": "요리 기록 남기기"
+    "quickLogSubtitle": "요리 기록 작성하기"
   },
   "recipePicker": {
     "title": "레시피 선택",
@@ -875,11 +874,13 @@
   "steps": {
     "header": "조리 순서",
     "addStep": "단계 추가",
+    "addPhoto": "사진 추가",
     "addMultiple": "사진 여러장",
     "descriptionHint": "설명",
     "deleted": "삭제됨",
     "step": "단계",
-    "restore": "복원"
+    "restore": "복원",
+    "dragToReorder": "드래그하여 순서 변경"
   },
   "filter": {
     "filters": "필터",

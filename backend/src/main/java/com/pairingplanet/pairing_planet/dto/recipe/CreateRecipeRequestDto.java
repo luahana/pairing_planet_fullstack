@@ -13,11 +13,13 @@ import java.util.UUID;
 
 public record CreateRecipeRequestDto(
         @NotBlank(message = "제목은 필수입니다")
-        @Size(min = 2, message = "제목은 최소 2자 이상이어야 합니다")
+        @Size(min = 2, max = 100, message = "제목은 2자 이상 100자 이하여야 합니다")
         String title,
+        @Size(max = 500, message = "설명은 500자 이하여야 합니다")
         String description,
         String culinaryLocale,
         UUID food1MasterPublicId,
+        @Size(max = 50, message = "요리명은 50자 이하여야 합니다")
         String newFoodName,
         @NotEmpty(message = "재료는 최소 1개 이상 필요합니다")
         List<IngredientDto> ingredients,
@@ -30,6 +32,7 @@ public record CreateRecipeRequestDto(
         UUID rootPublicId,
         // Phase 7-3: Automatic Change Detection
         Map<String, Object> changeDiff,
+        @Size(max = 300, message = "변경 사유는 300자 이하여야 합니다")
         String changeReason,
         // Hashtags (e.g., ["vegetarian", "quick-meal", "spicy"])
         List<String> hashtags,

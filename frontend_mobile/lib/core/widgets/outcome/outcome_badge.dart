@@ -95,16 +95,9 @@ class OutcomeBadge extends StatelessWidget {
   }
 
   Widget _buildCompactBadge() {
-    return Container(
-      padding: EdgeInsets.all(6.r),
-      decoration: BoxDecoration(
-        color: outcome.backgroundColor,
-        borderRadius: BorderRadius.circular(6.r),
-      ),
-      child: Text(
-        outcome.emoji,
-        style: TextStyle(fontSize: 16.sp),
-      ),
+    return Text(
+      outcome.emoji,
+      style: TextStyle(fontSize: 16.sp),
     );
   }
 

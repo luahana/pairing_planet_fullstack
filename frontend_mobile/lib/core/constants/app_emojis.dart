@@ -5,9 +5,8 @@ class AppEmojis {
 
   // Outcome emojis
   static const outcomeSuccess = '\u{1F60A}'; // 😊
-  static const outcomePartial = '\u{1F642}'; // 🙂
-  static const outcomeFailed = '\u{1F622}'; // 😢
-  static const outcomeDefault = '\u{1F373}'; // 🍳
+  static const outcomePartial = '\u{1F331}'; // 🌱
+  static const outcomeFailed = '\u{1F300}'; // 🌀
 
   // Streak celebration emojis
   static const streakLegendary = '\u{1F451}'; // 👑 30+ days

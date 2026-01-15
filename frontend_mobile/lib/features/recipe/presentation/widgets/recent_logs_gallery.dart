@@ -72,14 +72,6 @@ class RecentLogsGallery extends StatelessWidget {
                     ),
                 ],
               ),
-              SizedBox(height: 4.h),
-              Text(
-                'recipe.recentLogs.subtitle'.tr(),
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey[600],
-                ),
-              ),
             ],
           ),
         ),
@@ -200,14 +192,6 @@ class RecentLogsGallery extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 4.h),
-              Text(
-                'recipe.recentLogs.subtitle'.tr(),
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey[600],
-                ),
-              ),
             ],
           ),
         ),
@@ -232,15 +216,6 @@ class RecentLogsGallery extends StatelessWidget {
                   color: Colors.grey[700],
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                'recipe.recentLogs.emptyCta'.tr(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 13.sp,
                 ),
               ),
               SizedBox(height: 12.h),

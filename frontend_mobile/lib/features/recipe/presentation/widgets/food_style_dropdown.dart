@@ -84,15 +84,21 @@ class FoodStyleDropdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'foodStyle.title'.tr(),
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+        Row(
+          children: [
+            Icon(Icons.public, color: AppColors.primary, size: 20.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'foodStyle.title'.tr(),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         SizedBox(height: 8.h),
         GestureDetector(
           onTap: enabled ? () => _showPicker(context) : null,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
             decoration: enabled
                 ? AppInputStyles.editableBoxDecoration
                 : BoxDecoration(
@@ -103,29 +109,29 @@ class FoodStyleDropdown extends StatelessWidget {
             child: Row(
               children: [
                 if (country != null) ...[
-                  Text(country.flagEmoji, style: TextStyle(fontSize: 20.sp)),
-                  SizedBox(width: 8.w),
+                  Text(country.flagEmoji, style: TextStyle(fontSize: 16.sp)),
+                  SizedBox(width: 6.w),
                   Text(
                     'foodStyle.style'.tr(),
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 13.sp,
                       color: enabled ? Colors.black : Colors.grey[600],
                     ),
                   ),
                 ] else if (normalizedValue == 'international') ...[
-                  Text('🌍', style: TextStyle(fontSize: 20.sp)),
-                  SizedBox(width: 8.w),
+                  Text('🌍', style: TextStyle(fontSize: 16.sp)),
+                  SizedBox(width: 6.w),
                   Text(
                     'foodStyle.international'.tr(),
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 13.sp,
                       color: enabled ? Colors.black : Colors.grey[600],
                     ),
                   ),
                 ] else ...[
                   Text(
                     'foodStyle.select'.tr(),
-                    style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                    style: TextStyle(fontSize: 13.sp, color: Colors.grey),
                   ),
                 ],
                 const Spacer(),
@@ -151,11 +157,6 @@ class FoodStyleDropdown extends StatelessWidget {
             // "Other/International" option button
             _buildOtherButton(normalizedValue),
           ],
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          'foodStyle.helperText'.tr(),
-          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
         ),
       ],
     );

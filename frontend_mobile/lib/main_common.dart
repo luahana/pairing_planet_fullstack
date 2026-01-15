@@ -83,7 +83,19 @@ Future<void> mainCommon(AppConfig config, FirebaseOptions firebaseOptions) async
   runApp(
     Phoenix(
       child: EasyLocalization(
-        supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
+        supportedLocales: const [
+          Locale('ko', 'KR'),
+          Locale('en', 'US'),
+          Locale('zh', 'CN'),
+          Locale('ja', 'JP'),
+          Locale('fr', 'FR'),
+          Locale('es', 'ES'),
+          Locale('it', 'IT'),
+          Locale('de', 'DE'),
+          Locale('ru', 'RU'),
+          Locale('pt', 'BR'),
+          Locale('el', 'GR'),
+        ],
         path: 'assets/translations',
         fallbackLocale: const Locale('ko', 'KR'),
         child: LocaleApplier(isar: isar),

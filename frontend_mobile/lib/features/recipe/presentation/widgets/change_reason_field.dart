@@ -49,6 +49,7 @@ class ChangeReasonField extends StatelessWidget {
             controller: controller,
             onChanged: (_) => onChanged?.call(),
             maxLines: 2,
+            maxLength: 300,
             decoration: InputDecoration(
               hintText: 'recipe.changeReasonHint'.tr(),
               hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey),

@@ -645,6 +645,44 @@ User logs in within 30 days?
 
 ---
 
+### [FEAT-039]: Multi-Language Support
+
+**Status:** ✅ Done
+**Branch:** `dev`
+
+**Description:** Mobile app supports 11 languages for global users.
+
+**Supported Languages (11 total):**
+| Code | Language | Native Name |
+|------|----------|-------------|
+| ko-KR | Korean | 한국어 |
+| en-US | English | English |
+| zh-CN | Chinese (Simplified) | 简体中文 |
+| ja-JP | Japanese | 日本語 |
+| fr-FR | French | Français |
+| es-ES | Spanish | Español |
+| it-IT | Italian | Italiano |
+| de-DE | German | Deutsch |
+| ru-RU | Russian | Русский |
+| pt-BR | Portuguese (Brazil) | Português |
+| el-GR | Greek | Ελληνικά |
+
+**Acceptance Criteria:**
+- [x] Language switcher in Profile Edit screen
+- [x] All UI strings translatable via easy_localization
+- [x] 11 locales with complete translations (~980 keys each)
+- [x] Persist language preference (SharedPreferences)
+- [x] App restart on language change (Phoenix.rebirth)
+- [x] Fallback to English for missing translations
+
+**Technical Notes:**
+- Package: easy_localization ^3.0.8
+- Translation files: `assets/translations/{locale}.json`
+- Locale configuration in `main_common.dart` (supportedLocales)
+- Language options in `profile_edit_screen.dart` (_localeOptions)
+
+---
+
 ## Planned 📋
 
 ### [FEAT-016]: Improved Onboarding
@@ -1161,6 +1199,7 @@ adb reverse tcp:9000 tcp:9000  # MinIO images
 | FEAT-036 | Isar Migration & Performance | ✅ |
 | FEAT-037 | Duplicate Submission Prevention | ✅ |
 | FEAT-038 | Profile Bio & Social Links | ✅ |
+| FEAT-039 | Multi-Language Support | ✅ |
 | INFRA-001 | AWS Dev Environment with ALB | ✅ |
 
 ## Website Features

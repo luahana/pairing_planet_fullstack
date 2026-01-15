@@ -35,7 +35,7 @@ class ServingsCookingTimeSection extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         _buildServingsSelector(),
         SizedBox(height: 24.h),
 
@@ -50,7 +50,7 @@ class ServingsCookingTimeSection extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         _buildCookingTimeSelector(),
       ],
     );
@@ -58,7 +58,7 @@ class ServingsCookingTimeSection extends StatelessWidget {
 
   Widget _buildServingsSelector() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
         // Orange background to show it's editable
         color: AppColors.editableBackground,
@@ -70,7 +70,7 @@ class ServingsCookingTimeSection extends StatelessWidget {
         children: [
           Text(
             'recipe.servings.count'.tr(namedArgs: {'count': servings.toString()}),
-            style: TextStyle(fontSize: 15.sp),
+            style: TextStyle(fontSize: 13.sp),
           ),
           Row(
             children: [
@@ -79,11 +79,11 @@ class ServingsCookingTimeSection extends StatelessWidget {
                 onTap: servings > 1 ? () => onServingsChanged(servings - 1) : null,
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
                 child: Text(
                   servings.toString(),
                   style: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -107,8 +107,8 @@ class ServingsCookingTimeSection extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 32.w,
-        height: 32.w,
+        width: 28.w,
+        height: 28.w,
         decoration: BoxDecoration(
           color: isEnabled ? AppColors.primary : Colors.grey[300],
           shape: BoxShape.circle,
@@ -116,7 +116,7 @@ class ServingsCookingTimeSection extends StatelessWidget {
         child: Icon(
           icon,
           color: isEnabled ? Colors.white : Colors.grey[500],
-          size: 18.sp,
+          size: 16.sp,
         ),
       ),
     );
@@ -124,7 +124,7 @@ class ServingsCookingTimeSection extends StatelessWidget {
 
   Widget _buildCookingTimeSelector() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         // Orange background to show it's editable
         color: AppColors.editableBackground,
@@ -136,7 +136,7 @@ class ServingsCookingTimeSection extends StatelessWidget {
           value: cookingTimeRange,
           isExpanded: true,
           icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[600]),
-          style: TextStyle(fontSize: 15.sp, color: Colors.black),
+          style: TextStyle(fontSize: 13.sp, color: Colors.black),
           items: CookingTimeRange.values.map((range) {
             return DropdownMenuItem<String>(
               value: range.code,

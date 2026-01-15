@@ -66,7 +66,7 @@ class ReorderableImagePicker extends StatelessWidget {
       child: Stack(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 10.h, right: 12.w),
+            padding: EdgeInsets.only(top: 4.h, right: 12.w),
             child: GestureDetector(
               onTap: onAdd,
               child: Container(
@@ -98,7 +98,7 @@ class ReorderableImagePicker extends StatelessWidget {
           children: [
             // Image container
             Padding(
-              padding: EdgeInsets.only(top: 10.h, right: 12.w),
+              padding: EdgeInsets.only(top: 4.h, right: 12.w),
               child: Container(
                 width: 100.w,
                 height: 100.w,
