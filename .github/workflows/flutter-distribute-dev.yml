@@ -139,6 +139,9 @@ jobs:
           bundler-cache: true
           working-directory: frontend_mobile/ios
 
+      - name: Flutter pub get
+        run: flutter pub get
+
       - name: Build and distribute with Fastlane
         env:
           PROVISIONING_PROFILE_PATH: ${{ runner.temp }}/build_pp.mobileprovision
