@@ -17,8 +17,13 @@ export function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Close mobile menu on route change
+  const prevPathnameRef = useRef(pathname);
   useEffect(() => {
-    setIsMenuOpen(false);
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
+      // Use requestAnimationFrame to avoid synchronous setState warning
+      requestAnimationFrame(() => setIsMenuOpen(false));
+    }
   }, [pathname]);
 
   // Prevent body scroll when menu is open

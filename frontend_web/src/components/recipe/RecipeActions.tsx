@@ -30,11 +30,6 @@ export function RecipeActions({
   // Check if user is the owner
   const isOwner = isAuthenticated && user?.publicId === creatorPublicId;
 
-  // Don't render anything if not the owner
-  if (!isOwner) {
-    return null;
-  }
-
   // Fetch modifiable status when menu opens
   const checkModifiable = useCallback(async () => {
     if (modifiable) return; // Already fetched
@@ -48,6 +43,11 @@ export function RecipeActions({
       setIsLoading(false);
     }
   }, [recipePublicId, modifiable]);
+
+  // Don't render anything if not the owner
+  if (!isOwner) {
+    return null;
+  }
 
   const handleEdit = async () => {
     await checkModifiable();
