@@ -111,7 +111,7 @@ export default async function Home() {
                         {activity.recipeTitle}
                       </p>
                       <p className="text-sm text-[var(--text-secondary)]">
-                        by {activity.creatorName || 'Anonymous'}
+                        by {activity.userName || 'Anonymous'}
                       </p>
                       <p className="text-xs text-[var(--text-secondary)] mt-1">
                         {activity.foodName}

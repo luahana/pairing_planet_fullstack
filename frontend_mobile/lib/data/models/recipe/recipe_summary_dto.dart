@@ -12,7 +12,7 @@ class RecipeSummaryDto {
   final String? description;
   final String? culinaryLocale;
   final String? creatorPublicId; // Creator's publicId for profile navigation
-  final String? creatorName;
+  final String? userName;
   final String? thumbnail;
   final int? variantCount;
   final int? logCount; // Activity count from backend (nullable for backward compat)
@@ -31,7 +31,7 @@ class RecipeSummaryDto {
     this.description,
     this.culinaryLocale,
     this.creatorPublicId,
-    required this.creatorName,
+    required this.userName,
     this.thumbnail,
     this.variantCount,
     this.logCount,
@@ -57,7 +57,7 @@ class RecipeSummaryDto {
     culinaryLocale: culinaryLocale ?? "",
     thumbnailUrl: thumbnail,
     creatorPublicId: creatorPublicId,
-    creatorName: creatorName ?? "익명",
+    userName: userName ?? "익명",
     variantCount: variantCount ?? 0,
     logCount: logCount ?? 0,
     parentPublicId: parentPublicId,

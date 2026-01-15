@@ -133,7 +133,7 @@ class _LogPostListScreenState extends ConsumerState<LogPostListScreen> {
               actions: [
                 HeroSearchIcon(
                   onTap: () => context.push(RouteConstants.search),
-                  heroTag: 'search-hero',
+                  heroTag: 'search-hero-log',
                 ),
               ],
               bottom: PreferredSize(

@@ -61,9 +61,9 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
         {/* Meta info */}
         <div className="flex items-center justify-between mt-3 text-sm">
-          {recipe.creatorName && (
+          {recipe.userName && (
             <span className="text-[var(--text-secondary)]">
-              by {recipe.creatorName}
+              by {recipe.userName}
             </span>
           )}
           <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">

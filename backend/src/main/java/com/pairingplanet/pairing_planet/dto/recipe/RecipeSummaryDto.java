@@ -11,7 +11,7 @@ public record RecipeSummaryDto(
         String description,
         String culinaryLocale,
         UUID creatorPublicId,  // Creator's publicId for profile navigation
-        String creatorName,
+        String userName,
         String thumbnail,
         Integer variantCount,
         Integer logCount,      // Activity count: number of cooking logs

@@ -7,7 +7,7 @@ class RecipeSummary {
   final String culinaryLocale;
   final String? thumbnailUrl;
   final String? creatorPublicId; // Creator's publicId for profile navigation
-  final String creatorName;
+  final String userName;
   final int variantCount;
   final int logCount; // Activity count: number of cooking logs
   final String? parentPublicId;
@@ -26,7 +26,7 @@ class RecipeSummary {
     required this.culinaryLocale,
     this.thumbnailUrl,
     this.creatorPublicId,
-    required this.creatorName,
+    required this.userName,
     required this.variantCount,
     this.logCount = 0,
     this.parentPublicId,

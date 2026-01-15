@@ -38,7 +38,7 @@ class EnhancedRecipeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: '${isOriginal ? "Original" : "Variant"} recipe: ${recipe.title} by ${recipe.creatorName}',
+      label: '${isOriginal ? "Original" : "Variant"} recipe: ${recipe.title} by ${recipe.userName}',
       hint: 'Double tap to view details',
       child: GestureDetector(
         onTap: () {
@@ -225,7 +225,7 @@ class EnhancedRecipeCard extends StatelessWidget {
           ),
           SizedBox(width: 4.w),
           Text(
-            recipe.creatorName,
+            recipe.userName,
             style: TextStyle(
               color: hasCreatorId ? AppColors.primary : Colors.grey[600],
               fontSize: 13.sp,

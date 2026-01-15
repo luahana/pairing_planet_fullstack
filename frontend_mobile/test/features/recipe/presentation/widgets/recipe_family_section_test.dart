@@ -20,7 +20,7 @@ void main() {
             title: 'Variant $i',
             description: 'Description $i',
             culinaryLocale: 'en-US',
-            creatorName: 'user$i',
+            userName: 'user$i',
             thumbnailUrl: null,
             variantCount: 0,
             logCount: 0,
@@ -50,7 +50,7 @@ void main() {
             title: 'Variant $i',
             description: 'Description $i',
             culinaryLocale: 'en-US',
-            creatorName: 'user$i',
+            userName: 'user$i',
             thumbnailUrl: null,
             variantCount: 0,
             logCount: 0,
@@ -78,7 +78,7 @@ void main() {
             title: 'Variant $i',
             description: 'Description $i',
             culinaryLocale: 'en-US',
-            creatorName: 'user$i',
+            userName: 'user$i',
             thumbnailUrl: null,
             variantCount: 0,
             logCount: 0,
@@ -97,7 +97,7 @@ void main() {
             title: 'Variant $i',
             description: 'Description $i',
             culinaryLocale: 'en-US',
-            creatorName: 'user$i',
+            userName: 'user$i',
             thumbnailUrl: null,
             variantCount: 0,
             logCount: 0,
@@ -127,7 +127,7 @@ void main() {
             title: 'Variant $i',
             description: 'Description $i',
             culinaryLocale: 'en-US',
-            creatorName: 'user$i',
+            userName: 'user$i',
             thumbnailUrl: null,
             variantCount: 0,
             logCount: 0,
@@ -155,7 +155,7 @@ void main() {
             title: 'Variant $i',
             description: 'Description $i',
             culinaryLocale: 'en-US',
-            creatorName: 'user$i',
+            userName: 'user$i',
             thumbnailUrl: null,
             variantCount: 0,
             logCount: 0,
@@ -223,7 +223,7 @@ void main() {
           title: 'Spicy Kimchi Stew',
           description: 'Extra spicy version',
           culinaryLocale: 'ko-KR',
-          creatorName: 'chef_user',
+          userName: 'chef_user',
           thumbnailUrl: 'https://example.com/image.jpg',
           variantCount: 0,
           logCount: 2,
@@ -246,7 +246,7 @@ void main() {
           title: 'Veggie Bibimbap',
           description: 'Vegetarian version',
           culinaryLocale: 'ko-KR',
-          creatorName: 'user',
+          userName: 'user',
           thumbnailUrl: null,
           variantCount: 0,
           logCount: 0,
@@ -268,7 +268,7 @@ void main() {
           title: 'Test Recipe',
           description: 'Test',
           culinaryLocale: 'en-US',
-          creatorName: 'username',
+          userName: 'username',
           thumbnailUrl: null,
           variantCount: 0,
           logCount: 0,
@@ -278,7 +278,7 @@ void main() {
         );
 
         // Act
-        final displayName = '@${variant.creatorName}';
+        final displayName = '@${variant.userName}';
 
         // Assert
         expect(displayName, '@username');

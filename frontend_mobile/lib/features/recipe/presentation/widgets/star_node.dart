@@ -227,7 +227,7 @@ class StarNodeCard extends StatelessWidget {
                         Icon(Icons.person_outline, size: 14.sp, color: Colors.grey[500]),
                         SizedBox(width: 4.w),
                         Text(
-                          recipe.creatorName,
+                          recipe.userName,
                           style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                         ),
                       ],

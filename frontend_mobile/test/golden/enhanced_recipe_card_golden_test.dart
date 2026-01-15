@@ -106,15 +106,15 @@ void main() {
       final builder = GoldenBuilder.column()
         ..addScenario(
           'Normal Name',
-          const _CreatorRow(creatorName: 'Chef Kim'),
+          const _CreatorRow(userName: 'Chef Kim'),
         )
         ..addScenario(
           'Long Name',
-          const _CreatorRow(creatorName: 'Traditional Korean Chef with a Very Long Name'),
+          const _CreatorRow(userName: 'Traditional Korean Chef with a Very Long Name'),
         )
         ..addScenario(
           'Short Name',
-          const _CreatorRow(creatorName: 'Lee'),
+          const _CreatorRow(userName: 'Lee'),
         );
 
       await tester.pumpWidgetBuilder(
@@ -248,9 +248,9 @@ class _RecipeTitleSection extends StatelessWidget {
 
 /// Simplified creator row for testing
 class _CreatorRow extends StatelessWidget {
-  final String creatorName;
+  final String userName;
 
-  const _CreatorRow({required this.creatorName});
+  const _CreatorRow({required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -265,7 +265,7 @@ class _CreatorRow extends StatelessWidget {
         SizedBox(width: 4.w),
         Flexible(
           child: Text(
-            creatorName,
+            userName,
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 13.sp,

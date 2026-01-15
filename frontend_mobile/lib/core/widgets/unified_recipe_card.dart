@@ -161,9 +161,9 @@ class UnifiedRecipeCard extends ConsumerWidget {
                       SizedBox(height: 4.h),
 
                       // 3. Username (hidden on profile page my recipes)
-                      if (showUsername && recipe.creatorName.isNotEmpty) ...[
+                      if (showUsername && recipe.userName.isNotEmpty) ...[
                         ClickableUsername(
-                          username: recipe.creatorName,
+                          username: recipe.userName,
                           userPublicId: recipe.creatorPublicId,
                           fontSize: 13.sp,
                           showPersonIcon: true,
@@ -283,9 +283,9 @@ class UnifiedRecipeCard extends ConsumerWidget {
               SizedBox(height: 4.h),
 
               // 3. Username (hidden on profile page my recipes)
-              if (showUsername && recipe.creatorName.isNotEmpty) ...[
+              if (showUsername && recipe.userName.isNotEmpty) ...[
                 ClickableUsername(
-                  username: recipe.creatorName,
+                  username: recipe.userName,
                   userPublicId: recipe.creatorPublicId,
                   fontSize: 12.sp,
                   showPersonIcon: true,

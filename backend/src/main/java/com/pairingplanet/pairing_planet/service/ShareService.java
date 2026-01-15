@@ -58,12 +58,12 @@ public class ShareService {
         String imageUrl = getImageUrl(recipe);
         String shareUrl = apiBaseUrl + "/share/recipe/" + recipePublicId;
         String deepLink = "pairingplanet://recipe/" + recipePublicId;
-        String creatorName = getCreatorName(recipe);
+        String userName = getCreatorName(recipe);
 
         // Escape HTML entities for safety
         title = HtmlUtils.htmlEscape(title);
         description = HtmlUtils.htmlEscape(description);
-        creatorName = HtmlUtils.htmlEscape(creatorName);
+        userName = HtmlUtils.htmlEscape(userName);
 
         return """
                 <!DOCTYPE html>
@@ -213,7 +213,7 @@ public class ShareService {
                 title,           // img alt
                 title,           // h1
                 description,     // p
-                creatorName      // author
+                userName      // author
         );
     }
 

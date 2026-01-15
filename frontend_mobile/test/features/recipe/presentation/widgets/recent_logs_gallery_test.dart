@@ -19,7 +19,7 @@ void main() {
             title: 'Log $i',
             outcome: 'SUCCESS',
             thumbnailUrl: null,
-            creatorName: 'user$i',
+            userName: 'user$i',
           ),
         );
 
@@ -41,7 +41,7 @@ void main() {
             title: 'Log $i',
             outcome: 'SUCCESS',
             thumbnailUrl: null,
-            creatorName: 'user$i',
+            userName: 'user$i',
           ),
         );
 
@@ -61,7 +61,7 @@ void main() {
             title: 'Log $i',
             outcome: 'SUCCESS',
             thumbnailUrl: null,
-            creatorName: 'user$i',
+            userName: 'user$i',
           ),
         );
 
@@ -72,7 +72,7 @@ void main() {
             title: 'Log $i',
             outcome: 'SUCCESS',
             thumbnailUrl: null,
-            creatorName: 'user$i',
+            userName: 'user$i',
           ),
         );
 
@@ -94,7 +94,7 @@ void main() {
             title: 'Log $i',
             outcome: 'SUCCESS',
             thumbnailUrl: null,
-            creatorName: 'user$i',
+            userName: 'user$i',
           ),
         );
 
@@ -114,7 +114,7 @@ void main() {
             title: 'Log $i',
             outcome: 'SUCCESS',
             thumbnailUrl: null,
-            creatorName: 'user$i',
+            userName: 'user$i',
           ),
         );
 
@@ -232,7 +232,7 @@ void main() {
           title: 'Great Dish',
           outcome: 'SUCCESS',
           thumbnailUrl: 'https://example.com/image.jpg',
-          creatorName: 'chef_user',
+          userName: 'chef_user',
         );
 
         // Assert
@@ -247,7 +247,7 @@ void main() {
           title: 'No Photo',
           outcome: 'PARTIAL',
           thumbnailUrl: null,
-          creatorName: 'user',
+          userName: 'user',
         );
 
         // Assert
@@ -261,11 +261,11 @@ void main() {
           title: 'Test',
           outcome: 'SUCCESS',
           thumbnailUrl: null,
-          creatorName: 'username',
+          userName: 'username',
         );
 
         // Act
-        final displayName = '@${log.creatorName}';
+        final displayName = '@${log.userName}';
 
         // Assert
         expect(displayName, '@username');
@@ -278,11 +278,11 @@ void main() {
           title: 'Anonymous',
           outcome: 'SUCCESS',
           thumbnailUrl: null,
-          creatorName: null,
+          userName: null,
         );
 
         // Assert
-        expect(log.creatorName, isNull);
+        expect(log.userName, isNull);
       });
     });
   });

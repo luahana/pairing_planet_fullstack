@@ -479,10 +479,10 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
                     SizedBox(height: 4.h),
                     // Creator
                     Text(
-                      '@${recipe.creatorName}',
+                      '@${recipe.userName}',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.grey[600],
+                        color: AppColors.secondary,
                       ),
                     ),
                   ],
@@ -607,12 +607,12 @@ class _RecipeSearchScreenState extends ConsumerState<RecipeSearchScreen> {
                     ),
                     SizedBox(height: 4.h),
                     // Creator
-                    if (logPost.creatorName != null)
+                    if (logPost.userName != null)
                       Text(
-                        '@${logPost.creatorName}',
+                        '@${logPost.userName}',
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: Colors.grey[600],
+                          color: AppColors.secondary,
                         ),
                       ),
                   ],

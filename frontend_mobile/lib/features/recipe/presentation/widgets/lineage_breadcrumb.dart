@@ -52,7 +52,7 @@ class LineageBreadcrumb extends StatelessWidget {
               icon: AppIcons.originalRecipe,
               label: 'recipe.lineage.original'.tr(),
               recipeName: rootInfo!.title,
-              creatorName: rootInfo!.creatorName,
+              userName: rootInfo!.userName,
               recipeId: rootInfo!.publicId,
               isRoot: true,
             ),
@@ -64,7 +64,7 @@ class LineageBreadcrumb extends StatelessWidget {
               icon: Icons.subdirectory_arrow_right,
               label: 'recipe.lineage.parent'.tr(),
               recipeName: parentInfo!.title,
-              creatorName: parentInfo!.creatorName,
+              userName: parentInfo!.userName,
               recipeId: parentInfo!.publicId,
               isRoot: false,
             ),
@@ -79,7 +79,7 @@ class LineageBreadcrumb extends StatelessWidget {
     required IconData icon,
     required String label,
     required String recipeName,
-    required String creatorName,
+    required String userName,
     required String recipeId,
     required bool isRoot,
   }) {
@@ -127,7 +127,7 @@ class LineageBreadcrumb extends StatelessWidget {
             ),
             SizedBox(width: 4.w),
             Text(
-              '@$creatorName',
+              '@$userName',
               style: TextStyle(
                 fontSize: 12.sp,
                 color: Colors.grey[600],

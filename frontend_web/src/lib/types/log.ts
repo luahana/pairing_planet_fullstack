@@ -15,7 +15,7 @@ export interface LogPostSummary {
   outcome: Outcome;
   thumbnailUrl: string | null;
   creatorPublicId: string | null;
-  creatorName: string | null;
+  userName: string | null;
   foodName: string | null;
   hashtags: string[];
   isVariant: boolean | null;
@@ -35,7 +35,7 @@ export interface LogPostDetail {
   hashtags: HashtagDto[];
   isSavedByCurrentUser: boolean | null;
   creatorPublicId: string | null;
-  creatorName: string | null;
+  userName: string | null;
 }
 
 /**
@@ -45,7 +45,7 @@ export interface RecentActivity {
   logPublicId: string;
   outcome: Outcome;
   thumbnailUrl: string | null;
-  creatorName: string | null;
+  userName: string | null;
   recipeTitle: string;
   recipePublicId: string;
   foodName: string;

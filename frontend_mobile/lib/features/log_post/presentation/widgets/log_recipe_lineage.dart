@@ -50,7 +50,7 @@ class LogRecipeLineage extends StatelessWidget {
           RecipeLinkCard(
             publicId: linkedRecipe!.publicId,
             title: linkedRecipe!.title,
-            creatorName: linkedRecipe!.creatorName,
+            userName: linkedRecipe!.userName,
             thumbnailUrl: linkedRecipe!.thumbnailUrl,
             culinaryLocale: linkedRecipe!.culinaryLocale,
           ),

@@ -211,7 +211,7 @@ class RecipeFamilySection extends StatelessWidget {
           RecipeLinkCard(
             publicId: rootInfo!.publicId,
             title: rootInfo!.title,
-            creatorName: rootInfo!.creatorName,
+            userName: rootInfo!.userName,
             thumbnailUrl: rootInfo!.thumbnailUrl,
             culinaryLocale: rootInfo!.culinaryLocale,
           ),

@@ -136,7 +136,7 @@ void main() {
         outcome: 'SUCCESS',
         thumbnailUrl: 'https://example.com/image.jpg',
         creatorPublicId: 'creator-123',
-        creatorName: 'Chef User',
+        userName: 'Chef User',
         foodName: 'Delicious Dish',
         hashtags: ['tag1', 'tag2'],
       );
@@ -146,7 +146,7 @@ void main() {
       expect(dto.outcome, 'SUCCESS');
       expect(dto.thumbnailUrl, 'https://example.com/image.jpg');
       expect(dto.creatorPublicId, 'creator-123');
-      expect(dto.creatorName, 'Chef User');
+      expect(dto.userName, 'Chef User');
       expect(dto.foodName, 'Delicious Dish');
       expect(dto.hashtags, ['tag1', 'tag2']);
     });

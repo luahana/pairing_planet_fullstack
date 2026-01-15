@@ -12,7 +12,7 @@ export interface RecipeSummary {
   description: string;
   culinaryLocale: string;
   creatorPublicId: string | null;
-  creatorName: string | null;
+  userName: string | null;
   thumbnail: string | null;
   variantCount: number;
   logCount: number;
@@ -81,7 +81,7 @@ export interface RecipeDetail {
   foodName: string;
   foodMasterPublicId: string;
   creatorPublicId: string | null;
-  creatorName: string | null;
+  userName: string | null;
   changeCategory: string | null;
   rootInfo: RecipeSummary | null;
   parentInfo: RecipeSummary | null;
@@ -111,7 +111,7 @@ export interface TrendingTree {
   variantCount: number;
   logCount: number;
   latestChangeSummary: string | null;
-  creatorName: string | null;
+  userName: string | null;
   creatorPublicId: string | null;
 }
 

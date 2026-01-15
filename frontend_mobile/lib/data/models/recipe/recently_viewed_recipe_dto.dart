@@ -43,7 +43,7 @@ class RecentlyViewedRecipeDto {
         thumbnailUrl: thumbnailUrl,
         description: '',
         culinaryLocale: '',
-        creatorName: '',
+        userName: '',
         variantCount: 0,
         logCount: 0,
       );

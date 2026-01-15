@@ -22,7 +22,7 @@ void main() {
     publicId: 'recipe-123',
     foodName: 'Kimchi Fried Rice',
     foodMasterPublicId: 'food-master-1',
-    creatorName: 'chef_kim',
+    userName: 'chef_kim',
     title: 'Mom\'s Special Kimchi Fried Rice',
     description: 'A delicious recipe from my grandmother',
     culinaryLocale: 'ko-KR',

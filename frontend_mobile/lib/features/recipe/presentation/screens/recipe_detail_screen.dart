@@ -201,11 +201,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                   }
                                 : null,
                             child: Text(
-                              '@${recipe.creatorName}',
+                              '@${recipe.userName}',
                               style: TextStyle(
                                 fontSize: 14.sp,
-                                color: recipe.creatorPublicId != null ? AppColors.primary : Colors.grey[600],
-                                fontWeight: recipe.creatorPublicId != null ? FontWeight.w500 : FontWeight.normal,
+                                color: AppColors.secondary,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),

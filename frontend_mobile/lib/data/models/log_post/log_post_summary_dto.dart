@@ -11,7 +11,7 @@ class LogPostSummaryDto {
   final String? outcome; // SUCCESS, PARTIAL, FAILED
   final String? thumbnailUrl;
   final String? creatorPublicId; // Creator's publicId for profile navigation
-  final String? creatorName;
+  final String? userName;
   final String? foodName; // Dish name from linked recipe
   final List<String>? hashtags; // Hashtag names
   final bool? isVariant; // Whether the linked recipe is a variant
@@ -25,7 +25,7 @@ class LogPostSummaryDto {
     this.outcome,
     this.thumbnailUrl,
     this.creatorPublicId,
-    this.creatorName,
+    this.userName,
     this.foodName,
     this.hashtags,
     this.isVariant,
@@ -50,7 +50,7 @@ class LogPostSummaryDto {
       title: payload.title ?? 'Quick Log',
       outcome: payload.outcome,
       thumbnailUrl: thumbnailUrl,
-      creatorName: null, // User's own log, no need to show name
+      userName: null, // User's own log, no need to show name
       foodName: null, // Not available for pending items
       hashtags: payload.hashtags,
       isPending: true,
@@ -67,7 +67,7 @@ class LogPostSummaryDto {
     outcome: outcome,
     thumbnailUrl: thumbnailUrl,
     creatorPublicId: creatorPublicId,
-    creatorName: creatorName,
+    userName: userName,
     foodName: foodName,
     hashtags: hashtags,
     isVariant: isVariant,

@@ -102,7 +102,7 @@ public class SavedLogService {
     private LogPostSummaryDto convertToSummary(LogPost log) {
         User creator = userRepository.findById(log.getCreatorId()).orElse(null);
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
-        String creatorName = creator != null ? creator.getUsername() : "Unknown";
+        String userName = creator != null ? creator.getUsername() : "Unknown";
 
         String thumbnailUrl = log.getImages().stream()
                 .findFirst()
@@ -129,7 +129,7 @@ public class SavedLogService {
                 log.getRecipeLog() != null ? log.getRecipeLog().getOutcome() : null,
                 thumbnailUrl,
                 creatorPublicId,
-                creatorName,
+                userName,
                 foodName,
                 hashtags,
                 isVariant
