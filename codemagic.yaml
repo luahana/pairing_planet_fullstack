@@ -6,15 +6,20 @@ workflows:
     integrations:
       app_store_connect: codemagic
     environment:
-      ios_signing:
-        distribution_type: development
-        bundle_identifier: com.pairingplanet.pairingplanetfrontend.dev
       vars:
         FLUTTER_TARGET: lib/main_dev.dart
         FLUTTER_VERSION: "3.27.4"
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.pairingplanet.pairingplanetfrontend.dev" \
+            --type IOS_APP_DEVELOPMENT \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles --project $CM_BUILD_DIR/frontend_mobile/ios/Runner.xcodeproj
       - name: Install Flutter
         script: |
           git clone https://github.com/flutter/flutter.git --depth 1 -b $FLUTTER_VERSION $HOME/flutter
