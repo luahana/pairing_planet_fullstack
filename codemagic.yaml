@@ -7,7 +7,7 @@ workflows:
       app_store_connect: codemagic
     environment:
       ios_signing:
-        distribution_type: app_store
+        distribution_type: development
         bundle_identifier: com.pairingplanet.pairingplanetfrontend.dev
       vars:
         FLUTTER_TARGET: lib/main_dev.dart
@@ -40,10 +40,12 @@ workflows:
       - frontend_mobile/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
     publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: false
+      email:
+        recipients:
+          - luahana@gmail.com
+        notify:
+          success: true
+          failure: true
 
   ios-staging:
     name: iOS Staging (TestFlight)
