@@ -1,6 +1,12 @@
 name: iOS Build
 
 on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'frontend_mobile/**'
+      - '.github/workflows/ios-build.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -19,7 +25,7 @@ env:
 jobs:
   build-ios:
     runs-on: macos-14  # M1 runner for faster builds
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ github.event.inputs.environment || 'dev' }}
 
     steps:
       - name: Checkout code
@@ -89,7 +95,8 @@ jobs:
       - name: Set target based on environment
         id: target
         run: |
-          case "${{ github.event.inputs.environment }}" in
+          ENV="${{ github.event.inputs.environment || 'dev' }}"
+          case "$ENV" in
             dev)
               echo "target=lib/main_dev.dart" >> $GITHUB_OUTPUT
               echo "config=Release-dev" >> $GITHUB_OUTPUT
