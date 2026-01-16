@@ -72,8 +72,8 @@ jobs:
 
   distribute-ios:
     name: Build and Distribute iOS
-    # Use macos-14 with Xcode 15.4 to avoid "Argument list too long" error
-    # Xcode 16.4 on macos-15 may have stricter environment variable handling
+    # Use macos-14 with Xcode 16.2 to avoid "Argument list too long" error
+    # macos-15 with Xcode 16.4 causes ARG_MAX overflow due to environment bloat
     runs-on: macos-14
     environment: dev
     # Use short path to reduce ARG_MAX pressure
@@ -93,12 +93,12 @@ jobs:
           echo "Project at: /tmp/b"
           ls -la /tmp/b
 
-      - name: Select Xcode 15.4
+      - name: Select Xcode 16.2
         run: |
           # List available Xcode versions
           ls /Applications/ | grep -i xcode
-          # Use Xcode 15.4 (more stable with large projects)
-          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          # Use Xcode 16.2 (Swift 6 support for Firebase SDK)
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           xcodebuild -version
           # List available SDKs
           xcodebuild -showsdks | grep -i ios || echo "No iOS SDKs found"
