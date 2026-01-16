@@ -74,13 +74,24 @@ jobs:
     name: Build and Distribute iOS
     runs-on: macos-15
     environment: dev
-    defaults:
-      run:
-        working-directory: ./frontend_mobile
+    # Use short path to avoid "Argument list too long" error
+    # See: https://github.com/CocoaPods/CocoaPods/issues/9954
+    env:
+      APP_DIR: /tmp/b
 
     steps:
-      - name: Checkout code
+      - name: Checkout code to short path
         uses: actions/checkout@v4
+        with:
+          path: b
+
+      - name: Move to shortest possible path
+        run: |
+          # Move to /tmp/b for shortest possible paths in xcconfig files
+          # This reduces ARG_MAX pressure from accumulated FRAMEWORK_SEARCH_PATHS
+          sudo mv $GITHUB_WORKSPACE/b /tmp/b
+          echo "Project at: /tmp/b"
+          ls -la /tmp/b
 
       - name: Select Xcode and install iOS platform
         run: |
@@ -102,6 +113,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
+        working-directory: /tmp/b/frontend_mobile
         run: flutter pub get
 
       - name: Install Apple certificate and provisioning profile
@@ -141,12 +153,14 @@ jobs:
         with:
           ruby-version: '3.2'
           bundler-cache: true
-          working-directory: frontend_mobile/ios
+          working-directory: /tmp/b/frontend_mobile/ios
 
       - name: Flutter pub get
+        working-directory: /tmp/b/frontend_mobile
         run: flutter pub get
 
       - name: Build and distribute with Fastlane
+        working-directory: /tmp/b/frontend_mobile
         env:
           PROVISIONING_PROFILE_PATH: ${{ runner.temp }}/build_pp.mobileprovision
           PROVISIONING_PROFILE_NAME: ${{ env.PP_UUID }}
@@ -163,7 +177,7 @@ jobs:
         with:
           name: ios-build-logs
           path: |
-            frontend_mobile/build/ios/logs/
+            /tmp/b/frontend_mobile/build/ios/logs/
             ~/Library/Logs/gym/
           if-no-files-found: ignore
 
