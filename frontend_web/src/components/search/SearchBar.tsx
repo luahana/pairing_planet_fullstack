@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
+import { addToSearchHistory } from './SearchHistory';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -23,6 +24,7 @@ export function SearchBar({
       e.preventDefault();
       const trimmed = query.trim();
       if (trimmed) {
+        addToSearchHistory(trimmed);
         router.push(`/search?q=${encodeURIComponent(trimmed)}`);
       }
     },
@@ -56,7 +58,10 @@ export function SearchBar({
         {query && (
           <button
             type="button"
-            onClick={() => setQuery('')}
+            onClick={() => {
+              setQuery('');
+              router.push('/search');
+            }}
             className="absolute right-14 top-1/2 -translate-y-1/2 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

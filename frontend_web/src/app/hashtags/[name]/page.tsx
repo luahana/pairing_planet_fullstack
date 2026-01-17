@@ -40,12 +40,12 @@ export default async function HashtagPage({ params, searchParams }: Props) {
   try {
     counts = await getHashtagCounts(decodedName);
   } catch {
-    counts = { recipeCount: 0, logCount: 0 };
+    counts = { exists: false, normalizedName: decodedName, recipeCount: 0, logPostCount: 0 };
   }
 
   const tabs = [
     { id: 'recipes', label: 'Recipes', count: counts.recipeCount },
-    { id: 'logs', label: 'Cooking Logs', count: counts.logCount },
+    { id: 'logs', label: 'Cooking Logs', count: counts.logPostCount },
   ];
 
   // Fetch content based on active tab
@@ -68,11 +68,11 @@ export default async function HashtagPage({ params, searchParams }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[var(--success)]">
+          <h1 className="text-3xl font-bold text-hashtag">
             #{decodedName}
           </h1>
           <p className="text-[var(--text-secondary)] mt-2">
-            {counts.recipeCount + counts.logCount} posts with this hashtag
+            {counts.recipeCount + counts.logPostCount} posts with this hashtag
           </p>
         </div>
 

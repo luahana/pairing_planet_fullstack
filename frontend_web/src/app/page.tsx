@@ -5,9 +5,8 @@ import { getRecipes } from '@/lib/api/recipes';
 import { RecipeGrid } from '@/components/recipe/RecipeGrid';
 import { AppDownloadCTA } from '@/components/common/AppDownloadCTA';
 import { PopularHashtags } from '@/components/common/PopularHashtags';
-import { OutcomeBadge } from '@/components/log/OutcomeBadge';
+import { OUTCOME_CONFIG } from '@/lib/types';
 import { getImageUrl } from '@/lib/utils/image';
-import { RecentlyViewedSection } from '@/components/home/RecentlyViewedSection';
 
 export default async function Home() {
   let homeFeed;
@@ -63,9 +62,6 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Recently Viewed - Only shown for authenticated users */}
-      <RecentlyViewedSection />
-
       {/* Popular Hashtags */}
       <section className="py-12 bg-[var(--surface)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,7 +75,7 @@ export default async function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">
-                Recent Cooking Activity
+                Recent Cooking Logs
               </h2>
               <Link
                 href="/logs"
@@ -108,17 +104,15 @@ export default async function Home() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <OutcomeBadge outcome={activity.outcome} size="sm" />
-                      </div>
+                      <p className="text-sm font-medium text-[var(--primary)]">
+                        {activity.outcome && <span className="mr-1">{OUTCOME_CONFIG[activity.outcome].label}</span>}
+                        {activity.foodName}
+                      </p>
                       <p className="font-medium text-[var(--text-primary)] truncate">
                         {activity.recipeTitle}
                       </p>
                       <p className="text-sm text-[var(--text-secondary)]">
                         by {activity.userName || 'Anonymous'}
-                      </p>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">
-                        {activity.foodName}
                       </p>
                     </div>
                   </div>

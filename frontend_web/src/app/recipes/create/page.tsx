@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { createRecipe } from '@/lib/api/recipes';
+import { createRecipe, getRecipeDetail } from '@/lib/api/recipes';
+import type { RecipeDetail } from '@/lib/types';
 import { uploadImage } from '@/lib/api/images';
 import type { IngredientType, CookingTimeRange, IngredientDto, MeasurementUnit } from '@/lib/types';
 import { COOKING_TIME_RANGES } from '@/lib/types';
 import { getDefaultCookingStyle } from '@/lib/utils/cookingStyle';
 import { CookingStyleSelect, COOKING_STYLE_OPTIONS } from '@/components/common/CookingStyleSelect';
+import { getImageUrl } from '@/lib/utils/image';
 
 // Limits matching Flutter app
 const MAX_RECIPE_PHOTOS = 3;
@@ -24,10 +26,42 @@ const INGREDIENT_LIMITS: Record<IngredientType, number> = {
   SEASONING: 10,
 };
 
-const INGREDIENT_CATEGORIES: { value: IngredientType; label: string; max: number }[] = [
-  { value: 'MAIN', label: 'Main Ingredients', max: 5 },
-  { value: 'SECONDARY', label: 'Secondary Ingredients', max: 8 },
-  { value: 'SEASONING', label: 'Seasonings', max: 10 },
+const INGREDIENT_CATEGORIES: {
+  value: IngredientType;
+  label: string;
+  max: number;
+  icon: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+}[] = [
+  {
+    value: 'MAIN',
+    label: 'Main',
+    max: 5,
+    icon: '🍲',
+    color: 'var(--primary)',
+    bgColor: 'var(--primary-light)',
+    borderColor: 'var(--primary)',
+  },
+  {
+    value: 'SECONDARY',
+    label: 'Secondary',
+    max: 8,
+    icon: '🥕',
+    color: 'var(--success)',
+    bgColor: '#E8F5E9',
+    borderColor: 'var(--success)',
+  },
+  {
+    value: 'SEASONING',
+    label: 'Sauce & Seasoning',
+    max: 10,
+    icon: '🧂',
+    color: 'var(--secondary)',
+    bgColor: '#EFEBE9',
+    borderColor: 'var(--secondary)',
+  },
 ];
 
 const MEASUREMENT_UNITS: { value: MeasurementUnit | ''; label: string }[] = [
@@ -65,25 +99,57 @@ interface UploadedImage {
   error: string | null;
 }
 
+interface FormPhoto {
+  id: string;
+  type: 'inherited' | 'uploaded';
+  // For inherited photos
+  inheritedUrl?: string;
+  inheritedPublicId?: string; // The image public ID from parent recipe
+  // For uploaded photos
+  uploadedImage?: UploadedImage;
+}
+
 interface FormIngredient {
   id: string;
   name: string;
   quantity: string;  // Numeric quantity (max 4 chars)
   unit: MeasurementUnit | '';  // Measurement unit from dropdown
   type: IngredientType;
+  isOriginal?: boolean; // True if inherited from parent recipe
+  isDeleted?: boolean;  // True if marked for removal (soft delete)
 }
 
 interface FormStep {
   id: string;
   description: string;
   image: UploadedImage | null;
+  inheritedImageUrl?: string | null; // Image URL from parent recipe (for display)
+  inheritedImagePublicId?: string | null; // Image public ID from parent recipe (for submission)
+  isOriginal?: boolean; // True if inherited from parent recipe
+  isDeleted?: boolean;  // True if marked for removal (soft delete)
+}
+
+interface FormHashtag {
+  id: string;
+  name: string;
+  isOriginal?: boolean; // True if inherited from parent recipe
+  isDeleted?: boolean;  // True if marked for removal (soft delete)
 }
 
 export default function CreateRecipePage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const recipeImageInputRef = useRef<HTMLInputElement>(null);
   const stepImageInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+
+  // Variant mode state
+  const parentPublicId = searchParams.get('parent');
+  const [parentRecipe, setParentRecipe] = useState<RecipeDetail | null>(null);
+  const [isLoadingParent, setIsLoadingParent] = useState(!!parentPublicId);
+  const [changeReason, setChangeReason] = useState('');
+
+  const isVariantMode = !!parentRecipe;
 
   // Form state
   const [title, setTitle] = useState('');
@@ -92,9 +158,9 @@ export default function CreateRecipePage() {
   const [cookingStyle, setCookingStyle] = useState('');
   const [servings, setServings] = useState(2);
   const [cookingTimeRange, setCookingTimeRange] = useState<CookingTimeRange>('MIN_30_TO_60');
-  const [hashtags, setHashtags] = useState<string[]>([]);
+  const [hashtags, setHashtags] = useState<FormHashtag[]>([]);
   const [hashtagInput, setHashtagInput] = useState('');
-  const [recipeImages, setRecipeImages] = useState<UploadedImage[]>([]);
+  const [photos, setPhotos] = useState<FormPhoto[]>([]);
   const [ingredients, setIngredients] = useState<FormIngredient[]>([
     { id: crypto.randomUUID(), name: '', quantity: '', unit: '', type: 'MAIN' },
   ]);
@@ -109,53 +175,146 @@ export default function CreateRecipePage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/login?redirect=/recipes/create');
+      const redirectUrl = parentPublicId
+        ? `/recipes/create?parent=${parentPublicId}`
+        : '/recipes/create';
+      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, parentPublicId]);
 
-  // Set default cooking style based on browser locale
+  // Fetch parent recipe for variant mode
   useEffect(() => {
-    if (!cookingStyle) {
+    if (!parentPublicId || !isAuthenticated) return;
+
+    const fetchParent = async () => {
+      try {
+        setIsLoadingParent(true);
+        const parent = await getRecipeDetail(parentPublicId);
+        setParentRecipe(parent);
+
+        // Pre-populate form fields from parent
+        setDescription(parent.description);
+        setFoodName(parent.foodName);
+        setCookingStyle(parent.cookingStyle);
+        setServings(parent.servings);
+        setCookingTimeRange(parent.cookingTimeRange as CookingTimeRange);
+
+        // Pre-populate ingredients (marked as original/inherited)
+        const inheritedIngredients: FormIngredient[] = parent.ingredients.map((ing) => ({
+          id: crypto.randomUUID(),
+          name: ing.name,
+          quantity: ing.quantity?.toString() ?? '',
+          unit: (ing.unit ?? '') as MeasurementUnit | '',
+          type: ing.type,
+          isOriginal: true,
+          isDeleted: false,
+        }));
+        setIngredients(inheritedIngredients);
+
+        // Pre-populate steps (marked as original/inherited, with inherited image URLs)
+        const inheritedSteps: FormStep[] = parent.steps.map((step) => ({
+          id: crypto.randomUUID(),
+          description: step.description,
+          image: null, // New uploaded image (null until user uploads)
+          inheritedImageUrl: step.imageUrl, // Show parent's image
+          inheritedImagePublicId: step.imagePublicId, // For submission
+          isOriginal: true,
+          isDeleted: false,
+        }));
+        setSteps(inheritedSteps);
+
+        // Pre-populate hashtags (marked as original/inherited)
+        const inheritedHashtags: FormHashtag[] = parent.hashtags.map((h) => ({
+          id: crypto.randomUUID(),
+          name: h.name,
+          isOriginal: true,
+          isDeleted: false,
+        }));
+        setHashtags(inheritedHashtags);
+
+        // Pre-populate photos from parent recipe (as inherited)
+        const inheritedPhotos: FormPhoto[] = parent.images.map((img) => ({
+          id: crypto.randomUUID(),
+          type: 'inherited' as const,
+          inheritedUrl: img.imageUrl,
+          inheritedPublicId: img.imagePublicId,
+        }));
+        setPhotos(inheritedPhotos);
+      } catch (err) {
+        console.error('Failed to fetch parent recipe:', err);
+        setError('Failed to load parent recipe. Please try again.');
+      } finally {
+        setIsLoadingParent(false);
+      }
+    };
+
+    fetchParent();
+  }, [parentPublicId, isAuthenticated]);
+
+  // Set default cooking style based on browser locale (only for non-variant mode)
+  useEffect(() => {
+    if (!cookingStyle && !parentPublicId) {
       const defaultStyle = getDefaultCookingStyle();
       // Check if the detected style is in our list, otherwise use 'international'
       const isValid = COOKING_STYLE_OPTIONS.some((l) => l.value === defaultStyle);
       setCookingStyle(isValid ? defaultStyle : 'international');
     }
-  }, [cookingStyle]);
+  }, [cookingStyle, parentPublicId]);
 
   // Handle recipe image selection
   const handleRecipeImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const remaining = MAX_RECIPE_PHOTOS - recipeImages.length;
+    // Calculate remaining slots based on current photos count
+    const remaining = MAX_RECIPE_PHOTOS - photos.length;
     const filesToAdd = files.slice(0, remaining);
 
-    const newImages: UploadedImage[] = filesToAdd.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      publicId: null,
-      uploading: true,
-      error: null,
+    // Create new photo entries with uploading state
+    const newPhotos: FormPhoto[] = filesToAdd.map((file) => ({
+      id: crypto.randomUUID(),
+      type: 'uploaded' as const,
+      uploadedImage: {
+        file,
+        preview: URL.createObjectURL(file),
+        publicId: null,
+        uploading: true,
+        error: null,
+      },
     }));
 
-    setRecipeImages((prev) => [...prev, ...newImages]);
+    setPhotos((prev) => [...prev, ...newPhotos]);
 
-    for (const img of newImages) {
+    // Upload each image
+    for (const photo of newPhotos) {
       try {
-        const response = await uploadImage(img.file, 'RECIPE');
-        setRecipeImages((prev) =>
+        const response = await uploadImage(photo.uploadedImage!.file, 'COVER');
+        setPhotos((prev) =>
           prev.map((p) =>
-            p.preview === img.preview
-              ? { ...p, publicId: response.imagePublicId, uploading: false }
+            p.id === photo.id && p.uploadedImage
+              ? {
+                  ...p,
+                  uploadedImage: {
+                    ...p.uploadedImage,
+                    publicId: response.imagePublicId,
+                    uploading: false,
+                  },
+                }
               : p
           )
         );
       } catch {
-        setRecipeImages((prev) =>
+        setPhotos((prev) =>
           prev.map((p) =>
-            p.preview === img.preview
-              ? { ...p, uploading: false, error: 'Upload failed' }
+            p.id === photo.id && p.uploadedImage
+              ? {
+                  ...p,
+                  uploadedImage: {
+                    ...p.uploadedImage,
+                    uploading: false,
+                    error: 'Upload failed',
+                  },
+                }
               : p
           )
         );
@@ -165,15 +324,6 @@ export default function CreateRecipePage() {
     if (recipeImageInputRef.current) {
       recipeImageInputRef.current.value = '';
     }
-  };
-
-  // Remove recipe image
-  const removeRecipeImage = (preview: string) => {
-    setRecipeImages((prev) => {
-      const img = prev.find((p) => p.preview === preview);
-      if (img) URL.revokeObjectURL(img.preview);
-      return prev.filter((p) => p.preview !== preview);
-    });
   };
 
   // Handle step image selection
@@ -194,7 +344,7 @@ export default function CreateRecipePage() {
     );
 
     try {
-      const response = await uploadImage(file, 'RECIPE_STEP');
+      const response = await uploadImage(file, 'STEP');
       setSteps((prev) =>
         prev.map((s) =>
           s.id === stepId && s.image?.preview === newImage.preview
@@ -260,7 +410,18 @@ export default function CreateRecipePage() {
   };
 
   const removeIngredient = (id: string) => {
-    setIngredients((prev) => prev.filter((ing) => ing.id !== id));
+    setIngredients((prev) => {
+      const item = prev.find((ing) => ing.id === id);
+      if (item?.isOriginal) {
+        // Soft delete: mark as deleted but keep in list
+        return prev.map((ing) =>
+          ing.id === id ? { ...ing, isDeleted: true } : ing
+        );
+      } else {
+        // Hard delete: remove from list
+        return prev.filter((ing) => ing.id !== id);
+      }
+    });
   };
 
   // Step handlers
@@ -279,11 +440,162 @@ export default function CreateRecipePage() {
   };
 
   const removeStep = (id: string) => {
-    if (steps.length <= 1) return;
+    // Count non-deleted steps to check if we can remove
+    const nonDeletedCount = steps.filter((s) => !s.isDeleted).length;
+    if (nonDeletedCount <= 1) return;
+
     setSteps((prev) => {
       const step = prev.find((s) => s.id === id);
-      if (step?.image) URL.revokeObjectURL(step.image.preview);
-      return prev.filter((s) => s.id !== id);
+      if (step?.isOriginal) {
+        // Soft delete: mark as deleted but keep in list
+        // Revoke image URL if present
+        if (step.image) URL.revokeObjectURL(step.image.preview);
+        return prev.map((s) =>
+          s.id === id ? { ...s, isDeleted: true, image: null } : s
+        );
+      } else {
+        // Hard delete: remove from list
+        if (step?.image) URL.revokeObjectURL(step.image.preview);
+        return prev.filter((s) => s.id !== id);
+      }
+    });
+  };
+
+  // Restore functions for soft-deleted items
+  const restoreIngredient = (id: string) => {
+    setIngredients((prev) =>
+      prev.map((ing) =>
+        ing.id === id ? { ...ing, isDeleted: false } : ing
+      )
+    );
+  };
+
+  const restoreStep = (id: string) => {
+    setSteps((prev) =>
+      prev.map((step) =>
+        step.id === id ? { ...step, isDeleted: false } : step
+      )
+    );
+  };
+
+  // Drag and drop state for steps
+  const [draggedStepId, setDraggedStepId] = useState<string | null>(null);
+  const [dragOverStepId, setDragOverStepId] = useState<string | null>(null);
+
+  const handleStepDragStart = (e: React.DragEvent, stepId: string) => {
+    setDraggedStepId(stepId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', stepId);
+  };
+
+  const handleStepDragOver = (e: React.DragEvent, stepId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (stepId !== draggedStepId) {
+      setDragOverStepId(stepId);
+    }
+  };
+
+  const handleStepDragLeave = () => {
+    setDragOverStepId(null);
+  };
+
+  const handleStepDrop = (e: React.DragEvent, targetStepId: string) => {
+    e.preventDefault();
+    if (!draggedStepId || draggedStepId === targetStepId) {
+      setDraggedStepId(null);
+      setDragOverStepId(null);
+      return;
+    }
+
+    setSteps((prev) => {
+      // Work with non-deleted steps only for reordering
+      const activeSteps = prev.filter((s) => !s.isDeleted);
+      const deletedSteps = prev.filter((s) => s.isDeleted);
+
+      const draggedIndex = activeSteps.findIndex((s) => s.id === draggedStepId);
+      const targetIndex = activeSteps.findIndex((s) => s.id === targetStepId);
+
+      if (draggedIndex === -1 || targetIndex === -1) return prev;
+
+      // Remove dragged item and insert at target position
+      const newActiveSteps = [...activeSteps];
+      const [removed] = newActiveSteps.splice(draggedIndex, 1);
+      newActiveSteps.splice(targetIndex, 0, removed);
+
+      // Combine back with deleted steps (keep deleted at end)
+      return [...newActiveSteps, ...deletedSteps];
+    });
+
+    setDraggedStepId(null);
+    setDragOverStepId(null);
+  };
+
+  const handleStepDragEnd = () => {
+    setDraggedStepId(null);
+    setDragOverStepId(null);
+  };
+
+  // Drag and drop state for photos
+  const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
+  const [dragOverPhotoId, setDragOverPhotoId] = useState<string | null>(null);
+
+  const handlePhotoDragStart = (e: React.DragEvent, photoId: string) => {
+    setDraggedPhotoId(photoId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', photoId);
+  };
+
+  const handlePhotoDragOver = (e: React.DragEvent, photoId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (photoId !== draggedPhotoId) {
+      setDragOverPhotoId(photoId);
+    }
+  };
+
+  const handlePhotoDragLeave = () => {
+    setDragOverPhotoId(null);
+  };
+
+  const handlePhotoDrop = (e: React.DragEvent, targetPhotoId: string) => {
+    e.preventDefault();
+    if (!draggedPhotoId || draggedPhotoId === targetPhotoId) {
+      setDraggedPhotoId(null);
+      setDragOverPhotoId(null);
+      return;
+    }
+
+    setPhotos((prev) => {
+      const draggedIndex = prev.findIndex((p) => p.id === draggedPhotoId);
+      const targetIndex = prev.findIndex((p) => p.id === targetPhotoId);
+
+      if (draggedIndex === -1 || targetIndex === -1) return prev;
+
+      const newPhotos = [...prev];
+      const [removed] = newPhotos.splice(draggedIndex, 1);
+      newPhotos.splice(targetIndex, 0, removed);
+
+      return newPhotos;
+    });
+
+    setDraggedPhotoId(null);
+    setDragOverPhotoId(null);
+  };
+
+  const handlePhotoDragEnd = () => {
+    setDraggedPhotoId(null);
+    setDragOverPhotoId(null);
+  };
+
+  // Remove photo handler
+  const removePhoto = (photoId: string) => {
+    setPhotos((prev) => {
+      const photo = prev.find((p) => p.id === photoId);
+      if (photo?.type === 'uploaded' && photo.uploadedImage) {
+        URL.revokeObjectURL(photo.uploadedImage.preview);
+      }
+      return prev.filter((p) => p.id !== photoId);
     });
   };
 
@@ -299,16 +611,32 @@ export default function CreateRecipePage() {
 
   const addHashtag = () => {
     if (!hashtagInput.trim()) return;
-    if (hashtags.length >= MAX_HASHTAGS) return;
+    // Count active (non-deleted) hashtags
+    const activeCount = hashtags.filter((h) => !h.isDeleted).length;
+    if (activeCount >= MAX_HASHTAGS) return;
 
     const normalized = normalizeHashtag(hashtagInput);
     if (!normalized) return;
-    if (hashtags.includes(normalized)) {
+    // Check if hashtag already exists (and is not deleted)
+    if (hashtags.some((h) => h.name === normalized && !h.isDeleted)) {
       setHashtagInput('');
       return;
     }
 
-    setHashtags((prev) => [...prev, normalized]);
+    // Check if it was previously deleted - restore it instead of adding new
+    const existingDeleted = hashtags.find((h) => h.name === normalized && h.isDeleted);
+    if (existingDeleted) {
+      setHashtags((prev) =>
+        prev.map((h) => (h.id === existingDeleted.id ? { ...h, isDeleted: false } : h))
+      );
+      setHashtagInput('');
+      return;
+    }
+
+    setHashtags((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), name: normalized, isOriginal: false, isDeleted: false },
+    ]);
     setHashtagInput('');
   };
 
@@ -319,9 +647,59 @@ export default function CreateRecipePage() {
     }
   };
 
-  const removeHashtag = (tag: string) => {
-    setHashtags((prev) => prev.filter((t) => t !== tag));
+  const removeHashtag = (id: string) => {
+    setHashtags((prev) => {
+      const hashtag = prev.find((h) => h.id === id);
+      if (hashtag?.isOriginal) {
+        // Soft delete: mark as deleted but keep in list
+        return prev.map((h) => (h.id === id ? { ...h, isDeleted: true } : h));
+      } else {
+        // Hard delete: remove from list
+        return prev.filter((h) => h.id !== id);
+      }
+    });
   };
+
+  const restoreHashtag = (id: string) => {
+    setHashtags((prev) =>
+      prev.map((h) => (h.id === id ? { ...h, isDeleted: false } : h))
+    );
+  };
+
+  // Compute change diff for variant mode using isOriginal/isDeleted flags
+  const computeChangeDiff = useCallback(() => {
+    if (!isVariantMode) return null;
+
+    // Removed = original items marked as deleted
+    const removedIngredients = ingredients
+      .filter((ing) => ing.isOriginal && ing.isDeleted)
+      .map((ing) => ing.name.trim());
+
+    // Added = non-original items that are not deleted (with valid names)
+    const addedIngredients = ingredients
+      .filter((ing) => !ing.isOriginal && !ing.isDeleted && ing.name.trim())
+      .map((ing) => ing.name.trim());
+
+    // Same logic for steps
+    const removedSteps = steps
+      .filter((step) => step.isOriginal && step.isDeleted)
+      .map((step) => step.description.trim());
+
+    const addedSteps = steps
+      .filter((step) => !step.isOriginal && !step.isDeleted && step.description.trim())
+      .map((step) => step.description.trim());
+
+    return {
+      ingredients: {
+        removed: removedIngredients,
+        added: addedIngredients,
+      },
+      steps: {
+        removed: removedSteps,
+        added: addedSteps,
+      },
+    };
+  }, [isVariantMode, ingredients, steps]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -344,42 +722,57 @@ export default function CreateRecipePage() {
       return;
     }
 
-    if (recipeImages.length === 0) {
+    // Variant-specific validation
+    if (isVariantMode && !changeReason.trim()) {
+      setError('Please explain what you changed in this variation');
+      return;
+    }
+
+    // Validate photos
+    if (photos.length === 0) {
       setError('Please add at least one photo of your dish');
       return;
     }
 
-    if (recipeImages.some((img) => img.uploading)) {
+    // Check if any uploaded photos are still uploading
+    const uploadingPhotos = photos.filter(
+      (p) => p.type === 'uploaded' && p.uploadedImage?.uploading
+    );
+    if (uploadingPhotos.length > 0) {
       setError('Please wait for images to finish uploading');
       return;
     }
 
-    const failedRecipeImages = recipeImages.filter((img) => img.error);
-    if (failedRecipeImages.length > 0) {
+    // Check for failed uploads
+    const failedPhotos = photos.filter(
+      (p) => p.type === 'uploaded' && p.uploadedImage?.error
+    );
+    if (failedPhotos.length > 0) {
       setError('Some recipe images failed to upload. Please remove them and try again.');
       return;
     }
 
-    const validIngredients = ingredients.filter((ing) => ing.name.trim());
+    // Filter out deleted items and validate
+    const validIngredients = ingredients.filter((ing) => ing.name.trim() && !ing.isDeleted);
     if (validIngredients.length === 0) {
       setError('Please add at least one ingredient');
       return;
     }
 
-    const validSteps = steps.filter((step) => step.description.trim());
+    const validSteps = steps.filter((step) => step.description.trim() && !step.isDeleted);
     if (validSteps.length === 0) {
       setError('Please add at least one cooking step');
       return;
     }
 
-    // Check if any step images are uploading
-    const uploadingStepImages = steps.some((step) => step.image?.uploading);
+    // Check if any active step images are uploading
+    const uploadingStepImages = validSteps.some((step) => step.image?.uploading);
     if (uploadingStepImages) {
       setError('Please wait for step images to finish uploading');
       return;
     }
 
-    const failedStepImages = steps.filter((step) => step.image?.error);
+    const failedStepImages = validSteps.filter((step) => step.image?.error);
     if (failedStepImages.length > 0) {
       setError('Some step images failed to upload. Please remove them and try again.');
       return;
@@ -388,9 +781,18 @@ export default function CreateRecipePage() {
     setIsSubmitting(true);
 
     try {
-      const imagePublicIds = recipeImages
-        .filter((img) => img.publicId)
-        .map((img) => img.publicId!);
+      // Get image public IDs from all photos (inherited + uploaded) in order
+      const imagePublicIds = photos
+        .map((p) => {
+          if (p.type === 'inherited' && p.inheritedPublicId) {
+            return p.inheritedPublicId;
+          }
+          if (p.type === 'uploaded' && p.uploadedImage?.publicId) {
+            return p.uploadedImage.publicId;
+          }
+          return null;
+        })
+        .filter((id): id is string => id !== null);
 
       const ingredientsData: IngredientDto[] = validIngredients.map((ing) => ({
         name: ing.name.trim(),
@@ -402,20 +804,32 @@ export default function CreateRecipePage() {
       const stepsData = validSteps.map((step, index) => ({
         stepNumber: index + 1,
         description: step.description.trim(),
-        imagePublicId: step.image?.publicId || null,
+        imagePublicId: step.image?.publicId || step.inheritedImagePublicId || null,
       }));
 
       const recipe = await createRecipe({
         title: title.trim(),
         description: description.trim() || undefined,
-        newFoodName: foodName.trim(),
+        // For variants, use the parent's food; for new recipes, create new food
+        newFoodName: isVariantMode ? undefined : foodName.trim(),
+        food1MasterPublicId: isVariantMode ? parentRecipe?.foodMasterPublicId : undefined,
         cookingStyle,
         ingredients: ingredientsData,
         steps: stepsData,
         imagePublicIds,
-        hashtags: hashtags.length > 0 ? hashtags : undefined,
+        hashtags: (() => {
+          const activeHashtags = hashtags.filter((h) => !h.isDeleted).map((h) => h.name);
+          return activeHashtags.length > 0 ? activeHashtags : undefined;
+        })(),
         servings,
         cookingTimeRange,
+        // Variant-specific fields
+        parentPublicId: isVariantMode ? parentRecipe?.publicId : undefined,
+        rootPublicId: isVariantMode
+          ? (parentRecipe?.rootInfo?.publicId ?? parentRecipe?.publicId)
+          : undefined,
+        changeReason: isVariantMode ? changeReason.trim() : undefined,
+        changeDiff: computeChangeDiff() ?? undefined,
       });
 
       router.push(`/recipes/${recipe.publicId}`);
@@ -427,8 +841,8 @@ export default function CreateRecipePage() {
     }
   };
 
-  // Show loading state while auth is loading or redirecting to login
-  if (authLoading || !isAuthenticated) {
+  // Show loading state while auth is loading, redirecting to login, or loading parent
+  if (authLoading || !isAuthenticated || isLoadingParent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="animate-pulse">
@@ -444,68 +858,126 @@ export default function CreateRecipePage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/recipes"
+            href={isVariantMode ? `/recipes/${parentRecipe.publicId}` : '/recipes'}
             className="text-[var(--text-secondary)] hover:text-[var(--primary)] inline-flex items-center gap-1 mb-4"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Recipes
+            {isVariantMode ? 'Back to Recipe' : 'Back to Recipes'}
           </Link>
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">
-            Create Recipe
+            {isVariantMode ? 'Create Variation' : 'Create Recipe'}
           </h1>
           <p className="text-[var(--text-secondary)] mt-2">
-            Share your culinary creation with the community
+            {isVariantMode
+              ? 'Create your own version with modifications'
+              : 'Share your culinary creation with the community'}
           </p>
         </div>
+
+        {/* Variant Mode Banner */}
+        {isVariantMode && (
+          <div className="bg-[var(--highlight-bg)] border border-[var(--primary-light)] rounded-xl p-4 mb-8">
+            <div className="flex items-center gap-2 text-[var(--primary)]">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+              <span className="font-medium">Creating variation of:</span>
+            </div>
+            <Link
+              href={`/recipes/${parentRecipe.publicId}`}
+              className="text-lg font-semibold text-[var(--text-primary)] hover:text-[var(--primary)] mt-1 block"
+            >
+              {parentRecipe.title}
+            </Link>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">
+              Modify the recipe below and add your own twist. Items marked as &quot;inherited&quot; come from the original recipe.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Recipe Photos Section */}
           <section className="bg-[var(--surface)] rounded-2xl p-6 border border-[var(--border)]">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
               Photos <span className="text-[var(--error)]">*</span>
             </h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-4">
-              Add photos of your finished dish (at least 1, up to {MAX_RECIPE_PHOTOS})
+            <p className="text-sm text-[var(--text-secondary)] mb-2">
+              {isVariantMode && photos.some((p) => p.type === 'inherited')
+                ? `Add photos of your finished dish (inherited from parent, up to ${MAX_RECIPE_PHOTOS} total)`
+                : `Add photos of your finished dish (at least 1, up to ${MAX_RECIPE_PHOTOS})`}
+            </p>
+            <p className="text-xs text-[var(--text-secondary)] mb-4 flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+              </svg>
+              Drag photos to reorder them
             </p>
             <div className="flex gap-3 flex-wrap">
-              {recipeImages.map((img) => (
-                <div
-                  key={img.preview}
-                  className="relative w-28 h-28 rounded-lg overflow-hidden bg-[var(--background)]"
-                >
-                  <Image
-                    src={img.preview}
-                    alt="Recipe photo"
-                    fill
-                    className="object-cover"
-                    sizes="112px"
-                  />
-                  {img.uploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
-                    </div>
-                  )}
-                  {img.error && (
-                    <div className="absolute inset-0 bg-[var(--error)]/50 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeRecipeImage(img.preview)}
-                    className="absolute top-1 right-1 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+              {photos.map((photo, index) => {
+                const isDragging = draggedPhotoId === photo.id;
+                const isDragOver = dragOverPhotoId === photo.id;
+                const isInherited = photo.type === 'inherited';
+                const imageUrl = isInherited ? photo.inheritedUrl : photo.uploadedImage?.preview;
+                const isUploading = !isInherited && photo.uploadedImage?.uploading;
+                const hasError = !isInherited && photo.uploadedImage?.error;
+
+                return (
+                  <div
+                    key={photo.id}
+                    draggable
+                    onDragStart={(e) => handlePhotoDragStart(e, photo.id)}
+                    onDragOver={(e) => handlePhotoDragOver(e, photo.id)}
+                    onDragLeave={handlePhotoDragLeave}
+                    onDrop={(e) => handlePhotoDrop(e, photo.id)}
+                    onDragEnd={handlePhotoDragEnd}
+                    className={`relative w-28 h-28 rounded-lg overflow-hidden bg-[var(--background)] cursor-grab active:cursor-grabbing transition-all ${
+                      isDragging ? 'opacity-50' : ''
+                    } ${isDragOver ? 'ring-2 ring-[var(--primary)] ring-offset-2' : ''}`}
                   >
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-              {recipeImages.length < MAX_RECIPE_PHOTOS && (
+                    <Image
+                      src={imageUrl!}
+                      alt={`Photo ${index + 1}`}
+                      fill
+                      className="object-cover pointer-events-none"
+                      sizes="112px"
+                    />
+                    {/* Original badge for inherited images */}
+                    {isInherited && (
+                      <span className="absolute bottom-1 left-1 text-[8px] px-1.5 py-0.5 bg-[var(--primary-light)]/30 text-[var(--primary)] rounded border border-[var(--primary-light)] font-medium">
+                        original
+                      </span>
+                    )}
+                    {/* Uploading indicator */}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
+                      </div>
+                    )}
+                    {/* Error indicator */}
+                    {hasError && (
+                      <div className="absolute inset-0 bg-[var(--error)]/50 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Remove button */}
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(photo.id)}
+                      className="absolute top-1 right-1 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                    >
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
+              {/* Add button */}
+              {photos.length < MAX_RECIPE_PHOTOS && (
                 <button
                   type="button"
                   onClick={() => recipeImageInputRef.current?.click()}
@@ -533,46 +1005,41 @@ export default function CreateRecipePage() {
               Basic Information
             </h2>
             <div className="space-y-4">
-              {/* Title */}
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  Recipe Title <span className="text-[var(--error)]">*</span>
-                </label>
-                <input
-                  id="title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  maxLength={100}
-                  className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
-                  placeholder="e.g., Grandma's Secret Kimchi Fried Rice"
-                />
-                <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
-                  {title.length}/100
-                </p>
-              </div>
-
               {/* Food Name */}
               <div>
                 <label htmlFor="foodName" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                   Food Name <span className="text-[var(--error)]">*</span>
+                  {isVariantMode && (
+                    <span className="ml-2 text-xs font-normal text-[var(--text-secondary)]">
+                      (inherited from original)
+                    </span>
+                  )}
                 </label>
                 <input
                   id="foodName"
                   type="text"
                   value={foodName}
-                  onChange={(e) => setFoodName(e.target.value)}
+                  onChange={(e) => !isVariantMode && setFoodName(e.target.value)}
                   maxLength={50}
-                  className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
+                  readOnly={isVariantMode}
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none ${
+                    isVariantMode
+                      ? 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] cursor-not-allowed'
+                      : 'bg-[var(--background)] border-[var(--border)] focus:border-[var(--primary)]'
+                  }`}
                   placeholder="e.g., Kimchi Fried Rice"
                 />
                 <div className="flex justify-between mt-1">
                   <p className="text-xs text-[var(--text-secondary)]">
-                    The general name of the dish (used for categorization)
+                    {isVariantMode
+                      ? 'Variations keep the same food category as the original'
+                      : 'The general name of the dish (used for categorization)'}
                   </p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {foodName.length}/50
-                  </p>
+                  {!isVariantMode && (
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {foodName.length}/50
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -659,47 +1126,85 @@ export default function CreateRecipePage() {
             <div className="space-y-6">
               {INGREDIENT_CATEGORIES.map((category) => {
                 const categoryIngredients = ingredients.filter((ing) => ing.type === category.value);
-                const count = categoryIngredients.length;
-                const canAdd = count < category.max;
+                const activeIngredients = categoryIngredients.filter((ing) => !ing.isDeleted);
+                const deletedIngredients = categoryIngredients.filter((ing) => ing.isDeleted);
+                const activeCount = activeIngredients.length;
+                const canAdd = activeCount < category.max;
 
                 return (
-                  <div key={category.value} className="border border-[var(--border)] rounded-xl p-4">
+                  <div
+                    key={category.value}
+                    className="rounded-xl p-4 border-2"
+                    style={{
+                      borderColor: category.borderColor,
+                      backgroundColor: `color-mix(in srgb, ${category.bgColor} 30%, transparent)`,
+                    }}
+                  >
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-sm font-medium text-[var(--text-primary)]">
+                      <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: category.color }}>
+                        <span className="text-base">{category.icon}</span>
                         {category.label}
                       </h3>
-                      <span className="text-xs text-[var(--text-secondary)]">
-                        {count}/{category.max}
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: category.bgColor, color: category.color }}
+                      >
+                        {activeCount}/{category.max}
                       </span>
                     </div>
 
-                    {/* Ingredient rows for this category */}
+                    {/* Active ingredient rows for this category */}
                     <div className="space-y-2">
-                      {categoryIngredients.map((ing, index) => (
-                        <div key={ing.id} className="flex gap-2 items-center">
+                      {activeIngredients.map((ing, index) => (
+                        <div
+                          key={ing.id}
+                          className={`flex gap-2 items-center ${
+                            ing.isOriginal ? 'pl-2 border-l-2 border-dashed border-[var(--primary-light)]' : ''
+                          }`}
+                        >
                           <span className="text-xs text-[var(--text-secondary)] w-4">
                             {index + 1}.
                           </span>
+                          {ing.isOriginal && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-[var(--primary-light)]/20 text-[var(--primary)] rounded">
+                              inherited
+                            </span>
+                          )}
                           <input
                             type="text"
                             value={ing.name}
-                            onChange={(e) => updateIngredient(ing.id, 'name', e.target.value)}
+                            onChange={(e) => !ing.isOriginal && updateIngredient(ing.id, 'name', e.target.value)}
                             maxLength={50}
-                            className="flex-1 px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm"
+                            readOnly={ing.isOriginal}
+                            className={`flex-1 px-3 py-2 border rounded-lg text-sm ${
+                              ing.isOriginal
+                                ? 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] cursor-not-allowed'
+                                : 'bg-[var(--background)] border-[var(--border)] focus:outline-none focus:border-[var(--primary)]'
+                            }`}
                             placeholder="Ingredient name"
                           />
                           <input
                             type="text"
                             inputMode="decimal"
                             value={ing.quantity}
-                            onChange={(e) => updateIngredient(ing.id, 'quantity', e.target.value)}
-                            className="w-16 px-2 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm text-center"
+                            onChange={(e) => !ing.isOriginal && updateIngredient(ing.id, 'quantity', e.target.value)}
+                            readOnly={ing.isOriginal}
+                            className={`w-16 px-2 py-2 border rounded-lg text-sm text-center ${
+                              ing.isOriginal
+                                ? 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] cursor-not-allowed'
+                                : 'bg-[var(--background)] border-[var(--border)] focus:outline-none focus:border-[var(--primary)]'
+                            }`}
                             placeholder="Qty"
                           />
                           <select
                             value={ing.unit}
-                            onChange={(e) => updateIngredient(ing.id, 'unit', e.target.value)}
-                            className="w-24 px-2 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm"
+                            onChange={(e) => !ing.isOriginal && updateIngredient(ing.id, 'unit', e.target.value)}
+                            disabled={ing.isOriginal}
+                            className={`w-24 px-2 py-2 border rounded-lg text-sm ${
+                              ing.isOriginal
+                                ? 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] cursor-not-allowed'
+                                : 'bg-[var(--background)] border-[var(--border)] focus:outline-none focus:border-[var(--primary)]'
+                            }`}
                           >
                             {MEASUREMENT_UNITS.map((unit) => (
                               <option key={unit.value} value={unit.value}>
@@ -719,6 +1224,44 @@ export default function CreateRecipePage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Deleted ingredients section (only in variant mode) */}
+                    {isVariantMode && deletedIngredients.length > 0 && (
+                      <div className="mt-3 border border-dashed border-[var(--border)] rounded-lg p-3 bg-[var(--background)]">
+                        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-2">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span>Removed ({deletedIngredients.length})</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {deletedIngredients.map((ing) => {
+                            const unitLabel = MEASUREMENT_UNITS.find((u) => u.value === ing.unit)?.label || '';
+                            const displayText = `${ing.name}${ing.quantity ? ` - ${ing.quantity}` : ''}${unitLabel ? ` ${unitLabel}` : ''}`;
+                            return (
+                              <div
+                                key={ing.id}
+                                className="flex items-center justify-between py-1.5 px-2 bg-[var(--surface)] rounded"
+                              >
+                                <span className="text-sm text-[var(--text-secondary)] line-through">
+                                  {displayText}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => restoreIngredient(ing.id)}
+                                  className="text-xs px-2 py-1 text-[var(--primary)] hover:bg-[var(--primary-light)]/10 rounded transition-colors inline-flex items-center gap-1"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                  </svg>
+                                  Restore
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Add button for this category */}
                     {canAdd ? (
@@ -745,184 +1288,395 @@ export default function CreateRecipePage() {
 
           {/* Steps Section */}
           <section className="bg-[var(--surface)] rounded-2xl p-6 border border-[var(--border)]">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-                Cooking Steps <span className="text-[var(--error)]">*</span>
-              </h2>
-              <span className="text-sm text-[var(--text-secondary)]">
-                {steps.length}/{MAX_STEPS}
-              </span>
-            </div>
-            <div className="space-y-4">
-              {steps.map((step, index) => (
-                <div key={step.id} className="flex gap-3 items-start">
-                  <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center flex-shrink-0 text-sm font-medium">
-                    {index + 1}
+            {(() => {
+              const activeSteps = steps.filter((s) => !s.isDeleted);
+              const deletedSteps = steps.filter((s) => s.isDeleted);
+              const activeCount = activeSteps.length;
+              const canAdd = activeCount < MAX_STEPS;
+              const canDelete = activeCount > 1;
+
+              return (
+                <>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                      Cooking Steps <span className="text-[var(--error)]">*</span>
+                    </h2>
+                    <span className="text-sm text-[var(--text-secondary)]">
+                      {activeCount}/{MAX_STEPS}
+                    </span>
                   </div>
-                  <div className="flex-1 space-y-2">
-                    <div>
-                      <textarea
-                        value={step.description}
-                        onChange={(e) => updateStep(step.id, e.target.value)}
-                        maxLength={500}
-                        rows={3}
-                        className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm resize-none"
-                        placeholder="Describe this step..."
-                      />
-                      <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
-                        {step.description.length}/500
-                      </p>
-                    </div>
-                    {/* Step Image */}
-                    <div className="flex items-center gap-2">
-                      {step.image ? (
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-[var(--background)]">
-                          <Image
-                            src={step.image.preview}
-                            alt={`Step ${index + 1}`}
-                            fill
-                            className="object-cover"
-                            sizes="64px"
-                          />
-                          {step.image.uploading && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  <p className="text-xs text-[var(--text-secondary)] mb-4 flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                    </svg>
+                    Drag steps to reorder them
+                  </p>
+                  <div className="space-y-4">
+                    {activeSteps.map((step, index) => {
+                      const isDragging = draggedStepId === step.id;
+                      const isDragOver = dragOverStepId === step.id;
+                      // Show inherited image if no new uploaded image exists
+                      const displayImageUrl = step.image?.preview || (step.inheritedImageUrl ? getImageUrl(step.inheritedImageUrl) : null);
+                      const isInheritedImage = !step.image && !!step.inheritedImageUrl;
+
+                      return (
+                        <div
+                          key={step.id}
+                          draggable
+                          onDragStart={(e) => handleStepDragStart(e, step.id)}
+                          onDragOver={(e) => handleStepDragOver(e, step.id)}
+                          onDragLeave={handleStepDragLeave}
+                          onDrop={(e) => handleStepDrop(e, step.id)}
+                          onDragEnd={handleStepDragEnd}
+                          className={`flex gap-3 items-start p-3 rounded-lg transition-all ${
+                            step.isOriginal ? 'border-l-2 border-dashed border-[var(--primary-light)]' : ''
+                          } ${isDragging ? 'opacity-50 bg-[var(--background)]' : ''} ${
+                            isDragOver ? 'bg-[var(--primary-light)]/10 border-2 border-dashed border-[var(--primary)]' : 'border-2 border-transparent'
+                          }`}
+                        >
+                          {/* Drag Handle */}
+                          <div className="flex flex-col items-center gap-1 cursor-grab active:cursor-grabbing">
+                            <svg className="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                            </svg>
+                            <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center flex-shrink-0 text-sm font-medium">
+                              {index + 1}
                             </div>
-                          )}
-                          {step.image.error && (
-                            <div className="absolute inset-0 bg-[var(--error)]/50 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
-                              </svg>
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            {step.isOriginal && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-[var(--primary-light)]/20 text-[var(--primary)] rounded inline-block mb-1">
+                                inherited
+                              </span>
+                            )}
+                            <div>
+                              <textarea
+                                value={step.description}
+                                onChange={(e) => !step.isOriginal && updateStep(step.id, e.target.value)}
+                                maxLength={500}
+                                rows={3}
+                                readOnly={step.isOriginal}
+                                className={`w-full px-3 py-2 border rounded-lg text-sm resize-none ${
+                                  step.isOriginal
+                                    ? 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] cursor-not-allowed'
+                                    : 'bg-[var(--background)] border-[var(--border)] focus:outline-none focus:border-[var(--primary)]'
+                                }`}
+                                placeholder="Describe this step..."
+                              />
+                              <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
+                                {step.description.length}/500
+                              </p>
                             </div>
-                          )}
+                            {/* Step Image */}
+                            <div className="flex items-center gap-2">
+                              {displayImageUrl ? (
+                                <div className="relative">
+                                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-[var(--background)]">
+                                    <Image
+                                      src={displayImageUrl}
+                                      alt={`Step ${index + 1}`}
+                                      fill
+                                      className="object-cover"
+                                      sizes="64px"
+                                    />
+                                    {step.image?.uploading && (
+                                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                                      </div>
+                                    )}
+                                    {step.image?.error && (
+                                      <div className="absolute inset-0 bg-[var(--error)]/50 flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
+                                        </svg>
+                                      </div>
+                                    )}
+                                    {/* Only show remove button for uploaded images, not inherited */}
+                                    {step.image && (
+                                      <button
+                                        type="button"
+                                        onClick={() => removeStepImage(step.id)}
+                                        className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                                      >
+                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </button>
+                                    )}
+                                  </div>
+                                  {/* Badge for inherited image */}
+                                  {isInheritedImage && (
+                                    <span className="absolute -bottom-1 -right-1 text-[8px] px-1 py-0.5 bg-[var(--primary-light)]/30 text-[var(--primary)] rounded border border-[var(--primary-light)]">
+                                      original
+                                    </span>
+                                  )}
+                                </div>
+                              ) : null}
+                              {/* Always show add photo button to allow replacing inherited image */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const input = stepImageInputRefs.current.get(step.id);
+                                  input?.click();
+                                }}
+                                className="px-3 py-1.5 text-xs text-[var(--text-secondary)] border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors inline-flex items-center gap-1"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {displayImageUrl ? 'Change photo' : 'Add photo'}
+                              </button>
+                              <input
+                                ref={(el) => {
+                                  if (el) stepImageInputRefs.current.set(step.id, el);
+                                }}
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleStepImageSelect(step.id, e)}
+                                className="hidden"
+                              />
+                            </div>
+                          </div>
                           <button
                             type="button"
-                            onClick={() => removeStepImage(step.id)}
-                            className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                            onClick={() => removeStep(step.id)}
+                            disabled={!canDelete}
+                            className="p-2 text-[var(--text-secondary)] hover:text-[var(--error)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           >
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const input = stepImageInputRefs.current.get(step.id);
-                            input?.click();
-                          }}
-                          className="px-3 py-1.5 text-xs text-[var(--text-secondary)] border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors inline-flex items-center gap-1"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          Add photo
-                        </button>
-                      )}
-                      <input
-                        ref={(el) => {
-                          if (el) stepImageInputRefs.current.set(step.id, el);
-                        }}
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleStepImageSelect(step.id, e)}
-                        className="hidden"
-                      />
-                    </div>
+                      );
+                    })}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeStep(step.id)}
-                    disabled={steps.length <= 1}
-                    className="p-2 text-[var(--text-secondary)] hover:text-[var(--error)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-            {steps.length < MAX_STEPS ? (
-              <button
-                type="button"
-                onClick={addStep}
-                className="mt-4 px-4 py-2 text-sm text-[var(--primary)] hover:bg-[var(--primary-light)]/10 rounded-lg transition-colors inline-flex items-center gap-1"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add Step
-              </button>
-            ) : (
-              <p className="mt-4 text-sm text-[var(--text-secondary)]">
-                Maximum {MAX_STEPS} steps reached
-              </p>
-            )}
+
+                  {/* Deleted steps section (only in variant mode) */}
+                  {isVariantMode && deletedSteps.length > 0 && (
+                    <div className="mt-4 border border-dashed border-[var(--border)] rounded-lg p-3 bg-[var(--background)]">
+                      <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-2">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Removed Steps ({deletedSteps.length})</span>
+                      </div>
+                      <div className="space-y-2">
+                        {deletedSteps.map((step) => (
+                          <div
+                            key={step.id}
+                            className="flex items-start justify-between py-2 px-3 bg-[var(--surface)] rounded"
+                          >
+                            <p className="text-sm text-[var(--text-secondary)] line-through flex-1 pr-3">
+                              {step.description.length > 100
+                                ? `${step.description.slice(0, 100)}...`
+                                : step.description}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => restoreStep(step.id)}
+                              className="text-xs px-2 py-1 text-[var(--primary)] hover:bg-[var(--primary-light)]/10 rounded transition-colors inline-flex items-center gap-1 flex-shrink-0"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                              </svg>
+                              Restore
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {canAdd ? (
+                    <button
+                      type="button"
+                      onClick={addStep}
+                      className="mt-4 px-4 py-2 text-sm text-[var(--primary)] hover:bg-[var(--primary-light)]/10 rounded-lg transition-colors inline-flex items-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Step
+                    </button>
+                  ) : (
+                    <p className="mt-4 text-sm text-[var(--text-secondary)]">
+                      Maximum {MAX_STEPS} steps reached
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </section>
 
           {/* Hashtags Section */}
           <section className="bg-[var(--surface)] rounded-2xl p-6 border border-[var(--border)]">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-                Hashtags
-              </h2>
-              <span className="text-sm text-[var(--text-secondary)]">
-                {hashtags.length}/{MAX_HASHTAGS}
-              </span>
-            </div>
+            {(() => {
+              const activeHashtags = hashtags.filter((h) => !h.isDeleted);
+              const deletedHashtags = hashtags.filter((h) => h.isDeleted);
+              const activeCount = activeHashtags.length;
 
-            {/* Tag chips */}
-            {hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {hashtags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-[var(--primary-light)]/20 text-[var(--primary)] rounded-full text-sm"
-                  >
-                    #{tag}
-                    <button
-                      type="button"
-                      onClick={() => removeHashtag(tag)}
-                      className="hover:text-[var(--error)] transition-colors"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
+              return (
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                      Hashtags
+                    </h2>
+                    <span className="text-sm text-[var(--text-secondary)]">
+                      {activeCount}/{MAX_HASHTAGS}
+                    </span>
+                  </div>
 
-            {/* Tag input */}
-            {hashtags.length < MAX_HASHTAGS && (
-              <div className="flex gap-2">
+                  {/* Active tag chips */}
+                  {activeHashtags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {activeHashtags.map((hashtag) => (
+                        <span
+                          key={hashtag.id}
+                          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm text-hashtag ${
+                            hashtag.isOriginal
+                              ? 'border border-dashed'
+                              : ''
+                          }`}
+                          style={hashtag.isOriginal ? { borderColor: 'rgba(76, 175, 80, 0.4)' } : undefined}
+                        >
+                          {hashtag.isOriginal && (
+                            <span
+                              className="text-[10px] px-1 py-0.5 rounded mr-1 text-hashtag"
+                              style={{ backgroundColor: 'rgba(76, 175, 80, 0.1)' }}
+                            >
+                              inherited
+                            </span>
+                          )}
+                          #{hashtag.name}
+                          <button
+                            type="button"
+                            onClick={() => removeHashtag(hashtag.id)}
+                            className="hover:text-[var(--error)] transition-colors ml-1"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Deleted hashtags section (only in variant mode) */}
+                  {isVariantMode && deletedHashtags.length > 0 && (
+                    <div className="mb-4 border border-dashed border-[var(--border)] rounded-lg p-3 bg-[var(--background)]">
+                      <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-2">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Removed ({deletedHashtags.length})</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {deletedHashtags.map((hashtag) => (
+                          <span
+                            key={hashtag.id}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--surface)] rounded text-sm text-[var(--text-secondary)] line-through"
+                          >
+                            #{hashtag.name}
+                            <button
+                              type="button"
+                              onClick={() => restoreHashtag(hashtag.id)}
+                              className="text-xs px-1.5 py-0.5 text-[var(--primary)] hover:bg-[var(--primary-light)]/10 rounded transition-colors inline-flex items-center gap-0.5 ml-1"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                              </svg>
+                              Restore
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tag input */}
+                  {activeCount < MAX_HASHTAGS && (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={hashtagInput}
+                        onChange={(e) => setHashtagInput(e.target.value)}
+                        onKeyDown={handleHashtagKeyDown}
+                        maxLength={MAX_HASHTAG_LENGTH}
+                        className="flex-1 px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
+                        placeholder="Type a tag and press Enter"
+                      />
+                      <button
+                        type="button"
+                        onClick={addHashtag}
+                        disabled={!hashtagInput.trim()}
+                        className="px-4 py-3 bg-[var(--primary)] text-white rounded-xl hover:bg-[var(--primary-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-[var(--text-secondary)] mt-2">
+                    Help others find your recipe with relevant tags (max {MAX_HASHTAG_LENGTH} chars each)
+                  </p>
+                </>
+              );
+            })()}
+          </section>
+
+          {/* Recipe Title & Change Reason Section */}
+          <section className="bg-[var(--surface)] rounded-2xl p-6 border border-[var(--border)]">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+              {isVariantMode ? 'Finish Your Variation' : 'Recipe Title'}
+            </h2>
+            <div className="space-y-4">
+              {/* Recipe Title */}
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                  Recipe Title <span className="text-[var(--error)]">*</span>
+                </label>
                 <input
+                  id="title"
                   type="text"
-                  value={hashtagInput}
-                  onChange={(e) => setHashtagInput(e.target.value)}
-                  onKeyDown={handleHashtagKeyDown}
-                  maxLength={MAX_HASHTAG_LENGTH}
-                  className="flex-1 px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
-                  placeholder="Type a tag and press Enter"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={100}
+                  className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
+                  placeholder="e.g., Grandma's Secret Kimchi Fried Rice"
                 />
-                <button
-                  type="button"
-                  onClick={addHashtag}
-                  disabled={!hashtagInput.trim()}
-                  className="px-4 py-3 bg-[var(--primary)] text-white rounded-xl hover:bg-[var(--primary-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Add
-                </button>
+                <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
+                  {title.length}/100
+                </p>
               </div>
-            )}
 
-            <p className="text-xs text-[var(--text-secondary)] mt-2">
-              Help others find your recipe with relevant tags (max {MAX_HASHTAG_LENGTH} chars each)
-            </p>
+              {/* What did you change? (Variant Mode Only) */}
+              {isVariantMode && (
+                <div>
+                  <label htmlFor="changeReason" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                    What did you change? <span className="text-[var(--error)]">*</span>
+                  </label>
+                  <textarea
+                    id="changeReason"
+                    value={changeReason}
+                    onChange={(e) => setChangeReason(e.target.value)}
+                    maxLength={300}
+                    rows={3}
+                    className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)] resize-none"
+                    placeholder="e.g., Added more garlic and reduced sugar for a healthier version"
+                  />
+                  <div className="flex justify-between mt-1">
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      Explain what makes your variation different
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {changeReason.length}/300
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Error */}
@@ -935,14 +1689,14 @@ export default function CreateRecipePage() {
           {/* Submit */}
           <div className="flex gap-3 pt-4">
             <Link
-              href="/recipes"
+              href={isVariantMode ? `/recipes/${parentRecipe.publicId}` : '/recipes'}
               className="flex-1 py-3 text-center text-[var(--text-primary)] border border-[var(--border)] rounded-xl font-medium hover:bg-[var(--surface)] transition-colors"
             >
               Cancel
             </Link>
             <button
               type="submit"
-              disabled={isSubmitting || recipeImages.some((img) => img.uploading) || steps.some((s) => s.image?.uploading)}
+              disabled={isSubmitting || photos.some((p) => p.type === 'uploaded' && p.uploadedImage?.uploading) || steps.some((s) => s.image?.uploading)}
               className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl font-medium hover:bg-[var(--primary-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
@@ -951,10 +1705,10 @@ export default function CreateRecipePage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Creating...
+                  {isVariantMode ? 'Creating Variation...' : 'Creating...'}
                 </>
               ) : (
-                'Create Recipe'
+                isVariantMode ? 'Create Variation' : 'Create Recipe'
               )}
             </button>
           </div>

@@ -88,7 +88,7 @@ export async function getPopularHashtags(limit: number = 10): Promise<(HashtagDt
         const counts = await getHashtagCounts(hashtag.name);
         return {
           ...hashtag,
-          totalCount: counts.recipeCount + counts.logCount,
+          totalCount: counts.recipeCount + counts.logPostCount,
         };
       } catch {
         return {

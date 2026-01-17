@@ -1,16 +1,17 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { LogPostSummary } from '@/lib/types';
-import { OutcomeBadge } from './OutcomeBadge';
+import { OUTCOME_CONFIG } from '@/lib/types';
 import { getImageUrl } from '@/lib/utils/image';
 import { BookmarkButton } from '@/components/common/BookmarkButton';
 
 interface LogCardProps {
   log: LogPostSummary;
   isSaved?: boolean;
+  showTypeLabel?: boolean;
 }
 
-export function LogCard({ log, isSaved = false }: LogCardProps) {
+export function LogCard({ log, isSaved = false, showTypeLabel = false }: LogCardProps) {
   return (
     <Link
       href={`/logs/${log.publicId}`}
@@ -44,11 +45,6 @@ export function LogCard({ log, isSaved = false }: LogCardProps) {
           </div>
         )}
 
-        {/* Outcome badge */}
-        <div className="absolute top-3 left-3">
-          <OutcomeBadge outcome={log.outcome} size="sm" />
-        </div>
-
         {/* Variant indicator - shift left if bookmark button is present */}
         {log.isVariant && (
           <span className="absolute top-3 right-12 px-2 py-1 bg-[var(--secondary)] text-white text-xs font-medium rounded-full">
@@ -69,9 +65,22 @@ export function LogCard({ log, isSaved = false }: LogCardProps) {
 
       {/* Content */}
       <div className="p-4">
-        {/* Food name */}
+        {/* Type label for search results */}
+        {showTypeLabel && (
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-[var(--secondary)]/10 text-[var(--secondary)] rounded-full mb-2">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Cooking Log
+          </span>
+        )}
+
+        {/* Food name with outcome emoji */}
         {log.foodName && (
-          <p className="text-sm font-medium text-[var(--primary)]">{log.foodName}</p>
+          <p className="text-sm font-medium text-[var(--primary)]">
+            {log.outcome && <span className="mr-1">{OUTCOME_CONFIG[log.outcome].label}</span>}
+            {log.foodName}
+          </p>
         )}
 
         {/* Title */}
@@ -92,7 +101,7 @@ export function LogCard({ log, isSaved = false }: LogCardProps) {
             {log.hashtags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="text-xs text-[var(--success)] hover:underline"
+                className="text-xs hover:underline text-hashtag"
               >
                 #{tag}
               </span>

@@ -568,7 +568,7 @@ function CreateLogPageContent() {
                 {hashtags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-[var(--primary-light)] text-[var(--primary)] rounded-full text-sm"
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm text-hashtag"
                   >
                     #{tag}
                     <button

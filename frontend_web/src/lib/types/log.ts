@@ -12,7 +12,7 @@ export type Outcome = 'SUCCESS' | 'PARTIAL' | 'FAILED';
 export interface LogPostSummary {
   publicId: string;
   title: string;
-  outcome: Outcome;
+  outcome: Outcome | null;
   thumbnailUrl: string | null;
   creatorPublicId: string | null;
   userName: string | null;
@@ -28,7 +28,7 @@ export interface LogPostDetail {
   publicId: string;
   title: string;
   content: string;
-  outcome: Outcome;
+  outcome: Outcome | null;
   images: ImageResponseDto[];
   linkedRecipe: RecipeSummary | null;
   createdAt: string; // ISO date string
@@ -43,7 +43,7 @@ export interface LogPostDetail {
  */
 export interface RecentActivity {
   logPublicId: string;
-  outcome: Outcome;
+  outcome: Outcome | null;
   thumbnailUrl: string | null;
   userName: string | null;
   recipeTitle: string;
@@ -58,17 +58,17 @@ export interface RecentActivity {
  */
 export const OUTCOME_CONFIG = {
   SUCCESS: {
-    label: 'Success',
+    label: '😊',
     color: 'var(--success)',
     bgColor: 'var(--diff-added-bg)',
   },
   PARTIAL: {
-    label: 'Partial',
+    label: '🌱',
     color: 'var(--diff-modified)',
     bgColor: 'var(--diff-modified-bg)',
   },
   FAILED: {
-    label: 'Failed',
+    label: '🌀',
     color: 'var(--error)',
     bgColor: 'var(--diff-removed-bg)',
   },

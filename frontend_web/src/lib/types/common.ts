@@ -17,7 +17,7 @@ export interface ImageUploadResponse {
 /**
  * Image type for upload
  */
-export type ImageType = 'LOG_POST' | 'RECIPE' | 'RECIPE_STEP';
+export type ImageType = 'LOG_POST' | 'COVER' | 'STEP';
 
 /**
  * Hashtag data
@@ -31,7 +31,8 @@ export interface HashtagDto {
  * Hashtag with counts
  */
 export interface HashtagCounts {
-  name: string;
+  exists: boolean;
+  normalizedName: string;
   recipeCount: number;
-  logCount: number;
+  logPostCount: number;
 }

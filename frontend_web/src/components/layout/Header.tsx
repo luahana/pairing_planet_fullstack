@@ -146,7 +146,6 @@ export function Header() {
   const navLinks = [
     { href: '/recipes', label: 'Recipes' },
     { href: '/logs', label: 'Cooking Logs' },
-    { href: '/search', label: 'Search' },
   ];
 
   return (
@@ -169,7 +168,7 @@ export function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-4 lg:gap-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -184,17 +183,18 @@ export function Header() {
                 </Link>
               ))}
 
-              {/* Desktop Search */}
-              <form onSubmit={handleSearch} className="relative">
-                <input
-                  type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Quick search..."
-                  className="w-40 lg:w-48 px-3 py-1.5 pl-9 text-sm bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] focus:w-56 lg:focus:w-64 transition-all"
-                />
+              {/* Search Icon Link */}
+              <Link
+                href="/search"
+                className={`p-2 rounded-lg transition-colors ${
+                  pathname === '/search'
+                    ? 'text-[var(--primary)] bg-[var(--primary-light)]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--primary)] hover:bg-[var(--background)]'
+                }`}
+                title="Search"
+              >
                 <svg
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -206,7 +206,7 @@ export function Header() {
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-              </form>
+              </Link>
 
               {/* Language Selector */}
               <div className="relative" ref={localeMenuRef}>

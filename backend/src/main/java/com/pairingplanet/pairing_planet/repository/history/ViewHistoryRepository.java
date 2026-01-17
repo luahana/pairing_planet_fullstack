@@ -4,6 +4,7 @@ import com.pairingplanet.pairing_planet.domain.entity.history.ViewHistory;
 import com.pairingplanet.pairing_planet.domain.enums.ViewableEntityType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -57,4 +58,17 @@ public interface ViewHistoryRepository extends JpaRepository<ViewHistory, Long> 
      * Count entries for a user.
      */
     long countByUserId(Long userId);
+
+    /**
+     * Find oldest entry IDs for a user (for cleanup).
+     */
+    @Query("SELECT vh.id FROM ViewHistory vh WHERE vh.userId = :userId ORDER BY vh.viewedAt ASC")
+    List<Long> findOldestIdsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * Delete all view history for a user.
+     */
+    @Modifying
+    @Query("DELETE FROM ViewHistory vh WHERE vh.userId = :userId")
+    void deleteAllByUserId(@Param("userId") Long userId);
 }

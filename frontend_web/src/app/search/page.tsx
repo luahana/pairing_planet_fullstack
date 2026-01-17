@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
-import { getRecipes } from '@/lib/api/recipes';
-import { RecipeGrid } from '@/components/recipe/RecipeGrid';
+import { unifiedSearch } from '@/lib/api/search';
 import { Pagination } from '@/components/common/Pagination';
 import { SearchBar } from '@/components/search/SearchBar';
+import { SearchChips } from '@/components/search/SearchChips';
+import { SearchResultCard } from '@/components/search/SearchResultCard';
+import { SearchEmptyState } from '@/components/search/SearchEmptyState';
+import type { SearchTypeFilter } from '@/lib/types';
 
 interface Props {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; type?: string; page?: string }>;
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -15,7 +18,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   if (query) {
     return {
       title: `Search: ${query}`,
-      description: `Search results for "${query}" - find recipes on Pairing Planet`,
+      description: `Search results for "${query}" - find recipes, cooking logs, and hashtags on Pairing Planet`,
       robots: {
         index: false, // Don't index search result pages
       },
@@ -23,86 +26,115 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   }
 
   return {
-    title: 'Search Recipes',
-    description: 'Search for recipes on Pairing Planet',
+    title: 'Search',
+    description: 'Search for recipes, cooking logs, and hashtags on Pairing Planet',
   };
+}
+
+function getResultTypeLabel(type: SearchTypeFilter): string {
+  switch (type) {
+    case 'recipes':
+      return 'recipes';
+    case 'logs':
+      return 'cooking logs';
+    case 'hashtags':
+      return 'hashtags';
+    default:
+      return 'results';
+  }
 }
 
 export default async function SearchPage({ searchParams }: Props) {
   const params = await searchParams;
   const query = params.q || '';
+  const type = (params.type as SearchTypeFilter) || 'all';
   const page = parseInt(params.page || '0', 10);
 
   // Only fetch if there's a query
-  const recipes = query
-    ? await getRecipes({ q: query, page, size: 12 })
+  const results = query
+    ? await unifiedSearch({ q: query, type, page, size: 12 })
     : null;
+
+  // Build base URL with current filters for pagination
+  const filterParams = new URLSearchParams();
+  if (query) filterParams.set('q', query);
+  if (type !== 'all') filterParams.set('type', type);
+  const baseUrl = filterParams.toString()
+    ? `/search?${filterParams.toString()}`
+    : '/search';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Page header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-4">
-          Search Recipes
+          Search
         </h1>
         <div className="max-w-2xl">
-          <SearchBar defaultValue={query} autoFocus={!query} />
+          <SearchBar defaultValue={query} autoFocus={!query} placeholder="Search recipes, logs, hashtags..." />
         </div>
       </div>
 
       {/* Results */}
       {query ? (
         <>
+          {/* Filter chips */}
+          {results && (
+            <SearchChips counts={results.counts} selected={type} query={query} />
+          )}
+
           {/* Results count */}
-          {recipes && recipes.totalElements !== null && (
+          {results && (
             <p className="text-sm text-[var(--text-secondary)] mb-4">
-              {recipes.totalElements === 0
-                ? `No recipes found for "${query}"`
-                : `${recipes.totalElements.toLocaleString()} recipes found for "${query}"`}
+              {results.totalElements === 0
+                ? `No ${getResultTypeLabel(type)} found for "${query}"`
+                : `${results.totalElements.toLocaleString()} ${getResultTypeLabel(type)} found for "${query}"`}
             </p>
           )}
 
-          {/* Recipe grid */}
-          {recipes && (
-            <RecipeGrid
-              recipes={recipes.content}
-              emptyMessage={`No recipes found for "${query}". Try a different search term.`}
-            />
+          {/* Results grid */}
+          {results && results.content.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {results.content.map((item, index) => (
+                <SearchResultCard key={`${item.type}-${index}`} item={item} showTypeLabel={type === 'all'} />
+              ))}
+            </div>
+          ) : (
+            results && (
+              <div className="text-center py-12">
+                <div className="text-4xl mb-4 opacity-50">
+                  <svg
+                    className="w-16 h-16 mx-auto text-[var(--text-secondary)]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-[var(--text-secondary)]">
+                  No {getResultTypeLabel(type)} found for &quot;{query}&quot;. Try a different search term or filter.
+                </p>
+              </div>
+            )
           )}
 
           {/* Pagination */}
-          {recipes && recipes.totalPages !== null && recipes.totalPages > 1 && (
+          {results && results.totalPages > 1 && (
             <Pagination
-              currentPage={recipes.currentPage || 0}
-              totalPages={recipes.totalPages}
-              baseUrl={`/search?q=${encodeURIComponent(query)}`}
+              currentPage={results.page}
+              totalPages={results.totalPages}
+              baseUrl={baseUrl}
             />
           )}
         </>
       ) : (
-        <div className="text-center py-16">
-          <div className="text-6xl mb-4">
-            <svg
-              className="w-24 h-24 mx-auto text-[var(--text-secondary)] opacity-50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
-            Start searching
-          </h2>
-          <p className="text-[var(--text-secondary)] max-w-md mx-auto">
-            Enter a keyword to find recipes. Try searching for ingredients, dish names, or cooking styles.
-          </p>
-        </div>
+        <SearchEmptyState />
       )}
     </div>
   );

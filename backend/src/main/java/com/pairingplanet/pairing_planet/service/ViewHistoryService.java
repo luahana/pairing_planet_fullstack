@@ -64,6 +64,14 @@ public class ViewHistoryService {
     }
 
     /**
+     * Clear all view history for a user.
+     */
+    @Transactional
+    public void clearViewHistory(Long userId) {
+        viewHistoryRepository.deleteAllByUserId(userId);
+    }
+
+    /**
      * Record a view, updating timestamp if already exists.
      */
     private void recordView(Long userId, ViewableEntityType entityType, Long entityId) {
@@ -80,8 +88,25 @@ public class ViewHistoryService {
                                     .entityId(entityId)
                                     .build();
                             viewHistoryRepository.save(newView);
+
+                            // Cleanup old entries if exceeding limit
+                            cleanupOldEntries(userId);
                         }
                 );
+    }
+
+    /**
+     * Delete oldest entries if user has more than MAX_HISTORY_PER_USER.
+     */
+    private void cleanupOldEntries(Long userId) {
+        long count = viewHistoryRepository.countByUserId(userId);
+        if (count > MAX_HISTORY_PER_USER) {
+            int toDelete = (int) (count - MAX_HISTORY_PER_USER);
+            List<Long> oldestIds = viewHistoryRepository.findOldestIdsByUserId(userId, PageRequest.of(0, toDelete));
+            if (!oldestIds.isEmpty()) {
+                viewHistoryRepository.deleteAllById(oldestIds);
+            }
+        }
     }
 
     /**

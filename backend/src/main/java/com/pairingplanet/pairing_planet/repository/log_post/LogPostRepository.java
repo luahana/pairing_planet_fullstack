@@ -252,4 +252,23 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
     @Query("SELECT COUNT(l) FROM LogPost l JOIN l.hashtags h " +
            "WHERE h.name = :hashtagName AND l.deletedAt IS NULL AND l.isPrivate = false")
     long countByHashtag(@Param("hashtagName") String hashtagName);
+
+    // ==================== UNIFIED SEARCH COUNT ====================
+
+    /**
+     * Count log posts matching search keyword (for unified search chips).
+     */
+    @Query(value = """
+        SELECT COUNT(DISTINCT lp.id) FROM log_posts lp
+        LEFT JOIN recipe_logs rl ON rl.log_post_id = lp.id
+        LEFT JOIN recipes r ON r.id = rl.recipe_id
+        WHERE lp.deleted_at IS NULL AND lp.is_private = false
+        AND (
+            lp.title ILIKE '%' || :keyword || '%'
+            OR lp.content ILIKE '%' || :keyword || '%'
+            OR r.title ILIKE '%' || :keyword || '%'
+        )
+        """,
+        nativeQuery = true)
+    long countSearchResults(@Param("keyword") String keyword);
 }

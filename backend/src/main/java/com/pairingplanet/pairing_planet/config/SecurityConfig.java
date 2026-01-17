@@ -77,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/contexts/**").permitAll()
                         .requestMatchers("/api/v1/autocomplete/**").permitAll()
                         .requestMatchers("/api/v1/home/**").permitAll()
+                        .requestMatchers("/api/v1/search/**").permitAll()
                         .requestMatchers("/share/**").permitAll()
 
                         // Protected user-specific endpoints (must come before wildcard rules)

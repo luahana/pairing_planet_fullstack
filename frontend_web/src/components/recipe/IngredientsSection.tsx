@@ -14,13 +14,43 @@ interface IngredientsSectionProps {
   ingredients: IngredientDto[];
 }
 
-const INGREDIENT_TYPE_LABELS: Record<IngredientType, string> = {
-  MAIN: 'Main Ingredients',
-  SECONDARY: 'Additional Ingredients',
-  SEASONING: 'Sauce & Seasoning',
-};
-
-const INGREDIENT_TYPE_ORDER: IngredientType[] = ['MAIN', 'SECONDARY', 'SEASONING'];
+const INGREDIENT_CATEGORIES: {
+  type: IngredientType;
+  label: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  bulletColor: string;
+}[] = [
+  {
+    type: 'MAIN',
+    label: 'Main',
+    icon: '🍲',
+    color: 'var(--primary)',
+    bgColor: 'var(--primary-light)',
+    borderColor: 'var(--primary)',
+    bulletColor: 'var(--primary)',
+  },
+  {
+    type: 'SECONDARY',
+    label: 'Secondary',
+    icon: '🥕',
+    color: 'var(--success)',
+    bgColor: '#E8F5E9',
+    borderColor: 'var(--success)',
+    bulletColor: 'var(--success)',
+  },
+  {
+    type: 'SEASONING',
+    label: 'Sauce & Seasoning',
+    icon: '🧂',
+    color: 'var(--secondary)',
+    bgColor: '#EFEBE9',
+    borderColor: 'var(--secondary)',
+    bulletColor: 'var(--secondary)',
+  },
+];
 
 export function IngredientsSection({ ingredients }: IngredientsSectionProps) {
   const [preference, setPreference] = useState<MeasurementPreference>('ORIGINAL');
@@ -108,22 +138,44 @@ export function IngredientsSection({ ingredients }: IngredientsSectionProps) {
           </span>
         )}
       </div>
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
-        {INGREDIENT_TYPE_ORDER.filter((type) => ingredientsByType[type]?.length > 0).map(
-          (type) => (
-            <div key={type} className="mb-4 last:mb-0">
-              <h3 className="font-medium text-[var(--text-primary)] mb-2">
-                {INGREDIENT_TYPE_LABELS[type]}
-              </h3>
+      <div className="space-y-4">
+        {INGREDIENT_CATEGORIES.filter((cat) => ingredientsByType[cat.type]?.length > 0).map(
+          (category) => (
+            <div
+              key={category.type}
+              className="rounded-xl p-4 border-2"
+              style={{
+                borderColor: category.borderColor,
+                backgroundColor: `color-mix(in srgb, ${category.bgColor} 30%, transparent)`,
+              }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">{category.icon}</span>
+                <h3
+                  className="font-semibold"
+                  style={{ color: category.color }}
+                >
+                  {category.label}
+                </h3>
+                <span
+                  className="text-xs font-medium px-2 py-0.5 rounded-full ml-auto"
+                  style={{ backgroundColor: category.bgColor, color: category.color }}
+                >
+                  {ingredientsByType[category.type].length}
+                </span>
+              </div>
               <ul className="space-y-2">
-                {ingredientsByType[type].map((ing, idx) => {
+                {ingredientsByType[category.type].map((ing, idx) => {
                   const amount = formatIngredientAmount(ing);
                   return (
                     <li
                       key={idx}
                       className="flex items-center gap-2 text-[var(--text-secondary)]"
                     >
-                      <span className="w-2 h-2 bg-[var(--primary)] rounded-full flex-shrink-0" />
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: category.bulletColor }}
+                      />
                       <span>
                         {amount && (
                           <span className="font-medium text-[var(--text-primary)]">

@@ -373,4 +373,25 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query("SELECT COUNT(r) FROM Recipe r JOIN r.hashtags h " +
            "WHERE h.name = :hashtagName AND r.deletedAt IS NULL AND r.isPrivate = false")
     long countByHashtag(@Param("hashtagName") String hashtagName);
+
+    // ==================== UNIFIED SEARCH COUNT ====================
+
+    /**
+     * Count recipes matching search keyword (for unified search chips).
+     */
+    @Query(value = """
+        SELECT COUNT(DISTINCT r.id) FROM recipes r
+        LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+        WHERE r.deleted_at IS NULL AND r.is_private = false
+        AND (
+            r.title % :keyword
+            OR r.description % :keyword
+            OR ri.name % :keyword
+            OR r.title ILIKE '%' || :keyword || '%'
+            OR r.description ILIKE '%' || :keyword || '%'
+            OR ri.name ILIKE '%' || :keyword || '%'
+        )
+        """,
+        nativeQuery = true)
+    long countSearchResults(@Param("keyword") String keyword);
 }

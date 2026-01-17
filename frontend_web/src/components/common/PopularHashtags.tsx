@@ -34,9 +34,9 @@ export async function PopularHashtags({
           <Link
             key={hashtag.publicId}
             href={`/hashtags/${encodeURIComponent(hashtag.name)}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] rounded-full hover:border-[var(--success)] hover:bg-[var(--highlight-bg)] transition-colors group"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] rounded-full hover:border-[var(--hashtag)] hover:bg-[var(--highlight-bg)] transition-colors group"
           >
-            <span className="text-[var(--success)] group-hover:text-[var(--success)]">
+            <span className="text-hashtag">
               #{hashtag.name}
             </span>
             <span className="text-xs text-[var(--text-secondary)]">

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/utils/image';
+import { useDragScroll } from '@/hooks/useDragScroll';
 
 interface LogSummary {
   publicId: string;
@@ -24,6 +25,7 @@ const OUTCOME_CONFIG = {
 } as const;
 
 export function RecentLogsGallery({ logs, recipePublicId }: RecentLogsGalleryProps) {
+  const scrollRef = useDragScroll<HTMLDivElement>();
   const displayLogs = logs.slice(0, 8);
   const hasMore = logs.length > 8;
 
@@ -110,8 +112,12 @@ export function RecentLogsGallery({ logs, recipePublicId }: RecentLogsGalleryPro
       </div>
 
       {/* Horizontal Scrolling Gallery */}
-      <div className="relative">
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="relative -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div
+          ref={scrollRef}
+          className="flex gap-4 pb-4 scrollbar-hide"
+          style={{ overflowX: 'auto' }}
+        >
           {displayLogs.map((log) => {
             const thumbUrl = getImageUrl(log.thumbnailUrl);
             const outcome = OUTCOME_CONFIG[log.outcome as keyof typeof OUTCOME_CONFIG] || OUTCOME_CONFIG.SUCCESS;
@@ -186,25 +192,31 @@ export function RecentLogsGallery({ logs, recipePublicId }: RecentLogsGalleryPro
       </div>
 
       {/* Write Log CTA */}
-      <div className="mt-4 text-center">
+      <div className="mt-6">
         <Link
           href={`/logs/create?recipe=${recipePublicId}`}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm text-[var(--primary)] hover:bg-[var(--primary-light)] rounded-lg transition-colors"
+          className="flex items-center justify-between gap-4 px-5 py-4 bg-[var(--surface)] border border-[var(--border)] border-l-4 border-l-[var(--primary)] rounded-xl hover:bg-[var(--background)] transition-colors"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Share your cooking experience
+          <div>
+            <p className="font-semibold text-[var(--text-primary)]">Made this recipe?</p>
+            <p className="text-sm text-[var(--text-secondary)]">Share your cooking experience with others</p>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white font-medium rounded-lg shrink-0 text-sm">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            <span className="hidden sm:inline">Cooking Log</span>
+          </div>
         </Link>
       </div>
     </section>
