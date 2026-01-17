@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useState } from 'react';
 import type { UserProfile } from '@/lib/types';
 import { getImageUrl } from '@/lib/utils/image';
+import { getAvatarInitial } from '@/lib/utils/string';
 import { FollowButton } from '@/components/common/FollowButton';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UserProfileHeaderProps {
   user: UserProfile;
@@ -13,28 +15,36 @@ interface UserProfileHeaderProps {
 }
 
 export function UserProfileHeader({ user, publicId }: UserProfileHeaderProps) {
+  const { user: currentUser } = useAuth();
   const [followerCount, setFollowerCount] = useState(user.followerCount);
+  const [imageError, setImageError] = useState(false);
+  const isOwnProfile = currentUser?.publicId === publicId;
 
   const handleFollowChange = (isFollowing: boolean) => {
     setFollowerCount((prev) => (isFollowing ? prev + 1 : prev - 1));
   };
+
+  const profileImageUrl = getImageUrl(user.profileImageUrl);
+  // Only show image if URL is valid (starts with http) and hasn't errored
+  const showImage = profileImageUrl && profileImageUrl.startsWith('http') && !imageError;
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 sm:p-8 mb-8">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         {/* Avatar */}
         <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-[var(--primary-light)] flex-shrink-0">
-          {getImageUrl(user.profileImageUrl) ? (
+          {showImage ? (
             <Image
-              src={getImageUrl(user.profileImageUrl)!}
+              src={profileImageUrl}
               alt={user.username}
               fill
               className="object-cover"
               sizes="128px"
+              onError={() => setImageError(true)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl text-[var(--primary)]">
-              {user.username[0].toUpperCase()}
+              {getAvatarInitial(user.username)}
             </div>
           )}
         </div>
@@ -45,10 +55,19 @@ export function UserProfileHeader({ user, publicId }: UserProfileHeaderProps) {
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">
               {user.username}
             </h1>
-            <FollowButton
-              targetUserPublicId={publicId}
-              onFollowChange={handleFollowChange}
-            />
+            {isOwnProfile ? (
+              <Link
+                href="/profile/edit"
+                className="px-4 py-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] rounded-xl font-medium hover:bg-[var(--highlight-bg)] transition-colors text-sm"
+              >
+                Edit Profile
+              </Link>
+            ) : (
+              <FollowButton
+                targetUserPublicId={publicId}
+                onFollowChange={handleFollowChange}
+              />
+            )}
           </div>
 
           <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">

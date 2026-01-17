@@ -13,6 +13,7 @@ import { ImageCarousel } from '@/components/common/ImageCarousel';
 import { CookingStyleBadge } from '@/components/common/CookingStyleBadge';
 import { COOKING_TIME_RANGES, type CookingTimeRange } from '@/lib/types';
 import { getImageUrl } from '@/lib/utils/image';
+import { getAvatarInitial } from '@/lib/utils/string';
 import { siteConfig } from '@/config/site';
 import { ViewTracker } from '@/components/common/ViewTracker';
 
@@ -146,7 +147,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                 className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--primary)]"
               >
                 <span className="w-8 h-8 bg-[var(--primary-light)] rounded-full flex items-center justify-center text-sm">
-                  {recipe.userName[0].toUpperCase()}
+                  {getAvatarInitial(recipe.userName)}
                 </span>
                 <span>{recipe.userName}</span>
               </Link>

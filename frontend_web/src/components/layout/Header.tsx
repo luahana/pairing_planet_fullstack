@@ -6,15 +6,43 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { siteConfig } from '@/config/site';
 import { useAuth } from '@/contexts/AuthContext';
+import { updateUserProfile } from '@/lib/api/users';
+import type { MeasurementPreference } from '@/lib/types';
+
+const LOCALE_OPTIONS = [
+  { value: 'ko-KR', label: '한국어' },
+  { value: 'en-US', label: 'English' },
+  { value: 'ja-JP', label: '日本語' },
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'zh-TW', label: '繁體中文' },
+  { value: 'es-ES', label: 'Español' },
+  { value: 'fr-FR', label: 'Français' },
+  { value: 'de-DE', label: 'Deutsch' },
+  { value: 'it-IT', label: 'Italiano' },
+  { value: 'pt-BR', label: 'Português' },
+  { value: 'vi-VN', label: 'Tiếng Việt' },
+];
+
+const MEASUREMENT_OPTIONS = [
+  { value: 'ORIGINAL', label: 'Original' },
+  { value: 'METRIC', label: 'Metric' },
+  { value: 'US', label: 'US' },
+];
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLocaleMenuOpen, setIsLocaleMenuOpen] = useState(false);
+  const [isMeasurementMenuOpen, setIsMeasurementMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentLocale, setCurrentLocale] = useState('en-US');
+  const [currentMeasurement, setCurrentMeasurement] = useState<MeasurementPreference>('ORIGINAL');
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, isLoading, isAdmin, signOut } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const localeMenuRef = useRef<HTMLDivElement>(null);
+  const measurementMenuRef = useRef<HTMLDivElement>(null);
 
   // Close mobile menu on route change
   const prevPathnameRef = useRef(pathname);
@@ -38,16 +66,65 @@ export function Header() {
     };
   }, [isMenuOpen]);
 
-  // Close user menu on click outside
+  // Close menus on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
       }
+      if (localeMenuRef.current && !localeMenuRef.current.contains(event.target as Node)) {
+        setIsLocaleMenuOpen(false);
+      }
+      if (measurementMenuRef.current && !measurementMenuRef.current.contains(event.target as Node)) {
+        setIsMeasurementMenuOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    const savedLocale = localStorage.getItem('userLocale');
+    const savedMeasurement = localStorage.getItem('userMeasurement');
+    if (savedLocale) setCurrentLocale(savedLocale);
+    if (savedMeasurement) setCurrentMeasurement(savedMeasurement as MeasurementPreference);
+  }, []);
+
+  // Handle locale change
+  const handleLocaleChange = async (newLocale: string) => {
+    setCurrentLocale(newLocale);
+    localStorage.setItem('userLocale', newLocale);
+    setIsLocaleMenuOpen(false);
+
+    // Update backend if logged in
+    if (isAuthenticated) {
+      try {
+        await updateUserProfile({ locale: newLocale });
+      } catch (error) {
+        console.error('Failed to update locale:', error);
+      }
+    }
+  };
+
+  // Handle measurement change
+  const handleMeasurementChange = async (newMeasurement: MeasurementPreference) => {
+    setCurrentMeasurement(newMeasurement);
+    localStorage.setItem('userMeasurement', newMeasurement);
+    setIsMeasurementMenuOpen(false);
+
+    // Update backend if logged in
+    if (isAuthenticated) {
+      try {
+        await updateUserProfile({ measurementPreference: newMeasurement });
+      } catch (error) {
+        console.error('Failed to update measurement preference:', error);
+      }
+    }
+  };
+
+  const currentLocaleOption = LOCALE_OPTIONS.find(opt => opt.value === currentLocale) || LOCALE_OPTIONS[1];
+  const currentMeasurementOption = MEASUREMENT_OPTIONS.find(opt => opt.value === currentMeasurement) || MEASUREMENT_OPTIONS[0];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +198,88 @@ export function Header() {
                   />
                 </svg>
               </form>
+
+              {/* Language Selector */}
+              <div className="relative" ref={localeMenuRef}>
+                <button
+                  onClick={() => {
+                    setIsLocaleMenuOpen(!isLocaleMenuOpen);
+                    setIsMeasurementMenuOpen(false);
+                    setIsUserMenuOpen(false);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1.5 text-sm rounded-lg hover:bg-[var(--background)] transition-colors text-[var(--text-secondary)]"
+                  title="Language"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                  <span className="text-xs">{currentLocaleOption.label}</span>
+                  <svg
+                    className={`w-3 h-3 transition-transform ${isLocaleMenuOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isLocaleMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-36 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 z-50 max-h-64 overflow-y-auto">
+                    {LOCALE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => handleLocaleChange(opt.value)}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--background)] ${
+                          opt.value === currentLocale ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'text-[var(--text-primary)]'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Measurement Selector */}
+              <div className="relative" ref={measurementMenuRef}>
+                <button
+                  onClick={() => {
+                    setIsMeasurementMenuOpen(!isMeasurementMenuOpen);
+                    setIsLocaleMenuOpen(false);
+                    setIsUserMenuOpen(false);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1.5 text-sm rounded-lg hover:bg-[var(--background)] transition-colors text-[var(--text-secondary)]"
+                  title="Measurement Units"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                  </svg>
+                  <span className="text-xs">{currentMeasurementOption.label}</span>
+                  <svg
+                    className={`w-3 h-3 transition-transform ${isMeasurementMenuOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isMeasurementMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-28 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 z-50">
+                    {MEASUREMENT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => handleMeasurementChange(opt.value as MeasurementPreference)}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--background)] ${
+                          opt.value === currentMeasurement ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'text-[var(--text-primary)]'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Auth Section */}
               {!isLoading && (
@@ -361,6 +520,52 @@ export function Header() {
               </>
             )}
           </nav>
+
+          {/* Divider */}
+          <div className="my-6 border-t border-[var(--border)]" />
+
+          {/* Mobile Settings */}
+          <div className="space-y-4 px-4">
+            <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+              Settings
+            </p>
+
+            {/* Language Select */}
+            <div>
+              <label className="block text-sm text-[var(--text-primary)] mb-2">
+                Language
+              </label>
+              <select
+                value={currentLocale}
+                onChange={(e) => handleLocaleChange(e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:border-[var(--primary)]"
+              >
+                {LOCALE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Measurement Select */}
+            <div>
+              <label className="block text-sm text-[var(--text-primary)] mb-2">
+                Measurement Units
+              </label>
+              <select
+                value={currentMeasurement}
+                onChange={(e) => handleMeasurementChange(e.target.value as MeasurementPreference)}
+                className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:border-[var(--primary)]"
+              >
+                {MEASUREMENT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           {/* Divider */}
           <div className="my-6 border-t border-[var(--border)]" />

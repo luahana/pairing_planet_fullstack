@@ -8,6 +8,7 @@ import { getFollowing, type FollowerDto } from '@/lib/api/follows';
 import { getUserProfile } from '@/lib/api/users';
 import { FollowButton } from '@/components/common/FollowButton';
 import { getImageUrl } from '@/lib/utils/image';
+import { getAvatarInitial } from '@/lib/utils/string';
 import type { UserProfile } from '@/lib/types';
 
 export default function FollowingPage() {
@@ -130,7 +131,7 @@ export default function FollowingPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-lg text-[var(--primary)]">
-                      {followedUser.username[0].toUpperCase()}
+                      {getAvatarInitial(followedUser.username)}
                     </div>
                   )}
                 </div>

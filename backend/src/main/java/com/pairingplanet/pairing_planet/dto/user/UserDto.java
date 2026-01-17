@@ -2,6 +2,7 @@ package com.pairingplanet.pairing_planet.dto.user;
 
 import com.pairingplanet.pairing_planet.domain.entity.user.User;
 import com.pairingplanet.pairing_planet.domain.enums.Gender;
+import com.pairingplanet.pairing_planet.domain.enums.MeasurementPreference;
 import com.pairingplanet.pairing_planet.domain.enums.Role;
 import lombok.Builder;
 
@@ -20,6 +21,7 @@ public record UserDto(
         LocalDate birthDate,
         String locale,           // 언어 설정: ko-KR, en-US
         String defaultFoodStyle, // 기본 요리 스타일: ISO country code (e.g., "KR", "US")
+        MeasurementPreference measurementPreference, // 측정 단위 선호: METRIC, US, ORIGINAL
         int followerCount,
         int followingCount,
         long recipeCount,        // Number of recipes created by user
@@ -64,6 +66,7 @@ public record UserDto(
                 .birthDate(user.getBirthDate())
                 .locale(user.getLocale())
                 .defaultFoodStyle(user.getDefaultFoodStyle())
+                .measurementPreference(user.getMeasurementPreference())
                 .followerCount(user.getFollowerCount())
                 .followingCount(user.getFollowingCount())
                 .recipeCount(recipeCount)

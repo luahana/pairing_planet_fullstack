@@ -5,6 +5,8 @@ import type {
   LogPostSummary,
   UnifiedPageResponse,
   PaginationParams,
+  MyProfileResponse,
+  UpdateProfileRequest,
 } from '@/lib/types';
 
 // Backend returns Slice for user recipes/logs
@@ -63,4 +65,25 @@ export async function getUserLogs(
       next: { revalidate: 60 },
     },
   );
+}
+
+/**
+ * Get current user's profile (authenticated)
+ */
+export async function getMyProfile(): Promise<MyProfileResponse> {
+  return apiFetch<MyProfileResponse>('/users/me', {
+    cache: 'no-store',
+  });
+}
+
+/**
+ * Update current user's profile
+ */
+export async function updateUserProfile(
+  data: UpdateProfileRequest,
+): Promise<UserProfile> {
+  return apiFetch<UserProfile>('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }

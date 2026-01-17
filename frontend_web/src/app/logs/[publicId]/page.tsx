@@ -10,6 +10,7 @@ import { OutcomeBadge } from '@/components/log/OutcomeBadge';
 import { RecipeCard } from '@/components/recipe/RecipeCard';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { getImageUrl } from '@/lib/utils/image';
+import { getAvatarInitial } from '@/lib/utils/string';
 import { siteConfig } from '@/config/site';
 import { ViewTracker } from '@/components/common/ViewTracker';
 
@@ -113,7 +114,7 @@ export default async function LogDetailPage({ params }: Props) {
               className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--primary)]"
             >
               <span className="w-8 h-8 bg-[var(--primary-light)] rounded-full flex items-center justify-center text-sm">
-                {log.userName[0].toUpperCase()}
+                {getAvatarInitial(log.userName)}
               </span>
               <span>{log.userName}</span>
             </Link>
