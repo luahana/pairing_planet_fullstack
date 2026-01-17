@@ -1,5 +1,4 @@
 import type { RecipeDetail } from '@/lib/types';
-import { COOKING_TIME_RANGES, type CookingTimeRange } from '@/lib/types';
 
 interface RecipeJsonLdProps {
   recipe: RecipeDetail;
@@ -31,7 +30,9 @@ export function RecipeJsonLd({ recipe }: RecipeJsonLdProps) {
       name: recipe.userName || 'Anonymous',
     },
     recipeIngredient: recipe.ingredients.map((ing) =>
-      ing.amount ? `${ing.amount} ${ing.name}` : ing.name,
+      ing.quantity && ing.unit
+        ? `${ing.quantity} ${ing.unit.toLowerCase()} ${ing.name}`
+        : ing.name,
     ),
     recipeInstructions: recipe.steps.map((step) => ({
       '@type': 'HowToStep',
