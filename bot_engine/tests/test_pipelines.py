@@ -8,6 +8,7 @@ from src.api.models import (
     IngredientType,
     LogOutcome,
     LogPost,
+    MeasurementUnit,
     Recipe,
     RecipeIngredient,
     RecipeStep,
@@ -37,7 +38,7 @@ class TestRecipePipeline:
                 "title": "Spicy Variant",
                 "description": "A spicier version",
                 "ingredients": [
-                    {"name": "Chili", "amount": "1 tbsp", "type": "SEASONING"}
+                    {"name": "Chili", "quantity": 1.0, "unit": "TBSP", "type": "SEASONING"}
                 ],
                 "steps": [{"order": 1, "description": "Add chili"}],
                 "hashtags": ["spicy"],
@@ -148,18 +149,24 @@ class TestRecipePipeline:
         )
 
         ingredients_data = [
-            {"name": "Chicken", "amount": "500g", "type": "MAIN"},
-            {"name": "Salt", "amount": "1 tsp", "type": "SEASONING"},
-            {"name": "invalid_type", "amount": "1", "type": "INVALID"},
+            {"name": "Chicken", "quantity": 500.0, "unit": "G", "type": "MAIN"},
+            {"name": "Salt", "quantity": 1.0, "unit": "TSP", "type": "SEASONING"},
+            {"name": "invalid_type", "quantity": 1.0, "unit": "PIECE", "type": "INVALID"},
+            {"name": "no_unit", "quantity": 2.0, "unit": "INVALID_UNIT", "type": "MAIN"},
         ]
 
         result = pipeline._parse_ingredients(ingredients_data)
 
-        assert len(result) == 3
+        assert len(result) == 4
         assert result[0].type == IngredientType.MAIN
+        assert result[0].quantity == 500.0
+        assert result[0].unit == MeasurementUnit.G
         assert result[1].type == IngredientType.SEASONING
+        assert result[1].unit == MeasurementUnit.TSP
         # Invalid type should default to MAIN
         assert result[2].type == IngredientType.MAIN
+        # Invalid unit should be None
+        assert result[3].unit is None
 
     @pytest.mark.asyncio
     async def test_parse_steps(

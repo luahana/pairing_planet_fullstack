@@ -30,7 +30,8 @@ Generate a recipe with the following structure in JSON format:
     "ingredients": [
         {{
             "name": "ingredient name",
-            "amount": "amount with unit (e.g., '2 cups', '100g')",
+            "quantity": number (e.g., 2.0, 100, 0.5),
+            "unit": "UNIT_CODE",
             "type": "MAIN" | "SECONDARY" | "SEASONING"
         }}
     ],
@@ -44,9 +45,15 @@ Generate a recipe with the following structure in JSON format:
     "tipFromChef": "One helpful cooking tip"
 }}
 
+Unit codes available:
+- Volume: ML, L, TSP, TBSP, CUP, FL_OZ, PINT, QUART
+- Weight: G, KG, OZ, LB
+- Count/Other: PIECE, PINCH, DASH, TO_TASTE, CLOVE, BUNCH, CAN, PACKAGE
+
 Requirements:
 - Write EVERYTHING in {lang}
 - Include 5-15 ingredients with realistic amounts
+- Use appropriate unit codes (e.g., G for grams, CUP for cups, PIECE for whole items)
 - Include 4-10 detailed cooking steps
 - Make the description personal and engaging
 - Include 5 relevant hashtags (without #)
@@ -100,7 +107,8 @@ Generate a variant recipe in JSON format:
     "ingredients": [
         {{
             "name": "ingredient name",
-            "amount": "amount with unit",
+            "quantity": number (e.g., 2.0, 100, 0.5),
+            "unit": "UNIT_CODE",
             "type": "MAIN" | "SECONDARY" | "SEASONING"
         }}
     ],
@@ -116,10 +124,16 @@ Generate a variant recipe in JSON format:
     "changeCategories": ["INGREDIENT_SUBSTITUTION", "QUANTITY_ADJUSTMENT", "COOKING_METHOD", "SEASONING_CHANGE", "DIETARY_ADAPTATION", "TIME_OPTIMIZATION", "EQUIPMENT_CHANGE", "PRESENTATION"]
 }}
 
+Unit codes available:
+- Volume: ML, L, TSP, TBSP, CUP, FL_OZ, PINT, QUART
+- Weight: G, KG, OZ, LB
+- Count/Other: PIECE, PINCH, DASH, TO_TASTE, CLOVE, BUNCH, CAN, PACKAGE
+
 Requirements:
 - Write EVERYTHING in {lang}
 - Make meaningful, noticeable changes (not just minor tweaks)
 - Keep the dish recognizable as a variant of the original
+- Use appropriate unit codes (e.g., G for grams, CUP for cups, PIECE for whole items)
 - Clearly explain what changed and why
 - Select 1-3 appropriate changeCategories
 

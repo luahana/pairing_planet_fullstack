@@ -12,6 +12,7 @@ from src.api.models import (
     IngredientType,
     LogOutcome,
     LogPost,
+    MeasurementUnit,
     Recipe,
     RecipeIngredient,
     RecipeStep,
@@ -67,13 +68,15 @@ def sample_recipe() -> Recipe:
         ingredients=[
             RecipeIngredient(
                 name="Test Ingredient",
-                amount="1 cup",
+                quantity=1.0,
+                unit=MeasurementUnit.CUP,
                 type=IngredientType.MAIN,
                 order=0,
             ),
             RecipeIngredient(
                 name="Salt",
-                amount="1 tsp",
+                quantity=1.0,
+                unit=MeasurementUnit.TSP,
                 type=IngredientType.SEASONING,
                 order=1,
             ),
@@ -143,10 +146,10 @@ def recipe_generation_response() -> Dict:
         "title": "Spicy Korean Fried Chicken",
         "description": "Crispy fried chicken with a sweet and spicy gochujang glaze",
         "ingredients": [
-            {"name": "Chicken thighs", "amount": "1 lb", "type": "MAIN"},
-            {"name": "Gochujang", "amount": "3 tbsp", "type": "SEASONING"},
-            {"name": "Honey", "amount": "2 tbsp", "type": "SEASONING"},
-            {"name": "Cornstarch", "amount": "1/2 cup", "type": "SECONDARY"},
+            {"name": "Chicken thighs", "quantity": 1.0, "unit": "LB", "type": "MAIN"},
+            {"name": "Gochujang", "quantity": 3.0, "unit": "TBSP", "type": "SEASONING"},
+            {"name": "Honey", "quantity": 2.0, "unit": "TBSP", "type": "SEASONING"},
+            {"name": "Cornstarch", "quantity": 0.5, "unit": "CUP", "type": "SECONDARY"},
         ],
         "steps": [
             {"order": 1, "description": "Cut chicken into bite-sized pieces"},

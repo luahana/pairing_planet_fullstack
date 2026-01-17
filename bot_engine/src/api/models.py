@@ -14,6 +14,36 @@ class IngredientType(str, Enum):
     SEASONING = "SEASONING"
 
 
+class MeasurementUnit(str, Enum):
+    """Measurement units for ingredients."""
+
+    # Volume - Metric
+    ML = "ML"
+    L = "L"
+    # Volume - US
+    TSP = "TSP"
+    TBSP = "TBSP"
+    CUP = "CUP"
+    FL_OZ = "FL_OZ"
+    PINT = "PINT"
+    QUART = "QUART"
+    # Weight - Metric
+    G = "G"
+    KG = "KG"
+    # Weight - Imperial
+    OZ = "OZ"
+    LB = "LB"
+    # Count/Other
+    PIECE = "PIECE"
+    PINCH = "PINCH"
+    DASH = "DASH"
+    TO_TASTE = "TO_TASTE"
+    CLOVE = "CLOVE"
+    BUNCH = "BUNCH"
+    CAN = "CAN"
+    PACKAGE = "PACKAGE"
+
+
 class ChangeCategory(str, Enum):
     """Categories of changes for recipe variants."""
 
@@ -39,7 +69,8 @@ class RecipeIngredient(BaseModel):
     """Ingredient for a recipe."""
 
     name: str = Field(description="Ingredient name")
-    amount: str = Field(description="Amount/quantity (e.g., '2 cups', '100g')")
+    quantity: Optional[float] = Field(default=None, description="Numeric quantity")
+    unit: Optional[MeasurementUnit] = Field(default=None, description="Measurement unit")
     type: IngredientType = Field(default=IngredientType.MAIN)
     order: int = Field(default=0, description="Display order")
 

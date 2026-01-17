@@ -10,6 +10,7 @@ from ..api.models import (
     ChangeCategory,
     CreateRecipeRequest,
     IngredientType,
+    MeasurementUnit,
     Recipe,
     RecipeIngredient,
     RecipeStep,
@@ -173,7 +174,12 @@ class RecipePipeline:
             "title": parent_recipe.title,
             "description": parent_recipe.description,
             "ingredients": [
-                {"name": i.name, "amount": i.amount, "type": i.type}
+                {
+                    "name": i.name,
+                    "quantity": i.quantity,
+                    "unit": i.unit.value if i.unit else None,
+                    "type": i.type,
+                }
                 for i in parent_recipe.ingredients
             ],
             "steps": [
@@ -327,10 +333,20 @@ class RecipePipeline:
             if ing_type not in ["MAIN", "SECONDARY", "SEASONING"]:
                 ing_type = "MAIN"
 
+            # Parse unit (validate against enum)
+            unit_str = ing.get("unit")
+            unit = None
+            if unit_str:
+                try:
+                    unit = MeasurementUnit(unit_str.upper())
+                except ValueError:
+                    unit = None  # Invalid unit, will be ignored
+
             result.append(
                 RecipeIngredient(
                     name=ing.get("name", ""),
-                    amount=ing.get("amount", ""),
+                    quantity=ing.get("quantity"),
+                    unit=unit,
                     type=IngredientType(ing_type),
                     order=i,
                 )

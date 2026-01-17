@@ -9,6 +9,7 @@ from src.api.models import (
     IngredientType,
     LogOutcome,
     LogPost,
+    MeasurementUnit,
     Recipe,
     RecipeIngredient,
     RecipeStep,
@@ -19,24 +20,66 @@ class TestRecipeIngredient:
     """Tests for RecipeIngredient model."""
 
     def test_create_main_ingredient(self) -> None:
-        """Test creating a main ingredient."""
+        """Test creating a main ingredient with quantity and unit."""
         ingredient = RecipeIngredient(
             name="Chicken breast",
-            amount="500g",
+            quantity=500.0,
+            unit=MeasurementUnit.G,
             type=IngredientType.MAIN,
             order=0,
         )
 
         assert ingredient.name == "Chicken breast"
-        assert ingredient.amount == "500g"
+        assert ingredient.quantity == 500.0
+        assert ingredient.unit == MeasurementUnit.G
         assert ingredient.type == IngredientType.MAIN
         assert ingredient.order == 0
+
+    def test_ingredient_without_unit(self) -> None:
+        """Test creating an ingredient without unit (e.g., 'to taste')."""
+        ingredient = RecipeIngredient(
+            name="Salt",
+            quantity=None,
+            unit=MeasurementUnit.TO_TASTE,
+            type=IngredientType.SEASONING,
+            order=0,
+        )
+
+        assert ingredient.name == "Salt"
+        assert ingredient.quantity is None
+        assert ingredient.unit == MeasurementUnit.TO_TASTE
 
     def test_ingredient_types(self) -> None:
         """Test all ingredient types."""
         assert IngredientType.MAIN.value == "MAIN"
         assert IngredientType.SECONDARY.value == "SECONDARY"
         assert IngredientType.SEASONING.value == "SEASONING"
+
+
+class TestMeasurementUnit:
+    """Tests for MeasurementUnit enum."""
+
+    def test_volume_units(self) -> None:
+        """Test volume measurement units."""
+        assert MeasurementUnit.ML.value == "ML"
+        assert MeasurementUnit.L.value == "L"
+        assert MeasurementUnit.TSP.value == "TSP"
+        assert MeasurementUnit.TBSP.value == "TBSP"
+        assert MeasurementUnit.CUP.value == "CUP"
+
+    def test_weight_units(self) -> None:
+        """Test weight measurement units."""
+        assert MeasurementUnit.G.value == "G"
+        assert MeasurementUnit.KG.value == "KG"
+        assert MeasurementUnit.OZ.value == "OZ"
+        assert MeasurementUnit.LB.value == "LB"
+
+    def test_count_units(self) -> None:
+        """Test count/other measurement units."""
+        assert MeasurementUnit.PIECE.value == "PIECE"
+        assert MeasurementUnit.PINCH.value == "PINCH"
+        assert MeasurementUnit.TO_TASTE.value == "TO_TASTE"
+        assert MeasurementUnit.CLOVE.value == "CLOVE"
 
 
 class TestRecipeStep:
@@ -122,7 +165,11 @@ class TestCreateRecipeRequest:
             culinary_locale="ko",
             ingredients=[
                 RecipeIngredient(
-                    name="재료", amount="1컵", type=IngredientType.MAIN, order=0
+                    name="재료",
+                    quantity=1.0,
+                    unit=MeasurementUnit.CUP,
+                    type=IngredientType.MAIN,
+                    order=0,
                 )
             ],
             steps=[
