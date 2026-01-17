@@ -1,9 +1,6 @@
 class Ingredient {
   final String name;
 
-  /// Legacy amount field - free-text like "2 cups" or "a pinch".
-  final String? amount;
-
   /// Numeric quantity for structured measurements (e.g., 2.5).
   final double? quantity;
 
@@ -14,7 +11,6 @@ class Ingredient {
 
   Ingredient({
     required this.name,
-    this.amount,
     this.quantity,
     this.unit,
     required this.type,
@@ -23,7 +19,7 @@ class Ingredient {
   /// Check if this ingredient uses structured measurements.
   bool get hasStructuredMeasurement => quantity != null && unit != null;
 
-  /// Get display amount - prefers structured if available.
+  /// Get display amount from quantity + unit.
   String get displayAmount {
     if (hasStructuredMeasurement) {
       // Format quantity nicely (remove trailing zeros)
@@ -32,7 +28,7 @@ class Ingredient {
           : quantity!.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
       return '$qtyStr ${_formatUnit(unit!)}';
     }
-    return amount ?? '';
+    return '';
   }
 
   String _formatUnit(String unit) {

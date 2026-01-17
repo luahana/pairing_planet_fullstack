@@ -9,7 +9,6 @@ part of 'ingredient_dto.dart';
 IngredientDto _$IngredientDtoFromJson(Map<String, dynamic> json) =>
     IngredientDto(
       name: json['name'] as String,
-      amount: json['amount'] as String?,
       quantity: (json['quantity'] as num?)?.toDouble(),
       unit: $enumDecodeNullable(_$MeasurementUnitEnumMap, json['unit']),
       type: $enumDecode(_$IngredientTypeEnumMap, json['type']),
@@ -18,7 +17,6 @@ IngredientDto _$IngredientDtoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$IngredientDtoToJson(IngredientDto instance) =>
     <String, dynamic>{
       'name': instance.name,
-      'amount': instance.amount,
       'quantity': instance.quantity,
       'unit': _$MeasurementUnitEnumMap[instance.unit],
       'type': _$IngredientTypeEnumMap[instance.type]!,

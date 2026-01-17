@@ -316,8 +316,7 @@ class _IngredientRow extends StatelessWidget {
       );
       return result.format();
     }
-    // Legacy: use original amount string
-    return ingredient.amount ?? '';
+    return '';
   }
 
   @override

@@ -51,7 +51,6 @@ void main() {
         // Arrange
         final dto = IngredientDto(
           name: 'Olive Oil',
-          amount: '2 tablespoons',
           quantity: 2.0,
           unit: MeasurementUnit.tbsp,
           type: IngredientType.seasoning,
@@ -62,7 +61,6 @@ void main() {
 
         // Assert
         expect(entity.name, 'Olive Oil');
-        expect(entity.amount, '2 tablespoons');
         expect(entity.quantity, 2.0);
         expect(entity.unit, 'tbsp');
         expect(entity.type, 'SEASONING');
@@ -130,7 +128,6 @@ void main() {
         // Arrange
         final entity = Ingredient(
           name: 'Chicken',
-          amount: '500g',
           quantity: 500.0,
           unit: 'g',
           type: 'MAIN',
@@ -141,7 +138,6 @@ void main() {
 
         // Assert
         expect(dto.name, 'Chicken');
-        expect(dto.amount, '500g');
         expect(dto.quantity, 500.0);
         expect(dto.unit, MeasurementUnit.g);
         expect(dto.type, IngredientType.main);
@@ -201,7 +197,6 @@ void main() {
         // Arrange
         final original = IngredientDto(
           name: 'Sugar',
-          amount: '1 cup',
           quantity: 1.0,
           unit: MeasurementUnit.cup,
           type: IngredientType.secondary,
@@ -213,54 +208,11 @@ void main() {
 
         // Assert
         expect(restored.name, original.name);
-        expect(restored.amount, original.amount);
         expect(restored.quantity, original.quantity);
         expect(restored.unit, original.unit);
         expect(restored.type, original.type);
       });
     });
 
-    group('hasStructuredMeasurement', () {
-      test('returns true when both quantity and unit are set', () {
-        final dto = IngredientDto(
-          name: 'Flour',
-          quantity: 2.0,
-          unit: MeasurementUnit.cup,
-          type: IngredientType.main,
-        );
-
-        expect(dto.hasStructuredMeasurement, isTrue);
-      });
-
-      test('returns false when only quantity is set', () {
-        final dto = IngredientDto(
-          name: 'Flour',
-          quantity: 2.0,
-          type: IngredientType.main,
-        );
-
-        expect(dto.hasStructuredMeasurement, isFalse);
-      });
-
-      test('returns false when only unit is set', () {
-        final dto = IngredientDto(
-          name: 'Flour',
-          unit: MeasurementUnit.cup,
-          type: IngredientType.main,
-        );
-
-        expect(dto.hasStructuredMeasurement, isFalse);
-      });
-
-      test('returns false when neither quantity nor unit is set', () {
-        final dto = IngredientDto(
-          name: 'Flour',
-          amount: '2 cups',
-          type: IngredientType.main,
-        );
-
-        expect(dto.hasStructuredMeasurement, isFalse);
-      });
-    });
   });
 }

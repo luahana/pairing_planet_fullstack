@@ -31,23 +31,13 @@ public class RecipeIngredient {
     private Map<String, String> nameTranslations = new HashMap<>();
 
     /**
-     * Legacy amount field - stores free-text like "2 cups" or "a pinch".
-     * Used for backward compatibility with existing recipes.
-     * New recipes should use quantity + unit instead.
-     */
-    @Column(length = 50)
-    private String amount;
-
-    /**
      * Numeric quantity for structured measurements (e.g., 2.5).
-     * Nullable for legacy recipes that only have the amount string.
      */
     @Column
     private Double quantity;
 
     /**
      * Standardized unit for structured measurements.
-     * Nullable for legacy recipes that only have the amount string.
      */
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -59,11 +49,4 @@ public class RecipeIngredient {
     @Column(name = "display_order")
     @Builder.Default
     private Integer displayOrder = 0;
-
-    /**
-     * Check if this ingredient uses structured measurements (quantity + unit).
-     */
-    public boolean hasStructuredMeasurement() {
-        return quantity != null && unit != null;
-    }
 }

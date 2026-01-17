@@ -59,7 +59,6 @@ export type MeasurementUnit =
  */
 export interface IngredientDto {
   name: string;
-  amount: string | null; // Legacy free-text amount
   quantity: number | null; // Numeric quantity
   unit: MeasurementUnit | null; // Standardized unit
   type: IngredientType;

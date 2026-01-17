@@ -35,7 +35,6 @@ void main() {
       test('returns false when both quantity and unit are null', () {
         final ingredient = Ingredient(
           name: 'Salt',
-          amount: 'a pinch',
           type: 'SEASONING',
         );
         expect(ingredient.hasStructuredMeasurement, isFalse);
@@ -255,35 +254,13 @@ void main() {
         });
       });
 
-      group('with legacy amount', () {
-        test('returns legacy amount when no structured measurement', () {
-          final ingredient = Ingredient(
-            name: 'Salt',
-            amount: 'a pinch',
-            type: 'SEASONING',
-          );
-          expect(ingredient.displayAmount, 'a pinch');
-        });
-
-        test('returns empty string when no amount and no structured measurement', () {
+      group('without structured measurement', () {
+        test('returns empty string when no structured measurement', () {
           final ingredient = Ingredient(
             name: 'Oregano',
             type: 'SEASONING',
           );
           expect(ingredient.displayAmount, '');
-        });
-      });
-
-      group('structured vs legacy priority', () {
-        test('prefers structured measurement over legacy amount', () {
-          final ingredient = Ingredient(
-            name: 'Flour',
-            amount: '2 cups (legacy)',
-            quantity: 2.0,
-            unit: 'cup',
-            type: 'MAIN',
-          );
-          expect(ingredient.displayAmount, '2 cup');
         });
       });
     });

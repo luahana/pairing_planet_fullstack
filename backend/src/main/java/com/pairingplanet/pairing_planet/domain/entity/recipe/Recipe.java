@@ -32,8 +32,6 @@ public class Recipe extends BaseEntity {
     private String culinaryLocale;
     private String title;
     private String description;
-    private Integer cookingTime;
-    private String difficulty;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "cooking_time_range")

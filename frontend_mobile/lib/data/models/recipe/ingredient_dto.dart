@@ -80,30 +80,20 @@ enum MeasurementPreference {
 class IngredientDto {
   final String name;
 
-  /// Legacy amount field - free-text like "2 cups" or "a pinch".
-  /// For backward compatibility. New clients should use quantity + unit.
-  final String? amount;
-
   /// Numeric quantity for structured measurements (e.g., 2.5).
-  /// Optional - use with unit for structured input.
   final double? quantity;
 
   /// Standardized unit for structured measurements.
-  /// Optional - use with quantity for structured input.
   final MeasurementUnit? unit;
 
   final IngredientType type;
 
   IngredientDto({
     required this.name,
-    this.amount,
     this.quantity,
     this.unit,
     required this.type,
   });
-
-  /// Check if this DTO uses structured measurements.
-  bool get hasStructuredMeasurement => quantity != null && unit != null;
 
   factory IngredientDto.fromJson(Map<String, dynamic> json) =>
       _$IngredientDtoFromJson(json);
@@ -111,7 +101,6 @@ class IngredientDto {
 
   Ingredient toEntity() => Ingredient(
     name: name,
-    amount: amount,
     quantity: quantity,
     unit: unit?.name,
     type: type.name.toUpperCase(),
@@ -120,7 +109,6 @@ class IngredientDto {
   factory IngredientDto.fromEntity(Ingredient ingredient) {
     return IngredientDto(
       name: ingredient.name,
-      amount: ingredient.amount,
       quantity: ingredient.quantity,
       unit: ingredient.unit != null
           ? MeasurementUnit.values.firstWhere(

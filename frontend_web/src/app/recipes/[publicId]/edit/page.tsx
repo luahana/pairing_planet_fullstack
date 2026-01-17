@@ -12,6 +12,7 @@ import type {
   RecipeModifiable,
   IngredientDto,
   IngredientType,
+  MeasurementUnit,
   UpdateRecipeRequest,
 } from '@/lib/types';
 
@@ -19,6 +20,23 @@ const INGREDIENT_TYPES: { value: IngredientType; label: string }[] = [
   { value: 'MAIN', label: 'Main Ingredients' },
   { value: 'SECONDARY', label: 'Secondary Ingredients' },
   { value: 'SEASONING', label: 'Seasonings' },
+];
+
+const MEASUREMENT_UNITS: { value: MeasurementUnit | ''; label: string }[] = [
+  { value: '', label: 'Unit' },
+  { value: 'CUP', label: 'Cup' },
+  { value: 'TBSP', label: 'Tbsp' },
+  { value: 'TSP', label: 'Tsp' },
+  { value: 'ML', label: 'ml' },
+  { value: 'L', label: 'L' },
+  { value: 'G', label: 'g' },
+  { value: 'KG', label: 'kg' },
+  { value: 'OZ', label: 'oz' },
+  { value: 'LB', label: 'lb' },
+  { value: 'PIECE', label: 'Piece' },
+  { value: 'PINCH', label: 'Pinch' },
+  { value: 'DASH', label: 'Dash' },
+  { value: 'TO_TASTE', label: 'To Taste' },
 ];
 
 const COOKING_TIME_OPTIONS = [
@@ -103,7 +121,7 @@ export default function RecipeEditPage() {
   const handleAddIngredient = () => {
     setIngredients([
       ...ingredients,
-      { name: '', amount: '', quantity: null, unit: null, type: 'MAIN' },
+      { name: '', quantity: null, unit: null, type: 'MAIN' },
     ]);
   };
 
@@ -378,18 +396,39 @@ export default function RecipeEditPage() {
                 <div key={index} className="flex gap-2 items-start">
                   <input
                     type="text"
-                    value={ing.amount || ''}
-                    onChange={(e) => handleIngredientChange(index, 'amount', e.target.value)}
-                    placeholder="Amount"
-                    className="w-24 px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm"
-                  />
-                  <input
-                    type="text"
                     value={ing.name}
                     onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
                     placeholder="Ingredient name"
                     className="flex-1 px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm"
                   />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={ing.quantity ?? ''}
+                    onChange={(e) => {
+                      const sanitized = e.target.value.replace(/[^0-9.]/g, '').slice(0, 4);
+                      const updated = [...ingredients];
+                      updated[index] = { ...updated[index], quantity: sanitized ? parseFloat(sanitized) : null };
+                      setIngredients(updated);
+                    }}
+                    placeholder="Qty"
+                    className="w-16 px-2 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm text-center"
+                  />
+                  <select
+                    value={ing.unit || ''}
+                    onChange={(e) => {
+                      const updated = [...ingredients];
+                      updated[index] = { ...updated[index], unit: (e.target.value || null) as MeasurementUnit | null };
+                      setIngredients(updated);
+                    }}
+                    className="w-20 px-2 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)] text-sm"
+                  >
+                    {MEASUREMENT_UNITS.map((unit) => (
+                      <option key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </option>
+                    ))}
+                  </select>
                   <select
                     value={ing.type}
                     onChange={(e) => handleIngredientChange(index, 'type', e.target.value)}

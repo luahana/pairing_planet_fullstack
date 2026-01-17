@@ -497,17 +497,14 @@ class _IngredientSectionState extends ConsumerState<IngredientSection> {
   }
 
   Widget _buildDeletedRow(int index, Map<String, dynamic> ingredient, {required bool isAtMax}) {
-    // Build display text: prefer quantity + unit, fallback to amount
+    // Build display text from quantity + unit
     final name = ingredient['name'] ?? '';
     final quantity = ingredient['quantity'];
     final unit = ingredient['unit'] as String?;
-    final amount = ingredient['amount'] as String?;
 
-    String displayAmount;
+    String displayAmount = '';
     if (quantity != null && unit != null) {
       displayAmount = '${_formatQuantity(quantity)} ${'units.$unit'.tr()}';
-    } else {
-      displayAmount = amount ?? '';
     }
 
     return Padding(

@@ -394,7 +394,6 @@ export default function CreateRecipePage() {
 
       const ingredientsData: IngredientDto[] = validIngredients.map((ing) => ({
         name: ing.name.trim(),
-        amount: null,  // Legacy field, not used
         quantity: ing.quantity ? parseFloat(ing.quantity) : null,
         unit: (ing.unit || null) as IngredientDto['unit'],
         type: ing.type,
