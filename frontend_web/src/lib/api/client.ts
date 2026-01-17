@@ -106,7 +106,18 @@ export async function apiFetch<T>(
     throw new ApiError(response.status, errorMessage);
   }
 
-  return response.json();
+  // Handle empty responses (204 No Content or empty body)
+  const contentLength = response.headers.get('content-length');
+  if (response.status === 204 || contentLength === '0') {
+    return undefined as T;
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text);
 }
 
 // Helper to build query string from params object

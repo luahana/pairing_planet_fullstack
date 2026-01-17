@@ -42,7 +42,7 @@ export function RecipeJsonLd({ recipe }: RecipeJsonLdProps) {
     recipeYield: `${recipe.servings} servings`,
     cookTime: cookingTimeToISO(recipe.cookingTimeRange),
     recipeCategory: recipe.foodName,
-    recipeCuisine: recipe.culinaryLocale,
+    recipeCuisine: recipe.cookingStyle,
     keywords: recipe.hashtags.map((h) => h.name).join(', '),
   };
 

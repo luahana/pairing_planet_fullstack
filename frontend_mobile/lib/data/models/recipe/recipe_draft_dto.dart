@@ -193,7 +193,7 @@ class RecipeDraftDto {
   final String id;
   final String title;
   final String description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final String? food1MasterPublicId;
   final String? foodName;
   final List<DraftIngredientDto> ingredients;
@@ -209,7 +209,7 @@ class RecipeDraftDto {
     required this.id,
     required this.title,
     required this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     this.food1MasterPublicId,
     this.foodName,
     required this.ingredients,
@@ -227,7 +227,7 @@ class RecipeDraftDto {
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      culinaryLocale: json['culinaryLocale'] as String?,
+      cookingStyle: json['cookingStyle'] as String?,
       food1MasterPublicId: json['food1MasterPublicId'] as String?,
       foodName: json['foodName'] as String?,
       ingredients: (json['ingredients'] as List<dynamic>)
@@ -251,7 +251,7 @@ class RecipeDraftDto {
         'id': id,
         'title': title,
         'description': description,
-        'culinaryLocale': culinaryLocale,
+        'cookingStyle': cookingStyle,
         'food1MasterPublicId': food1MasterPublicId,
         'foodName': foodName,
         'ingredients': ingredients.map((e) => e.toJson()).toList(),
@@ -269,7 +269,7 @@ class RecipeDraftDto {
       id: entity.id,
       title: entity.title,
       description: entity.description,
-      culinaryLocale: entity.culinaryLocale,
+      cookingStyle: entity.cookingStyle,
       food1MasterPublicId: entity.food1MasterPublicId,
       foodName: entity.foodName,
       ingredients:
@@ -289,7 +289,7 @@ class RecipeDraftDto {
       id: id,
       title: title,
       description: description,
-      culinaryLocale: culinaryLocale,
+      cookingStyle: cookingStyle,
       food1MasterPublicId: food1MasterPublicId,
       foodName: foodName,
       ingredients: ingredients.map((e) => e.toEntity()).toList(),

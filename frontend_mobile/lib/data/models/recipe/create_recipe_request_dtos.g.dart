@@ -11,7 +11,7 @@ CreateRecipeRequestDto _$CreateRecipeRequestDtoFromJson(
     CreateRecipeRequestDto(
       title: json['title'] as String,
       description: json['description'] as String,
-      culinaryLocale: json['culinaryLocale'] as String?,
+      cookingStyle: json['cookingStyle'] as String?,
       food1MasterPublicId: json['food1MasterPublicId'] as String?,
       newFoodName: json['newFoodName'] as String?,
       ingredients: (json['ingredients'] as List<dynamic>)
@@ -40,7 +40,7 @@ Map<String, dynamic> _$CreateRecipeRequestDtoToJson(
     <String, dynamic>{
       'title': instance.title,
       'description': instance.description,
-      'culinaryLocale': instance.culinaryLocale,
+      'cookingStyle': instance.cookingStyle,
       'food1MasterPublicId': instance.food1MasterPublicId,
       'newFoodName': instance.newFoodName,
       'ingredients': instance.ingredients,

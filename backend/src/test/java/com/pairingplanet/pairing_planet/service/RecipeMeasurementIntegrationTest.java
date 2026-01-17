@@ -219,7 +219,7 @@ class RecipeMeasurementIntegrationTest extends BaseIntegrationTest {
             Recipe recipe = Recipe.builder()
                     .title("DB Recipe")
                     .description("Test")
-                    .culinaryLocale("en-US")
+                    .cookingStyle("en-US")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();

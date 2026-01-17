@@ -53,7 +53,7 @@ class CreateRecipeRequest(BaseModel):
     title: str
     description: str
     locale: str = "ko"
-    culinary_locale: str = Field(default="ko", alias="culinaryLocale")
+    cooking_style: str = Field(default="ko", alias="cookingStyle")
     new_food_name: Optional[str] = Field(default=None, alias="newFoodName")
     ingredients: List[RecipeIngredient] = Field(default_factory=list)
     steps: List[RecipeStep] = Field(default_factory=list)
@@ -365,7 +365,7 @@ class MockSeeder:
             title=recipe_data["title"],  # Longer, descriptive title
             description=recipe_data["description"],
             locale=locale,
-            culinary_locale="ko" if locale == "ko" else "en-US",
+            cooking_style="ko" if locale == "ko" else "en-US",
             new_food_name=recipe_data["foodName"],  # Short generic dish name
             ingredients=ingredients,
             steps=steps,

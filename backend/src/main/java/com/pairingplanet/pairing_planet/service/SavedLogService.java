@@ -67,6 +67,13 @@ public class SavedLogService {
         return savedLogRepository.existsByUserIdAndLogPostId(userId, logPostId);
     }
 
+    public boolean isSavedByUserPublicId(UUID logPublicId, Long userId) {
+        if (userId == null) return false;
+        return logPostRepository.findByPublicId(logPublicId)
+                .map(logPost -> savedLogRepository.existsByUserIdAndLogPostId(userId, logPost.getId()))
+                .orElse(false);
+    }
+
     public Slice<LogPostSummaryDto> getSavedLogs(Long userId, Pageable pageable) {
         return savedLogRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(sl -> convertToSummary(sl.getLogPost()));
@@ -114,7 +121,7 @@ public class SavedLogService {
         Boolean isVariant = null;
         if (log.getRecipeLog() != null && log.getRecipeLog().getRecipe() != null) {
             Recipe recipe = log.getRecipeLog().getRecipe();
-            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
+            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCookingStyle());
             isVariant = recipe.getRootRecipe() != null;
         }
 

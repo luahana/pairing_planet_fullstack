@@ -91,7 +91,7 @@ class CreateRecipeRequest(BaseModel):
     title: str = Field(max_length=100)
     description: str = Field(max_length=2000)
     locale: str = Field(default="ko-KR")
-    culinary_locale: str = Field(default="KR", alias="culinaryLocale")
+    cooking_style: str = Field(default="KR", alias="cookingStyle")
     new_food_name: Optional[str] = Field(default=None, alias="newFoodName")
     food_public_id: Optional[str] = Field(default=None, alias="foodPublicId")
     ingredients: List[RecipeIngredient] = Field(default_factory=list)
@@ -132,7 +132,7 @@ class Recipe(BaseModel):
     title: str
     description: Optional[str] = None
     locale: Optional[str] = None
-    culinary_locale: Optional[str] = Field(default=None, alias="culinaryLocale")
+    cooking_style: Optional[str] = Field(default=None, alias="cookingStyle")
     creator_public_id: Optional[str] = Field(default=None, alias="creatorPublicId")
     creator_username: Optional[str] = Field(default=None, alias="creatorUsername")
     ingredients: List[RecipeIngredient] = Field(default_factory=list)

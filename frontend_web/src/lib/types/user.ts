@@ -18,7 +18,7 @@ export interface UserProfile {
   gender: Gender | null;
   birthDate: string | null;
   locale: string | null;
-  defaultFoodStyle: string | null;
+  defaultCookingStyle: string | null;
   measurementPreference: MeasurementPreference | null;
   followerCount: number;
   followingCount: number;
@@ -39,7 +39,7 @@ export interface UpdateProfileRequest {
   gender?: string | null;
   birthDate?: string | null;
   locale?: string | null;
-  defaultFoodStyle?: string | null;
+  defaultCookingStyle?: string | null;
   measurementPreference?: MeasurementPreference | null;
   bio?: string | null;
   youtubeUrl?: string | null;

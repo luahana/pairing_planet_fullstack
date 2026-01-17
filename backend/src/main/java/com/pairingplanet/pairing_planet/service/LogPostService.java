@@ -63,7 +63,7 @@ public class LogPostService {
                 .title(req.title())
                 .content(req.content())
                 .creatorId(creatorId) // 유저 ID 조회 생략
-                .locale(recipe.getCulinaryLocale())
+                .locale(recipe.getCookingStyle())
                 .build();
 
         // 레시피-로그 연결 정보 생성
@@ -217,7 +217,7 @@ public class LogPostService {
         Boolean isVariant = null;
         if (recipeLog != null && recipeLog.getRecipe() != null) {
             Recipe recipe = recipeLog.getRecipe();
-            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
+            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCookingStyle());
             isVariant = recipe.getRootRecipe() != null;
         }
 
@@ -246,7 +246,7 @@ public class LogPostService {
         String userName = creator != null ? creator.getUsername() : "Unknown";
 
         // 2. [추가] 음식 이름 추출 (FoodMaster의 fallback 로직 사용)
-        String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
+        String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCookingStyle());
 
         // 3. 썸네일 URL 추출 (첫 번째 커버 이미지 사용, displayOrder로 정렬됨)
         String thumbnail = recipe.getImages().stream()
@@ -275,7 +275,7 @@ public class LogPostService {
                 recipe.getFoodMaster().getPublicId(),
                 recipe.getTitle(),
                 recipe.getDescription(),
-                recipe.getCulinaryLocale(),
+                recipe.getCookingStyle(),
                 creatorPublicId,
                 userName,
                 thumbnail,

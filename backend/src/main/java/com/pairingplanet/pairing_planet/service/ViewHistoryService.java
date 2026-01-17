@@ -143,7 +143,7 @@ public class ViewHistoryService {
         UUID creatorPublicId = creator != null ? creator.getPublicId() : null;
         String userName = creator != null ? creator.getUsername() : "Unknown";
 
-        String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
+        String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCookingStyle());
 
         String thumbnail = recipe.getImages().stream()
                 .filter(img -> img.getType() == com.pairingplanet.pairing_planet.domain.enums.ImageType.COVER)
@@ -167,7 +167,7 @@ public class ViewHistoryService {
                 recipe.getFoodMaster().getPublicId(),
                 recipe.getTitle(),
                 recipe.getDescription(),
-                recipe.getCulinaryLocale(),
+                recipe.getCookingStyle(),
                 creatorPublicId,
                 userName,
                 thumbnail,
@@ -197,7 +197,7 @@ public class ViewHistoryService {
         Boolean isVariant = false;
         if (recipeLog != null && recipeLog.getRecipe() != null) {
             Recipe recipe = recipeLog.getRecipe();
-            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
+            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCookingStyle());
             isVariant = recipe.getRootRecipe() != null;
         }
 

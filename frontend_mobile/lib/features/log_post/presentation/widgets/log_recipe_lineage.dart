@@ -52,7 +52,7 @@ class LogRecipeLineage extends StatelessWidget {
             title: linkedRecipe!.title,
             userName: linkedRecipe!.userName,
             thumbnailUrl: linkedRecipe!.thumbnailUrl,
-            culinaryLocale: linkedRecipe!.culinaryLocale,
+            cookingStyle: linkedRecipe!.cookingStyle,
           ),
         ],
       ),

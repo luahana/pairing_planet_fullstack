@@ -10,7 +10,7 @@ part 'update_recipe_request_dto.g.dart';
 class UpdateRecipeRequestDto {
   final String title;
   final String? description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final List<IngredientDto> ingredients;
   final List<StepDto> steps;
   final List<String> imagePublicIds;
@@ -21,7 +21,7 @@ class UpdateRecipeRequestDto {
   UpdateRecipeRequestDto({
     required this.title,
     this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     required this.ingredients,
     required this.steps,
     required this.imagePublicIds,
@@ -39,7 +39,7 @@ class UpdateRecipeRequestDto {
     return UpdateRecipeRequestDto(
       title: request.title,
       description: request.description,
-      culinaryLocale: request.culinaryLocale,
+      cookingStyle: request.cookingStyle,
       ingredients:
           request.ingredients.map((e) => IngredientDto.fromEntity(e)).toList(),
       steps: request.steps.map((e) => StepDto.fromEntity(e)).toList(),

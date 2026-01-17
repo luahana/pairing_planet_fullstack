@@ -116,6 +116,17 @@ public class RecipeController {
 
     // --- [SAVE/BOOKMARK] ---
     /**
+     * Check if recipe is saved by current user
+     */
+    @GetMapping("/{publicId}/saved")
+    public ResponseEntity<java.util.Map<String, Boolean>> checkRecipeSaved(
+            @PathVariable("publicId") UUID publicId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        boolean isSaved = principal != null && savedRecipeService.isSavedByUserPublicId(publicId, principal.getId());
+        return ResponseEntity.ok(java.util.Map.of("isSaved", isSaved));
+    }
+
+    /**
      * 레시피 저장 (북마크)
      */
     @PostMapping("/{publicId}/save")

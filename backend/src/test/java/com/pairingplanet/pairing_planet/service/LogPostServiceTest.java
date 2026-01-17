@@ -61,7 +61,7 @@ class LogPostServiceTest extends BaseIntegrationTest {
         testRecipe = Recipe.builder()
                 .title("Test Recipe")
                 .description("Test Description")
-                .culinaryLocale("ko-KR")
+                .cookingStyle("ko-KR")
                 .foodMaster(food)
                 .creatorId(testUser.getId())
                 .build();
@@ -258,7 +258,7 @@ class LogPostServiceTest extends BaseIntegrationTest {
             Recipe recipeWithNoLogs = Recipe.builder()
                     .title("Recipe Without Logs")
                     .description("No logs here")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(food2)
                     .creatorId(testUser.getId())
                     .build();

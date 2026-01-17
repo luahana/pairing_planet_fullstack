@@ -101,7 +101,7 @@ export function RecipeCard({ recipe, isSaved = false }: RecipeCardProps) {
 
         {/* Tags row */}
         <div className="flex items-center gap-2 mt-3 flex-wrap">
-          <CookingStyleBadge localeCode={recipe.culinaryLocale} size="sm" />
+          <CookingStyleBadge localeCode={recipe.cookingStyle} size="sm" />
           <span className="text-xs px-2 py-1 bg-[var(--background)] text-[var(--text-secondary)] rounded">
             {cookingTime}
           </span>

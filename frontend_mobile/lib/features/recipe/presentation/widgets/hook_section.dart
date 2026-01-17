@@ -233,7 +233,7 @@ class _HookSectionState extends ConsumerState<HookSection> {
         Builder(
           builder: (context) {
             final profileAsync = ref.watch(myProfileProvider);
-            final preferredStyle = profileAsync.valueOrNull?.user.defaultFoodStyle;
+            final preferredStyle = profileAsync.valueOrNull?.user.defaultCookingStyle;
             return FoodStyleDropdown(
               value: widget.localeController.text.isNotEmpty
                   ? widget.localeController.text

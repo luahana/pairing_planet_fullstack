@@ -59,7 +59,7 @@ class BotPersona(BaseModel):
     dietary_focus: DietaryFocus = Field(description="Dietary specialty")
     vocabulary_style: VocabularyStyle = Field(description="Language style")
     locale: str = Field(description="Primary locale (e.g., 'ko-KR', 'en-US')")
-    culinary_locale: str = Field(description="Culinary style country code (e.g., 'KR', 'US')")
+    cooking_style: str = Field(description="Culinary style country code (e.g., 'KR', 'US')")
     kitchen_style_prompt: str = Field(description="Prompt for image generation")
     specialties: List[str] = Field(
         default_factory=list,

@@ -1,6 +1,30 @@
 import { apiFetch, buildQueryString } from './client';
 import type { RecipeSummary, LogPostSummary, UnifiedPageResponse, PaginationParams } from '@/lib/types';
 
+interface SavedStatusResponse {
+  isSaved: boolean;
+}
+
+/**
+ * Check if a recipe is saved by the current user
+ */
+export async function checkRecipeSaved(publicId: string): Promise<boolean> {
+  const response = await apiFetch<SavedStatusResponse>(`/recipes/${publicId}/saved`, {
+    cache: 'no-store',
+  });
+  return response.isSaved;
+}
+
+/**
+ * Check if a log is saved by the current user
+ */
+export async function checkLogSaved(publicId: string): Promise<boolean> {
+  const response = await apiFetch<SavedStatusResponse>(`/log_posts/${publicId}/saved`, {
+    cache: 'no-store',
+  });
+  return response.isSaved;
+}
+
 /**
  * Save a recipe (bookmark)
  */

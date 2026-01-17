@@ -126,7 +126,7 @@ export default function ProfileEditPage() {
           birthday: profile.birthDate || '',
           gender: profile.gender || '',
           locale: profile.locale || '',
-          foodStyle: profile.defaultFoodStyle || 'international',
+          foodStyle: profile.defaultCookingStyle || 'international',
           measurementPref: profile.measurementPreference || 'ORIGINAL',
           bio: profile.bio || '',
           youtubeUrl: profile.youtubeUrl || '',
@@ -229,7 +229,7 @@ export default function ProfileEditPage() {
       }
       if (foodStyle !== initialValues.foodStyle) {
         // Convert 'international' back to null for API
-        updateData.defaultFoodStyle = foodStyle === 'international' ? null : foodStyle;
+        updateData.defaultCookingStyle = foodStyle === 'international' ? null : foodStyle;
       }
       if (measurementPref !== initialValues.measurementPref) {
         updateData.measurementPreference =

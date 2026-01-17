@@ -20,7 +20,7 @@ public record UserDto(
         Gender gender,
         LocalDate birthDate,
         String locale,           // 언어 설정: ko-KR, en-US
-        String defaultFoodStyle, // 기본 요리 스타일: ISO country code (e.g., "KR", "US")
+        String defaultCookingStyle, // 기본 요리 스타일: ISO country code (e.g., "KR", "US") or "international"
         MeasurementPreference measurementPreference, // 측정 단위 선호: METRIC, US, ORIGINAL
         int followerCount,
         int followingCount,
@@ -65,7 +65,7 @@ public record UserDto(
                 .gender(user.getGender())
                 .birthDate(user.getBirthDate())
                 .locale(user.getLocale())
-                .defaultFoodStyle(user.getDefaultFoodStyle())
+                .defaultCookingStyle(user.getDefaultCookingStyle())
                 .measurementPreference(user.getMeasurementPreference())
                 .followerCount(user.getFollowerCount())
                 .followingCount(user.getFollowingCount())

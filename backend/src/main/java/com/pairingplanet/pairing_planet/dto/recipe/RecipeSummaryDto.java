@@ -9,7 +9,7 @@ public record RecipeSummaryDto(
         UUID foodMasterPublicId,
         String title,
         String description,
-        String culinaryLocale,
+        String cookingStyle,
         UUID creatorPublicId,  // Creator's publicId for profile navigation
         String userName,
         String thumbnail,

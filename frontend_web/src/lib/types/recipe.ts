@@ -10,7 +10,7 @@ export interface RecipeSummary {
   foodMasterPublicId: string;
   title: string;
   description: string;
-  culinaryLocale: string;
+  cookingStyle: string;
   creatorPublicId: string | null;
   userName: string | null;
   thumbnail: string | null;
@@ -81,7 +81,7 @@ export interface RecipeDetail {
   publicId: string;
   title: string;
   description: string;
-  culinaryLocale: string;
+  cookingStyle: string;
   foodName: string;
   foodMasterPublicId: string;
   creatorPublicId: string | null;
@@ -110,7 +110,7 @@ export interface TrendingTree {
   rootRecipeId: string;
   title: string;
   foodName: string;
-  culinaryLocale: string;
+  cookingStyle: string;
   thumbnail: string | null;
   variantCount: number;
   logCount: number;
@@ -153,7 +153,7 @@ export interface RecipeModifiable {
 export interface UpdateRecipeRequest {
   title: string;
   description?: string;
-  culinaryLocale?: string;
+  cookingStyle?: string;
   ingredients: IngredientDto[];
   steps: Array<{
     stepNumber: number;
@@ -173,7 +173,7 @@ export interface UpdateRecipeRequest {
 export interface CreateRecipeRequest {
   title: string;
   description?: string;
-  culinaryLocale?: string;
+  cookingStyle?: string;
   newFoodName?: string; // Required for new recipes, null for variants
   food1MasterPublicId?: string | null;
   ingredients: IngredientDto[];

@@ -177,7 +177,7 @@ Sharp focus on the main action."""
             title=recipe_data["title"],
             description=recipe_data["description"],
             locale=persona.locale,
-            culinary_locale=persona.culinary_locale,
+            cooking_style=persona.cooking_style,
             new_food_name=food_name,
             ingredients=ingredients,
             steps=steps,

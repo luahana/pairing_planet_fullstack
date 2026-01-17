@@ -7,7 +7,7 @@ class TrendingTreeDto {
   final String rootRecipeId;
   final String title;
   final String? foodName;
-  final String culinaryLocale;
+  final String cookingStyle;
   final String? thumbnail;
   final int variantCount;
   final int logCount;
@@ -19,7 +19,7 @@ class TrendingTreeDto {
     required this.rootRecipeId,
     required this.title,
     this.foodName,
-    required this.culinaryLocale,
+    required this.cookingStyle,
     this.thumbnail,
     required this.variantCount,
     required this.logCount,

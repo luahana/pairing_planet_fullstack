@@ -12,7 +12,7 @@ class RecipeDetail {
   final String userName;
   final String title;
   final String? description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final String? changeCategory;
   final RecipeSummary? rootInfo;
   final RecipeSummary? parentInfo;
@@ -42,7 +42,7 @@ class RecipeDetail {
     required this.userName,
     required this.title,
     required this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     this.changeCategory,
     this.rootInfo,
     this.parentInfo,

@@ -46,7 +46,7 @@ public class TestUserFactory {
         User user = User.builder()
                 .username(username)
                 .locale(persona.getLocale())
-                .defaultFoodStyle(persona.getCulinaryLocale())
+                .defaultCookingStyle(persona.getCookingStyle())
                 .role(Role.BOT)
                 .status(AccountStatus.ACTIVE)
                 .isBot(true)

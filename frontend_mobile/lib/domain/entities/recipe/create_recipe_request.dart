@@ -4,7 +4,7 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_step.dart
 class CreateRecipeRequest {
   final String title;
   final String description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final String? food1MasterPublicId;
   final String? newFoodName;
   final List<Ingredient> ingredients;
@@ -25,7 +25,7 @@ class CreateRecipeRequest {
   CreateRecipeRequest({
     required this.title,
     required this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     this.food1MasterPublicId,
     this.newFoodName,
     required this.ingredients,

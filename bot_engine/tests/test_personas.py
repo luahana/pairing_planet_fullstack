@@ -102,7 +102,7 @@ class TestPersonaRegistry:
             persona = registry.get(name)
             assert persona is not None
             assert persona.is_korean()
-            assert persona.culinary_locale == "KR"
+            assert persona.cooking_style == "KR"
 
     def test_english_personas_have_english_locale(self) -> None:
         """Test that all English personas have correct locale."""

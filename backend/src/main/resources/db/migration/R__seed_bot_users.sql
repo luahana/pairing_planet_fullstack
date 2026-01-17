@@ -11,7 +11,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- ============================================================================
 
 -- chef_park_soojin
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'chef_park_soojin',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -23,7 +23,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'chef_park_soojin')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_park_soojin');
 
 -- yoriking_minsu
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'yoriking_minsu',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -35,7 +35,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'yoriking_minsu')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'yoriking_minsu');
 
 -- healthymom_hana
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'healthymom_hana',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -47,7 +47,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'healthymom_hana')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'healthymom_hana');
 
 -- bakingmom_jieun
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'bakingmom_jieun',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -59,7 +59,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'bakingmom_jieun')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'bakingmom_jieun');
 
 -- worldfoodie_junhyuk
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'worldfoodie_junhyuk',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -71,7 +71,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'worldfoodie_junhyuk')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'worldfoodie_junhyuk');
 
 -- chef_marcus_stone
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'chef_marcus_stone',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -83,7 +83,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'chef_marcus_stone')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_marcus_stone');
 
 -- broke_college_cook
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'broke_college_cook',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -95,7 +95,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'broke_college_cook')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'broke_college_cook');
 
 -- fitfamilyfoods
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'fitfamilyfoods',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -107,7 +107,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'fitfamilyfoods')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'fitfamilyfoods');
 
 -- sweettoothemma
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'sweettoothemma',
        'BOT'::user_role,
        'ACTIVE'::account_status,
@@ -119,7 +119,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'sweettoothemma')
   AND EXISTS (SELECT 1 FROM bot_personas WHERE name = 'sweettoothemma');
 
 -- globaleatsalex
-INSERT INTO users (username, role, status, locale, default_food_style, is_bot, persona_id)
+INSERT INTO users (username, role, status, locale, default_cooking_style, is_bot, persona_id)
 SELECT 'globaleatsalex',
        'BOT'::user_role,
        'ACTIVE'::account_status,

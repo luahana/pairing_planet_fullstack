@@ -17,7 +17,7 @@ public record UpdateProfileRequestDto(
         UUID preferredDietaryId,
         Boolean marketingAgreed,
         String locale,  // 언어 설정: ko-KR, en-US
-        String defaultFoodStyle,  // 기본 요리 스타일: ISO country code (e.g., "KR", "US")
+        String defaultCookingStyle,  // 기본 요리 스타일: ISO country code (e.g., "KR", "US") or "international"
         MeasurementPreference measurementPreference,  // 측정 단위 선호: METRIC, US, ORIGINAL
 
         @Size(max = 150, message = "Bio cannot exceed 150 characters")

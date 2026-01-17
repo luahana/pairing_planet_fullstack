@@ -29,7 +29,8 @@ public class Recipe extends BaseEntity {
     @JoinColumn(name = "food_master_id", nullable = false)
     private FoodMaster foodMaster;
 
-    private String culinaryLocale;
+    @Column(name = "cooking_style", length = 15)
+    private String cookingStyle;
     private String title;
     private String description;
 

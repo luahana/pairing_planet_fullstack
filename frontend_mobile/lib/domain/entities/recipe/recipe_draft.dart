@@ -130,7 +130,7 @@ class RecipeDraft {
   final String id;
   final String title;
   final String description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final String? food1MasterPublicId;
   final String? foodName;
   final List<DraftIngredient> ingredients;
@@ -146,7 +146,7 @@ class RecipeDraft {
     required this.id,
     required this.title,
     required this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     this.food1MasterPublicId,
     this.foodName,
     required this.ingredients,
@@ -179,7 +179,7 @@ class RecipeDraft {
     if (other is! RecipeDraft) return false;
     return title == other.title &&
         description == other.description &&
-        culinaryLocale == other.culinaryLocale &&
+        cookingStyle == other.cookingStyle &&
         food1MasterPublicId == other.food1MasterPublicId &&
         foodName == other.foodName &&
         listEquals(ingredients, other.ingredients) &&
@@ -194,7 +194,7 @@ class RecipeDraft {
   int get hashCode => Object.hash(
         title,
         description,
-        culinaryLocale,
+        cookingStyle,
         food1MasterPublicId,
         foodName,
         Object.hashAll(ingredients),

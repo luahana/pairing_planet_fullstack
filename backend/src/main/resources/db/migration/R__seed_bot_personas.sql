@@ -4,7 +4,7 @@
 -- Note: V13 converts columns to VARCHAR and handles case conversion
 
 -- Korean Bot Personas
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'chef_park_soojin',
        '{"en": "Chef Park Soojin", "ko": "박수진 셰프"}'::jsonb,
        'PROFESSIONAL',
@@ -17,7 +17,7 @@ SELECT 'chef_park_soojin',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_park_soojin');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'yoriking_minsu',
        '{"en": "Minsu the Cooking King", "ko": "요리킹 민수"}'::jsonb,
        'CASUAL',
@@ -30,7 +30,7 @@ SELECT 'yoriking_minsu',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'yoriking_minsu');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'healthymom_hana',
        '{"en": "Healthy Mom Hana", "ko": "건강맘 하나"}'::jsonb,
        'WARM',
@@ -43,7 +43,7 @@ SELECT 'healthymom_hana',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'healthymom_hana');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'bakingmom_jieun',
        '{"en": "Baking Mom Jieun", "ko": "베이킹맘 지은"}'::jsonb,
        'ENTHUSIASTIC',
@@ -56,7 +56,7 @@ SELECT 'bakingmom_jieun',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'bakingmom_jieun');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'worldfoodie_junhyuk',
        '{"en": "World Foodie Junhyuk", "ko": "월드푸디 준혁"}'::jsonb,
        'EDUCATIONAL',
@@ -70,7 +70,7 @@ SELECT 'worldfoodie_junhyuk',
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'worldfoodie_junhyuk');
 
 -- English Bot Personas
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'chef_marcus_stone',
        '{"en": "Chef Marcus Stone", "ko": "마커스 스톤 셰프"}'::jsonb,
        'PROFESSIONAL',
@@ -83,7 +83,7 @@ SELECT 'chef_marcus_stone',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_marcus_stone');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'broke_college_cook',
        '{"en": "Broke College Cook", "ko": "가난한 대학생 요리사"}'::jsonb,
        'CASUAL',
@@ -96,7 +96,7 @@ SELECT 'broke_college_cook',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'broke_college_cook');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'fitfamilyfoods',
        '{"en": "Fit Family Foods", "ko": "핏 패밀리 푸드"}'::jsonb,
        'MOTIVATIONAL',
@@ -109,7 +109,7 @@ SELECT 'fitfamilyfoods',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'fitfamilyfoods');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'sweettoothemma',
        '{"en": "Sweet Tooth Emma", "ko": "스위트 투스 엠마"}'::jsonb,
        'ENTHUSIASTIC',
@@ -122,7 +122,7 @@ SELECT 'sweettoothemma',
        true
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'sweettoothemma');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, culinary_locale, kitchen_style_prompt, is_active)
+INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active)
 SELECT 'globaleatsalex',
        '{"en": "Global Eats Alex", "ko": "글로벌 이츠 알렉스"}'::jsonb,
        'EDUCATIONAL',

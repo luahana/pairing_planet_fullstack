@@ -40,15 +40,15 @@ class UnifiedRecipeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Get user's food style preference to compare
     final userFoodStyle = ref.watch(myProfileProvider).maybeWhen(
-          data: (profile) => profile.user.defaultFoodStyle,
+          data: (profile) => profile.user.defaultCookingStyle,
           orElse: () => null,
         );
 
     // Show cook style flag only if different from user preference
-    final showCookStyleFlag = recipe.culinaryLocale.isNotEmpty &&
+    final showCookStyleFlag = recipe.cookingStyle.isNotEmpty &&
         userFoodStyle != null &&
         userFoodStyle.isNotEmpty &&
-        _normalizeLocale(recipe.culinaryLocale) != _normalizeLocale(userFoodStyle);
+        _normalizeLocale(recipe.cookingStyle) != _normalizeLocale(userFoodStyle);
 
     return GestureDetector(
       onTap: () {
@@ -150,7 +150,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
                           if (showCookStyleFlag) ...[
                             SizedBox(width: 4.w),
                             LocaleBadge(
-                              localeCode: recipe.culinaryLocale,
+                              localeCode: recipe.cookingStyle,
                               showLabel: false,
                               fontSize: 12.sp,
                             ),
@@ -272,7 +272,7 @@ class UnifiedRecipeCard extends ConsumerWidget {
                   if (showCookStyleFlag) ...[
                     SizedBox(width: 4.w),
                     LocaleBadge(
-                      localeCode: recipe.culinaryLocale,
+                      localeCode: recipe.cookingStyle,
                       showLabel: false,
                       fontSize: 11.sp,
                     ),

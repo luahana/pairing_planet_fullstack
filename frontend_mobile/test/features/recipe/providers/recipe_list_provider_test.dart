@@ -30,7 +30,7 @@ void main() {
           foodName: 'Kimchi Fried Rice',
           title: 'Test Recipe',
           description: 'A test recipe',
-          culinaryLocale: 'ko-KR',
+          cookingStyle: 'ko-KR',
           thumbnailUrl: 'https://example.com/thumb.jpg',
           userName: 'chef1',
           variantCount: 5,
@@ -70,7 +70,7 @@ void main() {
           foodName: 'Test Food',
           title: 'Test Recipe',
           description: 'Description',
-          culinaryLocale: 'en-US',
+          cookingStyle: 'en-US',
           thumbnailUrl: null,
           userName: 'user1',
           variantCount: 0,
@@ -121,7 +121,7 @@ void main() {
           foodName: 'Food $i',
           title: 'Recipe $i',
           description: 'Description $i',
-          culinaryLocale: 'en-US',
+          cookingStyle: 'en-US',
           thumbnailUrl: null,
           userName: 'user$i',
           variantCount: i,
@@ -377,7 +377,7 @@ void main() {
         foodName: 'Kimchi Fried Rice',
         title: 'Mom\'s Special Recipe',
         description: 'A delicious family recipe',
-        culinaryLocale: 'ko-KR',
+        cookingStyle: 'ko-KR',
         thumbnailUrl: 'https://example.com/thumb.jpg',
         userName: 'chef_kim',
         variantCount: 15,
@@ -389,7 +389,7 @@ void main() {
       expect(summary.foodName, 'Kimchi Fried Rice');
       expect(summary.title, 'Mom\'s Special Recipe');
       expect(summary.description, 'A delicious family recipe');
-      expect(summary.culinaryLocale, 'ko-KR');
+      expect(summary.cookingStyle, 'ko-KR');
       expect(summary.thumbnailUrl, 'https://example.com/thumb.jpg');
       expect(summary.userName, 'chef_kim');
       expect(summary.variantCount, 15);
@@ -403,7 +403,7 @@ void main() {
         foodName: 'Test Food',
         title: 'No Photo Recipe',
         description: 'Description',
-        culinaryLocale: 'en-US',
+        cookingStyle: 'en-US',
         thumbnailUrl: null,
         userName: 'user',
         variantCount: 0,
@@ -421,7 +421,7 @@ void main() {
         foodName: 'Spicy Kimchi Rice',
         title: 'My Spicy Version',
         description: 'A spicier variant',
-        culinaryLocale: 'ko-KR',
+        cookingStyle: 'ko-KR',
         thumbnailUrl: null,
         userName: 'chef2',
         variantCount: 0,
@@ -445,7 +445,7 @@ void main() {
         foodName: 'Kimchi Fried Rice',
         title: 'Original Recipe',
         description: 'The original version',
-        culinaryLocale: 'ko-KR',
+        cookingStyle: 'ko-KR',
         thumbnailUrl: null,
         userName: 'chef1',
         variantCount: 5,
@@ -465,7 +465,7 @@ void main() {
         foodName: 'Popular Food',
         title: 'Trending Recipe',
         description: 'Very popular',
-        culinaryLocale: 'en-US',
+        cookingStyle: 'en-US',
         thumbnailUrl: null,
         userName: 'famous_chef',
         variantCount: 100,

@@ -10,7 +10,7 @@ class RecipeSummaryDto {
   final String foodMasterPublicId;
   final String title;
   final String? description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final String? creatorPublicId; // Creator's publicId for profile navigation
   final String? userName;
   final String? thumbnail;
@@ -29,7 +29,7 @@ class RecipeSummaryDto {
     required this.foodMasterPublicId,
     required this.title,
     this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     this.creatorPublicId,
     required this.userName,
     this.thumbnail,
@@ -54,7 +54,7 @@ class RecipeSummaryDto {
     foodMasterPublicId: foodMasterPublicId,
     title: title,
     description: description ?? "",
-    culinaryLocale: culinaryLocale ?? "",
+    cookingStyle: cookingStyle ?? "",
     thumbnailUrl: thumbnail,
     creatorPublicId: creatorPublicId,
     userName: userName ?? "익명",

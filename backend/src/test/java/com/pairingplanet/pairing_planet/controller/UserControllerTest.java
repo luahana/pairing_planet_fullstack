@@ -98,19 +98,19 @@ class UserControllerTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should update defaultFoodStyle via API")
+        @DisplayName("Should update defaultCookingStyle via API")
         void updateMyProfile_WithDefaultFoodStyle_ReturnsUpdatedProfile() throws Exception {
             User user = testUserFactory.createTestUser();
             String token = testJwtTokenProvider.createAccessToken(user.getPublicId(), "USER");
 
-            String requestBody = "{\"defaultFoodStyle\":\"KR\"}";
+            String requestBody = "{\"defaultCookingStyle\":\"KR\"}";
 
             mockMvc.perform(patch("/api/v1/users/me")
                             .header("Authorization", "Bearer " + token)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.defaultFoodStyle").value("KR"));
+                    .andExpect(jsonPath("$.defaultCookingStyle").value("KR"));
         }
 
         @Test
@@ -119,14 +119,14 @@ class UserControllerTest extends BaseIntegrationTest {
             User user = testUserFactory.createTestUser();
             String token = testJwtTokenProvider.createAccessToken(user.getPublicId(), "USER");
 
-            String requestBody = "{\"defaultFoodStyle\":\"JP\"}";
+            String requestBody = "{\"defaultCookingStyle\":\"JP\"}";
 
             mockMvc.perform(patch("/api/v1/users/me")
                             .header("Authorization", "Bearer " + token)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.defaultFoodStyle").value("JP"));
+                    .andExpect(jsonPath("$.defaultCookingStyle").value("JP"));
         }
 
         @Test
@@ -135,14 +135,14 @@ class UserControllerTest extends BaseIntegrationTest {
             User user = testUserFactory.createTestUser();
             String token = testJwtTokenProvider.createAccessToken(user.getPublicId(), "USER");
 
-            String requestBody = "{\"defaultFoodStyle\":\"other\"}";
+            String requestBody = "{\"defaultCookingStyle\":\"other\"}";
 
             mockMvc.perform(patch("/api/v1/users/me")
                             .header("Authorization", "Bearer " + token)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.defaultFoodStyle").value("other"));
+                    .andExpect(jsonPath("$.defaultCookingStyle").value("other"));
         }
     }
 

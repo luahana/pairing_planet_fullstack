@@ -14,7 +14,7 @@ public record RecipeDetailResponseDto(
         UUID publicId,
         String title,
         String description,
-        String culinaryLocale,
+        String cookingStyle,
         String foodName,              // [추가] UI 상단 표시용
         UUID foodMasterPublicId,      // [추가] 음식 상세 이동용
         UUID creatorPublicId,         // Creator's publicId for profile navigation
@@ -45,7 +45,7 @@ public record RecipeDetailResponseDto(
         Recipe parent = recipe.getParentRecipe();
 
         Map<String, String> nameMap = recipe.getFoodMaster().getName();
-        String currentFoodName = nameMap.getOrDefault(recipe.getCulinaryLocale(),
+        String currentFoodName = nameMap.getOrDefault(recipe.getCookingStyle(),
                 nameMap.getOrDefault("ko-KR",
                         nameMap.values().stream().findFirst().orElse("Unknown Food")));
         UUID currentFoodMasterPublicId = recipe.getFoodMaster().getPublicId();
@@ -61,13 +61,13 @@ public record RecipeDetailResponseDto(
         RecipeSummaryDto rootInfo = (root != null) ? new RecipeSummaryDto(
                 root.getPublicId(), // 1. publicId (UUID)
                 // 2. foodName (String): 현재 로케일 -> 한국어 -> 첫 번째 이름 순으로 시도
-                root.getFoodMaster().getName().getOrDefault(root.getCulinaryLocale(),
+                root.getFoodMaster().getName().getOrDefault(root.getCookingStyle(),
                         root.getFoodMaster().getName().getOrDefault("ko-KR",
                                 root.getFoodMaster().getName().values().stream().findFirst().orElse("Unknown Food"))),
                 root.getFoodMaster().getPublicId(), // 3. foodMasterPublicId (UUID)
                 root.getTitle(),       // 4. title
                 root.getDescription(), // 5. description
-                root.getCulinaryLocale(), // 6. culinaryLocale
+                root.getCookingStyle(), // 6. cookingStyle
                 rootCreatorPublicId, // 7. creatorPublicId
                 rootCreatorName, // 8. userName
                 rootThumbnail, // 9. thumbnail
@@ -84,11 +84,11 @@ public record RecipeDetailResponseDto(
         // 3. 부모 레시피 정보 생성 (17개 필드 생성자 대응)
         RecipeSummaryDto parentInfo = (parent != null) ? new RecipeSummaryDto(
                 parent.getPublicId(),
-                parent.getFoodMaster().getName().getOrDefault(parent.getCulinaryLocale(), "Unknown Food"),
+                parent.getFoodMaster().getName().getOrDefault(parent.getCookingStyle(), "Unknown Food"),
                 parent.getFoodMaster().getPublicId(),
                 parent.getTitle(),
                 parent.getDescription(),
-                parent.getCulinaryLocale(),
+                parent.getCookingStyle(),
                 null, // creatorPublicId
                 null, // userName
                 null, // thumbnail
@@ -122,7 +122,7 @@ public record RecipeDetailResponseDto(
                 .publicId(recipe.getPublicId())
                 .title(recipe.getTitle())
                 .description(recipe.getDescription())
-                .culinaryLocale(recipe.getCulinaryLocale())
+                .cookingStyle(recipe.getCookingStyle())
                 .foodName(currentFoodName) // [적용]
                 .foodMasterPublicId(currentFoodMasterPublicId) // [적용]
                 .creatorPublicId(creatorPublicId) // Creator's publicId for profile navigation

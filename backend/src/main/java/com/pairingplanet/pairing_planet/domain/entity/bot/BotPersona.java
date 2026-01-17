@@ -54,8 +54,8 @@ public class BotPersona extends BaseEntity {
     @Column(nullable = false, length = 10)
     private String locale;
 
-    @Column(name = "culinary_locale", nullable = false, length = 10)
-    private String culinaryLocale;
+    @Column(name = "cooking_style", nullable = false, length = 15)
+    private String cookingStyle;
 
     /**
      * Detailed prompt for AI image generation describing the kitchen aesthetic.

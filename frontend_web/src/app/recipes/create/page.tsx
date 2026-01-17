@@ -9,7 +9,7 @@ import { createRecipe } from '@/lib/api/recipes';
 import { uploadImage } from '@/lib/api/images';
 import type { IngredientType, CookingTimeRange, IngredientDto, MeasurementUnit } from '@/lib/types';
 import { COOKING_TIME_RANGES } from '@/lib/types';
-import { getDefaultCulinaryLocale } from '@/lib/utils/cookingStyle';
+import { getDefaultCookingStyle } from '@/lib/utils/cookingStyle';
 import { CookingStyleSelect, COOKING_STYLE_OPTIONS } from '@/components/common/CookingStyleSelect';
 
 // Limits matching Flutter app
@@ -89,7 +89,7 @@ export default function CreateRecipePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [foodName, setFoodName] = useState('');
-  const [culinaryLocale, setCulinaryLocale] = useState('');
+  const [cookingStyle, setCookingStyle] = useState('');
   const [servings, setServings] = useState(2);
   const [cookingTimeRange, setCookingTimeRange] = useState<CookingTimeRange>('MIN_30_TO_60');
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -113,15 +113,15 @@ export default function CreateRecipePage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  // Set default culinary locale based on browser locale
+  // Set default cooking style based on browser locale
   useEffect(() => {
-    if (!culinaryLocale) {
-      const defaultLocale = getDefaultCulinaryLocale();
-      // Check if the detected locale is in our list, otherwise use 'international'
-      const isValid = COOKING_STYLE_OPTIONS.some((l) => l.value === defaultLocale);
-      setCulinaryLocale(isValid ? defaultLocale : 'international');
+    if (!cookingStyle) {
+      const defaultStyle = getDefaultCookingStyle();
+      // Check if the detected style is in our list, otherwise use 'international'
+      const isValid = COOKING_STYLE_OPTIONS.some((l) => l.value === defaultStyle);
+      setCookingStyle(isValid ? defaultStyle : 'international');
     }
-  }, [culinaryLocale]);
+  }, [cookingStyle]);
 
   // Handle recipe image selection
   const handleRecipeImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -339,7 +339,7 @@ export default function CreateRecipePage() {
       return;
     }
 
-    if (!culinaryLocale) {
+    if (!cookingStyle) {
       setError('Please select a cooking style');
       return;
     }
@@ -409,7 +409,7 @@ export default function CreateRecipePage() {
         title: title.trim(),
         description: description.trim() || undefined,
         newFoodName: foodName.trim(),
-        culinaryLocale,
+        cookingStyle,
         ingredients: ingredientsData,
         steps: stepsData,
         imagePublicIds,
@@ -602,8 +602,8 @@ export default function CreateRecipePage() {
                     Cooking Style <span className="text-[var(--error)]">*</span>
                   </label>
                   <CookingStyleSelect
-                    value={culinaryLocale}
-                    onChange={setCulinaryLocale}
+                    value={cookingStyle}
+                    onChange={setCookingStyle}
                     options={COOKING_STYLE_OPTIONS}
                     placeholder="Select cooking style"
                   />

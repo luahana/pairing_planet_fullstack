@@ -1,8 +1,16 @@
 'use client';
 
-import { useState, useCallback, MouseEvent } from 'react';
+import { useState, useCallback, useEffect, MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveRecipe, unsaveRecipe, saveLog, unsaveLog } from '@/lib/api/saved';
+import {
+  saveRecipe,
+  unsaveRecipe,
+  saveLog,
+  unsaveLog,
+  checkRecipeSaved,
+  checkLogSaved,
+} from '@/lib/api/saved';
 
 interface BookmarkButtonProps {
   publicId: string;
@@ -21,9 +29,28 @@ export function BookmarkButton({
   className = '',
   onSaveChange,
 }: BookmarkButtonProps) {
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [isSaved, setIsSaved] = useState(initialSaved);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch saved status on mount when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchSavedStatus = async () => {
+      try {
+        const saved = type === 'recipe'
+          ? await checkRecipeSaved(publicId)
+          : await checkLogSaved(publicId);
+        setIsSaved(saved);
+      } catch (error) {
+        console.error('Failed to fetch saved status:', error);
+      }
+    };
+
+    fetchSavedStatus();
+  }, [isAuthenticated, publicId, type]);
 
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -42,7 +69,13 @@ export function BookmarkButton({
       e.preventDefault();
       e.stopPropagation();
 
-      if (!isAuthenticated || isLoading) return;
+      if (!isAuthenticated) {
+        const currentPath = window.location.pathname;
+        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+        return;
+      }
+
+      if (isLoading) return;
 
       setIsLoading(true);
       try {
@@ -69,13 +102,8 @@ export function BookmarkButton({
         setIsLoading(false);
       }
     },
-    [isAuthenticated, isLoading, isSaved, publicId, type, onSaveChange]
+    [isAuthenticated, isLoading, isSaved, publicId, type, onSaveChange, router]
   );
-
-  // Don't render if not authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <button

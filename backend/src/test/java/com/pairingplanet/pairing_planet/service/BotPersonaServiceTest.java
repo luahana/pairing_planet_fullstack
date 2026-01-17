@@ -39,7 +39,7 @@ class BotPersonaServiceTest extends BaseIntegrationTest {
                 .dietaryFocus(BotDietaryFocus.FINE_DINING)
                 .vocabularyStyle(BotVocabularyStyle.TECHNICAL)
                 .locale("ko-KR")
-                .culinaryLocale("KR")
+                .cookingStyle("KR")
                 .kitchenStylePrompt("Active kitchen prompt")
                 .isActive(true)
                 .build();
@@ -53,7 +53,7 @@ class BotPersonaServiceTest extends BaseIntegrationTest {
                 .dietaryFocus(BotDietaryFocus.BUDGET)
                 .vocabularyStyle(BotVocabularyStyle.SIMPLE)
                 .locale("en-US")
-                .culinaryLocale("US")
+                .cookingStyle("US")
                 .kitchenStylePrompt("Inactive kitchen prompt")
                 .isActive(false)
                 .build();

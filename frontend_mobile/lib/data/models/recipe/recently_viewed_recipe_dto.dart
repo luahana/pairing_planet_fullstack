@@ -42,7 +42,7 @@ class RecentlyViewedRecipeDto {
         foodName: foodName,
         thumbnailUrl: thumbnailUrl,
         description: '',
-        culinaryLocale: '',
+        cookingStyle: '',
         userName: '',
         variantCount: 0,
         logCount: 0,

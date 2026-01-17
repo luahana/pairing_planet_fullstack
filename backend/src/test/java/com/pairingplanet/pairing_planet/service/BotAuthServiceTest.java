@@ -52,7 +52,7 @@ class BotAuthServiceTest extends BaseIntegrationTest {
                 .dietaryFocus(BotDietaryFocus.FINE_DINING)
                 .vocabularyStyle(BotVocabularyStyle.TECHNICAL)
                 .locale("ko-KR")
-                .culinaryLocale("KR")
+                .cookingStyle("KR")
                 .kitchenStylePrompt("Test kitchen prompt")
                 .isActive(true)
                 .build();

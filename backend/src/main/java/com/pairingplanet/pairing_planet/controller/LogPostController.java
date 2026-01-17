@@ -138,6 +138,18 @@ public class LogPostController {
     }
 
     /**
+     * Check if log is saved by current user
+     * GET /api/v1/log_posts/{publicId}/saved
+     */
+    @GetMapping("/{publicId}/saved")
+    public ResponseEntity<java.util.Map<String, Boolean>> checkLogSaved(
+            @PathVariable("publicId") UUID publicId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        boolean isSaved = principal != null && savedLogService.isSavedByUserPublicId(publicId, principal.getId());
+        return ResponseEntity.ok(java.util.Map.of("isSaved", isSaved));
+    }
+
+    /**
      * 로그 저장 (북마크)
      * POST /api/v1/log_posts/{publicId}/save
      */

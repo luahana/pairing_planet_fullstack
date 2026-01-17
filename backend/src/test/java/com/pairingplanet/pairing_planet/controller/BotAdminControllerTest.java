@@ -67,7 +67,7 @@ class BotAdminControllerTest extends BaseIntegrationTest {
                 .dietaryFocus(BotDietaryFocus.BUDGET)
                 .vocabularyStyle(BotVocabularyStyle.SIMPLE)
                 .locale("en-US")
-                .culinaryLocale("US")
+                .cookingStyle("US")
                 .kitchenStylePrompt("Admin test kitchen")
                 .isActive(true)
                 .build();

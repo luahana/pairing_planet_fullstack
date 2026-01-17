@@ -91,7 +91,7 @@ class TextGenerator:
         user_prompt = RecipePrompts.generate_original_recipe(
             food_name=food_name,
             locale=persona.locale,
-            culinary_style=persona.culinary_locale,
+            culinary_style=persona.cooking_style,
             specialties=persona.specialties,
         )
 

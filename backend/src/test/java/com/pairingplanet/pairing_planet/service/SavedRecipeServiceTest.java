@@ -52,7 +52,7 @@ class SavedRecipeServiceTest extends BaseIntegrationTest {
         testRecipe = Recipe.builder()
                 .title("Test Recipe")
                 .description("Test Description")
-                .culinaryLocale("ko-KR")
+                .cookingStyle("ko-KR")
                 .foodMaster(food)
                 .creatorId(testUser.getId())
                 .build();

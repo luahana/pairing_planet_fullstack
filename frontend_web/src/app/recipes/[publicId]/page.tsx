@@ -8,6 +8,8 @@ import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd';
 import { RecipeGrid } from '@/components/recipe/RecipeGrid';
 import { RecipeActions } from '@/components/recipe/RecipeActions';
 import { RecentLogsGallery } from '@/components/recipe/RecentLogsGallery';
+import { IngredientsSection } from '@/components/recipe/IngredientsSection';
+import { BookmarkButton } from '@/components/common/BookmarkButton';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { ImageCarousel } from '@/components/common/ImageCarousel';
 import { CookingStyleBadge } from '@/components/common/CookingStyleBadge';
@@ -72,25 +74,6 @@ export default async function RecipeDetailPage({ params }: Props) {
     COOKING_TIME_RANGES[recipe.cookingTimeRange as CookingTimeRange] ||
     recipe.cookingTimeRange;
 
-  // Group ingredients by type
-  const ingredientsByType = recipe.ingredients.reduce(
-    (acc, ing) => {
-      const type = ing.type || 'MAIN';
-      if (!acc[type]) acc[type] = [];
-      acc[type].push(ing);
-      return acc;
-    },
-    {} as Record<string, typeof recipe.ingredients>,
-  );
-
-  const ingredientTypeLabels: Record<string, string> = {
-    MAIN: 'Main Ingredients',
-    SUB: 'Additional Ingredients',
-    SAUCE: 'Sauce & Seasoning',
-    GARNISH: 'Garnish',
-    OPTIONAL: 'Optional',
-  };
-
   return (
     <>
       <ViewTracker publicId={publicId} type="recipe" />
@@ -129,11 +112,18 @@ export default async function RecipeDetailPage({ params }: Props) {
                 {recipe.title}
               </h1>
             </div>
-            <RecipeActions
-              recipePublicId={publicId}
-              creatorPublicId={recipe.creatorPublicId}
-              recipeTitle={recipe.title}
-            />
+            <div className="flex items-center gap-2">
+              <BookmarkButton
+                publicId={publicId}
+                type="recipe"
+                initialSaved={recipe.isSavedByCurrentUser ?? false}
+              />
+              <RecipeActions
+                recipePublicId={publicId}
+                creatorPublicId={recipe.creatorPublicId}
+                recipeTitle={recipe.title}
+              />
+            </div>
           </div>
           <p className="text-[var(--text-secondary)] text-lg">
             {recipe.description}
@@ -152,7 +142,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                 <span>{recipe.userName}</span>
               </Link>
             )}
-            <CookingStyleBadge localeCode={recipe.culinaryLocale} size="md" />
+            <CookingStyleBadge localeCode={recipe.cookingStyle} size="md" />
             <span className="text-[var(--text-secondary)]">{cookingTime}</span>
             <span className="text-[var(--text-secondary)]">
               {recipe.servings} servings
@@ -205,38 +195,7 @@ export default async function RecipeDetailPage({ params }: Props) {
         )}
 
         {/* Ingredients */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
-            Ingredients
-          </h2>
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
-            {Object.entries(ingredientsByType).map(([type, ingredients]) => (
-              <div key={type} className="mb-4 last:mb-0">
-                <h3 className="font-medium text-[var(--text-primary)] mb-2">
-                  {ingredientTypeLabels[type] || type}
-                </h3>
-                <ul className="space-y-2">
-                  {ingredients.map((ing, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center gap-2 text-[var(--text-secondary)]"
-                    >
-                      <span className="w-2 h-2 bg-[var(--primary)] rounded-full" />
-                      <span>
-                        {ing.amount && (
-                          <span className="font-medium text-[var(--text-primary)]">
-                            {ing.amount}{' '}
-                          </span>
-                        )}
-                        {ing.name}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
+        <IngredientsSection ingredients={recipe.ingredients} />
 
         {/* Steps */}
         <section className="mb-8">

@@ -55,7 +55,7 @@ class BotUserServiceTest extends BaseIntegrationTest {
                 .dietaryFocus(BotDietaryFocus.BUDGET)
                 .vocabularyStyle(BotVocabularyStyle.SIMPLE)
                 .locale("en-US")
-                .culinaryLocale("US")
+                .cookingStyle("US")
                 .kitchenStylePrompt("Simple kitchen prompt")
                 .isActive(true)
                 .build();

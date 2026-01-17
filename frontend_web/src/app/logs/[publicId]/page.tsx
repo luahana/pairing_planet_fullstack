@@ -9,6 +9,7 @@ import { LogDetailClient } from '@/components/log/LogDetailClient';
 import { OutcomeBadge } from '@/components/log/OutcomeBadge';
 import { RecipeCard } from '@/components/recipe/RecipeCard';
 import { ShareButtons } from '@/components/common/ShareButtons';
+import { BookmarkButton } from '@/components/common/BookmarkButton';
 import { getImageUrl } from '@/lib/utils/image';
 import { getAvatarInitial } from '@/lib/utils/string';
 import { siteConfig } from '@/config/site';
@@ -100,7 +101,14 @@ export default async function LogDetailPage({ params }: Props) {
               <OutcomeBadge outcome={log.outcome} size="lg" />
               <span className="text-[var(--text-secondary)]">{formattedDate}</span>
             </div>
-            <LogDetailClient log={log} />
+            <div className="flex items-center gap-2">
+              <BookmarkButton
+                publicId={publicId}
+                type="log"
+                initialSaved={log.isSavedByCurrentUser ?? false}
+              />
+              <LogDetailClient log={log} />
+            </div>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-4">

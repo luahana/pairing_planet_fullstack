@@ -11,7 +11,7 @@ UpdateRecipeRequestDto _$UpdateRecipeRequestDtoFromJson(
     UpdateRecipeRequestDto(
       title: json['title'] as String,
       description: json['description'] as String?,
-      culinaryLocale: json['culinaryLocale'] as String?,
+      cookingStyle: json['cookingStyle'] as String?,
       ingredients: (json['ingredients'] as List<dynamic>)
           .map((e) => IngredientDto.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -33,7 +33,7 @@ Map<String, dynamic> _$UpdateRecipeRequestDtoToJson(
     <String, dynamic>{
       'title': instance.title,
       'description': instance.description,
-      'culinaryLocale': instance.culinaryLocale,
+      'cookingStyle': instance.cookingStyle,
       'ingredients': instance.ingredients,
       'steps': instance.steps,
       'imagePublicIds': instance.imagePublicIds,

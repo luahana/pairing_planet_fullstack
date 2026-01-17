@@ -44,7 +44,7 @@ class TestRecipeData {
       foodName: foodName ?? 'Kimchi Fried Rice',
       title: title ?? 'Mom\'s Special Kimchi Fried Rice',
       description: 'A delicious recipe passed down from my grandmother.',
-      culinaryLocale: 'ko-KR',
+      cookingStyle: 'ko-KR',
       thumbnailUrl: 'https://example.com/recipe-thumb.jpg',
       userName: userName ?? 'chef_kim',
       variantCount: variantCount,

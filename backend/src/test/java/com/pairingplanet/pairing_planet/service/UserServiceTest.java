@@ -83,7 +83,7 @@ class UserServiceTest extends BaseIntegrationTest {
                 Recipe recipe = Recipe.builder()
                         .title("Test Recipe " + i)
                         .description("Description")
-                        .culinaryLocale("ko-KR")
+                        .cookingStyle("ko-KR")
                         .foodMaster(testFood)
                         .creatorId(testUser.getId())
                         .build();
@@ -104,7 +104,7 @@ class UserServiceTest extends BaseIntegrationTest {
             Recipe recipe = Recipe.builder()
                     .title("Test Recipe")
                     .description("Description")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -113,7 +113,7 @@ class UserServiceTest extends BaseIntegrationTest {
             Recipe recipe2 = Recipe.builder()
                     .title("Test Recipe 2")
                     .description("Description")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -140,7 +140,7 @@ class UserServiceTest extends BaseIntegrationTest {
                 Recipe recipe = Recipe.builder()
                         .title("Recipe " + i)
                         .description("Description")
-                        .culinaryLocale("ko-KR")
+                        .cookingStyle("ko-KR")
                         .foodMaster(testFood)
                         .creatorId(testUser.getId())
                         .build();
@@ -193,19 +193,19 @@ class UserServiceTest extends BaseIntegrationTest {
     }
 
     @Nested
-    @DisplayName("defaultFoodStyle preference")
+    @DisplayName("defaultCookingStyle preference")
     class DefaultFoodStyleTests {
 
         @Test
-        @DisplayName("Should return null defaultFoodStyle for new user")
+        @DisplayName("Should return null defaultCookingStyle for new user")
         void newUser_HasNullDefaultFoodStyle() {
             UserDto result = userService.getUserProfile(testUser.getPublicId());
 
-            assertThat(result.defaultFoodStyle()).isNull();
+            assertThat(result.defaultCookingStyle()).isNull();
         }
 
         @Test
-        @DisplayName("Should update defaultFoodStyle in profile")
+        @DisplayName("Should update defaultCookingStyle in profile")
         void updateProfile_WithDefaultFoodStyle_Success() {
             UserPrincipal principal = new UserPrincipal(testUser);
             UpdateProfileRequestDto request = new UpdateProfileRequestDto(
@@ -214,11 +214,11 @@ class UserServiceTest extends BaseIntegrationTest {
 
             UserDto result = userService.updateProfile(principal, request);
 
-            assertThat(result.defaultFoodStyle()).isEqualTo("KR");
+            assertThat(result.defaultCookingStyle()).isEqualTo("KR");
         }
 
         @Test
-        @DisplayName("Should persist defaultFoodStyle after update")
+        @DisplayName("Should persist defaultCookingStyle after update")
         void updateProfile_DefaultFoodStyle_Persisted() {
             UserPrincipal principal = new UserPrincipal(testUser);
             UpdateProfileRequestDto request = new UpdateProfileRequestDto(
@@ -233,15 +233,15 @@ class UserServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should return defaultFoodStyle in UserDto after update")
+        @DisplayName("Should return defaultCookingStyle in UserDto after update")
         void getUserProfile_ReturnsDefaultFoodStyle() {
-            // Set up user with defaultFoodStyle
+            // Set up user with defaultCookingStyle
             testUser.setDefaultFoodStyle("US");
             userRepository.save(testUser);
 
             UserDto result = userService.getUserProfile(testUser.getPublicId());
 
-            assertThat(result.defaultFoodStyle()).isEqualTo("US");
+            assertThat(result.defaultCookingStyle()).isEqualTo("US");
         }
 
         @Test
@@ -254,7 +254,7 @@ class UserServiceTest extends BaseIntegrationTest {
 
             UserDto result = userService.updateProfile(principal, request);
 
-            assertThat(result.defaultFoodStyle()).isEqualTo("other");
+            assertThat(result.defaultCookingStyle()).isEqualTo("other");
         }
 
         @Test
@@ -272,7 +272,7 @@ class UserServiceTest extends BaseIntegrationTest {
 
                 UserDto result = userService.updateProfile(principal, request);
 
-                assertThat(result.defaultFoodStyle()).isEqualTo(code);
+                assertThat(result.defaultCookingStyle()).isEqualTo(code);
             }
         }
     }

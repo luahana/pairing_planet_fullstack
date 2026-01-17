@@ -97,9 +97,9 @@ public class RecipeService {
             throw new IllegalArgumentException("음식 정보(UUID 또는 새 이름)가 반드시 필요합니다.");
         }
 
-        String finalLocale = (req.culinaryLocale() == null || req.culinaryLocale().isBlank())
-                ? (parent != null ? parent.getCulinaryLocale() : "ko-KR")
-                : req.culinaryLocale();
+        String finalLocale = (req.cookingStyle() == null || req.cookingStyle().isBlank())
+                ? (parent != null ? parent.getCookingStyle() : "ko-KR")
+                : req.cookingStyle();
 
         // Phase 7-3: Process change diff and auto-detect categories
         Map<String, Object> changeDiff = req.changeDiff() != null ? req.changeDiff() : new HashMap<>();
@@ -118,7 +118,7 @@ public class RecipeService {
         Recipe recipe = Recipe.builder()
                 .title(req.title())
                 .description(req.description())
-                .culinaryLocale(finalLocale)
+                .cookingStyle(finalLocale)
                 .foodMaster(foodMaster)
                 .creatorId(creatorId)
                 .parentRecipe(parent) // 바로 위 부모
@@ -198,7 +198,7 @@ public class RecipeService {
                     UUID logCreatorPublicId = logCreator != null ? logCreator.getPublicId() : null;
                     String logCreatorName = logCreator != null ? logCreator.getUsername() : null;
                     // Get food name and variant status from linked recipe
-                    String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
+                    String foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCookingStyle());
                     Boolean isVariant = recipe.getRootRecipe() != null;
 
                     // Get hashtag names
@@ -289,7 +289,7 @@ public class RecipeService {
             // 모든 언어 통합 중복 체크
             return foodMasterRepository.findByNameInAnyLocale(trimmedName)
                     .orElseGet(() -> {
-                        String locale = (req.culinaryLocale() != null) ? req.culinaryLocale() : "ko-KR";
+                        String locale = (req.cookingStyle() != null) ? req.cookingStyle() : "ko-KR";
                         return createSuggestedFoodEntity(trimmedName, userId, locale);
                     });
         }
@@ -371,7 +371,7 @@ public class RecipeService {
 
     private String getFoodName(Recipe recipe) {
         Map<String, String> nameMap = recipe.getFoodMaster().getName();
-        String locale = recipe.getCulinaryLocale();
+        String locale = recipe.getCookingStyle();
 
         // 1. 레시피의 로케일과 일치하는 이름이 있는지 확인
         if (locale != null && nameMap.containsKey(locale)) {
@@ -424,7 +424,7 @@ public class RecipeService {
                 recipe.getFoodMaster().getPublicId(),
                 recipe.getTitle(),
                 recipe.getDescription(),
-                recipe.getCulinaryLocale(),
+                recipe.getCookingStyle(),
                 creatorPublicId,
                 userName,
                 thumbnail,
@@ -495,7 +495,7 @@ public class RecipeService {
                             .rootRecipeId(root.getPublicId())
                             .title(root.getTitle())
                             .foodName(getFoodName(root))
-                            .culinaryLocale(root.getCulinaryLocale())
+                            .cookingStyle(root.getCookingStyle())
                             .thumbnail(thumbnail)
                             .variantCount(variants)
                             .logCount(logs)
@@ -622,8 +622,8 @@ public class RecipeService {
         // Update basic fields
         recipe.setTitle(req.title());
         recipe.setDescription(req.description());
-        if (req.culinaryLocale() != null && !req.culinaryLocale().isBlank()) {
-            recipe.setCulinaryLocale(req.culinaryLocale());
+        if (req.cookingStyle() != null && !req.cookingStyle().isBlank()) {
+            recipe.setCookingStyle(req.cookingStyle());
         }
 
         // Update servings and cooking time

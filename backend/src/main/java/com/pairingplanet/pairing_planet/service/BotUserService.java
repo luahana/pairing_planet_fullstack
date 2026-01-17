@@ -58,7 +58,7 @@ public class BotUserService {
                 .role(Role.BOT)
                 .status(AccountStatus.ACTIVE)
                 .locale(persona.getLocale())
-                .defaultFoodStyle(persona.getCulinaryLocale())
+                .defaultCookingStyle(persona.getCookingStyle())
                 .isBot(true)
                 .persona(persona)
                 .build();

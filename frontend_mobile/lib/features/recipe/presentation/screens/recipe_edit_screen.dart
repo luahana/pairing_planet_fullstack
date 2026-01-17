@@ -72,7 +72,7 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
     _titleController.text = recipe.title;
     _descriptionController.text = recipe.description ?? '';
     _foodNameController.text = recipe.foodName;
-    _localeController.text = recipe.culinaryLocale ?? 'ko-KR';
+    _localeController.text = recipe.cookingStyle ?? 'ko-KR';
 
     // Load ingredients
     for (var ing in recipe.ingredients) {
@@ -223,7 +223,7 @@ class _RecipeEditScreenState extends ConsumerState<RecipeEditScreen> {
         description: _descriptionController.text.isEmpty
             ? null
             : _descriptionController.text,
-        culinaryLocale: _localeController.text.isEmpty
+        cookingStyle: _localeController.text.isEmpty
             ? 'ko-KR'
             : _localeController.text,
         ingredients: _ingredients

@@ -268,7 +268,7 @@ public class HashtagService {
                 recipe.getFoodMaster().getPublicId(),
                 recipe.getTitle(),
                 recipe.getDescription(),
-                recipe.getCulinaryLocale(),
+                recipe.getCookingStyle(),
                 creatorPublicId,
                 userName,
                 thumbnail,
@@ -285,7 +285,7 @@ public class HashtagService {
 
     private String getFoodName(Recipe recipe) {
         Map<String, String> nameMap = recipe.getFoodMaster().getName();
-        String locale = recipe.getCulinaryLocale();
+        String locale = recipe.getCookingStyle();
 
         if (locale != null && nameMap.containsKey(locale)) {
             return nameMap.get(locale);

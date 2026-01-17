@@ -4,7 +4,7 @@ class RecipeSummary {
   final String? foodMasterPublicId;
   final String title;
   final String description;
-  final String culinaryLocale;
+  final String cookingStyle;
   final String? thumbnailUrl;
   final String? creatorPublicId; // Creator's publicId for profile navigation
   final String userName;
@@ -23,7 +23,7 @@ class RecipeSummary {
     this.foodMasterPublicId,
     required this.title,
     required this.description,
-    required this.culinaryLocale,
+    required this.cookingStyle,
     this.thumbnailUrl,
     this.creatorPublicId,
     required this.userName,

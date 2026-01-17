@@ -4,12 +4,12 @@ import 'package:pairing_planet2_frontend/data/models/user/user_dto.dart';
 void main() {
   group('UserDto', () {
     group('fromJson', () {
-      test('should parse defaultFoodStyle from JSON', () {
+      test('should parse defaultCookingStyle from JSON', () {
         // Arrange
         final json = {
           'id': 'user-123',
           'username': 'testuser',
-          'defaultFoodStyle': 'KR',
+          'defaultCookingStyle': 'KR',
           'followerCount': 0,
           'followingCount': 0,
           'recipeCount': 0,
@@ -22,15 +22,15 @@ void main() {
         final dto = UserDto.fromJson(json);
 
         // Assert
-        expect(dto.defaultFoodStyle, 'KR');
+        expect(dto.defaultCookingStyle, 'KR');
       });
 
-      test('should handle null defaultFoodStyle', () {
+      test('should handle null defaultCookingStyle', () {
         // Arrange
         final json = {
           'id': 'user-123',
           'username': 'testuser',
-          'defaultFoodStyle': null,
+          'defaultCookingStyle': null,
           'followerCount': 0,
           'followingCount': 0,
           'recipeCount': 0,
@@ -43,10 +43,10 @@ void main() {
         final dto = UserDto.fromJson(json);
 
         // Assert
-        expect(dto.defaultFoodStyle, isNull);
+        expect(dto.defaultCookingStyle, isNull);
       });
 
-      test('should handle missing defaultFoodStyle field', () {
+      test('should handle missing defaultCookingStyle field', () {
         // Arrange
         final json = {
           'id': 'user-123',
@@ -63,15 +63,15 @@ void main() {
         final dto = UserDto.fromJson(json);
 
         // Assert
-        expect(dto.defaultFoodStyle, isNull);
+        expect(dto.defaultCookingStyle, isNull);
       });
 
-      test('should parse "other" as defaultFoodStyle', () {
+      test('should parse "other" as defaultCookingStyle', () {
         // Arrange
         final json = {
           'id': 'user-123',
           'username': 'testuser',
-          'defaultFoodStyle': 'other',
+          'defaultCookingStyle': 'other',
           'followerCount': 0,
           'followingCount': 0,
           'recipeCount': 0,
@@ -84,7 +84,7 @@ void main() {
         final dto = UserDto.fromJson(json);
 
         // Assert
-        expect(dto.defaultFoodStyle, 'other');
+        expect(dto.defaultCookingStyle, 'other');
       });
 
       test('should parse various ISO country codes', () {
@@ -94,7 +94,7 @@ void main() {
           final json = {
             'id': 'user-123',
             'username': 'testuser',
-            'defaultFoodStyle': code,
+            'defaultCookingStyle': code,
             'followerCount': 0,
             'followingCount': 0,
             'recipeCount': 0,
@@ -105,50 +105,50 @@ void main() {
 
           final dto = UserDto.fromJson(json);
 
-          expect(dto.defaultFoodStyle, code);
+          expect(dto.defaultCookingStyle, code);
         }
       });
     });
 
     group('toJson', () {
-      test('should serialize defaultFoodStyle to JSON', () {
+      test('should serialize defaultCookingStyle to JSON', () {
         // Arrange
         final dto = UserDto(
           id: 'user-123',
           username: 'testuser',
-          defaultFoodStyle: 'KR',
+          defaultCookingStyle: 'KR',
         );
 
         // Act
         final json = dto.toJson();
 
         // Assert
-        expect(json['defaultFoodStyle'], 'KR');
+        expect(json['defaultCookingStyle'], 'KR');
       });
 
-      test('should serialize null defaultFoodStyle', () {
+      test('should serialize null defaultCookingStyle', () {
         // Arrange
         final dto = UserDto(
           id: 'user-123',
           username: 'testuser',
-          defaultFoodStyle: null,
+          defaultCookingStyle: null,
         );
 
         // Act
         final json = dto.toJson();
 
         // Assert
-        expect(json['defaultFoodStyle'], isNull);
+        expect(json['defaultCookingStyle'], isNull);
       });
     });
 
     group('round-trip conversion', () {
-      test('should preserve defaultFoodStyle through round-trip', () {
+      test('should preserve defaultCookingStyle through round-trip', () {
         // Arrange
         final original = UserDto(
           id: 'user-123',
           username: 'testuser',
-          defaultFoodStyle: 'JP',
+          defaultCookingStyle: 'JP',
         );
 
         // Act
@@ -156,7 +156,7 @@ void main() {
         final restored = UserDto.fromJson(json);
 
         // Assert
-        expect(restored.defaultFoodStyle, original.defaultFoodStyle);
+        expect(restored.defaultCookingStyle, original.defaultCookingStyle);
       });
     });
   });

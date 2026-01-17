@@ -148,8 +148,8 @@ public class UserService {
         }
 
         // 6. 기본 요리 스타일 업데이트
-        if (request.defaultFoodStyle() != null) {
-            user.setDefaultFoodStyle(request.defaultFoodStyle());
+        if (request.defaultCookingStyle() != null) {
+            user.setDefaultCookingStyle(request.defaultCookingStyle());
         }
 
         // 6b. 측정 단위 선호 업데이트
@@ -364,7 +364,7 @@ public class UserService {
                 recipe.getFoodMaster().getPublicId(),
                 recipe.getTitle(),
                 recipe.getDescription(),
-                recipe.getCulinaryLocale(),
+                recipe.getCookingStyle(),
                 creatorPublicId,
                 userName,
                 thumbnail,
@@ -394,7 +394,7 @@ public class UserService {
         Boolean isVariant = null;
         if (log.getRecipeLog() != null && log.getRecipeLog().getRecipe() != null) {
             Recipe recipe = log.getRecipeLog().getRecipe();
-            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCulinaryLocale());
+            foodName = recipe.getFoodMaster().getNameByLocale(recipe.getCookingStyle());
             isVariant = recipe.getRootRecipe() != null;
         }
 
@@ -418,7 +418,7 @@ public class UserService {
 
     private String getFoodName(Recipe recipe) {
         Map<String, String> nameMap = recipe.getFoodMaster().getName();
-        String locale = recipe.getCulinaryLocale();
+        String locale = recipe.getCookingStyle();
 
         if (locale != null && nameMap.containsKey(locale)) {
             return nameMap.get(locale);

@@ -95,7 +95,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     // Title left empty for user to fill in
     _descriptionController.text = p.description ?? "";
     _foodNameController.text = p.foodName; // 💡 실제 요리명 매핑 권장
-    _localeController.text = p.culinaryLocale ?? "ko-KR"; // Inherit locale from parent
+    _localeController.text = p.cookingStyle ?? "ko-KR"; // Inherit locale from parent
 
     _food1MasterPublicId = p.foodMasterPublicId;
 
@@ -142,7 +142,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
   void _setDefaultCookingStyle() {
     // Priority 1: User's preferred cooking style from profile settings
     final profile = ref.read(myProfileProvider).valueOrNull;
-    final userPreferredStyle = profile?.user.defaultFoodStyle;
+    final userPreferredStyle = profile?.user.defaultCookingStyle;
 
     if (userPreferredStyle != null && userPreferredStyle.isNotEmpty) {
       _localeController.text = userPreferredStyle;
@@ -203,7 +203,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
       id: _draftId ?? const Uuid().v4(),
       title: _titleController.text,
       description: _descriptionController.text,
-      culinaryLocale:
+      cookingStyle:
           _localeController.text.isEmpty ? null : _localeController.text,
       food1MasterPublicId: _food1MasterPublicId,
       foodName: _foodNameController.text.isEmpty
@@ -287,7 +287,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
     _draftId = draft.id;
     _titleController.text = draft.title;
     _descriptionController.text = draft.description;
-    _localeController.text = draft.culinaryLocale ?? '';
+    _localeController.text = draft.cookingStyle ?? '';
     _foodNameController.text = draft.foodName ?? '';
     _food1MasterPublicId = draft.food1MasterPublicId;
 
@@ -638,7 +638,7 @@ class _RecipeCreateScreenState extends ConsumerState<RecipeCreateScreen>
         final request = CreateRecipeRequest(
           title: _titleController.text,
           description: _descriptionController.text,
-          culinaryLocale: _localeController.text.isEmpty
+          cookingStyle: _localeController.text.isEmpty
               ? "ko-KR"
               : _localeController.text,
           food1MasterPublicId: _food1MasterPublicId,

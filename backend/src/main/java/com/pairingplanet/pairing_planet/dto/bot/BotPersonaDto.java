@@ -24,7 +24,7 @@ public record BotPersonaDto(
         BotDietaryFocus dietaryFocus,
         BotVocabularyStyle vocabularyStyle,
         String locale,
-        String culinaryLocale,
+        String cookingStyle,
         String kitchenStylePrompt,
         boolean isActive,
         Instant createdAt
@@ -39,7 +39,7 @@ public record BotPersonaDto(
                 .dietaryFocus(persona.getDietaryFocus())
                 .vocabularyStyle(persona.getVocabularyStyle())
                 .locale(persona.getLocale())
-                .culinaryLocale(persona.getCulinaryLocale())
+                .cookingStyle(persona.getCookingStyle())
                 .kitchenStylePrompt(persona.getKitchenStylePrompt())
                 .isActive(persona.isActive())
                 .createdAt(persona.getCreatedAt())

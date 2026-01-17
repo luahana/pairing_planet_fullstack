@@ -31,7 +31,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.FINE_DINING,
                 vocabulary_style=VocabularyStyle.TECHNICAL,
                 locale="ko-KR",
-                culinary_locale="KR",
+                cooking_style="KR",
                 kitchen_style_prompt=(
                     "Modern Korean fine dining kitchen with marble countertops, "
                     "professional-grade stainless steel appliances, elegant plating "
@@ -53,7 +53,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.BUDGET,
                 vocabulary_style=VocabularyStyle.SIMPLE,
                 locale="ko-KR",
-                culinary_locale="KR",
+                cooking_style="KR",
                 kitchen_style_prompt=(
                     "Small Korean apartment kitchen (officetel style) with compact "
                     "gas range, basic cookware. Ramen pot, rice cooker visible. "
@@ -74,7 +74,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.HEALTHY,
                 vocabulary_style=VocabularyStyle.CONVERSATIONAL,
                 locale="ko-KR",
-                culinary_locale="KR",
+                cooking_style="KR",
                 kitchen_style_prompt=(
                     "Bright Korean family kitchen with natural wood elements. "
                     "Child-safe layout. Colorful kids plates visible. Vegetable basket "
@@ -95,7 +95,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.BAKING,
                 vocabulary_style=VocabularyStyle.CONVERSATIONAL,
                 locale="ko-KR",
-                culinary_locale="KR",
+                cooking_style="KR",
                 kitchen_style_prompt=(
                     "Cozy Korean home bakery setup with stand mixer, baking sheets, "
                     "cooling racks. Pastel-colored accessories. Flour-dusted wooden "
@@ -116,7 +116,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.INTERNATIONAL,
                 vocabulary_style=VocabularyStyle.TECHNICAL,
                 locale="ko-KR",
-                culinary_locale="KR",
+                cooking_style="KR",
                 kitchen_style_prompt=(
                     "Eclectic Korean kitchen with international spices and ingredients. "
                     "Wok, pasta machine, various ethnic cookware. World map on wall. "
@@ -138,7 +138,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.FARM_TO_TABLE,
                 vocabulary_style=VocabularyStyle.TECHNICAL,
                 locale="en-US",
-                culinary_locale="US",
+                cooking_style="US",
                 kitchen_style_prompt=(
                     "Rustic American farm kitchen with exposed brick and reclaimed wood. "
                     "Professional range and copper cookware. Fresh herbs in window boxes. "
@@ -163,7 +163,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.BUDGET,
                 vocabulary_style=VocabularyStyle.SIMPLE,
                 locale="en-US",
-                culinary_locale="US",
+                cooking_style="US",
                 kitchen_style_prompt=(
                     "Tiny dorm room or shared apartment kitchen. Microwave, hot plate, "
                     "mini fridge. Paper plates and plastic utensils. Ramen cups stacked. "
@@ -188,7 +188,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.HEALTHY,
                 vocabulary_style=VocabularyStyle.CONVERSATIONAL,
                 locale="en-US",
-                culinary_locale="US",
+                cooking_style="US",
                 kitchen_style_prompt=(
                     "Modern American suburban kitchen with granite counters. "
                     "Meal prep containers organized in fridge. Protein powder visible. "
@@ -213,7 +213,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.BAKING,
                 vocabulary_style=VocabularyStyle.CONVERSATIONAL,
                 locale="en-US",
-                culinary_locale="US",
+                cooking_style="US",
                 kitchen_style_prompt=(
                     "Pinterest-worthy American baking kitchen with white subway tile. "
                     "KitchenAid stand mixer in pastel color. Marble countertops with flour. "
@@ -238,7 +238,7 @@ class PersonaRegistry:
                 dietary_focus=DietaryFocus.INTERNATIONAL,
                 vocabulary_style=VocabularyStyle.TECHNICAL,
                 locale="en-US",
-                culinary_locale="US",
+                cooking_style="US",
                 kitchen_style_prompt=(
                     "Urban loft kitchen with exposed ductwork. Professional wok burner "
                     "and tandoor oven. Spice rack with world cuisines. Ethnic ingredients "

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { siteConfig } from '@/config/site';
 import { useAuth } from '@/contexts/AuthContext';
 import { updateUserProfile } from '@/lib/api/users';
+import { dispatchMeasurementChange } from '@/lib/utils/measurement';
 import type { MeasurementPreference } from '@/lib/types';
 
 const LOCALE_OPTIONS = [
@@ -109,9 +110,14 @@ export function Header() {
 
   // Handle measurement change
   const handleMeasurementChange = async (newMeasurement: MeasurementPreference) => {
+    console.log('[Header] Measurement change:', newMeasurement);
     setCurrentMeasurement(newMeasurement);
     localStorage.setItem('userMeasurement', newMeasurement);
     setIsMeasurementMenuOpen(false);
+
+    // Dispatch custom event for same-tab updates (e.g., ingredient conversion)
+    console.log('[Header] Dispatching measurementPreferenceChange event');
+    dispatchMeasurementChange(newMeasurement);
 
     // Update backend if logged in
     if (isAuthenticated) {

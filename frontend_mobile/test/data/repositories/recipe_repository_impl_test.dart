@@ -25,7 +25,7 @@ void main() {
     userName: 'chef_kim',
     title: 'Mom\'s Special Kimchi Fried Rice',
     description: 'A delicious recipe from my grandmother',
-    culinaryLocale: 'ko-KR',
+    cookingStyle: 'ko-KR',
   );
 
   setUpAll(() {

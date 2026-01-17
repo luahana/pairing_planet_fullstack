@@ -213,7 +213,7 @@ class RecipeFamilySection extends StatelessWidget {
             title: rootInfo!.title,
             userName: rootInfo!.userName,
             thumbnailUrl: rootInfo!.thumbnailUrl,
-            culinaryLocale: rootInfo!.culinaryLocale,
+            cookingStyle: rootInfo!.cookingStyle,
           ),
         ],
       ),

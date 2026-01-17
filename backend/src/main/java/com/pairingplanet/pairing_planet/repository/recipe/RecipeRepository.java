@@ -32,7 +32,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     long countByCreatorIdAndDeletedAtIsNull(Long creatorId);
 
     // [Home] 오리지널 레시피(Root) 중 로케일에 맞는 것만 슬라이스로 조회
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL")
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL")
     Slice<Recipe> findRootRecipesByLocale(@Param("locale") String locale, Pageable pageable);
 
     @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.deletedAt IS NULL")
@@ -62,7 +62,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
 
 
     // 2. [필터] 특정 로케일의 모든 공개 레시피 (에러 해결 지점)
-    @Query("SELECT r FROM Recipe r WHERE r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
+    @Query("SELECT r FROM Recipe r WHERE r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
     Slice<Recipe> findPublicRecipesByLocale(@Param("locale") String locale, Pageable pageable);
 
     // [마이페이지] 내가 만든 레시피 (최신순)
@@ -79,7 +79,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     Slice<Recipe> findOnlyVariantsPublic(Pageable pageable);
 
     // [필터] 특정 로케일의 변형 레시피만 조회
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
     Slice<Recipe> findOnlyVariantsByLocale(@Param("locale") String locale, Pageable pageable);
 
     // [검색] pg_trgm 기반 레시피 검색 (제목, 설명, 재료명) - 퍼지 매칭 + 관련도 정렬
@@ -133,11 +133,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     Slice<Recipe> findPublicRecipesWithCursor(@Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
 
     // [Cursor] Public recipes by locale - initial page
-    @Query("SELECT r FROM Recipe r WHERE r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false ORDER BY r.createdAt DESC, r.id DESC")
+    @Query("SELECT r FROM Recipe r WHERE r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false ORDER BY r.createdAt DESC, r.id DESC")
     Slice<Recipe> findPublicRecipesByLocaleWithCursorInitial(@Param("locale") String locale, Pageable pageable);
 
     // [Cursor] Public recipes by locale - with cursor
-    @Query("SELECT r FROM Recipe r WHERE r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false " +
+    @Query("SELECT r FROM Recipe r WHERE r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false " +
            "AND (r.createdAt < :cursorTime OR (r.createdAt = :cursorTime AND r.id < :cursorId)) " +
            "ORDER BY r.createdAt DESC, r.id DESC")
     Slice<Recipe> findPublicRecipesByLocaleWithCursor(@Param("locale") String locale, @Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
@@ -153,11 +153,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     Slice<Recipe> findOriginalRecipesWithCursor(@Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
 
     // [Cursor] Only original recipes by locale - initial page
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false ORDER BY r.createdAt DESC, r.id DESC")
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false ORDER BY r.createdAt DESC, r.id DESC")
     Slice<Recipe> findOriginalRecipesByLocaleWithCursorInitial(@Param("locale") String locale, Pageable pageable);
 
     // [Cursor] Only original recipes by locale - with cursor
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false " +
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false " +
            "AND (r.createdAt < :cursorTime OR (r.createdAt = :cursorTime AND r.id < :cursorId)) " +
            "ORDER BY r.createdAt DESC, r.id DESC")
     Slice<Recipe> findOriginalRecipesByLocaleWithCursor(@Param("locale") String locale, @Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
@@ -173,11 +173,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     Slice<Recipe> findVariantRecipesWithCursor(@Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
 
     // [Cursor] Only variant recipes by locale - initial page
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false ORDER BY r.createdAt DESC, r.id DESC")
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false ORDER BY r.createdAt DESC, r.id DESC")
     Slice<Recipe> findVariantRecipesByLocaleWithCursorInitial(@Param("locale") String locale, Pageable pageable);
 
     // [Cursor] Only variant recipes by locale - with cursor
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false " +
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false " +
            "AND (r.createdAt < :cursorTime OR (r.createdAt = :cursorTime AND r.id < :cursorId)) " +
            "ORDER BY r.createdAt DESC, r.id DESC")
     Slice<Recipe> findVariantRecipesByLocaleWithCursor(@Param("locale") String locale, @Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
@@ -219,7 +219,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     org.springframework.data.domain.Page<Recipe> findPublicRecipesPage(Pageable pageable);
 
     // [Offset] Public recipes by locale with Page
-    @Query("SELECT r FROM Recipe r WHERE r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
+    @Query("SELECT r FROM Recipe r WHERE r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
     org.springframework.data.domain.Page<Recipe> findPublicRecipesByLocalePage(@Param("locale") String locale, Pageable pageable);
 
     // [Offset] Only original recipes with Page
@@ -227,7 +227,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     org.springframework.data.domain.Page<Recipe> findOriginalRecipesPage(Pageable pageable);
 
     // [Offset] Only original recipes by locale with Page
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
     org.springframework.data.domain.Page<Recipe> findOriginalRecipesByLocalePage(@Param("locale") String locale, Pageable pageable);
 
     // [Offset] Only variant recipes with Page
@@ -235,7 +235,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     org.springframework.data.domain.Page<Recipe> findVariantRecipesPage(Pageable pageable);
 
     // [Offset] Only variant recipes by locale with Page
-    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.culinaryLocale = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
+    @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
     org.springframework.data.domain.Page<Recipe> findVariantRecipesByLocalePage(@Param("locale") String locale, Pageable pageable);
 
     // [Offset] My recipes with Page

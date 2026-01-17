@@ -14,8 +14,5 @@ ALTER TABLE recipe_steps ALTER COLUMN description TYPE VARCHAR(500);
 ALTER TABLE log_posts ALTER COLUMN title TYPE VARCHAR(500);
 ALTER TABLE log_posts ALTER COLUMN content TYPE VARCHAR(500);
 
--- Comments table
-ALTER TABLE comments ALTER COLUMN body TYPE VARCHAR(500);
-
 -- Notifications table
-ALTER TABLE notifications ALTER COLUMN description TYPE VARCHAR(500);
+ALTER TABLE notifications ALTER COLUMN body TYPE VARCHAR(500);

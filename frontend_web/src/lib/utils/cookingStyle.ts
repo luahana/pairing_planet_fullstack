@@ -112,9 +112,9 @@ export function getCookingStyleDisplay(code: string | null | undefined): {
 }
 
 /**
- * Get default culinary locale based on browser locale
+ * Get default cooking style based on browser locale
  */
-export function getDefaultCulinaryLocale(): string {
+export function getDefaultCookingStyle(): string {
   if (typeof navigator === 'undefined') return 'US';
 
   const browserLocale = navigator.language || 'en-US';

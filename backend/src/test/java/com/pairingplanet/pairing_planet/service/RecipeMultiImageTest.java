@@ -172,7 +172,7 @@ class RecipeMultiImageTest extends BaseIntegrationTest {
 
             Recipe recipe = Recipe.builder()
                     .title("Test Recipe")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -202,7 +202,7 @@ class RecipeMultiImageTest extends BaseIntegrationTest {
 
             Recipe recipe = Recipe.builder()
                     .title("Test Recipe")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();

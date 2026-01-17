@@ -11,7 +11,7 @@ class UpdateProfileRequestDto {
   final String? preferredDietaryId;
   final bool? marketingAgreed;
   final String? locale;  // ko-KR, en-US
-  final String? defaultFoodStyle;  // ISO country code (e.g., "KR", "US")
+  final String? defaultCookingStyle;  // ISO country code (e.g., "KR", "US")
   final String? bio;  // User bio/description (max 150 chars)
   final String? youtubeUrl;  // YouTube channel URL
   final String? instagramHandle;  // Instagram handle
@@ -24,7 +24,7 @@ class UpdateProfileRequestDto {
     this.preferredDietaryId,
     this.marketingAgreed,
     this.locale,
-    this.defaultFoodStyle,
+    this.defaultCookingStyle,
     this.bio,
     this.youtubeUrl,
     this.instagramHandle,

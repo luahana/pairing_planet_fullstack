@@ -6,7 +6,7 @@ import 'package:pairing_planet2_frontend/domain/entities/recipe/recipe_step.dart
 class UpdateRecipeRequest {
   final String title;
   final String? description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final List<Ingredient> ingredients;
   final List<RecipeStep> steps;
   final List<String> imagePublicIds;
@@ -17,7 +17,7 @@ class UpdateRecipeRequest {
   UpdateRecipeRequest({
     required this.title,
     this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     required this.ingredients,
     required this.steps,
     required this.imagePublicIds,

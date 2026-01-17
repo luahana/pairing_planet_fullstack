@@ -51,7 +51,7 @@ public class RecipeSpecification {
             if (locale == null || locale.isBlank()) {
                 return null;
             }
-            return cb.equal(root.get("culinaryLocale"), locale);
+            return cb.equal(root.get("cookingStyle"), locale);
         };
     }
 

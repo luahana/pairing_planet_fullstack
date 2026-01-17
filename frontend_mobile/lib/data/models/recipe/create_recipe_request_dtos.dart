@@ -9,7 +9,7 @@ part 'create_recipe_request_dtos.g.dart';
 class CreateRecipeRequestDto {
   final String title;
   final String description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final String? food1MasterPublicId;
   final String? newFoodName;
   final List<IngredientDto> ingredients;
@@ -30,7 +30,7 @@ class CreateRecipeRequestDto {
   CreateRecipeRequestDto({
     required this.title,
     required this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     this.food1MasterPublicId,
     this.newFoodName,
     required this.ingredients,
@@ -62,7 +62,7 @@ class CreateRecipeRequestDto {
     return CreateRecipeRequestDto(
       title: request.title,
       description: request.description,
-      culinaryLocale: request.culinaryLocale,
+      cookingStyle: request.cookingStyle,
       food1MasterPublicId: request.food1MasterPublicId,
       newFoodName: request.newFoodName,
       ingredients: request.ingredients.map((e) => IngredientDto.fromEntity(e)).toList(),

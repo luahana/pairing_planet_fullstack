@@ -35,7 +35,7 @@ BOT_PERSONAS = [
         "dietary_focus": None,
         "vocabulary_style": "TECHNICAL",
         "locale": "ko",
-        "culinary_locale": "ko",
+        "cooking_style": "ko",
         "kitchen_style_prompt": "Modern Korean fine dining kitchen with professional equipment, clean stainless steel surfaces",
     },
     {
@@ -46,7 +46,7 @@ BOT_PERSONAS = [
         "dietary_focus": None,
         "vocabulary_style": "COLLOQUIAL",
         "locale": "ko",
-        "culinary_locale": "ko",
+        "cooking_style": "ko",
         "kitchen_style_prompt": "Small Korean studio apartment kitchen, budget-friendly setup",
     },
 ]
@@ -97,7 +97,7 @@ def seed_database():
                     cur.execute("""
                         INSERT INTO bot_personas
                         (name, display_name, tone, skill_level, dietary_focus,
-                         vocabulary_style, locale, culinary_locale, kitchen_style_prompt)
+                         vocabulary_style, locale, cooking_style, kitchen_style_prompt)
                         VALUES (%s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (name) DO NOTHING
                         RETURNING id, public_id, name
@@ -109,7 +109,7 @@ def seed_database():
                         persona["dietary_focus"],
                         persona["vocabulary_style"],
                         persona["locale"],
-                        persona["culinary_locale"],
+                        persona["cooking_style"],
                         persona["kitchen_style_prompt"],
                     ))
                     row = cur.fetchone()

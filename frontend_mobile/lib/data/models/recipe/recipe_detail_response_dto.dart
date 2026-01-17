@@ -32,7 +32,7 @@ class RecipeDetailResponseDto {
   final String? userName;
   final String title;
   final String? description;
-  final String? culinaryLocale;
+  final String? cookingStyle;
   final String? changeCategory;
   final RecipeSummaryDto? rootInfo;
   final RecipeSummaryDto? parentInfo;
@@ -63,7 +63,7 @@ class RecipeDetailResponseDto {
     this.userName,
     required this.title,
     required this.description,
-    this.culinaryLocale,
+    this.cookingStyle,
     this.changeCategory,
     this.rootInfo,
     this.parentInfo,
@@ -94,7 +94,7 @@ class RecipeDetailResponseDto {
     userName: userName ?? 'Unknown',
     title: title,
     description: description ?? "",
-    culinaryLocale: (culinaryLocale?.isEmpty ?? true) ? "ko-KR" : culinaryLocale!,
+    cookingStyle: (cookingStyle?.isEmpty ?? true) ? "ko-KR" : cookingStyle!,
     changeCategory: changeCategory,
     rootInfo: rootInfo?.toEntity(),
     parentInfo: parentInfo?.toEntity(),

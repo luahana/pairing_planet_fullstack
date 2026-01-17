@@ -31,7 +31,7 @@ public class TranslationEventService {
 
     @Transactional
     public void queueRecipeTranslation(Recipe recipe) {
-        String sourceLocale = normalizeLocale(recipe.getCulinaryLocale());
+        String sourceLocale = normalizeLocale(recipe.getCookingStyle());
         List<String> targetLocales = getTargetLocales(sourceLocale);
 
         if (targetLocales.isEmpty()) {

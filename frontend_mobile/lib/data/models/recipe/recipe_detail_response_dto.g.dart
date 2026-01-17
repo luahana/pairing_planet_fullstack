@@ -16,7 +16,7 @@ RecipeDetailResponseDto _$RecipeDetailResponseDtoFromJson(
       userName: json['userName'] as String?,
       title: json['title'] as String,
       description: json['description'] as String?,
-      culinaryLocale: json['culinaryLocale'] as String?,
+      cookingStyle: json['cookingStyle'] as String?,
       changeCategory: json['changeCategory'] as String?,
       rootInfo: json['rootInfo'] == null
           ? null
@@ -63,7 +63,7 @@ Map<String, dynamic> _$RecipeDetailResponseDtoToJson(
       'userName': instance.userName,
       'title': instance.title,
       'description': instance.description,
-      'culinaryLocale': instance.culinaryLocale,
+      'cookingStyle': instance.cookingStyle,
       'changeCategory': instance.changeCategory,
       'rootInfo': instance.rootInfo,
       'parentInfo': instance.parentInfo,

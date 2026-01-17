@@ -176,7 +176,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                                 ),
                               ),
                               SizedBox(width: 8.w),
-                              LocaleBadgeStyled(localeCode: recipe.culinaryLocale),
+                              LocaleBadgeStyled(localeCode: recipe.cookingStyle),
                             ],
                           ),
                           SizedBox(height: 4.h),

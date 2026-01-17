@@ -96,7 +96,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _selectedLocale = profile.user.locale ?? ref.read(localeProvider);
         _originalLocale = _selectedLocale;  // Store original locale
         // Initialize food style from profile or derive from device locale
-        _selectedFoodStyle = profile.user.defaultFoodStyle ?? _getDefaultFoodStyleFromDevice();
+        _selectedFoodStyle = profile.user.defaultCookingStyle ?? _getDefaultFoodStyleFromDevice();
         // Initialize bio and social links
         _bioController.text = profile.user.bio ?? '';
         _youtubeController.text = profile.user.youtubeUrl ?? '';
@@ -624,7 +624,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             ? '${_selectedBirthDate!.year}-${_selectedBirthDate!.month.toString().padLeft(2, '0')}-${_selectedBirthDate!.day.toString().padLeft(2, '0')}'
             : null,
         locale: _selectedLocale,
-        defaultFoodStyle: _selectedFoodStyle,
+        defaultCookingStyle: _selectedFoodStyle,
         bio: _bioController.text.isNotEmpty ? _bioController.text : null,
         youtubeUrl: _youtubeController.text.isNotEmpty ? _youtubeController.text : null,
         instagramHandle: _instagramController.text.isNotEmpty ? _instagramController.text : null,

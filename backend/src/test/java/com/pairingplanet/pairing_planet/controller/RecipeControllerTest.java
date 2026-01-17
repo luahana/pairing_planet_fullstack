@@ -105,7 +105,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
             Recipe recipe = Recipe.builder()
                     .title("Korean Recipe")
                     .description("Test")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -139,7 +139,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
             Recipe recipe = Recipe.builder()
                     .title("Spicy Kimchi Stew")
                     .description("Delicious Korean food")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -165,7 +165,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
             Recipe recipe = Recipe.builder()
                     .title("Test Recipe")
                     .description("Test Description")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -197,7 +197,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
             Recipe parentRecipe = Recipe.builder()
                     .title("Parent Recipe")
                     .description("Parent Description")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -208,7 +208,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
                 Recipe variant = Recipe.builder()
                         .title("Variant " + i)
                         .description("Variant Description " + i)
-                        .culinaryLocale("ko-KR")
+                        .cookingStyle("ko-KR")
                         .foodMaster(testFood)
                         .creatorId(testUser.getId())
                         .parentRecipe(parentRecipe)
@@ -234,7 +234,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
             Recipe parentRecipe = Recipe.builder()
                     .title("Parent Recipe")
                     .description("Parent Description")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -245,7 +245,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
                 Recipe variant = Recipe.builder()
                         .title("Variant " + i)
                         .description("Variant Description " + i)
-                        .culinaryLocale("ko-KR")
+                        .cookingStyle("ko-KR")
                         .foodMaster(testFood)
                         .creatorId(testUser.getId())
                         .parentRecipe(parentRecipe)
@@ -325,7 +325,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
             Recipe recipe = Recipe.builder()
                     .title("My Recipe")
                     .description("My Description")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();
@@ -358,7 +358,7 @@ class RecipeControllerTest extends BaseIntegrationTest {
             Recipe parentRecipe = Recipe.builder()
                     .title("Original Recipe")
                     .description("Original")
-                    .culinaryLocale("ko-KR")
+                    .cookingStyle("ko-KR")
                     .foodMaster(testFood)
                     .creatorId(testUser.getId())
                     .build();

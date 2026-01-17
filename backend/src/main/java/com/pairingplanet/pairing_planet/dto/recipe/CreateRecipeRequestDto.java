@@ -14,7 +14,7 @@ public record CreateRecipeRequestDto(
         String title,
         @Size(max = 500, message = "설명은 500자 이하여야 합니다")
         String description,
-        String culinaryLocale,
+        String cookingStyle,
         UUID food1MasterPublicId,
         @Size(max = 50, message = "요리명은 50자 이하여야 합니다")
         String newFoodName,

@@ -14,7 +14,7 @@ class RecipeLinkCard extends StatelessWidget {
   final String title;
   final String? userName;
   final String? thumbnailUrl;
-  final String? culinaryLocale;
+  final String? cookingStyle;
 
   const RecipeLinkCard({
     super.key,
@@ -22,7 +22,7 @@ class RecipeLinkCard extends StatelessWidget {
     required this.title,
     this.userName,
     this.thumbnailUrl,
-    this.culinaryLocale,
+    this.cookingStyle,
   });
 
   @override
@@ -74,10 +74,10 @@ class RecipeLinkCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (culinaryLocale != null && culinaryLocale!.isNotEmpty) ...[
+                      if (cookingStyle != null && cookingStyle!.isNotEmpty) ...[
                         SizedBox(width: 8.w),
                         LocaleBadge(
-                          localeCode: culinaryLocale!,
+                          localeCode: cookingStyle!,
                           showLabel: false,
                           fontSize: 12.sp,
                         ),

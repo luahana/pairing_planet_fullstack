@@ -9,7 +9,7 @@ public record TrendingTreeDto(
         UUID rootRecipeId,
         String title,
         String foodName,      // 음식 이름
-        String culinaryLocale,
+        String cookingStyle,
         String thumbnail,     // 썸네일 URL
         Long variantCount,    // 변형 수
         Long logCount,        // 로그 수
