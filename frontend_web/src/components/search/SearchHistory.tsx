@@ -48,8 +48,8 @@ export function SearchHistory({ onSelect }: SearchHistoryProps) {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  // Don't render on server or if no history
-  if (history === null || history.length === 0) {
+  // Don't render on server (still loading from localStorage)
+  if (history === null) {
     return null;
   }
 
@@ -59,50 +59,71 @@ export function SearchHistory({ onSelect }: SearchHistoryProps) {
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">
           Recent Searches
         </h2>
-        <button
-          onClick={clearAll}
-          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-        >
-          Clear all
-        </button>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {history.map((query) => (
-          <div
-            key={query}
-            className="flex items-center gap-1 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] rounded-full text-sm text-[var(--text-primary)] hover:bg-[var(--highlight-bg)] transition-colors group"
+        {history.length > 0 && (
+          <button
+            onClick={clearAll}
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
-            <button
-              onClick={() => onSelect(query)}
-              className="hover:underline"
-            >
-              {query}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                removeItem(query);
-              }}
-              className="p-0.5 rounded-full hover:bg-[var(--border)] transition-colors opacity-50 group-hover:opacity-100"
-              aria-label={`Remove "${query}" from history`}
-            >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-        ))}
+            Clear all
+          </button>
+        )}
       </div>
+      {history.length === 0 ? (
+        <p className="text-[var(--text-secondary)] text-sm flex items-center gap-1.5">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          No recent searches
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {history.map((query) => (
+            <div
+              key={query}
+              className="flex items-center gap-1 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] rounded-full text-sm text-[var(--text-primary)] hover:bg-[var(--highlight-bg)] transition-colors group"
+            >
+              <button
+                onClick={() => onSelect(query)}
+                className="hover:underline"
+              >
+                {query}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeItem(query);
+                }}
+                className="p-0.5 rounded-full hover:bg-[var(--border)] transition-colors opacity-50 group-hover:opacity-100"
+                aria-label={`Remove "${query}" from history`}
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
