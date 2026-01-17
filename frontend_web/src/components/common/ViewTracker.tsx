@@ -3,45 +3,61 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { recordRecipeView, recordLogView } from '@/lib/api/history';
+import { addToViewHistory } from '@/lib/utils/viewHistory';
 
 interface ViewTrackerProps {
   publicId: string;
   type: 'recipe' | 'log';
+  title: string;
+  thumbnail: string | null;
+  foodName: string | null;
+  outcome?: string | null;
 }
 
 /**
  * Component that tracks views when mounted.
- * Uses sessionStorage to avoid duplicate tracking within the same session.
+ * Saves to localStorage for display and to backend for permanent storage.
  */
-export function ViewTracker({ publicId, type }: ViewTrackerProps) {
-  const { isAuthenticated } = useAuth();
-  const hasTracked = useRef(false);
+export function ViewTracker({
+  publicId,
+  type,
+  title,
+  thumbnail,
+  foodName,
+  outcome,
+}: ViewTrackerProps) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const hasTrackedLocal = useRef(false);
+  const hasTrackedBackend = useRef(false);
 
+  // Save to localStorage immediately (works for all users)
   useEffect(() => {
-    // Only track once per component mount, and only for authenticated users
-    if (!isAuthenticated || hasTracked.current) return;
+    if (hasTrackedLocal.current) return;
+    hasTrackedLocal.current = true;
 
-    // Check sessionStorage to avoid duplicate tracking within same session
-    const storageKey = `viewed_${type}_${publicId}`;
-    if (typeof window !== 'undefined' && sessionStorage.getItem(storageKey)) {
-      return;
+    addToViewHistory({
+      type,
+      publicId,
+      title,
+      thumbnail,
+      foodName,
+      outcome,
+    });
+  }, [type, publicId, title, thumbnail, foodName, outcome]);
+
+  // Save to backend after auth is determined (only for authenticated users)
+  useEffect(() => {
+    if (isLoading || hasTrackedBackend.current) return;
+
+    if (isAuthenticated) {
+      hasTrackedBackend.current = true;
+      if (type === 'recipe') {
+        recordRecipeView(publicId);
+      } else {
+        recordLogView(publicId);
+      }
     }
+  }, [isLoading, isAuthenticated, publicId, type]);
 
-    hasTracked.current = true;
-
-    // Record the view
-    if (type === 'recipe') {
-      recordRecipeView(publicId);
-    } else {
-      recordLogView(publicId);
-    }
-
-    // Mark as viewed in sessionStorage
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem(storageKey, 'true');
-    }
-  }, [isAuthenticated, publicId, type]);
-
-  // This component doesn't render anything
   return null;
 }

@@ -5,12 +5,14 @@ import { notFound } from 'next/navigation';
 import { getRecipeDetail } from '@/lib/api/recipes';
 import { RecipeJsonLd } from '@/components/recipe/RecipeJsonLd';
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd';
-import { RecipeGrid } from '@/components/recipe/RecipeGrid';
+import { VariantsGallery } from '@/components/recipe/VariantsGallery';
 import { RecipeActions } from '@/components/recipe/RecipeActions';
 import { RecentLogsGallery } from '@/components/recipe/RecentLogsGallery';
 import { IngredientsSection } from '@/components/recipe/IngredientsSection';
+import { ChangeDiffSection } from '@/components/recipe/ChangeDiffSection';
 import { BookmarkButton } from '@/components/common/BookmarkButton';
 import { ShareButtons } from '@/components/common/ShareButtons';
+import { VariantButton } from '@/components/recipe/VariantButton';
 import { ImageCarousel } from '@/components/common/ImageCarousel';
 import { CookingStyleBadge } from '@/components/common/CookingStyleBadge';
 import { COOKING_TIME_RANGES, type CookingTimeRange } from '@/lib/types';
@@ -76,7 +78,13 @@ export default async function RecipeDetailPage({ params }: Props) {
 
   return (
     <>
-      <ViewTracker publicId={publicId} type="recipe" />
+      <ViewTracker
+        publicId={publicId}
+        type="recipe"
+        title={recipe.title}
+        thumbnail={recipe.images[0]?.imageUrl || null}
+        foodName={recipe.foodName}
+      />
       <RecipeJsonLd recipe={recipe} />
       <BreadcrumbJsonLd
         items={[
@@ -156,7 +164,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                 <Link
                   key={tag.publicId}
                   href={`/hashtags/${encodeURIComponent(tag.name)}`}
-                  className="text-sm text-[var(--success)] hover:underline"
+                  className="text-sm hover:underline text-hashtag"
                 >
                   #{tag.name}
                 </Link>
@@ -174,23 +182,41 @@ export default async function RecipeDetailPage({ params }: Props) {
           </div>
         </header>
 
-        {/* Variant info */}
-        {recipe.rootInfo && (
-          <div className="bg-[var(--highlight-bg)] border border-[var(--primary-light)] rounded-xl p-4 mb-8">
-            <p className="text-sm text-[var(--text-secondary)] mb-2">
-              This is a variant of:
-            </p>
-            <Link
-              href={`/recipes/${recipe.rootInfo.publicId}`}
-              className="font-medium text-[var(--primary)] hover:underline"
-            >
-              {recipe.rootInfo.title}
-            </Link>
+        {/* Variant info - show for variant recipes (has rootInfo, parentInfo, or changeReason) */}
+        {(recipe.rootInfo || recipe.parentInfo || recipe.changeReason || recipe.changeDiff) && (
+          <div className="mb-8 space-y-4">
+            {/* Change reason - prominent quote style */}
             {recipe.changeReason && (
-              <p className="text-sm text-[var(--text-secondary)] mt-2">
-                Changes: {recipe.changeReason}
-              </p>
+              <div className="flex items-start justify-center gap-3 px-8 py-4">
+                <span className="text-3xl font-bold text-[var(--primary)] leading-none">&ldquo;</span>
+                <p className="text-center text-[var(--primary)] italic text-lg leading-relaxed">
+                  {recipe.changeReason}
+                </p>
+                <span className="text-3xl font-bold text-[var(--primary)] leading-none">&rdquo;</span>
+              </div>
             )}
+
+            {/* Based on section - prefer rootInfo (original), fallback to parentInfo (direct parent) */}
+            {(() => {
+              const baseRecipe = recipe.rootInfo || recipe.parentInfo;
+              if (!baseRecipe) return null;
+              return (
+                <div className="bg-[var(--highlight-bg)] border border-[var(--primary-light)] rounded-xl p-4">
+                  <p className="text-sm text-[var(--text-secondary)] mb-2">
+                    This is a variant of:
+                  </p>
+                  <Link
+                    href={`/recipes/${baseRecipe.publicId}`}
+                    className="font-medium text-[var(--primary)] hover:underline"
+                  >
+                    {baseRecipe.title}
+                  </Link>
+                </div>
+              );
+            })()}
+
+            {/* Change diff section - collapsible */}
+            <ChangeDiffSection changeDiff={recipe.changeDiff} />
           </div>
         )}
 
@@ -227,18 +253,18 @@ export default async function RecipeDetailPage({ params }: Props) {
           </ol>
         </section>
 
-        {/* Variants */}
-        {recipe.variants.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
-              Variations ({recipe.variants.length})
-            </h2>
-            <RecipeGrid recipes={recipe.variants} />
-          </section>
-        )}
-
         {/* Cooking logs gallery */}
         <RecentLogsGallery logs={recipe.logs} recipePublicId={publicId} />
+
+        {/* Create Variation CTA */}
+        <section className="mb-8">
+          <VariantButton recipePublicId={publicId} />
+        </section>
+
+        {/* Variants - only show for original recipes (not variants) */}
+        {!recipe.rootInfo && !recipe.parentInfo && recipe.variants.length > 0 && (
+          <VariantsGallery variants={recipe.variants} rootRecipePublicId={publicId} />
+        )}
       </article>
     </>
   );

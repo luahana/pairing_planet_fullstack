@@ -6,7 +6,7 @@ import { getLogDetail } from '@/lib/api/logs';
 import { LogJsonLd } from '@/components/log/LogJsonLd';
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd';
 import { LogDetailClient } from '@/components/log/LogDetailClient';
-import { OutcomeBadge } from '@/components/log/OutcomeBadge';
+import { OUTCOME_CONFIG } from '@/lib/types';
 import { RecipeCard } from '@/components/recipe/RecipeCard';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { BookmarkButton } from '@/components/common/BookmarkButton';
@@ -74,7 +74,14 @@ export default async function LogDetailPage({ params }: Props) {
 
   return (
     <>
-      <ViewTracker publicId={publicId} type="log" />
+      <ViewTracker
+        publicId={publicId}
+        type="log"
+        title={log.title}
+        thumbnail={log.images[0]?.imageUrl || null}
+        foodName={log.linkedRecipe?.foodName || null}
+        outcome={log.outcome}
+      />
       <LogJsonLd log={log} />
       <BreadcrumbJsonLd
         items={[
@@ -98,7 +105,6 @@ export default async function LogDetailPage({ params }: Props) {
         <header className="mb-8">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3 mb-4">
-              <OutcomeBadge outcome={log.outcome} size="lg" />
               <span className="text-[var(--text-secondary)]">{formattedDate}</span>
             </div>
             <div className="flex items-center gap-2">
@@ -110,6 +116,14 @@ export default async function LogDetailPage({ params }: Props) {
               <LogDetailClient log={log} />
             </div>
           </div>
+
+          {/* Food name with outcome emoji */}
+          {log.linkedRecipe?.foodName && (
+            <p className="text-lg font-medium text-[var(--primary)] mb-2">
+              {log.outcome && <span className="mr-1">{OUTCOME_CONFIG[log.outcome].label}</span>}
+              {log.linkedRecipe.foodName}
+            </p>
+          )}
 
           <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-4">
             {log.title}
@@ -135,7 +149,7 @@ export default async function LogDetailPage({ params }: Props) {
                 <Link
                   key={tag.publicId}
                   href={`/hashtags/${encodeURIComponent(tag.name)}`}
-                  className="text-sm text-[var(--success)] hover:underline"
+                  className="text-sm hover:underline text-hashtag"
                 >
                   #{tag.name}
                 </Link>

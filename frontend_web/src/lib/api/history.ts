@@ -52,3 +52,20 @@ export async function getRecentlyViewedLogs(limit: number = 10): Promise<LogPost
     cache: 'no-store',
   });
 }
+
+/**
+ * Record a search query in search history.
+ * Called when performing a search.
+ */
+export async function recordSearchHistory(query: string): Promise<void> {
+  try {
+    await apiFetch<void>('/view-history/search', {
+      method: 'POST',
+      body: JSON.stringify({ query }),
+      cache: 'no-store',
+    });
+  } catch (error) {
+    // Silently fail - search tracking shouldn't break the app
+    console.error('Failed to record search history:', error);
+  }
+}

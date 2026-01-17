@@ -2,8 +2,11 @@ package com.pairingplanet.pairing_planet.controller;
 
 import com.pairingplanet.pairing_planet.dto.log_post.LogPostSummaryDto;
 import com.pairingplanet.pairing_planet.dto.recipe.RecipeSummaryDto;
+import com.pairingplanet.pairing_planet.dto.search.SearchHistoryRequest;
 import com.pairingplanet.pairing_planet.security.UserPrincipal;
+import com.pairingplanet.pairing_planet.service.SearchHistoryService;
 import com.pairingplanet.pairing_planet.service.ViewHistoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +21,7 @@ import java.util.UUID;
 public class ViewHistoryController {
 
     private final ViewHistoryService viewHistoryService;
+    private final SearchHistoryService searchHistoryService;
 
     /**
      * Record a recipe view.
@@ -71,5 +75,17 @@ public class ViewHistoryController {
                 Math.min(limit, 50)
         );
         return ResponseEntity.ok(logs);
+    }
+
+    /**
+     * Record a search query.
+     * POST /api/v1/view-history/search
+     */
+    @PostMapping("/search")
+    public ResponseEntity<Void> recordSearchHistory(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody SearchHistoryRequest request) {
+        searchHistoryService.recordSearch(principal.getId(), request.query());
+        return ResponseEntity.ok().build();
     }
 }
