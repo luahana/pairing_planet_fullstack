@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,28 +89,16 @@ class BotAuthControllerTest extends BaseIntegrationTest {
         void botLogin_ValidKey_ReturnsTokens() throws Exception {
             BotLoginRequestDto request = new BotLoginRequestDto(validApiKey);
 
-            var result = mockMvc.perform(post("/api/v1/auth/bot-login")
+            mockMvc.perform(post("/api/v1/auth/bot-login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andReturn();
-
-            int actualStatus = result.getResponse().getStatus();
-            String responseBody = result.getResponse().getContentAsString();
-
-            // Force debug output to test log
-            System.err.println(">>> BOT_TEST: Status=" + actualStatus + ", Response=" + responseBody);
-            if (actualStatus != 200) {
-                throw new AssertionError(
-                        String.format("BOT LOGIN TEST FAILED - Status: %d, Response: %s",
-                                actualStatus, responseBody));
-            }
-
-            assertThat(responseBody).contains("accessToken");
-            assertThat(responseBody).contains("refreshToken");
-            assertThat(responseBody).contains(botUser.getPublicId().toString());
-            assertThat(responseBody).contains(botUser.getUsername());
-            assertThat(responseBody).contains(testPersona.getPublicId().toString());
-            assertThat(responseBody).contains(testPersona.getName());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.accessToken").exists())
+                    .andExpect(jsonPath("$.refreshToken").exists())
+                    .andExpect(jsonPath("$.userPublicId").value(botUser.getPublicId().toString()))
+                    .andExpect(jsonPath("$.username").value(botUser.getUsername()))
+                    .andExpect(jsonPath("$.personaPublicId").value(testPersona.getPublicId().toString()))
+                    .andExpect(jsonPath("$.personaName").value(testPersona.getName()));
         }
 
         @Test
