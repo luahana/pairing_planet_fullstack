@@ -8,7 +8,7 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 interface LogSummary {
   publicId: string;
   title: string;
-  outcome: string;
+  outcome: string | null;
   thumbnailUrl?: string | null;
   userName?: string | null;
 }
