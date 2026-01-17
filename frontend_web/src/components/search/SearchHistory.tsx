@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { recordSearchHistory as recordSearchHistoryToBackend } from '@/lib/api/history';
 
 const STORAGE_KEY = 'searchHistory';
@@ -11,26 +11,32 @@ interface SearchHistoryProps {
 }
 
 export function SearchHistory({ onSelect }: SearchHistoryProps) {
-  const [history, setHistory] = useState<string[]>([]);
-  const [mounted, setMounted] = useState(false);
+  // Initialize with null to detect if we've loaded from localStorage yet
+  const [history, setHistory] = useState<string[] | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
+  const loadHistory = useCallback(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
           setHistory(parsed);
+          return;
         }
       } catch {
         // Invalid data, reset
         localStorage.removeItem(STORAGE_KEY);
       }
     }
+    setHistory([]);
   }, []);
 
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
   const removeItem = (query: string) => {
+    if (!history) return;
     const newHistory = history.filter((item) => item !== query);
     setHistory(newHistory);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
@@ -42,7 +48,7 @@ export function SearchHistory({ onSelect }: SearchHistoryProps) {
   };
 
   // Don't render on server or if no history
-  if (!mounted || history.length === 0) {
+  if (history === null || history.length === 0) {
     return null;
   }
 

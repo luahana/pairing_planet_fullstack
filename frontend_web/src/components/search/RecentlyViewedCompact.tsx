@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -12,14 +12,17 @@ import { getImageUrl } from '@/lib/utils/image';
 import { OUTCOME_CONFIG } from '@/lib/types';
 
 export function RecentlyViewedCompact() {
-  const [items, setItems] = useState<ViewHistoryItem[]>([]);
-  const [mounted, setMounted] = useState(false);
+  // Initialize with null to detect if we've loaded from localStorage yet
+  const [items, setItems] = useState<ViewHistoryItem[] | null>(null);
   const [isClearing, setIsClearing] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
+  const loadHistory = useCallback(() => {
     setItems(getViewHistory());
   }, []);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
   const handleClearAll = () => {
     if (isClearing) return;
@@ -30,7 +33,7 @@ export function RecentlyViewedCompact() {
   };
 
   // Don't render on server or if no items
-  if (!mounted || items.length === 0) {
+  if (items === null || items.length === 0) {
     return null;
   }
 
