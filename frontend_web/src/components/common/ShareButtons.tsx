@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useSyncExternalStore } from 'react';
 
 interface ShareButtonsProps {
   url: string;
@@ -8,16 +8,24 @@ interface ShareButtonsProps {
   description?: string;
 }
 
+// Subscribe function for useSyncExternalStore (no-op, values don't change)
+const subscribe = () => () => {};
+
 export function ShareButtons({ url, title, description }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
-  const [canNativeShare, setCanNativeShare] = useState(false);
-  const [fullUrl, setFullUrl] = useState(url);
 
-  // Detect native share support after hydration to avoid SSR mismatch
-  useEffect(() => {
-    setFullUrl(`${window.location.origin}${url}`);
-    setCanNativeShare(typeof navigator !== 'undefined' && 'share' in navigator);
-  }, [url]);
+  // Use useSyncExternalStore to safely access browser APIs after hydration
+  const fullUrl = useSyncExternalStore(
+    subscribe,
+    () => `${window.location.origin}${url}`,
+    () => url // Server snapshot
+  );
+
+  const canNativeShare = useSyncExternalStore(
+    subscribe,
+    () => typeof navigator !== 'undefined' && 'share' in navigator,
+    () => false // Server snapshot
+  );
 
   const handleNativeShare = async () => {
     if (navigator.share) {

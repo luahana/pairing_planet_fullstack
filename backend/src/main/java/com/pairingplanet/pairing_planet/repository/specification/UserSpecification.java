@@ -11,8 +11,7 @@ public class UserSpecification {
     }
 
     public static Specification<User> withFilters(String username, String email, Role role) {
-        return Specification
-                .where(usernameContains(username))
+        return usernameContains(username)
                 .and(emailContains(email))
                 .and(roleEquals(role));
     }

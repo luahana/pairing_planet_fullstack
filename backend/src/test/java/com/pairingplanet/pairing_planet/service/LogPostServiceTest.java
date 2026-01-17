@@ -191,7 +191,7 @@ class LogPostServiceTest extends BaseIntegrationTest {
             logPostService.deleteLog(testLogPost.getPublicId(), testUser.getId());
 
             LogPost deleted = logPostRepository.findById(testLogPost.getId()).orElseThrow();
-            assertThat(deleted.getIsDeleted()).isTrue();
+            assertThat(deleted.isDeleted()).isTrue();
         }
 
         @Test
@@ -286,7 +286,7 @@ class LogPostServiceTest extends BaseIntegrationTest {
         @DisplayName("Should not return deleted logs")
         void getLogsByRecipe_ExcludesDeletedLogs() {
             // Soft delete the log post
-            testLogPost.setIsDeleted(true);
+            testLogPost.softDelete();
             logPostRepository.save(testLogPost);
 
             var pageable = org.springframework.data.domain.PageRequest.of(0, 20);

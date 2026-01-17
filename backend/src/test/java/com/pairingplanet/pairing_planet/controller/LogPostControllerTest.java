@@ -245,7 +245,7 @@ class LogPostControllerTest extends BaseIntegrationTest {
 
             // Verify soft delete
             LogPost deleted = logPostRepository.findById(testLogPost.getId()).orElseThrow();
-            assertThat(deleted.getIsDeleted()).isTrue();
+            assertThat(deleted.isDeleted()).isTrue();
         }
 
         @Test
@@ -363,7 +363,7 @@ class LogPostControllerTest extends BaseIntegrationTest {
         @DisplayName("Should not include deleted logs in response")
         void getLogsByRecipe_ExcludesDeletedLogs() throws Exception {
             // Soft delete the log
-            testLogPost.setIsDeleted(true);
+            testLogPost.softDelete();
             logPostRepository.save(testLogPost);
 
             mockMvc.perform(get("/api/v1/log_posts/recipe/" + testRecipe.getPublicId()))

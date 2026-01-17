@@ -14,8 +14,7 @@ public class UserSuggestedFoodSpecification {
     }
 
     public static Specification<UserSuggestedFood> withFilters(SuggestedFoodFilterDto filter) {
-        return Specification
-                .where(suggestedNameContains(filter.suggestedName()))
+        return suggestedNameContains(filter.suggestedName())
                 .and(localeCodeEquals(filter.localeCode()))
                 .and(statusEquals(filter.status()))
                 .and(usernameContains(filter.username()));
