@@ -9,7 +9,7 @@ interface LogSummary {
   title: string;
   outcome: string;
   thumbnailUrl?: string | null;
-  userName?: string;
+  userName?: string | null;
 }
 
 interface RecentLogsGalleryProps {
