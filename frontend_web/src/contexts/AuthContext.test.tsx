@@ -101,6 +101,7 @@ describe('AuthContext', () => {
       expect(result.current.user).toEqual({
         publicId: 'user-123',
         username: 'testuser',
+        role: 'USER',
       });
       expect(result.current.isAuthenticated).toBe(true);
     });
