@@ -32,6 +32,7 @@ export function SearchHistory({ onSelect }: SearchHistoryProps) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- valid for client-only hydration from localStorage
     loadHistory();
   }, [loadHistory]);
 
