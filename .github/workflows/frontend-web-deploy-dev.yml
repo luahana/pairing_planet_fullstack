@@ -62,23 +62,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Get ALB DNS Name
-        id: get-alb
-        run: |
-          ALB_DNS=$(aws elbv2 describe-load-balancers \
-            --names pairing-planet-dev-alb \
-            --query 'LoadBalancers[0].DNSName' \
-            --output text)
-          echo "alb_dns=$ALB_DNS" >> $GITHUB_OUTPUT
-
       - name: Build, tag, and push Docker image
         id: build-image
         working-directory: .
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: dev-${{ github.sha }}
-          NEXT_PUBLIC_API_URL: http://${{ steps.get-alb.outputs.alb_dns }}/api/v1
-          NEXT_PUBLIC_SITE_URL: http://${{ steps.get-alb.outputs.alb_dns }}
+          NEXT_PUBLIC_API_URL: https://dev.cookstemma.com/api/v1
+          NEXT_PUBLIC_SITE_URL: https://dev.cookstemma.com
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
@@ -129,5 +120,5 @@ jobs:
           echo "- **Image:** ${{ steps.build-image.outputs.image }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Cluster:** ${{ env.ECS_CLUSTER }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Service:** ${{ env.ECS_SERVICE }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend URL:** http://${{ steps.get-alb.outputs.alb_dns }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **API URL:** http://${{ steps.get-alb.outputs.alb_dns }}/api/v1" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend URL:** https://dev.cookstemma.com" >> $GITHUB_STEP_SUMMARY
+          echo "- **API URL:** https://dev.cookstemma.com/api/v1" >> $GITHUB_STEP_SUMMARY
