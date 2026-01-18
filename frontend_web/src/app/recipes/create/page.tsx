@@ -1063,6 +1063,32 @@ function CreateRecipeContent() {
                 </div>
               </div>
 
+              {/* Recipe Title (non-variant mode only) */}
+              {!isVariantMode && (
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                    Recipe Title <span className="text-[var(--error)]">*</span>
+                  </label>
+                  <input
+                    id="title"
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    maxLength={100}
+                    className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
+                    placeholder="e.g., Grandma's Secret Kimchi Fried Rice"
+                  />
+                  <div className="flex justify-between mt-1">
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      Your unique name for this recipe
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {title.length}/100
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Description */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
@@ -1646,33 +1672,33 @@ function CreateRecipeContent() {
             })()}
           </section>
 
-          {/* Recipe Title & Change Reason Section */}
-          <section className="bg-[var(--surface)] rounded-2xl p-6 border border-[var(--border)]">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
-              {isVariantMode ? 'Finish Your Variation' : 'Recipe Title'}
-            </h2>
-            <div className="space-y-4">
-              {/* Recipe Title */}
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  Recipe Title <span className="text-[var(--error)]">*</span>
-                </label>
-                <input
-                  id="title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  maxLength={100}
-                  className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
-                  placeholder="e.g., Grandma's Secret Kimchi Fried Rice"
-                />
-                <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
-                  {title.length}/100
-                </p>
-              </div>
+          {/* Finish Your Variation Section (Variant Mode Only) */}
+          {isVariantMode && (
+            <section className="bg-[var(--surface)] rounded-2xl p-6 border border-[var(--border)]">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+                Finish Your Variation
+              </h2>
+              <div className="space-y-4">
+                {/* Recipe Title */}
+                <div>
+                  <label htmlFor="variantTitle" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                    Recipe Title <span className="text-[var(--error)]">*</span>
+                  </label>
+                  <input
+                    id="variantTitle"
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    maxLength={100}
+                    className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
+                    placeholder="e.g., Grandma's Secret Kimchi Fried Rice"
+                  />
+                  <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
+                    {title.length}/100
+                  </p>
+                </div>
 
-              {/* What did you change? (Variant Mode Only) */}
-              {isVariantMode && (
+                {/* What did you change? */}
                 <div>
                   <label htmlFor="changeReason" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                     What did you change? <span className="text-[var(--error)]">*</span>
@@ -1695,9 +1721,9 @@ function CreateRecipeContent() {
                     </p>
                   </div>
                 </div>
-              )}
-            </div>
-          </section>
+              </div>
+            </section>
+          )}
 
           {/* Error */}
           {error && (
