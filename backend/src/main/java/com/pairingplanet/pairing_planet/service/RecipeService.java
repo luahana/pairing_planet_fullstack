@@ -101,7 +101,7 @@ public class RecipeService {
         }
 
         if (foodMaster == null) {
-            throw new IllegalArgumentException("음식 정보(UUID 또는 새 이름)가 반드시 필요합니다.");
+            throw new IllegalArgumentException("Food information (UUID or new name) is required.");
         }
 
         String finalLocale = (req.cookingStyle() == null || req.cookingStyle().isBlank())

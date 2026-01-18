@@ -1,5 +1,6 @@
 package com.pairingplanet.pairing_planet.exception;
 
+import io.sentry.Sentry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
-        log.warn("인증/인가 예외 발생: {}", e.getMessage());
+        log.warn("Authentication/authorization exception: {}", e.getMessage());
 
         // AuthService 및 ImageService에서 발생하는 "User not found" 처리
         if (e.getMessage().contains("User not found") || e.getMessage().contains("Token")) {
@@ -50,7 +51,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        log.warn("유효성 검사 실패: {}", errors);
+        log.warn("Validation failed: {}", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("code", "VALIDATION_ERROR", "errors", errors));
     }
@@ -61,10 +62,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, String>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
-        String message = String.format("파라미터 '%s'의 값이 잘못되었습니다. 기대하는 타입: %s",
+        String message = String.format("Invalid value for parameter '%s'. Expected type: %s",
                 e.getName(), e.getRequiredType().getSimpleName());
 
-        log.warn("타입 미스매치: {}", e.getValue());
+        log.warn("Type mismatch: {}", e.getValue());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("code", "TYPE_MISMATCH", "message", message));
     }
@@ -75,7 +76,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Map<String, String>> handleMissingParams(MissingServletRequestParameterException e) {
-        String message = String.format("필수 파라미터 '%s'가 누락되었습니다.", e.getParameterName());
+        String message = String.format("Required parameter '%s' is missing.", e.getParameterName());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("code", "MISSING_PARAMETER", "message", message));
     }
@@ -86,7 +87,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDeniedException(AccessDeniedException e) {
-        log.warn("접근 권한 없음: {}", e.getMessage());
+        log.warn("Access denied: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("code", "ACCESS_DENIED", "message", e.getMessage()));
     }
@@ -97,9 +98,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, String>> handleMaxSizeException(MaxUploadSizeExceededException e) {
-        log.warn("파일 크기 초과 업로드 시도");
+        log.warn("File upload size exceeded");
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(Map.of("code", "FILE_TOO_LARGE", "message", "업로드 가능한 최대 파일 크기를 초과했습니다."));
+                .body(Map.of("code", "FILE_TOO_LARGE", "message", "Maximum file upload size exceeded."));
     }
 
     /**
@@ -108,8 +109,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception e) {
-        log.error("예기치 못한 서버 오류 발생: ", e);
+        log.error("Unexpected server error: ", e);
+
+        // Capture unexpected errors to Sentry (only if configured)
+        Sentry.captureException(e);
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("code", "SERVER_ERROR", "message", "서버 내부에서 오류가 발생했습니다. 잠시 후 다시 시도해주세요."));
+                .body(Map.of("code", "SERVER_ERROR", "message", "An internal server error occurred. Please try again later."));
     }
 }

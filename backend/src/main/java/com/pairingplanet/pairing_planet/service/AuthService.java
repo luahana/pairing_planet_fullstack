@@ -61,14 +61,14 @@ public class AuthService {
 
         } catch (FirebaseAuthException e) {
             // [보완] 토큰 만료나 위변조 시 명확한 예외 메시지 전달
-            throw new IllegalArgumentException("Firebase 인증 실패: " + e.getAuthErrorCode());
+            throw new IllegalArgumentException("Firebase authentication failed: " + e.getAuthErrorCode());
         }
     }
 
     private Provider convertProvider(String signInProvider) {
         if (signInProvider.contains("google")) return Provider.GOOGLE;
         if (signInProvider.contains("apple")) return Provider.APPLE;
-        throw new IllegalArgumentException("지원하지 않는 로그인 수단입니다: " + signInProvider);
+        throw new IllegalArgumentException("Unsupported login provider: " + signInProvider);
     }
 
     @Transactional
