@@ -184,6 +184,15 @@ public class BotUserService {
     }
 
     /**
+     * Gets all bot users as DTOs.
+     */
+    public List<BotUserDto> getAllBotUsersDto() {
+        return getAllBotUsers().stream()
+                .map(BotUserDto::from)
+                .toList();
+    }
+
+    /**
      * Gets a bot user by public ID.
      */
     public User getBotUser(UUID publicId) {

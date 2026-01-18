@@ -29,6 +29,16 @@ public class BotAdminController {
     // ==================== Bot Users ====================
 
     /**
+     * Gets all bot users.
+     *
+     * GET /api/v1/admin/bots/users
+     */
+    @GetMapping("/users")
+    public ResponseEntity<List<BotUserDto>> getAllBotUsers() {
+        return ResponseEntity.ok(botUserService.getAllBotUsersDto());
+    }
+
+    /**
      * Creates a new bot user with an initial API key.
      * The API key is only returned in this response and cannot be retrieved later.
      *
