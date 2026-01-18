@@ -111,6 +111,15 @@ public class ImageProcessingService {
             for (ImageVariant variant : ImageVariant.values()) {
                 if (variant == ImageVariant.ORIGINAL) continue;
 
+                // Skip large variants for profile images (only need small thumbnails)
+                if (original.getType() != null && !original.getType().needsLargeVariants()) {
+                    if (variant == ImageVariant.LARGE_1200 || variant == ImageVariant.MEDIUM_800) {
+                        result.append("  ").append(variant).append(": SKIPPED (profile image)\n");
+                        skipped++;
+                        continue;
+                    }
+                }
+
                 try {
                     boolean created = generateVariantWithResult(original, originalImage, variant, result);
                     if (created) generated++;
