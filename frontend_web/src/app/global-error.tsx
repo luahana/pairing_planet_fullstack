@@ -50,6 +50,7 @@ export default function GlobalError({
               >
                 Try Again
               </button>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error needs hard navigation */}
               <a
                 href="/"
                 className="px-6 py-3 bg-gray-100 text-gray-900 font-medium rounded-xl border border-gray-200 hover:border-orange-500 transition-colors"
