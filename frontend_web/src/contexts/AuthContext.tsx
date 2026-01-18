@@ -38,6 +38,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// No-op: Sentry user context disabled until @sentry/nextjs supports Next.js 16
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function setSentryUser(_user: User | null) {
+  // No-op
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,14 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // UserDto uses 'id' field (not 'publicId') for the user's public identifier
         const userData = data.user;
         console.log('[Auth] User authenticated:', userData.username, 'role:', userData.role);
-        setUser({ publicId: userData.id, username: userData.username, role: userData.role || 'USER' });
+        const newUser = { publicId: userData.id, username: userData.username, role: userData.role || 'USER' };
+        setUser(newUser);
+        setSentryUser(newUser);
       } else {
         console.log('[Auth] Not authenticated, response not ok');
         setUser(null);
+        setSentryUser(null);
       }
     } catch (error) {
       console.error('[Auth] Error checking auth status:', error);
       setUser(null);
+      setSentryUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -142,7 +152,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const userData = await response.json();
       console.log('[Auth] Login successful, user:', userData.username, 'role:', userData.role);
-      setUser({ publicId: userData.userPublicId, username: userData.username, role: userData.role || 'USER' });
+      const newUser = { publicId: userData.userPublicId, username: userData.username, role: userData.role || 'USER' };
+      setUser(newUser);
+      setSentryUser(newUser);
     } catch (error) {
       console.error('[Auth] Sign in error:', error);
       throw error;
@@ -168,10 +180,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(null);
+      setSentryUser(null);
     } catch (error) {
       console.error('Sign out error:', error);
       // Still clear local state even if server call fails
       setUser(null);
+      setSentryUser(null);
     }
   }, []);
 
@@ -187,14 +201,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const userData = await response.json();
-        setUser({ publicId: userData.userPublicId, username: userData.username, role: userData.role || 'USER' });
+        const newUser = { publicId: userData.userPublicId, username: userData.username, role: userData.role || 'USER' };
+        setUser(newUser);
+        setSentryUser(newUser);
         return true;
       }
 
       setUser(null);
+      setSentryUser(null);
       return false;
     } catch {
       setUser(null);
+      setSentryUser(null);
       return false;
     }
   }, []);

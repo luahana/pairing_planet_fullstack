@@ -1,51 +1,53 @@
 import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
+import { routing } from '@/i18n/routing';
 import { getAllRecipeIds } from '@/lib/api/recipes';
 import { getAllLogIds } from '@/lib/api/logs';
 import { getHashtags } from '@/lib/api/hashtags';
 import { getAllUserIds } from '@/lib/api/users';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+// Helper to generate alternates for all locales
+function generateAlternates(path: string) {
   const baseUrl = siteConfig.url;
+  const languages: Record<string, string> = {};
 
-  // Static pages
+  routing.locales.forEach((locale) => {
+    languages[locale] = `${baseUrl}/${locale}${path}`;
+  });
+
+  // x-default points to the default locale
+  languages['x-default'] = `${baseUrl}/${routing.defaultLocale}${path}`;
+
+  return { languages };
+}
+
+// Helper to create sitemap entry with locale URLs
+function createLocalizedEntry(
+  path: string,
+  changeFrequency: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never',
+  priority: number
+): MetadataRoute.Sitemap {
+  const baseUrl = siteConfig.url;
+  const alternates = generateAlternates(path);
+
+  return routing.locales.map((locale) => ({
+    url: `${baseUrl}/${locale}${path}`,
+    lastModified: new Date(),
+    changeFrequency,
+    priority,
+    alternates,
+  }));
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Static pages with locale support
   const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/recipes`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/logs`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/search`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
+    ...createLocalizedEntry('', 'daily', 1),
+    ...createLocalizedEntry('/recipes', 'daily', 0.9),
+    ...createLocalizedEntry('/logs', 'daily', 0.8),
+    ...createLocalizedEntry('/search', 'weekly', 0.7),
+    ...createLocalizedEntry('/terms', 'monthly', 0.3),
+    ...createLocalizedEntry('/privacy', 'monthly', 0.3),
   ];
 
   // Dynamic pages - wrap in try/catch to handle API failures
@@ -56,48 +58,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const recipeIds = await getAllRecipeIds();
-    recipePages = recipeIds.map((id) => ({
-      url: `${baseUrl}/recipes/${id}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    }));
+    recipePages = recipeIds.flatMap((id) =>
+      createLocalizedEntry(`/recipes/${id}`, 'weekly', 0.8)
+    );
   } catch {
     console.error('Failed to fetch recipe IDs for sitemap');
   }
 
   try {
     const logIds = await getAllLogIds();
-    logPages = logIds.map((id) => ({
-      url: `${baseUrl}/logs/${id}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    }));
+    logPages = logIds.flatMap((id) =>
+      createLocalizedEntry(`/logs/${id}`, 'weekly', 0.7)
+    );
   } catch {
     console.error('Failed to fetch log IDs for sitemap');
   }
 
   try {
     const hashtags = await getHashtags();
-    hashtagPages = hashtags.map((tag) => ({
-      url: `${baseUrl}/hashtags/${encodeURIComponent(tag.name)}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.6,
-    }));
+    hashtagPages = hashtags.flatMap((tag) =>
+      createLocalizedEntry(`/hashtags/${encodeURIComponent(tag.name)}`, 'weekly', 0.6)
+    );
   } catch {
     console.error('Failed to fetch hashtags for sitemap');
   }
 
   try {
     const userIds = await getAllUserIds();
-    userPages = userIds.map((id) => ({
-      url: `${baseUrl}/users/${id}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.5,
-    }));
+    userPages = userIds.flatMap((id) =>
+      createLocalizedEntry(`/users/${id}`, 'weekly', 0.5)
+    );
   } catch {
     console.error('Failed to fetch user IDs for sitemap');
   }

@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.8'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'io.sentry.jvm.gradle' version '5.12.2'
 }
 
 group = 'com.pairingplanet'
@@ -74,10 +75,26 @@ dependencies {
     // Rate limiting with Bucket4j
     implementation 'com.bucket4j:bucket4j_jdk17-core:8.14.0'
     implementation 'com.bucket4j:bucket4j_jdk17-redis:8.14.0'
+
+    // Sentry error monitoring (production only - disabled when DSN not set)
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.29.0'
+    implementation 'io.sentry:sentry-logback:8.29.0'
 }
 
 tasks.named('test') {
     jvmArgs "-javaagent:${configurations.testRuntimeClasspath.files.find { it.name.contains('mockito-core') }}"
 	useJUnitPlatform()
+}
 
+// Sentry configuration - only active when SENTRY_AUTH_TOKEN is set (production builds)
+sentry {
+    // Generates a unique build ID to link errors to releases
+    includeSourceContext = true
+
+    // Only upload source context in CI/CD when auth token is available
+    autoUploadSourceContext = System.getenv("SENTRY_AUTH_TOKEN") != null
+
+    org = System.getenv("SENTRY_ORG") ?: ""
+    projectName = System.getenv("SENTRY_PROJECT") ?: ""
+    authToken = System.getenv("SENTRY_AUTH_TOKEN") ?: ""
 }

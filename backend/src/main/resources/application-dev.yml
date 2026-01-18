@@ -97,3 +97,8 @@ minio:
 app:
   cookie:
     secure: false
+
+# Sentry disabled in local development
+sentry:
+  dsn: ""
+  enabled: false

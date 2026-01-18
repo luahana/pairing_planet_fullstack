@@ -59,6 +59,21 @@ app:
     reissue:
       requests-per-minute: 10
 
+# Sentry error monitoring - disabled by default (no DSN)
+# Set SENTRY_DSN environment variable to enable in production
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${SENTRY_ENVIRONMENT:${spring.profiles.active:dev}}
+  release: ${SENTRY_RELEASE:}
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.0}
+  # Tag to differentiate from Lambda (both share same Sentry project)
+  tags:
+    service: spring-boot
+  # Filter out health check endpoints from performance monitoring
+  ignored-urls-for-transaction:
+    - "/actuator/health"
+    - "/actuator/info"
+
 
 
 

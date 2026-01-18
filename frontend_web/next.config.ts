@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const isDev = process.env.NODE_ENV === 'development';
+
+// Note: @sentry/nextjs doesn't support Next.js 16 yet
+// Sentry integration will be re-enabled when support is available
+let withSentryConfig: ((config: NextConfig, options: object) => NextConfig) | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  withSentryConfig = require("@sentry/nextjs").withSentryConfig;
+} catch {
+  // Sentry not installed - will run without it
+}
 
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
@@ -72,4 +85,34 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry configuration - only active when SENTRY_AUTH_TOKEN is set
+const sentryWebpackPluginOptions = {
+  // Organization and project from environment
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Only upload source maps in CI when auth token is available
+  silent: !process.env.SENTRY_AUTH_TOKEN,
+  disableLogger: true,
+
+  // Hide source maps from client bundles
+  hideSourceMaps: true,
+
+  // Upload source maps for better stack traces
+  widenClientFileUpload: true,
+
+  // Route Sentry events through app to bypass ad blockers
+  tunnelRoute: "/monitoring",
+
+  // Disable Sentry in development (no DSN)
+  disableServerWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+  disableClientWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+};
+
+// Wrap config with next-intl and optionally Sentry
+const configWithIntl = withNextIntl(nextConfig);
+
+export default withSentryConfig
+  ? withSentryConfig(configWithIntl, sentryWebpackPluginOptions)
+  : configWithIntl;

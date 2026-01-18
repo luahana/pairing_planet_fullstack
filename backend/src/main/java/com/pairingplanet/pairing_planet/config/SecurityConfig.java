@@ -2,10 +2,12 @@ package com.pairingplanet.pairing_planet.config;
 
 import com.pairingplanet.pairing_planet.filter.IdempotencyFilter;
 import com.pairingplanet.pairing_planet.filter.RateLimitFilter;
+import com.pairingplanet.pairing_planet.filter.SentryUserFilter;
 import com.pairingplanet.pairing_planet.security.CsrfTokenFilter;
 import com.pairingplanet.pairing_planet.security.JwtAuthenticationEntryPoint;
 import com.pairingplanet.pairing_planet.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,6 +35,10 @@ public class SecurityConfig {
     private final RateLimitFilter rateLimitFilter;
     private final CsrfTokenFilter csrfTokenFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    // Optional: Only injected when Sentry DSN is configured
+    @Autowired(required = false)
+    private SentryUserFilter sentryUserFilter;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -105,12 +111,18 @@ public class SecurityConfig {
                 // Filter chain order:
                 // 1. RateLimitFilter - Rate limiting (before auth to prevent brute force)
                 // 2. JwtAuthenticationFilter - JWT token validation
-                // 3. CsrfTokenFilter - CSRF validation for cookie-based auth
-                // 4. IdempotencyFilter - Idempotency key handling
+                // 3. SentryUserFilter - Capture user context for error tracking (optional)
+                // 4. CsrfTokenFilter - CSRF validation for cookie-based auth
+                // 5. IdempotencyFilter - Idempotency key handling
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(csrfTokenFilter, JwtAuthenticationFilter.class)
                 .addFilterAfter(idempotencyFilter, CsrfTokenFilter.class);
+
+        // Add Sentry user filter if configured (production/staging only)
+        if (sentryUserFilter != null) {
+            http.addFilterAfter(sentryUserFilter, JwtAuthenticationFilter.class);
+        }
 
         return http.build();
     }

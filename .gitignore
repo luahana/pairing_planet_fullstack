@@ -137,3 +137,10 @@ tmpclaude-*
 .build/
 .buildlog/
 migrate_working_dir/
+
+# Temp files
+docker_check.txt
+build_log.txt
+build_output.txt
+new-task-def.json
+task-def.json

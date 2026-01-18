@@ -57,3 +57,17 @@ file:
   sql:
     init:
       mode: never # 데이터 초기화 방지
+
+# Sentry error monitoring - enabled in production
+sentry:
+  dsn: ${SENTRY_DSN}
+  environment: production
+  release: ${SENTRY_RELEASE:}
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.1}
+  # Tag to differentiate from Lambda (both share same Sentry project)
+  tags:
+    service: spring-boot
+  # Send first transaction of each user session
+  enable-automatic-breadcrumbs: true
+  # Capture user info for better debugging
+  send-default-pii: false

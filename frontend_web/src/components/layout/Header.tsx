@@ -1,45 +1,59 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import { routing, type Locale } from '@/i18n/routing';
 import { siteConfig } from '@/config/site';
 import { useAuth } from '@/contexts/AuthContext';
 import { updateUserProfile } from '@/lib/api/users';
 import { dispatchMeasurementChange } from '@/lib/utils/measurement';
 import type { MeasurementPreference } from '@/lib/types';
 
-const LOCALE_OPTIONS = [
-  { value: 'ko-KR', label: '한국어' },
-  { value: 'en-US', label: 'English' },
-  { value: 'ja-JP', label: '日本語' },
-  { value: 'zh-CN', label: '简体中文' },
-  { value: 'zh-TW', label: '繁體中文' },
-  { value: 'es-ES', label: 'Español' },
-  { value: 'fr-FR', label: 'Français' },
-  { value: 'de-DE', label: 'Deutsch' },
-  { value: 'it-IT', label: 'Italiano' },
-  { value: 'pt-BR', label: 'Português' },
-  { value: 'vi-VN', label: 'Tiếng Việt' },
+const LOCALE_OPTIONS: { value: Locale; label: string; dir: 'ltr' | 'rtl' }[] = [
+  { value: 'en', label: 'English', dir: 'ltr' },
+  { value: 'zh', label: '中文', dir: 'ltr' },
+  { value: 'es', label: 'Español', dir: 'ltr' },
+  { value: 'ja', label: '日本語', dir: 'ltr' },
+  { value: 'de', label: 'Deutsch', dir: 'ltr' },
+  { value: 'fr', label: 'Français', dir: 'ltr' },
+  { value: 'pt', label: 'Português', dir: 'ltr' },
+  { value: 'ko', label: '한국어', dir: 'ltr' },
+  { value: 'it', label: 'Italiano', dir: 'ltr' },
+  { value: 'ar', label: 'العربية', dir: 'rtl' },
+  { value: 'ru', label: 'Русский', dir: 'ltr' },
+  { value: 'id', label: 'Bahasa Indonesia', dir: 'ltr' },
+  { value: 'vi', label: 'Tiếng Việt', dir: 'ltr' },
+  { value: 'hi', label: 'हिन्दी', dir: 'ltr' },
+  { value: 'th', label: 'ไทย', dir: 'ltr' },
+  { value: 'pl', label: 'Polski', dir: 'ltr' },
+  { value: 'tr', label: 'Türkçe', dir: 'ltr' },
+  { value: 'nl', label: 'Nederlands', dir: 'ltr' },
+  { value: 'sv', label: 'Svenska', dir: 'ltr' },
+  { value: 'fa', label: 'فارسی', dir: 'rtl' },
 ];
 
 const MEASUREMENT_OPTIONS = [
-  { value: 'ORIGINAL', label: 'Original' },
-  { value: 'METRIC', label: 'Metric' },
-  { value: 'US', label: 'US' },
-];
+  { value: 'ORIGINAL', labelKey: 'original' },
+  { value: 'METRIC', labelKey: 'metric' },
+  { value: 'US', labelKey: 'us' },
+] as const;
 
 export function Header() {
+  const t = useTranslations('nav');
+  const tMeasurement = useTranslations('measurement');
+  const tCommon = useTranslations('common');
+  const locale = useLocale() as Locale;
+  const pathname = usePathname();
+  const router = useRouter();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLocaleMenuOpen, setIsLocaleMenuOpen] = useState(false);
   const [isMeasurementMenuOpen, setIsMeasurementMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentLocale, setCurrentLocale] = useState('en-US');
   const [currentMeasurement, setCurrentMeasurement] = useState<MeasurementPreference>('ORIGINAL');
-  const pathname = usePathname();
-  const router = useRouter();
   const { user, isAuthenticated, isLoading, isAdmin, signOut } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const localeMenuRef = useRef<HTMLDivElement>(null);
@@ -50,7 +64,6 @@ export function Header() {
   useEffect(() => {
     if (prevPathnameRef.current !== pathname) {
       prevPathnameRef.current = pathname;
-      // Use requestAnimationFrame to avoid synchronous setState warning
       requestAnimationFrame(() => setIsMenuOpen(false));
     }
   }, [pathname]);
@@ -84,45 +97,28 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Load preferences from localStorage on mount
+  // Load measurement preference from localStorage on mount
   useEffect(() => {
-    const savedLocale = localStorage.getItem('userLocale');
     const savedMeasurement = localStorage.getItem('userMeasurement');
-    // Use queueMicrotask to avoid synchronous setState warning in effect
     queueMicrotask(() => {
-      if (savedLocale) setCurrentLocale(savedLocale);
       if (savedMeasurement) setCurrentMeasurement(savedMeasurement as MeasurementPreference);
     });
   }, []);
 
   // Handle locale change
-  const handleLocaleChange = async (newLocale: string) => {
-    setCurrentLocale(newLocale);
-    localStorage.setItem('userLocale', newLocale);
+  const handleLocaleChange = (newLocale: Locale) => {
     setIsLocaleMenuOpen(false);
-
-    // Update backend if logged in
-    if (isAuthenticated) {
-      try {
-        await updateUserProfile({ locale: newLocale });
-      } catch (error) {
-        console.error('Failed to update locale:', error);
-      }
-    }
+    router.replace(pathname, { locale: newLocale });
   };
 
   // Handle measurement change
   const handleMeasurementChange = async (newMeasurement: MeasurementPreference) => {
-    console.log('[Header] Measurement change:', newMeasurement);
     setCurrentMeasurement(newMeasurement);
     localStorage.setItem('userMeasurement', newMeasurement);
     setIsMeasurementMenuOpen(false);
 
-    // Dispatch custom event for same-tab updates (e.g., ingredient conversion)
-    console.log('[Header] Dispatching measurementPreferenceChange event');
     dispatchMeasurementChange(newMeasurement);
 
-    // Update backend if logged in
     if (isAuthenticated) {
       try {
         await updateUserProfile({ measurementPreference: newMeasurement });
@@ -132,7 +128,7 @@ export function Header() {
     }
   };
 
-  const currentLocaleOption = LOCALE_OPTIONS.find(opt => opt.value === currentLocale) || LOCALE_OPTIONS[1];
+  const currentLocaleOption = LOCALE_OPTIONS.find(opt => opt.value === locale) || LOCALE_OPTIONS[0];
   const currentMeasurementOption = MEASUREMENT_OPTIONS.find(opt => opt.value === currentMeasurement) || MEASUREMENT_OPTIONS[0];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -144,8 +140,8 @@ export function Header() {
   };
 
   const navLinks = [
-    { href: '/recipes', label: 'Recipes' },
-    { href: '/logs', label: 'Cooking Logs' },
+    { href: '/recipes', label: t('recipes') },
+    { href: '/logs', label: t('cookingLogs') },
   ];
 
   return (
@@ -191,7 +187,7 @@ export function Header() {
                     ? 'text-[var(--primary)] bg-[var(--primary-light)]'
                     : 'text-[var(--text-secondary)] hover:text-[var(--primary)] hover:bg-[var(--background)]'
                 }`}
-                title="Search"
+                title={t('search')}
               >
                 <svg
                   className="w-5 h-5"
@@ -217,7 +213,7 @@ export function Header() {
                     setIsUserMenuOpen(false);
                   }}
                   className="flex items-center gap-1 px-2 py-1.5 text-sm rounded-lg hover:bg-[var(--background)] transition-colors text-[var(--text-secondary)]"
-                  title="Language"
+                  title={t('language')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -233,13 +229,13 @@ export function Header() {
                   </svg>
                 </button>
                 {isLocaleMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-36 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 z-50 max-h-64 overflow-y-auto">
+                  <div className="absolute end-0 mt-2 w-36 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 z-50 max-h-64 overflow-y-auto">
                     {LOCALE_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => handleLocaleChange(opt.value)}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--background)] ${
-                          opt.value === currentLocale ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'text-[var(--text-primary)]'
+                        className={`w-full text-start px-3 py-2 text-sm hover:bg-[var(--background)] ${
+                          opt.value === locale ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'text-[var(--text-primary)]'
                         }`}
                       >
                         {opt.label}
@@ -258,12 +254,12 @@ export function Header() {
                     setIsUserMenuOpen(false);
                   }}
                   className="flex items-center gap-1 px-2 py-1.5 text-sm rounded-lg hover:bg-[var(--background)] transition-colors text-[var(--text-secondary)]"
-                  title="Measurement Units"
+                  title={t('measurementUnits')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                   </svg>
-                  <span className="text-xs">{currentMeasurementOption.label}</span>
+                  <span className="text-xs">{tMeasurement(currentMeasurementOption.labelKey)}</span>
                   <svg
                     className={`w-3 h-3 transition-transform ${isMeasurementMenuOpen ? 'rotate-180' : ''}`}
                     fill="none"
@@ -274,16 +270,16 @@ export function Header() {
                   </svg>
                 </button>
                 {isMeasurementMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-28 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 z-50">
+                  <div className="absolute end-0 mt-2 w-28 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 z-50">
                     {MEASUREMENT_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => handleMeasurementChange(opt.value as MeasurementPreference)}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--background)] ${
+                        className={`w-full text-start px-3 py-2 text-sm hover:bg-[var(--background)] ${
                           opt.value === currentMeasurement ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'text-[var(--text-primary)]'
                         }`}
                       >
-                        {opt.label}
+                        {tMeasurement(opt.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -316,7 +312,7 @@ export function Header() {
 
                       {/* User Dropdown Menu */}
                       {isUserMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-2 z-50">
+                        <div className="absolute end-0 mt-2 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-2 z-50">
                           <div className="px-4 py-2 border-b border-[var(--border)]">
                             <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                               {user?.username}
@@ -327,28 +323,28 @@ export function Header() {
                             className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--background)]"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
-                            My Profile
+                            {t('myProfile')}
                           </Link>
                           <Link
                             href="/saved"
                             className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--background)]"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
-                            Saved
+                            {t('saved')}
                           </Link>
                           <Link
                             href="/recipes/create"
                             className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--background)]"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
-                            Create Recipe
+                            {t('createRecipe')}
                           </Link>
                           <Link
                             href="/logs/create"
                             className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--background)]"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
-                            New Cooking Log
+                            {t('newCookingLog')}
                           </Link>
                           {isAdmin && (
                             <Link
@@ -356,7 +352,7 @@ export function Header() {
                               className="block px-4 py-2 text-sm text-[var(--primary)] font-medium hover:bg-[var(--background)]"
                               onClick={() => setIsUserMenuOpen(false)}
                             >
-                              Admin Dashboard
+                              {t('adminDashboard')}
                             </Link>
                           )}
                           <div className="border-t border-[var(--border)] mt-2 pt-2">
@@ -365,9 +361,9 @@ export function Header() {
                                 setIsUserMenuOpen(false);
                                 signOut();
                               }}
-                              className="w-full text-left px-4 py-2 text-sm text-[var(--error)] hover:bg-[var(--background)]"
+                              className="w-full text-start px-4 py-2 text-sm text-[var(--error)] hover:bg-[var(--background)]"
                             >
-                              Sign Out
+                              {tCommon('signOut')}
                             </button>
                           </div>
                         </div>
@@ -378,7 +374,7 @@ export function Header() {
                       href="/login"
                       className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors"
                     >
-                      Sign In
+                      {tCommon('signIn')}
                     </Link>
                   )}
                 </>
@@ -416,8 +412,8 @@ export function Header() {
 
       {/* Mobile Menu Panel */}
       <div
-        className={`fixed top-16 right-0 bottom-0 z-50 w-72 bg-[var(--surface)] border-l border-[var(--border)] transform transition-transform duration-300 ease-in-out md:hidden ${
-          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-16 end-0 bottom-0 z-50 w-72 bg-[var(--surface)] border-s border-[var(--border)] transform transition-transform duration-300 ease-in-out md:hidden ${
+          isMenuOpen ? 'translate-x-0' : 'ltr:translate-x-full rtl:-translate-x-full'
         }`}
       >
         <div className="p-4">
@@ -428,11 +424,11 @@ export function Header() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search recipes..."
-                className="w-full px-4 py-2.5 pl-10 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)]"
+                placeholder={t('searchPlaceholder')}
+                className="w-full px-4 py-2.5 ps-10 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--primary)]"
               />
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-secondary)]"
+                className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-secondary)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -461,7 +457,7 @@ export function Header() {
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                       {user?.username}
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)]">Signed in</p>
+                    <p className="text-xs text-[var(--text-secondary)]">{tCommon('signedIn')}</p>
                   </div>
                 </div>
               ) : (
@@ -469,7 +465,7 @@ export function Header() {
                   href="/login"
                   className="block w-full text-center px-4 py-3 bg-[var(--primary)] text-white rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors"
                 >
-                  Sign In
+                  {tCommon('signIn')}
                 </Link>
               )}
             </div>
@@ -498,32 +494,32 @@ export function Header() {
                   href={`/users/${user?.publicId}`}
                   className="block px-4 py-3 rounded-lg text-[var(--text-primary)] hover:bg-[var(--background)]"
                 >
-                  My Profile
+                  {t('myProfile')}
                 </Link>
                 <Link
                   href="/saved"
                   className="block px-4 py-3 rounded-lg text-[var(--text-primary)] hover:bg-[var(--background)]"
                 >
-                  Saved
+                  {t('saved')}
                 </Link>
                 <Link
                   href="/recipes/create"
                   className="block px-4 py-3 rounded-lg text-[var(--text-primary)] hover:bg-[var(--background)]"
                 >
-                  Create Recipe
+                  {t('createRecipe')}
                 </Link>
                 <Link
                   href="/logs/create"
                   className="block px-4 py-3 rounded-lg text-[var(--text-primary)] hover:bg-[var(--background)]"
                 >
-                  New Cooking Log
+                  {t('newCookingLog')}
                 </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
                     className="block px-4 py-3 rounded-lg text-[var(--primary)] font-medium hover:bg-[var(--background)]"
                   >
-                    Admin Dashboard
+                    {t('adminDashboard')}
                   </Link>
                 )}
               </>
@@ -536,17 +532,17 @@ export function Header() {
           {/* Mobile Settings */}
           <div className="space-y-4 px-4">
             <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
-              Settings
+              {t('settings')}
             </p>
 
             {/* Language Select */}
             <div>
               <label className="block text-sm text-[var(--text-primary)] mb-2">
-                Language
+                {t('language')}
               </label>
               <select
-                value={currentLocale}
-                onChange={(e) => handleLocaleChange(e.target.value)}
+                value={locale}
+                onChange={(e) => handleLocaleChange(e.target.value as Locale)}
                 className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:border-[var(--primary)]"
               >
                 {LOCALE_OPTIONS.map((opt) => (
@@ -560,7 +556,7 @@ export function Header() {
             {/* Measurement Select */}
             <div>
               <label className="block text-sm text-[var(--text-primary)] mb-2">
-                Measurement Units
+                {t('measurementUnits')}
               </label>
               <select
                 value={currentMeasurement}
@@ -569,7 +565,7 @@ export function Header() {
               >
                 {MEASUREMENT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {tMeasurement(opt.labelKey)}
                   </option>
                 ))}
               </select>
@@ -585,13 +581,13 @@ export function Header() {
               href="/terms"
               className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--primary)]"
             >
-              Terms of Service
+              {t('termsOfService')}
             </Link>
             <Link
               href="/privacy"
               className="block px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--primary)]"
             >
-              Privacy Policy
+              {t('privacyPolicy')}
             </Link>
           </nav>
 
@@ -604,9 +600,9 @@ export function Header() {
                   setIsMenuOpen(false);
                   signOut();
                 }}
-                className="w-full px-4 py-3 text-left text-[var(--error)] hover:bg-[var(--background)] rounded-lg transition-colors"
+                className="w-full px-4 py-3 text-start text-[var(--error)] hover:bg-[var(--background)] rounded-lg transition-colors"
               >
-                Sign Out
+                {tCommon('signOut')}
               </button>
             </>
           )}

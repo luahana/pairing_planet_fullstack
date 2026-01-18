@@ -49,6 +49,11 @@
   --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-arabic: var(--font-noto-arabic);
+  --font-cjk-sc: var(--font-noto-sc);
+  --font-cjk-jp: var(--font-noto-jp);
+  --font-cjk-kr: var(--font-noto-kr);
+  --font-thai: var(--font-noto-thai);
 }
 
 body {
@@ -191,4 +196,57 @@ a:hover {
     color: black !important;
     border: 1px solid #ccc;
   }
+}
+
+/* RTL (Right-to-Left) Support - Arabic, Persian */
+html[dir="rtl"] body {
+  font-family: var(--font-noto-arabic), var(--font-noto-sans), var(--font-sans), Arial, sans-serif;
+}
+
+/* Force LTR for specific content (e.g., code, numbers) */
+html[dir="rtl"] .force-ltr {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Ensure proper text alignment in RTL */
+html[dir="rtl"] .text-start {
+  text-align: right;
+}
+
+html[dir="rtl"] .text-end {
+  text-align: left;
+}
+
+/* CJK Font Support */
+html[lang="zh"] body {
+  font-family: var(--font-noto-sc), var(--font-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+html[lang="ja"] body {
+  font-family: var(--font-noto-jp), var(--font-sans), "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+
+html[lang="ko"] body {
+  font-family: var(--font-noto-kr), var(--font-sans), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+/* Thai Font Support */
+html[lang="th"] body {
+  font-family: var(--font-noto-thai), var(--font-sans), "Leelawadee UI", sans-serif;
+}
+
+/* Cyrillic (Russian) Font Support */
+html[lang="ru"] body {
+  font-family: var(--font-noto-sans), var(--font-sans), Arial, sans-serif;
+}
+
+/* Hindi (Devanagari) Font Support */
+html[lang="hi"] body {
+  font-family: var(--font-noto-sans), var(--font-sans), "Nirmala UI", sans-serif;
+}
+
+/* Vietnamese - uses Noto Sans with Vietnamese subset */
+html[lang="vi"] body {
+  font-family: var(--font-noto-sans), var(--font-sans), Arial, sans-serif;
 }

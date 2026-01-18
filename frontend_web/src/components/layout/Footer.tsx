@@ -1,7 +1,10 @@
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { siteConfig } from '@/config/site';
 
 export function Footer() {
+  const t = useTranslations('footer');
+  const tNav = useTranslations('nav');
   const currentYear = new Date().getFullYear();
 
   return (
@@ -31,7 +34,7 @@ export function Footer() {
           {/* Explore */}
           <div>
             <h3 className="font-semibold text-[var(--text-primary)] mb-4">
-              Explore
+              {t('explore')}
             </h3>
             <ul className="space-y-2">
               <li>
@@ -39,7 +42,7 @@ export function Footer() {
                   href="/recipes"
                   className="text-[var(--text-secondary)] text-sm hover:text-[var(--primary)] transition-colors"
                 >
-                  Recipes
+                  {tNav('recipes')}
                 </Link>
               </li>
               <li>
@@ -47,7 +50,7 @@ export function Footer() {
                   href="/logs"
                   className="text-[var(--text-secondary)] text-sm hover:text-[var(--primary)] transition-colors"
                 >
-                  Cooking Logs
+                  {tNav('cookingLogs')}
                 </Link>
               </li>
               <li>
@@ -55,7 +58,7 @@ export function Footer() {
                   href="/search"
                   className="text-[var(--text-secondary)] text-sm hover:text-[var(--primary)] transition-colors"
                 >
-                  Search
+                  {tNav('search')}
                 </Link>
               </li>
             </ul>
@@ -64,7 +67,7 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h3 className="font-semibold text-[var(--text-primary)] mb-4">
-              Legal
+              {t('legal')}
             </h3>
             <ul className="space-y-2">
               <li>
@@ -72,7 +75,7 @@ export function Footer() {
                   href={siteConfig.links.terms}
                   className="text-[var(--text-secondary)] text-sm hover:text-[var(--primary)] transition-colors"
                 >
-                  Terms of Service
+                  {tNav('termsOfService')}
                 </Link>
               </li>
               <li>
@@ -80,7 +83,7 @@ export function Footer() {
                   href={siteConfig.links.privacy}
                   className="text-[var(--text-secondary)] text-sm hover:text-[var(--primary)] transition-colors"
                 >
-                  Privacy Policy
+                  {tNav('privacyPolicy')}
                 </Link>
               </li>
             </ul>
@@ -90,7 +93,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-[var(--border)]">
           <p className="text-[var(--text-secondary)] text-sm text-center">
-            &copy; {currentYear} {siteConfig.name}. All rights reserved.
+            &copy; {currentYear} {siteConfig.name}. {t('copyright')}
           </p>
         </div>
       </div>
