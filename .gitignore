@@ -103,6 +103,11 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
+# Terraform plan files - CRITICAL: these contain secret values!
+*.tfplan
+tfplan
+**/tfplan
+
 # -----------------------------------------------------------------------------
 # Secrets & Environment
 # -----------------------------------------------------------------------------
