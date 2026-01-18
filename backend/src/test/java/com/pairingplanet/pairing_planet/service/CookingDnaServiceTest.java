@@ -31,44 +31,32 @@ class CookingDnaServiceTest {
         @Test
         @DisplayName("Should return 0 XP when all counts are zero")
         void zeroCountsReturnsZeroXp() {
-            int result = service.calculateTotalXp(0, 0, 0, 0);
+            int result = service.calculateTotalXp(0, 0);
             assertThat(result).isEqualTo(0);
         }
 
         @Test
         @DisplayName("Should return 50 XP per recipe created")
         void recipesGive50XpEach() {
-            int result = service.calculateTotalXp(3, 0, 0, 0);
+            int result = service.calculateTotalXp(3, 0);
             assertThat(result).isEqualTo(150); // 3 * 50 = 150
         }
 
         @Test
-        @DisplayName("Should return 30 XP per successful log")
-        void successLogsGive30XpEach() {
-            int result = service.calculateTotalXp(0, 5, 0, 0);
-            assertThat(result).isEqualTo(150); // 5 * 30 = 150
+        @DisplayName("Should add rating XP correctly")
+        void ratingXpAddsCorrectly() {
+            // Rating XP is pre-calculated: rating * 6 per log
+            // e.g., 5 logs with rating 5 = 5 * 5 * 6 = 150 XP
+            int result = service.calculateTotalXp(0, 150);
+            assertThat(result).isEqualTo(150);
         }
 
         @Test
-        @DisplayName("Should return 15 XP per partial success log")
-        void partialLogsGive15XpEach() {
-            int result = service.calculateTotalXp(0, 0, 4, 0);
-            assertThat(result).isEqualTo(60); // 4 * 15 = 60
-        }
-
-        @Test
-        @DisplayName("Should return 5 XP per failed log")
-        void failedLogsGive5XpEach() {
-            int result = service.calculateTotalXp(0, 0, 0, 10);
-            assertThat(result).isEqualTo(50); // 10 * 5 = 50
-        }
-
-        @Test
-        @DisplayName("Should correctly combine XP from all sources")
+        @DisplayName("Should correctly combine XP from recipes and ratings")
         void combinesAllXpSources() {
-            // 2 recipes (100) + 3 success (90) + 2 partial (30) + 1 failed (5) = 225
-            int result = service.calculateTotalXp(2, 3, 2, 1);
-            assertThat(result).isEqualTo(225);
+            // 2 recipes (100) + 120 rating XP = 220
+            int result = service.calculateTotalXp(2, 120);
+            assertThat(result).isEqualTo(220);
         }
     }
 
