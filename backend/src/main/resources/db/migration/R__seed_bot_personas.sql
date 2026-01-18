@@ -4,8 +4,9 @@
 -- Note: V13 converts columns to VARCHAR and handles case conversion
 
 -- Korean Bot Personas
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'chef_park_soojin',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'chef_park_soojin',
        '{"en": "Chef Park Soojin", "ko": "박수진 셰프"}'::jsonb,
        'PROFESSIONAL',
        'PROFESSIONAL',
@@ -19,8 +20,9 @@ SELECT 'chef_park_soojin',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_park_soojin');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'yoriking_minsu',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'yoriking_minsu',
        '{"en": "Minsu the Cooking King", "ko": "요리킹 민수"}'::jsonb,
        'CASUAL',
        'BEGINNER',
@@ -34,8 +36,9 @@ SELECT 'yoriking_minsu',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'yoriking_minsu');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'healthymom_hana',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'healthymom_hana',
        '{"en": "Healthy Mom Hana", "ko": "건강맘 하나"}'::jsonb,
        'WARM',
        'INTERMEDIATE',
@@ -49,8 +52,9 @@ SELECT 'healthymom_hana',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'healthymom_hana');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'bakingmom_jieun',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'bakingmom_jieun',
        '{"en": "Baking Mom Jieun", "ko": "베이킹맘 지은"}'::jsonb,
        'ENTHUSIASTIC',
        'INTERMEDIATE',
@@ -64,8 +68,9 @@ SELECT 'bakingmom_jieun',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'bakingmom_jieun');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'worldfoodie_junhyuk',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'worldfoodie_junhyuk',
        '{"en": "World Foodie Junhyuk", "ko": "월드푸디 준혁"}'::jsonb,
        'EDUCATIONAL',
        'INTERMEDIATE',
@@ -80,8 +85,9 @@ SELECT 'worldfoodie_junhyuk',
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'worldfoodie_junhyuk');
 
 -- English Bot Personas
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'chef_marcus_stone',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'chef_marcus_stone',
        '{"en": "Chef Marcus Stone", "ko": "마커스 스톤 셰프"}'::jsonb,
        'PROFESSIONAL',
        'PROFESSIONAL',
@@ -95,8 +101,9 @@ SELECT 'chef_marcus_stone',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_marcus_stone');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'broke_college_cook',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'broke_college_cook',
        '{"en": "Broke College Cook", "ko": "가난한 대학생 요리사"}'::jsonb,
        'CASUAL',
        'BEGINNER',
@@ -110,8 +117,9 @@ SELECT 'broke_college_cook',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'broke_college_cook');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'fitfamilyfoods',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'fitfamilyfoods',
        '{"en": "Fit Family Foods", "ko": "핏 패밀리 푸드"}'::jsonb,
        'MOTIVATIONAL',
        'INTERMEDIATE',
@@ -125,8 +133,9 @@ SELECT 'fitfamilyfoods',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'fitfamilyfoods');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'sweettoothemma',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'sweettoothemma',
        '{"en": "Sweet Tooth Emma", "ko": "스위트 투스 엠마"}'::jsonb,
        'ENTHUSIASTIC',
        'INTERMEDIATE',
@@ -140,8 +149,9 @@ SELECT 'sweettoothemma',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'sweettoothemma');
 
-INSERT INTO bot_personas (name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT 'globaleatsalex',
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+SELECT gen_random_uuid(),
+       'globaleatsalex',
        '{"en": "Global Eats Alex", "ko": "글로벌 이츠 알렉스"}'::jsonb,
        'EDUCATIONAL',
        'INTERMEDIATE',
