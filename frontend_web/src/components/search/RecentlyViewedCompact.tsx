@@ -52,23 +52,23 @@ export function RecentlyViewedCompact() {
           {isClearing ? 'Clearing...' : 'Clear all'}
         </button>
       </div>
-      <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin scrollbar-thumb-[var(--border)] scrollbar-track-transparent">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {items.map((item) => {
           if (item.type === 'recipe') {
             return (
               <Link
                 key={`recipe-${item.publicId}`}
                 href={`/recipes/${item.publicId}`}
-                className="flex-shrink-0 w-32 group"
+                className="group"
               >
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-[var(--surface)] border-2 border-[var(--primary)] mb-2">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-[var(--surface)] border-2 border-[var(--primary)] mb-2">
                   {getImageUrl(item.thumbnail) ? (
                     <Image
                       src={getImageUrl(item.thumbnail)!}
                       alt={item.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-200"
-                      sizes="128px"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[var(--highlight-bg)]">
@@ -105,16 +105,16 @@ export function RecentlyViewedCompact() {
               <Link
                 key={`log-${item.publicId}`}
                 href={`/logs/${item.publicId}`}
-                className="flex-shrink-0 w-32 group"
+                className="group"
               >
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-[var(--surface)] border-2 border-[var(--secondary)] mb-2">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-[var(--surface)] border-2 border-[var(--secondary)] mb-2">
                   {getImageUrl(item.thumbnail) ? (
                     <Image
                       src={getImageUrl(item.thumbnail)!}
                       alt={item.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-200"
-                      sizes="128px"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[var(--highlight-bg)]">

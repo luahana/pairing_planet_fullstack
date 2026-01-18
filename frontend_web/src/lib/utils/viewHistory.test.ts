@@ -120,7 +120,7 @@ describe('viewHistory localStorage helpers', () => {
       expect(history[1].publicId).toBe('recipe-2');
     });
 
-    it('should limit to 10 items', () => {
+    it('should limit to 8 items', () => {
       for (let i = 1; i <= 15; i++) {
         addToViewHistory({
           type: 'recipe',
@@ -132,11 +132,11 @@ describe('viewHistory localStorage helpers', () => {
       }
 
       const history = getViewHistory();
-      expect(history).toHaveLength(10);
+      expect(history).toHaveLength(8);
       // Most recent should be first
       expect(history[0].publicId).toBe('recipe-15');
-      // Oldest in the list should be recipe-6 (1-5 were pushed out)
-      expect(history[9].publicId).toBe('recipe-6');
+      // Oldest in the list should be recipe-8 (1-7 were pushed out)
+      expect(history[7].publicId).toBe('recipe-8');
     });
 
     it('should differentiate between recipe and log with same publicId', () => {
