@@ -78,8 +78,8 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .findByEntityTypeAndEntityId(TranslatableEntity.FOOD_MASTER, testFoodMaster.getId())
                     .orElseThrow();
 
-            assertThat(event.getTargetLocales()).hasSize(11);
-            assertThat(event.getTargetLocales()).contains("en", "ja", "zh", "fr", "es", "it", "de", "ru", "pt", "el", "ar");
+            assertThat(event.getTargetLocales()).hasSize(19);
+            assertThat(event.getTargetLocales()).contains("en", "ja", "zh", "fr", "es", "it", "de", "ru", "pt", "ar", "id", "vi", "hi", "th", "pl", "tr", "nl", "sv", "fa");
             assertThat(event.getTargetLocales()).doesNotContain("ko");
         }
 

@@ -104,7 +104,7 @@ class AdminSuggestedFoodServiceTest extends BaseIntegrationTest {
             assertThat(translationEvent).isPresent();
             assertThat(translationEvent.get().getSourceLocale()).isEqualTo("ko");
             assertThat(translationEvent.get().getStatus()).isEqualTo(TranslationStatus.PENDING);
-            assertThat(translationEvent.get().getTargetLocales()).hasSize(11); // 12 - 1 (source)
+            assertThat(translationEvent.get().getTargetLocales()).hasSize(19); // 20 - 1 (source)
             assertThat(translationEvent.get().getTargetLocales()).contains("en", "ja", "zh", "fr");
         }
 
