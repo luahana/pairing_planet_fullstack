@@ -115,3 +115,16 @@ variable "openai_api_key" {
   type        = string
   sensitive   = true
 }
+
+# DNS
+variable "domain_name" {
+  description = "Base domain name (e.g., cookstemma.com)"
+  type        = string
+  default     = "cookstemma.com"
+}
+
+variable "create_dns_record" {
+  description = "Whether to create Route53 DNS record"
+  type        = bool
+  default     = true
+}

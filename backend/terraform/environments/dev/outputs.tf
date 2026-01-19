@@ -106,3 +106,19 @@ output "cdn_url" {
   description = "CDN URL for images"
   value       = module.cloudfront.cdn_url
 }
+
+# DNS outputs
+output "dev_domain" {
+  description = "Dev environment domain name"
+  value       = var.create_dns_record ? "${var.environment}.${var.domain_name}" : null
+}
+
+output "dev_url" {
+  description = "Dev environment URL (HTTP)"
+  value       = var.create_dns_record ? "http://${var.environment}.${var.domain_name}" : "http://${module.alb.alb_dns_name}"
+}
+
+output "dev_api_url" {
+  description = "Dev API URL"
+  value       = var.create_dns_record ? "http://${var.environment}.${var.domain_name}/api/v1" : "http://${module.alb.alb_dns_name}/api/v1"
+}

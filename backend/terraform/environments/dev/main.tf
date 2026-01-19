@@ -286,3 +286,27 @@ module "cloudfront" {
   price_class          = "PriceClass_100" # US, Canada, Europe (cheapest)
   lambda_code_path     = "${path.module}/../../../lambda/webp-selector"
 }
+
+# =============================================================================
+# ROUTE53 DNS - Custom domain for dev.cookstemma.com
+# =============================================================================
+
+# Data source for existing Route53 hosted zone
+data "aws_route53_zone" "main" {
+  count = var.create_dns_record ? 1 : 0
+  name  = var.domain_name
+}
+
+# A record for dev.cookstemma.com pointing to ALB
+resource "aws_route53_record" "dev" {
+  count   = var.create_dns_record ? 1 : 0
+  zone_id = data.aws_route53_zone.main[0].zone_id
+  name    = "${var.environment}.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = module.alb.alb_dns_name
+    zone_id                = module.alb.alb_zone_id
+    evaluate_target_health = true
+  }
+}
