@@ -190,6 +190,10 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "SERVER_PORT"
           value = tostring(var.container_port)
+        },
+        {
+          name  = "CDN_URL_PREFIX"
+          value = var.cdn_url_prefix
         }
       ]
 

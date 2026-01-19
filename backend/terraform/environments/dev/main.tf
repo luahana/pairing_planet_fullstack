@@ -202,6 +202,9 @@ module "ecs" {
   encryption_secret_arn = module.secrets.encryption_secret_arn
   s3_secret_arn         = module.secrets.s3_secret_arn
   firebase_secret_arn   = module.secrets.firebase_secret_arn
+
+  # CDN URL for images (CloudFront)
+  cdn_url_prefix = "https://drms7t3elqlu.cloudfront.net"
 }
 
 # ECS Web Module - Next.js application

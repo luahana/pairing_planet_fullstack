@@ -63,4 +63,4 @@ firebase:
 file:
   upload:
     bucket: ${S3_BUCKET}
-    url-prefix: https://${S3_BUCKET}.s3.${S3_REGION:us-east-2}.amazonaws.com
+    url-prefix: ${CDN_URL_PREFIX:https://${S3_BUCKET}.s3.${S3_REGION:us-east-2}.amazonaws.com}

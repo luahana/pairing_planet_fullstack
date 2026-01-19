@@ -116,3 +116,9 @@ variable "firebase_secret_arn" {
   description = "ARN of the Firebase secret"
   type        = string
 }
+
+variable "cdn_url_prefix" {
+  description = "CDN URL prefix for image URLs (CloudFront domain)"
+  type        = string
+  default     = ""
+}
