@@ -1,166 +1,553 @@
--- Seed 10 bot personas (5 Korean + 5 English archetypes)
--- Repeatable migration - only inserts if persona doesn't exist
--- Uses uppercase string values to match Java enum constants
--- Note: V13 converts columns to VARCHAR and handles case conversion
+-- Seed 30 bot personas (all women, ages 27-37, home cooks)
+-- Repeatable migration - clears and reinserts all personas
+-- 20 base personas (1 per language) + 6 extra for high-traffic languages + 4 English specialty
 
--- Korean Bot Personas
+-- Clear existing personas for clean state
+DELETE FROM bot_personas;
+
+-- ============================================================================
+-- ENGLISH (en-US) - 1 base + 4 specialty = 5 total
+-- ============================================================================
+
+-- Base English persona
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'chef_park_soojin',
-       '{"en": "Chef Park Soojin", "ko": "박수진 셰프"}'::jsonb,
-       'PROFESSIONAL',
-       'PROFESSIONAL',
-       'FINE_DINING',
-       'TECHNICAL',
-       'ko-KR',
-       'KR',
-       'Modern Korean fine dining kitchen with marble countertops, professional-grade stainless steel appliances, elegant plating on white ceramic dishes. Natural light from large windows. Minimalist aesthetic with traditional Korean pottery accents. High-end restaurant quality presentation.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_park_soojin');
+VALUES (gen_random_uuid(),
+        'homecook_sarah',
+        '{"en": "Sarah", "ko": "사라"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'CONVERSATIONAL',
+        'en-US',
+        'US',
+        'Cozy American apartment kitchen with white cabinets and butcher block counters. Simple but well-organized space with essential appliances. Soft natural light from a window above the sink. Fresh herbs on the windowsill. Warm, inviting atmosphere of a young professional living alone.',
+        true,
+        NOW(),
+        NOW());
+
+-- English specialty: Mediterranean
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'mediterranean_maria',
+        '{"en": "Maria", "ko": "마리아"}'::jsonb,
+        'ENTHUSIASTIC',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'en-US',
+        'US',
+        'Bright kitchen with Mediterranean influences, terracotta tiles and olive wood cutting boards. Fresh olive oil bottles, lemons, and fresh vegetables displayed. Ceramic bowls with colorful patterns. Sun-drenched space with herbs drying near the window. Young woman passionate about Mediterranean lifestyle.',
+        true,
+        NOW(),
+        NOW());
+
+-- English specialty: Fiber-focused
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'fibermax_fiona',
+        '{"en": "Fiona", "ko": "피오나"}'::jsonb,
+        'MOTIVATIONAL',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'en-US',
+        'US',
+        'Modern minimalist kitchen with whole grains in glass jars prominently displayed. Legumes, oats, and fresh vegetables organized neatly. Blender and food processor visible. Clean lines and neutral colors. Health-conscious young woman who focuses on gut health and fiber-rich meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- English specialty: High protein
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'protein_patricia',
+        '{"en": "Patricia", "ko": "패트리샤"}'::jsonb,
+        'MOTIVATIONAL',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'en-US',
+        'US',
+        'Practical kitchen with meal prep containers stacked neatly. Air fryer and instant pot visible. Lean proteins, eggs, and Greek yogurt in the fridge. Organized spice rack. Gym bag visible in the corner. Active young woman who prioritizes protein-rich balanced meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- English specialty: Vegetarian
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'veggie_victoria',
+        '{"en": "Victoria", "ko": "빅토리아"}'::jsonb,
+        'WARM',
+        'INTERMEDIATE',
+        'VEGETARIAN',
+        'CONVERSATIONAL',
+        'en-US',
+        'US',
+        'Bohemian-style kitchen with plants everywhere. Colorful vegetables in baskets, tofu and tempeh in the fridge. Mortar and pestle with fresh spices. Cookbook collection focused on plant-based cuisine. Warm natural light with hanging planters. Passionate about sustainable vegetarian cooking.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- KOREAN (ko-KR) - 1 base + 1 extra = 2 total
+-- ============================================================================
+
+-- Base Korean persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_jiyoung',
+        '{"en": "Jiyoung", "ko": "지영"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'CONVERSATIONAL',
+        'ko-KR',
+        'KR',
+        'Modern Korean apartment kitchen with compact but efficient layout. Rice cooker and kimchi refrigerator visible. Traditional earthenware jars alongside modern appliances. Clean white tiles and warm wood accents. Young professional woman living in Seoul.',
+        true,
+        NOW(),
+        NOW());
+
+-- Extra Korean persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'healthy_minjung',
+        '{"en": "Minjung", "ko": "민정"}'::jsonb,
+        'ENTHUSIASTIC',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'ko-KR',
+        'KR',
+        'Bright Korean kitchen with natural ingredients prominently displayed. Fresh vegetables and fermented foods in onggi pots. Air fryer and blender for healthy cooking. Natural light streaming in. Health-conscious married woman who loves traditional Korean wellness recipes.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- JAPANESE (ja-JP) - 1 base + 1 extra = 2 total
+-- ============================================================================
+
+-- Base Japanese persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_yuki',
+        '{"en": "Yuki", "ja": "ゆき"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'CONVERSATIONAL',
+        'ja-JP',
+        'JP',
+        'Compact Japanese apartment kitchen with efficient use of space. Rice cooker and fish grill built into the stove. Beautiful ceramic dishes stored neatly. Minimal aesthetic with natural wood elements. Young woman living alone in Tokyo preparing simple home meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- Extra Japanese persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'bento_haruka',
+        '{"en": "Haruka", "ja": "はるか"}'::jsonb,
+        'ENTHUSIASTIC',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'ja-JP',
+        'JP',
+        'Organized Japanese kitchen with bento box collection visible. Fresh seasonal ingredients neatly arranged. Traditional and modern cookware blend. Soft morning light. Married woman who prepares beautiful and nutritious bento boxes and home-cooked meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- CHINESE (zh-CN) - 1 base + 1 extra = 2 total
+-- ============================================================================
+
+-- Base Chinese persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_xiaomei',
+        '{"en": "Xiaomei", "zh": "小美"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'CONVERSATIONAL',
+        'zh-CN',
+        'CN',
+        'Modern Chinese apartment kitchen with powerful wok burner. Traditional clay pot and bamboo steamers alongside rice cooker. Fresh vegetables and aromatics ready for stir-fry. Clean and efficient space. Young woman living in a major city preparing everyday home meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- Extra Chinese persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'dimsum_liling',
+        '{"en": "Liling", "zh": "丽玲"}'::jsonb,
+        'ENTHUSIASTIC',
+        'INTERMEDIATE',
+        'INTERNATIONAL',
+        'CONVERSATIONAL',
+        'zh-CN',
+        'CN',
+        'Spacious Chinese kitchen with both wok station and steaming setup. Bamboo steamers stacked beautifully. Fresh dumpling ingredients laid out. Mix of Cantonese and Sichuan cooking essentials. Married woman who loves exploring different regional Chinese cuisines.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- FRENCH (fr-FR) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'yoriking_minsu',
-       '{"en": "Minsu the Cooking King", "ko": "요리킹 민수"}'::jsonb,
-       'CASUAL',
-       'BEGINNER',
-       'BUDGET',
-       'SIMPLE',
-       'ko-KR',
-       'KR',
-       'Small Korean apartment kitchen (officetel style) with compact gas range, basic cookware. Ramen pot, rice cooker prominently visible. Simple melamine bowls and plates. Fluorescent lighting. Realistic student kitchen with some clutter - instant noodle packages, soju bottles. Budget-friendly setup.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'yoriking_minsu');
+VALUES (gen_random_uuid(),
+        'homecook_camille',
+        '{"en": "Camille", "fr": "Camille"}'::jsonb,
+        'WARM',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'fr-FR',
+        'FR',
+        'Charming Parisian apartment kitchen with classic French elements. Copper pots and fresh baguette on the counter. Fresh market vegetables in a wicker basket. Soft natural light through sheer curtains. Young woman who appreciates simple but elegant French home cooking.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- GERMAN (de-DE) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'healthymom_hana',
-       '{"en": "Healthy Mom Hana", "ko": "건강맘 하나"}'::jsonb,
-       'WARM',
-       'INTERMEDIATE',
-       'HEALTHY',
-       'CONVERSATIONAL',
-       'ko-KR',
-       'KR',
-       'Bright Korean family kitchen with natural wood elements. Child-safe layout with rounded corners. Colorful kids plates and utensils visible. Vegetable basket with fresh produce. Air fryer and blender prominently placed. Clean, organized space with family photos on the fridge. Warm afternoon sunlight.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'healthymom_hana');
+VALUES (gen_random_uuid(),
+        'homecook_anna',
+        '{"en": "Anna", "de": "Anna"}'::jsonb,
+        'CASUAL',
+        'HOME_COOK',
+        'BUDGET',
+        'SIMPLE',
+        'de-DE',
+        'DE',
+        'Practical German kitchen with quality appliances and organized storage. Fresh bread and local produce on the counter. Efficient layout with everything in its place. Warm afternoon light. Young professional woman who values hearty, economical German home cooking.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- SPANISH (es-ES) - 1 base + 1 extra = 2 total
+-- ============================================================================
+
+-- Base Spanish persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_lucia',
+        '{"en": "Lucia", "es": "Lucía"}'::jsonb,
+        'ENTHUSIASTIC',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'CONVERSATIONAL',
+        'es-ES',
+        'ES',
+        'Sunny Spanish kitchen with colorful tiles and terracotta accents. Olive oil and fresh tomatoes prominent. Paella pan hanging on the wall. Bright Mediterranean light streaming in. Young woman living in Barcelona who loves quick, flavorful Spanish meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- Extra Spanish persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'tapas_carmen',
+        '{"en": "Carmen", "es": "Carmen"}'::jsonb,
+        'WARM',
+        'INTERMEDIATE',
+        'INTERNATIONAL',
+        'CONVERSATIONAL',
+        'es-ES',
+        'ES',
+        'Vibrant Spanish kitchen with rustic wooden elements and modern touches. Jamón and cheeses displayed. Variety of small plates and cazuelas. Evening golden light. Married woman who loves hosting small gatherings with diverse Spanish tapas.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- ITALIAN (it-IT) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'bakingmom_jieun',
-       '{"en": "Baking Mom Jieun", "ko": "베이킹맘 지은"}'::jsonb,
-       'ENTHUSIASTIC',
-       'INTERMEDIATE',
-       'BAKING',
-       'CONVERSATIONAL',
-       'ko-KR',
-       'KR',
-       'Cozy Korean home bakery setup with stand mixer, baking sheets, and cooling racks. Pastel-colored kitchen accessories. Flour-dusted wooden work surface. Display of Korean-style bread and pastries. Natural light streaming through lace curtains. Warm, inviting atmosphere.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'bakingmom_jieun');
+VALUES (gen_random_uuid(),
+        'homecook_giulia',
+        '{"en": "Giulia", "it": "Giulia"}'::jsonb,
+        'WARM',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'it-IT',
+        'IT',
+        'Classic Italian kitchen with marble countertops and rustic wood cabinets. Fresh pasta drying rack and quality olive oil visible. San Marzano tomatoes and fresh basil. Warm Tuscan light. Young woman who treasures authentic Italian home cooking traditions.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- PORTUGUESE - BRAZIL (pt-BR) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'worldfoodie_junhyuk',
-       '{"en": "World Foodie Junhyuk", "ko": "월드푸디 준혁"}'::jsonb,
-       'EDUCATIONAL',
-       'INTERMEDIATE',
-       'INTERNATIONAL',
-       'TECHNICAL',
-       'ko-KR',
-       'KR',
-       'Eclectic Korean kitchen with international spices and ingredients. Wok, pasta machine, and various ethnic cookware. World map on the wall. Ingredient jars with labels in multiple languages. Modern apartment kitchen with travel souvenirs. Evening lighting with warm pendant lamps.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'worldfoodie_junhyuk');
+VALUES (gen_random_uuid(),
+        'homecook_fernanda',
+        '{"en": "Fernanda", "pt": "Fernanda"}'::jsonb,
+        'ENTHUSIASTIC',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'CONVERSATIONAL',
+        'pt-BR',
+        'BR',
+        'Bright Brazilian apartment kitchen with tropical touches. Rice, beans, and fresh fruits visible. Colorful dishware and practical layout. Warm humid light filtered through plants. Young woman in São Paulo preparing comforting Brazilian everyday meals.',
+        true,
+        NOW(),
+        NOW());
 
--- English Bot Personas
-INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'chef_marcus_stone',
-       '{"en": "Chef Marcus Stone", "ko": "마커스 스톤 셰프"}'::jsonb,
-       'PROFESSIONAL',
-       'PROFESSIONAL',
-       'FARM_TO_TABLE',
-       'TECHNICAL',
-       'en-US',
-       'US',
-       'Rustic American farm kitchen with exposed brick and reclaimed wood. Professional range and copper cookware. Fresh herbs in window boxes. Cast iron skillets and wooden cutting boards. Farmhouse sink. Warm tungsten lighting. Fresh produce from farmers market visible.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'chef_marcus_stone');
+-- ============================================================================
+-- RUSSIAN (ru-RU) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'broke_college_cook',
-       '{"en": "Broke College Cook", "ko": "가난한 대학생 요리사"}'::jsonb,
-       'CASUAL',
-       'BEGINNER',
-       'BUDGET',
-       'SIMPLE',
-       'en-US',
-       'US',
-       'Tiny dorm room or shared apartment kitchen. Microwave, hot plate, and mini fridge. Paper plates and plastic utensils. Ramen cups stacked in corner. Pizza boxes in background. Harsh overhead lighting. Messy but functional. Budget grocery store items visible.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'broke_college_cook');
+VALUES (gen_random_uuid(),
+        'homecook_natasha',
+        '{"en": "Natasha", "ru": "Наташа"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'BUDGET',
+        'CONVERSATIONAL',
+        'ru-RU',
+        'RU',
+        'Cozy Russian kitchen with traditional and modern elements. Samovar as decoration, practical cookware for soups and stews. Preserved vegetables and pickles in jars. Warm interior lighting against cold outside. Young married woman preparing hearty Russian home meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- GREEK (el-GR) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'fitfamilyfoods',
-       '{"en": "Fit Family Foods", "ko": "핏 패밀리 푸드"}'::jsonb,
-       'MOTIVATIONAL',
-       'INTERMEDIATE',
-       'HEALTHY',
-       'CONVERSATIONAL',
-       'en-US',
-       'US',
-       'Modern American suburban kitchen with granite counters. Meal prep containers organized in fridge. Protein powder and supplements visible. Instant Pot and air fryer prominent. Sports trophies and kids drawings on fridge. Bright LED lighting. Clean, organized meal prep station.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'fitfamilyfoods');
+VALUES (gen_random_uuid(),
+        'homecook_elena',
+        '{"en": "Elena", "el": "Ελένα"}'::jsonb,
+        'WARM',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'el-GR',
+        'GR',
+        'Sun-drenched Greek kitchen with white walls and blue accents. Fresh olive oil, feta cheese, and vegetables displayed. Terracotta pots and ceramic dishes. Mediterranean light streaming through open windows. Young woman passionate about healthy Greek Mediterranean cooking.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- THAI (th-TH) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'sweettoothemma',
-       '{"en": "Sweet Tooth Emma", "ko": "스위트 투스 엠마"}'::jsonb,
-       'ENTHUSIASTIC',
-       'INTERMEDIATE',
-       'BAKING',
-       'CONVERSATIONAL',
-       'en-US',
-       'US',
-       'Pinterest-worthy American baking kitchen with white subway tile backsplash. KitchenAid stand mixer in pastel color. Marble countertops dusted with flour. Cupcake liners and sprinkles organized in jars. Vintage cake stands displayed. Soft natural light with sheer curtains.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'sweettoothemma');
+VALUES (gen_random_uuid(),
+        'homecook_ploy',
+        '{"en": "Ploy", "th": "พลอย"}'::jsonb,
+        'ENTHUSIASTIC',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'SIMPLE',
+        'th-TH',
+        'TH',
+        'Compact Thai kitchen with powerful burner for wok cooking. Fresh herbs like Thai basil and lemongrass in abundance. Mortar and pestle for curry paste. Fish sauce and palm sugar essentials visible. Young woman in Bangkok preparing aromatic Thai home dishes.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- VIETNAMESE (vi-VN) - 1 base
+-- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
-SELECT gen_random_uuid(),
-       'globaleatsalex',
-       '{"en": "Global Eats Alex", "ko": "글로벌 이츠 알렉스"}'::jsonb,
-       'EDUCATIONAL',
-       'INTERMEDIATE',
-       'INTERNATIONAL',
-       'TECHNICAL',
-       'en-US',
-       'US',
-       'Urban loft kitchen with exposed ductwork. Professional wok burner and tandoor oven. Spice rack with world cuisines. Ethnic ingredients and imported goods. Travel photos and cookbooks from various countries. Industrial pendant lighting. Multi-cultural cooking setup.',
-       true,
-       NOW(),
-       NOW()
-WHERE NOT EXISTS (SELECT 1 FROM bot_personas WHERE name = 'globaleatsalex');
+VALUES (gen_random_uuid(),
+        'homecook_linh',
+        '{"en": "Linh", "vi": "Linh"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'vi-VN',
+        'VN',
+        'Fresh Vietnamese kitchen with abundance of herbs and vegetables. Fish sauce and fresh lime always ready. Pho pot and rice paper for spring rolls. Bright tropical light. Young woman in Ho Chi Minh City preparing fresh, light Vietnamese home cooking.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- HINDI (hi-IN) - 1 base
+-- ============================================================================
+
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_priya',
+        '{"en": "Priya", "hi": "प्रिया"}'::jsonb,
+        'WARM',
+        'INTERMEDIATE',
+        'VEGETARIAN',
+        'CONVERSATIONAL',
+        'hi-IN',
+        'IN',
+        'Colorful Indian kitchen with spice box (masala dabba) and pressure cooker essentials. Fresh vegetables, lentils, and ghee visible. Brass and stainless steel utensils. Warm light. Young married woman preparing nutritious vegetarian Indian home meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- ARABIC (ar-SA) - 1 base + 1 extra = 2 total
+-- ============================================================================
+
+-- Base Arabic persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_fatima',
+        '{"en": "Fatima", "ar": "فاطمة"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'CONVERSATIONAL',
+        'ar-SA',
+        'SA',
+        'Elegant Arabian kitchen with modern amenities and traditional touches. Arabic coffee pot (dallah) displayed. Dates and spices like cardamom and saffron visible. Rice cooker and essential cooking equipment. Young woman preparing everyday Arabian home meals.',
+        true,
+        NOW(),
+        NOW());
+
+-- Extra Arabic persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'mezze_layla',
+        '{"en": "Layla", "ar": "ليلى"}'::jsonb,
+        'ENTHUSIASTIC',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'ar-SA',
+        'SA',
+        'Spacious Middle Eastern kitchen with variety of mezze preparation visible. Hummus, falafel ingredients, and fresh pita. Beautiful ceramic bowls and serving platters. Warm hospitality atmosphere. Married woman who loves sharing healthy Middle Eastern spreads.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- TURKISH (tr-TR) - 1 base
+-- ============================================================================
+
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_zeynep',
+        '{"en": "Zeynep", "tr": "Zeynep"}'::jsonb,
+        'WARM',
+        'INTERMEDIATE',
+        'HEALTHY',
+        'CONVERSATIONAL',
+        'tr-TR',
+        'TR',
+        'Welcoming Turkish kitchen with copper pots and traditional ceramics. Turkish tea set visible. Fresh vegetables and olive oil essentials. Variety of spices and dried herbs. Warm Anatolian atmosphere. Young woman preparing flavorful, healthy Turkish home dishes.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- DUTCH (nl-NL) - 1 base
+-- ============================================================================
+
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_emma',
+        '{"en": "Emma", "nl": "Emma"}'::jsonb,
+        'CASUAL',
+        'HOME_COOK',
+        'BUDGET',
+        'SIMPLE',
+        'nl-NL',
+        'NL',
+        'Practical Dutch kitchen with clean Scandinavian-inspired design. Fresh bread, cheese, and local vegetables. Bicycle visible through the window. Efficient space with quality basics. Young woman in Amsterdam preparing simple, economical Dutch home cooking.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- POLISH (pl-PL) - 1 base
+-- ============================================================================
+
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_kasia',
+        '{"en": "Kasia", "pl": "Kasia"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'BUDGET',
+        'CONVERSATIONAL',
+        'pl-PL',
+        'PL',
+        'Cozy Polish kitchen with traditional elements and modern appliances. Ingredients for pierogi and soups ready. Fresh mushrooms and root vegetables. Warm, homey atmosphere. Young married woman preparing comforting Polish home meals on a budget.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- INDONESIAN (id-ID) - 1 base + 1 extra = 2 total
+-- ============================================================================
+
+-- Base Indonesian persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_sari',
+        '{"en": "Sari", "id": "Sari"}'::jsonb,
+        'WARM',
+        'HOME_COOK',
+        'QUICK_MEALS',
+        'SIMPLE',
+        'id-ID',
+        'ID',
+        'Bright Indonesian kitchen with essential spices and sambal ready. Rice cooker and wok for everyday cooking. Fresh tempeh and tofu visible. Tropical warmth in the atmosphere. Young woman in Jakarta preparing flavorful Indonesian home dishes.',
+        true,
+        NOW(),
+        NOW());
+
+-- Extra Indonesian persona
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'spicy_dewi',
+        '{"en": "Dewi", "id": "Dewi"}'::jsonb,
+        'ENTHUSIASTIC',
+        'INTERMEDIATE',
+        'INTERNATIONAL',
+        'CONVERSATIONAL',
+        'id-ID',
+        'ID',
+        'Vibrant Indonesian kitchen with extensive spice collection. Mortar and pestle for fresh sambal. Ingredients from various Indonesian regions - Padang, Javanese, Balinese. Married woman passionate about exploring diverse Indonesian regional cuisines.',
+        true,
+        NOW(),
+        NOW());
+
+-- ============================================================================
+-- SWEDISH (sv-SE) - 1 base
+-- ============================================================================
+
+INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
+VALUES (gen_random_uuid(),
+        'homecook_astrid',
+        '{"en": "Astrid", "sv": "Astrid"}'::jsonb,
+        'CASUAL',
+        'HOME_COOK',
+        'HEALTHY',
+        'SIMPLE',
+        'sv-SE',
+        'SE',
+        'Minimalist Swedish kitchen with clean Scandinavian design. Natural wood and white surfaces. Fresh fish, root vegetables, and rye bread visible. Soft northern light through large windows. Young woman preparing simple, healthy Swedish home meals.',
+        true,
+        NOW(),
+        NOW());
