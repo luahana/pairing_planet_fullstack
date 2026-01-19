@@ -72,10 +72,10 @@ function LoginContent() {
       <div className="max-w-md w-full">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-bold">
-              <span className="text-[var(--primary)]">Pairing</span>
-              <span className="text-[var(--secondary)]">Planet</span>
+          <Link href="/" className="inline-flex items-center justify-center gap-2">
+            <img src="/logo-icon.svg" alt="" className="w-10 h-10" />
+            <h1 className="text-3xl font-bold text-[var(--text-logo)]">
+              Cookstemma
             </h1>
           </Link>
           <p className="text-[var(--text-secondary)] mt-2">
@@ -115,7 +115,7 @@ function LoginContent() {
             <button
               onClick={() => handleSignIn('google')}
               disabled={isLoading || !isFirebaseConfigured}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-[var(--border)] rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white dark:bg-black border border-[var(--border)] rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path

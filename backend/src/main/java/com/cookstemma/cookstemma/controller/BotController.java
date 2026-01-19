@@ -1,8 +1,10 @@
 package com.cookstemma.cookstemma.controller;
 
 import com.cookstemma.cookstemma.domain.entity.bot.BotCreatedFood;
+import com.cookstemma.cookstemma.dto.bot.BotPersonaDto;
 import com.cookstemma.cookstemma.repository.bot.BotCreatedFoodRepository;
 import com.cookstemma.cookstemma.security.UserPrincipal;
+import com.cookstemma.cookstemma.service.BotPersonaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +23,16 @@ import java.util.UUID;
 public class BotController {
 
     private final BotCreatedFoodRepository botCreatedFoodRepository;
+    private final BotPersonaService botPersonaService;
+
+    /**
+     * Get all active bot personas.
+     * Public endpoint - no authentication required.
+     */
+    @GetMapping("/personas")
+    public ResponseEntity<List<BotPersonaDto>> getAllActivePersonas() {
+        return ResponseEntity.ok(botPersonaService.getAllActivePersonas());
+    }
 
     /**
      * Get list of food names this bot has already created recipes for.

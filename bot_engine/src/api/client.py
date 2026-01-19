@@ -17,6 +17,7 @@ from ..config import get_settings
 from ..personas import BotPersona
 from .models import (
     AuthResponse,
+    BotPersonaResponse,
     CreateLogRequest,
     CreateRecipeRequest,
     ImageUploadResponse,
@@ -193,6 +194,44 @@ class CookstemmaClient:
 
         return auth
 
+    async def login_by_persona(self, persona_name: str) -> AuthResponse:
+        """Login as a bot persona, auto-creating user if needed.
+
+        This uses the internal secret to authenticate and will automatically
+        create the bot user if it doesn't exist yet.
+
+        Args:
+            persona_name: The persona name (e.g., "chef_park_soojin")
+
+        Returns:
+            AuthResponse with tokens and user info
+        """
+        settings = get_settings()
+        if not settings.bot_internal_secret:
+            raise ValueError("BOT_INTERNAL_SECRET not configured")
+
+        response = await self._request(
+            "POST",
+            "/auth/bot-login-by-persona",
+            json={"personaName": persona_name},
+            headers={"X-Bot-Internal-Secret": settings.bot_internal_secret},
+            auth=False,
+        )
+        data = response.json()
+        auth = AuthResponse(**data)
+
+        self._access_token = auth.access_token
+        self._refresh_token = auth.refresh_token
+        self._user_public_id = auth.user_public_id
+
+        logger.info(
+            "bot_authenticated_by_persona",
+            user_id=auth.user_public_id,
+            username=auth.username,
+            persona=auth.persona_name,
+        )
+        return auth
+
     # ==================== Images ====================
 
     async def upload_image(self, image_path: Path) -> ImageUploadResponse:
@@ -307,6 +346,16 @@ class CookstemmaClient:
         )
         data = response.json()
         return data.get("exists", False)
+
+    # ==================== Bot Personas ====================
+
+    async def get_all_active_personas(self) -> List[BotPersonaResponse]:
+        """Get all active bot personas from backend.
+
+        This is a public endpoint - no authentication required.
+        """
+        response = await self._request("GET", "/bot/personas", auth=False)
+        return [BotPersonaResponse(**p) for p in response.json()]
 
     # ==================== Log Posts ====================
 

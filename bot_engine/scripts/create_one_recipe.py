@@ -6,16 +6,19 @@ complete with cover images generated via OpenAI DALL-E.
 
 Usage:
     cd bot_engine
-    python scripts/create_one_recipe.py
+    python scripts/create_one_recipe.py                      # Random persona
+    python scripts/create_one_recipe.py --persona chef_park_soojin  # Specific persona
 
 Prerequisites:
     - Backend running at http://localhost:4000
     - OPENAI_API_KEY configured in .env
-    - Bot API keys configured in .env
+    - BOT_INTERNAL_SECRET configured in .env (matches backend)
 """
 
+import argparse
 import asyncio
 import os
+import random
 import sys
 
 # Add parent directory to path for imports
@@ -32,8 +35,35 @@ from src.orchestrator.recipe_pipeline import RecipePipeline
 from src.personas import get_persona_registry
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Create a single AI-generated recipe from a bot persona"
+    )
+    parser.add_argument(
+        "--persona",
+        type=str,
+        default=None,
+        help="Persona name to use (e.g., chef_park_soojin). If not specified, picks random.",
+    )
+    parser.add_argument(
+        "--food",
+        type=str,
+        default=None,
+        help="Food name to create recipe for. If not specified, AI suggests one.",
+    )
+    parser.add_argument(
+        "--no-images",
+        action="store_true",
+        help="Skip image generation (faster for testing)",
+    )
+    return parser.parse_args()
+
+
 async def main() -> None:
     """Create a single AI-generated recipe with images."""
+    args = parse_args()
+
     # Load settings
     settings = get_settings()
 
@@ -44,38 +74,53 @@ async def main() -> None:
         print("  OPENAI_API_KEY=sk-your-key-here")
         sys.exit(1)
 
-    # 1. Get persona
-    registry = get_persona_registry()
-    persona = registry.get("chef_park_soojin")  # Korean professional chef
-
-    if not persona:
-        print("Error: Persona 'chef_park_soojin' not found")
+    # Check for internal secret
+    if not settings.bot_internal_secret or settings.bot_internal_secret == "":
+        print("Error: BOT_INTERNAL_SECRET not configured in .env")
         sys.exit(1)
 
-    print(f"Using persona: {persona.display_name.get('en', persona.name)}")
-
-    # 2. Setup clients
+    # Setup clients
     api_client = CookstemmaClient()
     text_gen = TextGenerator()
     image_gen = ImageGenerator()
 
     try:
-        # 3. Authenticate with bot API key
-        api_key = os.getenv(
-            "BOT_API_KEY_CHEF_PARK_SOOJIN",
-            os.getenv("BOT_API_KEY", ""),
-        )
+        # Initialize persona registry from API
+        print("Fetching personas from backend...")
+        registry = get_persona_registry()
+        await registry.initialize(api_client)
 
-        if not api_key:
-            print("Error: Bot API key not configured")
-            print("Set BOT_API_KEY_CHEF_PARK_SOOJIN or BOT_API_KEY in .env")
+        all_personas = registry.get_all()
+        if not all_personas:
+            print("Error: No personas found in backend")
             sys.exit(1)
 
-        print("Authenticating with backend...")
-        await api_client.login_bot(api_key=api_key)
-        print("Authenticated successfully!")
+        print(f"Found {len(all_personas)} personas")
 
-        # 4. Create pipeline and generate recipe
+        # Select persona
+        if args.persona:
+            persona = registry.get(args.persona)
+            if not persona:
+                print(f"Error: Persona '{args.persona}' not found")
+                print("Available personas:")
+                for p in all_personas:
+                    print(f"  - {p.name}")
+                sys.exit(1)
+        else:
+            persona = random.choice(all_personas)
+
+        print(f"\nUsing persona: {persona.name} ({persona.display_name.get('en', persona.name)})")
+
+        # Authenticate with persona (auto-creates user if needed)
+        print("Authenticating (will create user if needed)...")
+        auth = await api_client.login_by_persona(persona.name)
+        print(f"Authenticated as: {auth.username}")
+
+        # Update persona with auth info
+        persona.user_public_id = auth.user_public_id
+        persona.persona_public_id = auth.persona_public_id
+
+        # Create pipeline
         pipeline = RecipePipeline(api_client, text_gen, image_gen)
 
         # Get existing foods to exclude from suggestions
@@ -83,39 +128,50 @@ async def main() -> None:
         existing_foods = await api_client.get_created_foods()
         print(f"Bot has created {len(existing_foods)} foods already")
 
-        # Ask AI to suggest a food name
-        print("Asking AI for food suggestion...")
-        suggestions = await text_gen.suggest_food_names(
-            persona=persona,
-            count=1,
-            exclude=existing_foods,
-        )
+        # Determine food name
+        if args.food:
+            food_name = args.food
+            print(f"Using specified food: {food_name}")
+        else:
+            # Ask AI to suggest a food name
+            print("Asking AI for food suggestion...")
+            suggestions = await text_gen.suggest_food_names(
+                persona=persona,
+                count=1,
+                exclude=existing_foods,
+            )
 
-        if not suggestions:
-            print("Error: AI couldn't suggest any new foods")
-            sys.exit(1)
+            if not suggestions:
+                print("Error: AI couldn't suggest any new foods")
+                sys.exit(1)
 
-        # Filter out any that somehow still match existing (case-insensitive)
-        existing_lower = {f.lower() for f in existing_foods}
-        filtered = [f for f in suggestions if f.lower() not in existing_lower]
+            # Filter out any that somehow still match existing (case-insensitive)
+            existing_lower = {f.lower() for f in existing_foods}
+            filtered = [f for f in suggestions if f.lower() not in existing_lower]
 
-        if not filtered:
-            print("Error: All suggested foods already exist")
-            sys.exit(1)
+            if not filtered:
+                print("Error: All suggested foods already exist")
+                sys.exit(1)
 
-        food_name = filtered[0]
-        print(f"\nAI chose: {food_name}")
-        print("This may take a minute (generating text + 1 cover image)...")
+            food_name = filtered[0]
+            print(f"AI chose: {food_name}")
+
+        # Generate recipe
+        generate_images = not args.no_images
+        if generate_images:
+            print("\nThis may take a minute (generating text + 1 cover image)...")
+        else:
+            print("\nGenerating recipe (no images)...")
 
         recipe = await pipeline.generate_original_recipe(
             persona=persona,
             food_name=food_name,
-            generate_images=True,
-            cover_image_count=1,
+            generate_images=generate_images,
+            cover_image_count=1 if generate_images else 0,
             generate_step_images=False,
         )
 
-        # 5. Print results
+        # Print results
         print("\n" + "=" * 50)
         print("Recipe created successfully!")
         print("=" * 50)

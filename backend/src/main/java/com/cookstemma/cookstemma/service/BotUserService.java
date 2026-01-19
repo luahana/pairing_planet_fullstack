@@ -205,4 +205,82 @@ public class BotUserService {
 
         return user;
     }
+
+    /**
+     * Finds an existing bot user for a persona, or creates one if it doesn't exist.
+     * Used for auto-creation flow when logging in by persona name.
+     */
+    @Transactional
+    public User findOrCreateBotUser(BotPersona persona) {
+        // Check if a bot user already exists for this persona
+        return userRepository.findByPersona(persona)
+                .orElseGet(() -> createBotUserForPersona(persona));
+    }
+
+    /**
+     * Creates a new bot user for a persona with an auto-generated username.
+     */
+    private User createBotUserForPersona(BotPersona persona) {
+        // Generate username from persona name (e.g., "chef_park_soojin" -> "bot_chef_park_soojin")
+        String baseUsername = "bot_" + persona.getName().toLowerCase().replace("-", "_");
+        String username = baseUsername;
+
+        // Ensure uniqueness (unlikely but handle collision)
+        int suffix = 1;
+        while (userRepository.existsByUsername(username)) {
+            username = baseUsername + "_" + suffix++;
+        }
+
+        User botUser = User.builder()
+                .username(username)
+                .role(Role.BOT)
+                .status(AccountStatus.ACTIVE)
+                .locale(persona.getLocale())
+                .defaultCookingStyle(persona.getCookingStyle())
+                .isBot(true)
+                .persona(persona)
+                .build();
+
+        userRepository.save(botUser);
+
+        log.info("Auto-created bot user: username={}, persona={}",
+                username, persona.getName());
+
+        return botUser;
+    }
+
+    /**
+     * Finds or creates an API key for a bot user.
+     * Used for auto-creation flow.
+     */
+    @Transactional
+    public BotApiKey findOrCreateApiKey(User botUser) {
+        // Check for existing active key
+        return botApiKeyRepository.findByBotUserAndIsActiveTrue(botUser)
+                .stream()
+                .findFirst()
+                .orElseGet(() -> createApiKeyForBotUser(botUser));
+    }
+
+    /**
+     * Creates an API key for a bot user.
+     */
+    private BotApiKey createApiKeyForBotUser(User botUser) {
+        BotAuthService.ApiKeyPair keyPair = botAuthService.generateApiKey();
+
+        BotApiKey apiKey = BotApiKey.builder()
+                .keyPrefix(keyPair.keyPrefix())
+                .keyHash(keyPair.keyHash())
+                .botUser(botUser)
+                .name("Auto-generated Key")
+                .isActive(true)
+                .build();
+
+        botApiKeyRepository.save(apiKey);
+
+        log.info("Auto-created API key for bot: user={}, keyPrefix={}",
+                botUser.getUsername(), keyPair.keyPrefix());
+
+        return apiKey;
+    }
 }

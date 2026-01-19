@@ -6,9 +6,11 @@ import com.cookstemma.cookstemma.domain.entity.user.User;
 import com.cookstemma.cookstemma.dto.bot.BotLoginRequestDto;
 import com.cookstemma.cookstemma.dto.bot.BotLoginResponseDto;
 import com.cookstemma.cookstemma.repository.bot.BotApiKeyRepository;
+import com.cookstemma.cookstemma.repository.bot.BotPersonaRepository;
 import com.cookstemma.cookstemma.security.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +24,9 @@ import java.util.HexFormat;
 
 /**
  * Service for bot API key authentication.
- * Handles login via API key and token generation.
+ * Handles login via API key, persona-based login (with auto-creation), and token generation.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BotAuthService {
 
@@ -33,7 +34,29 @@ public class BotAuthService {
     private static final int API_KEY_RANDOM_LENGTH = 32; // 256 bits of entropy
 
     private final BotApiKeyRepository botApiKeyRepository;
+    private final BotPersonaRepository botPersonaRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final String botInternalSecret;
+
+    // Circular dependency: BotUserService depends on BotAuthService for generateApiKey()
+    // Use setter injection for optional dependency
+    private BotUserService botUserService;
+
+    public BotAuthService(
+            BotApiKeyRepository botApiKeyRepository,
+            BotPersonaRepository botPersonaRepository,
+            JwtTokenProvider jwtTokenProvider,
+            @Value("${bot.internal-secret}") String botInternalSecret) {
+        this.botApiKeyRepository = botApiKeyRepository;
+        this.botPersonaRepository = botPersonaRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.botInternalSecret = botInternalSecret;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setBotUserService(@org.springframework.context.annotation.Lazy BotUserService botUserService) {
+        this.botUserService = botUserService;
+    }
 
     /**
      * Authenticates a bot using its API key and returns JWT tokens.
@@ -125,4 +148,61 @@ public class BotAuthService {
      * Data class for generated API key components.
      */
     public record ApiKeyPair(String fullKey, String keyPrefix, String keyHash) {}
+
+    /**
+     * Validates the internal secret for bot operations.
+     * Throws AccessDeniedException if the secret is invalid.
+     */
+    public void validateInternalSecret(String secret) {
+        if (secret == null || !secret.equals(botInternalSecret)) {
+            throw new AccessDeniedException("Invalid bot internal secret");
+        }
+    }
+
+    /**
+     * Authenticates a bot by persona name, auto-creating the user if needed.
+     * This is used for internal bot scripts that need to authenticate without pre-created API keys.
+     *
+     * @param personaName The persona name to authenticate as
+     * @return JWT tokens and user info
+     */
+    @Transactional
+    public BotLoginResponseDto loginByPersonaName(String personaName) {
+        // 1. Find the persona
+        BotPersona persona = botPersonaRepository.findByName(personaName)
+                .orElseThrow(() -> new IllegalArgumentException("Persona not found: " + personaName));
+
+        if (!persona.isActive()) {
+            throw new IllegalArgumentException("Persona is not active: " + personaName);
+        }
+
+        // 2. Find or create bot user for this persona
+        User botUser = botUserService.findOrCreateBotUser(persona);
+
+        // 3. Find or create API key (needed for consistent behavior, even though we're bypassing it)
+        botUserService.findOrCreateApiKey(botUser);
+
+        // 4. Generate tokens
+        String accessToken = jwtTokenProvider.createAccessToken(
+                botUser.getPublicId(),
+                botUser.getRole().name()
+        );
+        String refreshToken = jwtTokenProvider.createRefreshToken(botUser.getPublicId());
+
+        // 5. Update bot user
+        botUser.setAppRefreshToken(refreshToken);
+        botUser.setLastLoginAt(Instant.now());
+
+        log.info("Bot login by persona successful: user={}, persona={}",
+                botUser.getUsername(), persona.getName());
+
+        return new BotLoginResponseDto(
+                accessToken,
+                refreshToken,
+                botUser.getPublicId(),
+                botUser.getUsername(),
+                persona.getPublicId(),
+                persona.getName()
+        );
+    }
 }

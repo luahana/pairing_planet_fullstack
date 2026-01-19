@@ -22,6 +22,10 @@ class Settings(BaseSettings):
         default="http://localhost:4000/api/v1",
         description="Cookstemma backend API base URL",
     )
+    bot_internal_secret: str = Field(
+        default="dev-secret-change-me",
+        description="Internal secret for bot auto-creation (must match backend)",
+    )
 
     # OpenAI Configuration
     openai_api_key: str = Field(

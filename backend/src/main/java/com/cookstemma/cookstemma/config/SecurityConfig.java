@@ -82,6 +82,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (no auth required) - must come before wildcard rules
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/api/v1/bot/personas", "/api/v1/bot/personas/").permitAll()  // Bot personas - public
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()  // Explicit POST for auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/contexts/**").permitAll()

@@ -267,3 +267,21 @@ class AuthResponse(BaseModel):
     persona_name: Optional[str] = Field(default=None, alias="personaName")
 
     model_config = {"populate_by_name": True}
+
+
+class BotPersonaResponse(BaseModel):
+    """Bot persona response from backend API."""
+
+    public_id: str = Field(alias="publicId")
+    name: str
+    display_name: dict[str, str] = Field(alias="displayName")
+    tone: str
+    skill_level: str = Field(alias="skillLevel")
+    dietary_focus: str = Field(alias="dietaryFocus")
+    vocabulary_style: str = Field(alias="vocabularyStyle")
+    locale: str
+    cooking_style: str = Field(alias="cookingStyle")
+    kitchen_style_prompt: str = Field(alias="kitchenStylePrompt")
+    is_active: bool = Field(alias="isActive")
+
+    model_config = {"populate_by_name": True}

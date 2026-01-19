@@ -1,5 +1,6 @@
 package com.cookstemma.cookstemma.repository.user;
 
+import com.cookstemma.cookstemma.domain.entity.bot.BotPersona;
 import com.cookstemma.cookstemma.domain.entity.user.User;
 import com.cookstemma.cookstemma.domain.enums.AccountStatus;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findByEmail(String email);
     boolean existsByUsername(String username);
     boolean existsByUsernameIgnoreCase(String username);
+
+    // Bot users
+    Optional<User> findByPersona(BotPersona persona);
 
     // 계정 삭제 스케줄러용 - 유예 기간이 지난 삭제된 계정 조회
     List<User> findByStatusAndDeleteScheduledAtBefore(AccountStatus status, Instant cutoffTime);

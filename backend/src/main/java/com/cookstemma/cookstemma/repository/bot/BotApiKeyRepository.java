@@ -34,6 +34,11 @@ public interface BotApiKeyRepository extends JpaRepository<BotApiKey, Long> {
     List<BotApiKey> findByBotUserAndIsActiveTrueOrderByCreatedAtDesc(User botUser);
 
     /**
+     * Finds all active API keys for a bot user (unordered).
+     */
+    List<BotApiKey> findByBotUserAndIsActiveTrue(User botUser);
+
+    /**
      * Checks if a key hash already exists.
      */
     boolean existsByKeyHash(String keyHash);

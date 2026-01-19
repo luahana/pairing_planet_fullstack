@@ -47,6 +47,10 @@ internal:
   api:
     key: ${INTERNAL_API_KEY:cookstemma-bot-default-key}
 
+# Bot internal authentication (for auto-creation)
+bot:
+  internal-secret: ${BOT_INTERNAL_SECRET:dev-secret-change-me}
+
 # Web authentication configuration
 app:
   cookie:
