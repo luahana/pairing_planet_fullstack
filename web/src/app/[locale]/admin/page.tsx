@@ -155,6 +155,19 @@ export default function AdminPage() {
 }
 
 function SuggestedFoodsTab() {
+  const format = useFormatter();
+  const formatDate = useCallback((dateString: string | null): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return format.dateTime(date, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }, [format]);
+
   const [data, setData] = useState<UserSuggestedFood[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -424,6 +437,19 @@ function SuggestedFoodsTab() {
 }
 
 function UsersTab({ currentUserPublicId }: { currentUserPublicId?: string }) {
+  const format = useFormatter();
+  const formatDate = useCallback((dateString: string | null): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return format.dateTime(date, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }, [format]);
+
   const [data, setData] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -719,6 +745,19 @@ function UsersTab({ currentUserPublicId }: { currentUserPublicId?: string }) {
 }
 
 function SuggestedIngredientsTab() {
+  const format = useFormatter();
+  const formatDate = useCallback((dateString: string | null): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return format.dateTime(date, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }, [format]);
+
   const [data, setData] = useState<UserSuggestedIngredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
