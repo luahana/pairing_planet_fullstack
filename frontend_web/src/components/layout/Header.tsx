@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
@@ -58,6 +58,7 @@ export function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const localeMenuRef = useRef<HTMLDivElement>(null);
   const measurementMenuRef = useRef<HTMLDivElement>(null);
+  const [isPending, startTransition] = useTransition();
 
   // Close mobile menu on route change
   const prevPathnameRef = useRef(pathname);
@@ -108,7 +109,9 @@ export function Header() {
   // Handle locale change
   const handleLocaleChange = (newLocale: Locale) => {
     setIsLocaleMenuOpen(false);
-    router.replace(pathname, { locale: newLocale });
+    startTransition(() => {
+      router.replace(pathname, { locale: newLocale });
+    });
   };
 
   // Handle measurement change
@@ -212,7 +215,8 @@ export function Header() {
                     setIsMeasurementMenuOpen(false);
                     setIsUserMenuOpen(false);
                   }}
-                  className="flex items-center gap-1 px-2 py-1.5 text-sm rounded-lg hover:bg-[var(--background)] transition-colors text-[var(--text-secondary)]"
+                  disabled={isPending}
+                  className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-lg hover:bg-[var(--background)] transition-colors text-[var(--text-secondary)] ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title={t('language')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -234,9 +238,10 @@ export function Header() {
                       <button
                         key={opt.value}
                         onClick={() => handleLocaleChange(opt.value)}
+                        disabled={isPending}
                         className={`w-full text-start px-3 py-2 text-sm hover:bg-[var(--background)] ${
                           opt.value === locale ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'text-[var(--text-primary)]'
-                        }`}
+                        } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         {opt.label}
                       </button>
@@ -543,7 +548,8 @@ export function Header() {
               <select
                 value={locale}
                 onChange={(e) => handleLocaleChange(e.target.value as Locale)}
-                className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:border-[var(--primary)]"
+                disabled={isPending}
+                className={`w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:border-[var(--primary)] ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {LOCALE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
