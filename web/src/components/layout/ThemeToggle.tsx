@@ -23,6 +23,7 @@ export function ThemeToggle({ onMenuToggle }: ThemeToggleProps) {
 
   // Prevent hydration mismatch by only rendering theme-specific content after mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: one-time mount flag for SSR hydration
     setMounted(true);
   }, []);
 
