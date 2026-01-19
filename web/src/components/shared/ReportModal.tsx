@@ -28,12 +28,20 @@ export function ReportModal({
   isSubmitting = false,
 }: ReportModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const prevIsOpenRef = useRef(false);
   const t = useTranslations('moderation');
   const tCommon = useTranslations('common');
   const [selectedReason, setSelectedReason] = useState<ReportReason | null>(
     null,
   );
   const [description, setDescription] = useState('');
+
+  // Reset state when modal opens (not in effect to avoid lint warning)
+  if (isOpen && !prevIsOpenRef.current) {
+    setSelectedReason(null);
+    setDescription('');
+  }
+  prevIsOpenRef.current = isOpen;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -43,9 +51,6 @@ export function ReportModal({
       dialog.showModal();
     } else {
       dialog.close();
-      // Reset state when closing
-      setSelectedReason(null);
-      setDescription('');
     }
   }, [isOpen]);
 
