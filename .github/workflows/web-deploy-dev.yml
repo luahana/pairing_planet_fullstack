@@ -1,8 +1,8 @@
-# Deploy Frontend Web to Dev Environment
+# Deploy Web to Dev Environment
 # Triggers on push to dev branch
 # Simple rolling update (no Blue/Green)
 
-name: Frontend Web Deploy to Dev
+name: Web Deploy to Dev
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
       - dev
     paths:
       - 'web/**'
-      - '.github/workflows/frontend-web-deploy-dev.yml'
+      - '.github/workflows/web-deploy-dev.yml'
   workflow_dispatch:  # Allow manual trigger
 
 env:
