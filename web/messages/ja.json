@@ -47,6 +47,28 @@
     "metric": "メートル法",
     "us": "米国式"
   },
+  "units": {
+    "ml": "ml",
+    "l": "L",
+    "tsp": "小さじ",
+    "tbsp": "大さじ",
+    "cup": "カップ",
+    "flOz": "fl oz",
+    "pint": "パイント",
+    "quart": "クォート",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "個",
+    "pinch": "少々",
+    "dash": "少量",
+    "toTaste": "適量",
+    "clove": "片",
+    "bunch": "束",
+    "can": "缶",
+    "package": "袋"
+  },
   "home": {
     "heroTitle": "あなたのレシピが、<highlight>進化する</highlight>",
     "heroSubtitle": "レシピを共有し、アレンジを作成し、料理の旅を記録しましょう。新しい味を発見するホームクックのコミュニティに参加しませんか。",
@@ -66,7 +88,8 @@
   "footer": {
     "explore": "探索",
     "legal": "法的情報",
-    "copyright": "All rights reserved."
+    "copyright": "All rights reserved.",
+    "description": "レシピを共有し、アレンジを作成し、料理の旅を記録しましょう"
   },
   "recipes": {
     "title": "レシピ",

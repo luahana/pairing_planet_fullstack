@@ -47,6 +47,28 @@
     "metric": "公制",
     "us": "美制"
   },
+  "units": {
+    "ml": "ml",
+    "l": "L",
+    "tsp": "茶匙",
+    "tbsp": "汤匙",
+    "cup": "杯",
+    "flOz": "fl oz",
+    "pint": "品脱",
+    "quart": "夸脱",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "个",
+    "pinch": "少许",
+    "dash": "少量",
+    "toTaste": "适量",
+    "clove": "瓣",
+    "bunch": "束",
+    "can": "罐",
+    "package": "包"
+  },
   "home": {
     "heroTitle": "你的食谱，<highlight>进化升级</highlight>",
     "heroSubtitle": "分享你的食谱，创建变体，记录你的烹饪之旅。加入家庭厨师社区，一起发现新美味。",
@@ -66,7 +88,8 @@
   "footer": {
     "explore": "探索",
     "legal": "法律信息",
-    "copyright": "版权所有。"
+    "copyright": "All rights reserved.",
+    "description": "分享食谱，创建变体，记录烹饪之旅"
   },
   "recipes": {
     "title": "食谱",

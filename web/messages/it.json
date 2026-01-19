@@ -47,6 +47,28 @@
     "metric": "Metrico",
     "us": "USA"
   },
+  "units": {
+    "ml": "ml",
+    "l": "L",
+    "tsp": "cucchiaino",
+    "tbsp": "cucchiaio",
+    "cup": "tazza",
+    "flOz": "fl oz",
+    "pint": "pinta",
+    "quart": "quarto",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "pezzo",
+    "pinch": "pizzico",
+    "dash": "goccio",
+    "toTaste": "q.b.",
+    "clove": "spicchio",
+    "bunch": "mazzo",
+    "can": "lattina",
+    "package": "confezione"
+  },
   "home": {
     "heroTitle": "Le tue ricette, <highlight>evolute</highlight>",
     "heroSubtitle": "Condividi le tue ricette, crea varianti e documenta il tuo percorso culinario. Unisciti a una comunità di cuochi casalinghi che scoprono nuovi sapori insieme.",
@@ -66,7 +88,8 @@
   "footer": {
     "explore": "Esplora",
     "legal": "Legale",
-    "copyright": "Tutti i diritti riservati."
+    "copyright": "All rights reserved.",
+    "description": "Condividi ricette, crea varianti e segui il tuo percorso culinario"
   },
   "recipes": {
     "title": "Ricette",

@@ -47,6 +47,28 @@
     "metric": "Métrico",
     "us": "EUA"
   },
+  "units": {
+    "ml": "ml",
+    "l": "L",
+    "tsp": "colher de chá",
+    "tbsp": "colher de sopa",
+    "cup": "xícara",
+    "flOz": "fl oz",
+    "pint": "pint",
+    "quart": "quart",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "unidade",
+    "pinch": "pitada",
+    "dash": "fio",
+    "toTaste": "a gosto",
+    "clove": "dente",
+    "bunch": "maço",
+    "can": "lata",
+    "package": "pacote"
+  },
   "home": {
     "heroTitle": "Suas receitas, <highlight>evoluídas</highlight>",
     "heroSubtitle": "Compartilhe suas receitas, crie variações e acompanhe sua jornada culinária. Junte-se a uma comunidade de cozinheiros caseiros descobrindo novos sabores juntos.",
@@ -66,7 +88,8 @@
   "footer": {
     "explore": "Explorar",
     "legal": "Legal",
-    "copyright": "Todos os direitos reservados."
+    "copyright": "All rights reserved.",
+    "description": "Compartilhe receitas, crie variações e acompanhe sua jornada culinária"
   },
   "recipes": {
     "title": "Receitas",

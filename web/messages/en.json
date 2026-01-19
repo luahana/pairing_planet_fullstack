@@ -47,6 +47,28 @@
     "metric": "Metric",
     "us": "US"
   },
+  "units": {
+    "ml": "ml",
+    "l": "L",
+    "tsp": "tsp",
+    "tbsp": "tbsp",
+    "cup": "cup",
+    "flOz": "fl oz",
+    "pint": "pint",
+    "quart": "quart",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "piece",
+    "pinch": "pinch",
+    "dash": "dash",
+    "toTaste": "to taste",
+    "clove": "clove",
+    "bunch": "bunch",
+    "can": "can",
+    "package": "package"
+  },
   "home": {
     "heroTitle": "Your Recipes, <highlight>Evolved</highlight>",
     "heroSubtitle": "Share your recipes, create variations, and track your cooking journey. Join a community of home cooks discovering new flavors together.",
@@ -66,7 +88,8 @@
   "footer": {
     "explore": "Explore",
     "legal": "Legal",
-    "copyright": "All rights reserved."
+    "copyright": "All rights reserved.",
+    "description": "Share recipes, create variations, and track your cooking journey"
   },
   "recipes": {
     "title": "Recipes",

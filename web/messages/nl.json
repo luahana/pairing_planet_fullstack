@@ -47,6 +47,28 @@
     "metric": "Metrisch",
     "us": "VS"
   },
+  "units": {
+    "ml": "ml",
+    "l": "L",
+    "tsp": "tl",
+    "tbsp": "el",
+    "cup": "kopje",
+    "flOz": "fl oz",
+    "pint": "pint",
+    "quart": "quart",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "stuk",
+    "pinch": "snufje",
+    "dash": "scheutje",
+    "toTaste": "naar smaak",
+    "clove": "teentje",
+    "bunch": "bosje",
+    "can": "blik",
+    "package": "pakje"
+  },
   "home": {
     "heroTitle": "Je recepten, <highlight>geëvolueerd</highlight>",
     "heroSubtitle": "Deel je recepten, maak variaties en volg je kookreis. Word lid van een community van thuiskoks die samen nieuwe smaken ontdekken.",
@@ -66,7 +88,8 @@
   "footer": {
     "explore": "Ontdekken",
     "legal": "Juridisch",
-    "copyright": "Alle rechten voorbehouden."
+    "copyright": "All rights reserved.",
+    "description": "Deel recepten, maak variaties en volg je kookreis"
   },
   "recipes": {
     "title": "Recepten",

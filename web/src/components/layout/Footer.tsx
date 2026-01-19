@@ -27,7 +27,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-[var(--text-secondary)] text-sm max-w-md">
-              {siteConfig.description}
+              {t('description')}
             </p>
           </div>
 

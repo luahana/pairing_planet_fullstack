@@ -47,6 +47,28 @@
     "metric": "Hệ mét",
     "us": "Mỹ"
   },
+  "units": {
+    "ml": "ml",
+    "l": "L",
+    "tsp": "muỗng cà phê",
+    "tbsp": "muỗng canh",
+    "cup": "cốc",
+    "flOz": "fl oz",
+    "pint": "pint",
+    "quart": "quart",
+    "g": "g",
+    "kg": "kg",
+    "oz": "oz",
+    "lb": "lb",
+    "piece": "cái",
+    "pinch": "nhúm",
+    "dash": "chút",
+    "toTaste": "vừa đủ",
+    "clove": "tép",
+    "bunch": "bó",
+    "can": "lon",
+    "package": "gói"
+  },
   "home": {
     "heroTitle": "Công thức của bạn, <highlight>tiến hóa</highlight>",
     "heroSubtitle": "Chia sẻ công thức, tạo biến thể và theo dõi hành trình nấu ăn. Tham gia cộng đồng đầu bếp tại gia khám phá hương vị mới cùng nhau.",
@@ -66,7 +88,8 @@
   "footer": {
     "explore": "Khám phá",
     "legal": "Pháp lý",
-    "copyright": "Bảo lưu mọi quyền."
+    "copyright": "All rights reserved.",
+    "description": "Chia sẻ công thức, tạo biến thể và theo dõi hành trình nấu ăn"
   },
   "recipes": {
     "title": "Công thức",
