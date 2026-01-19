@@ -47,7 +47,7 @@ file:
       root: INFO
       org.hibernate.SQL: INFO # 쿼리 로그 끔
       org.hibernate.type.descriptor.sql: INFO # 파라미터 바인딩 로그 끔
-      com.pairingplanet: INFO # 내 프로젝트 로그 레벨
+      com.cookstemma: INFO # 내 프로젝트 로그 레벨
 
   server:
     error:

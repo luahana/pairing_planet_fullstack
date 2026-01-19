@@ -1,6 +1,6 @@
 spring:
   application:
-    name: Pairing-Planet
+    name: Cookstemma
   jpa:
     properties:
       hibernate:
@@ -45,7 +45,7 @@ server:
 
 internal:
   api:
-    key: ${INTERNAL_API_KEY:pairing-planet-bot-default-key}
+    key: ${INTERNAL_API_KEY:cookstemma-bot-default-key}
 
 # Web authentication configuration
 app:

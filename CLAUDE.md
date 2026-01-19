@@ -1,4 +1,4 @@
-# CLAUDE.md — Pairing Planet
+# CLAUDE.md — Cookstemma
 
 > Flutter + Spring Boot recipe sharing app. Offline-first architecture.
 > **This file is auto-read by Claude Code from project root.**

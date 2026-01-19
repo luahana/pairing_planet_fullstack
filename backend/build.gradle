@@ -5,9 +5,9 @@ plugins {
 	id 'io.sentry.jvm.gradle' version '5.12.2'
 }
 
-group = 'com.pairingplanet'
+group = 'com.cookstemma'
 version = '0.0.1-SNAPSHOT'
-description = 'pairing planet backend - monorepo'
+description = 'cookstemma backend - monorepo'
 
 java {
 	toolchain {

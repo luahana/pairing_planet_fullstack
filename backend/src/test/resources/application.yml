@@ -47,7 +47,7 @@ file:
 logging:
   level:
     root: WARN
-    com.pairingplanet: DEBUG
+    com.cookstemma: DEBUG
     org.testcontainers: INFO
 
 internal:

@@ -43,21 +43,21 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: '10.0.2.2',
         port: '9000',
-        pathname: '/pairing-planet-local/**',
+        pathname: '/cookstemma-local/**',
       },
       {
         // Local development MinIO (localhost)
         protocol: 'http',
         hostname: 'localhost',
         port: '9000',
-        pathname: '/pairing-planet-local/**',
+        pathname: '/cookstemma-local/**',
       },
       {
         // Local development MinIO (127.0.0.1)
         protocol: 'http',
         hostname: '127.0.0.1',
         port: '9000',
-        pathname: '/pairing-planet-local/**',
+        pathname: '/cookstemma-local/**',
       },
       {
         // Production S3/CloudFront - update with actual domain
