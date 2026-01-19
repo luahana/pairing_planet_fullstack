@@ -1,7 +1,7 @@
 """
 Image Processing Lambda Handler
 Generates image variants (resized JPEG/WebP) from original uploads.
-Triggered by Step Functions for parallel processing.
+Architecture: S3 upload → EventBridge → Orchestrator Lambda → SQS → Processor Lambda
 """
 import json
 import logging
@@ -20,7 +20,11 @@ logger.setLevel(logging.INFO)
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
+sqs_client = boto3.client('sqs')
 secrets_client = boto3.client('secretsmanager')
+
+# SQS Queue URL from environment variable
+SQS_QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
 
 # Cache for secrets
 _secrets_cache: dict[str, Any] = {}
@@ -150,20 +154,33 @@ def process_single_variant(
 def handler(event: dict, context) -> dict:
     """
     Lambda handler for image variant generation.
+    Triggered by SQS messages.
 
-    Event structure (from Step Functions):
+    Event structure (from SQS):
+    {
+        "Records": [{
+            "body": "{\"bucket\": \"my-bucket\", \"key\": \"images/abc.jpg\", ...}"
+        }]
+    }
+
+    Message body structure:
     {
         "bucket": "my-bucket",
         "key": "images/original/abc123.jpg",
-        "variant": "LARGE_1200",  // or "ALL" for all variants
-        "format": "JPEG",         // or "WEBP" or "ALL"
-        "image_id": 123,          // Database image ID (optional)
-        "public_id": "uuid"       // Public ID for tracking
+        "variant": "LARGE_1200",
+        "format": "JPEG",
+        "image_id": 123,
+        "public_id": "uuid"
     }
-
-    For Step Functions parallel processing, each state passes specific variant+format.
     """
     logger.info(f"Image processor invoked with event: {json.dumps(event)}")
+
+    # Handle SQS event format
+    if 'Records' in event:
+        # SQS trigger - parse message body
+        record = event['Records'][0]
+        message_body = json.loads(record['body'])
+        event = message_body
 
     try:
         bucket = event['bucket']
@@ -236,36 +253,38 @@ def handler(event: dict, context) -> dict:
 
 def orchestrator_handler(event: dict, context) -> dict:
     """
-    Orchestrator handler - receives S3 event and prepares work for Step Functions.
+    Orchestrator handler - receives S3 event and sends tasks to SQS.
 
-    Event structure (from S3 via EventBridge):
+    Event structure (from EventBridge with input transformer):
     {
-        "detail": {
-            "bucket": {"name": "my-bucket"},
-            "object": {"key": "images/original/abc123.jpg"}
-        }
+        "bucket": "my-bucket",
+        "key": "images/original/abc123.jpg",
+        "request_id": "uuid"
     }
 
-    Returns tasks for Step Functions to process in parallel.
+    Sends one SQS message per variant to be processed.
     """
     logger.info(f"Orchestrator invoked with event: {json.dumps(event)}")
 
     try:
-        # Extract S3 info from EventBridge event
-        if 'detail' in event:
-            bucket = event['detail']['bucket']['name']
-            key = event['detail']['object']['key']
-        elif 'Records' in event:
-            # Direct S3 event
-            record = event['Records'][0]
-            bucket = record['s3']['bucket']['name']
-            key = record['s3']['object']['key']
-        else:
-            # Direct invocation
-            bucket = event['bucket']
-            key = event['key']
+        # Extract S3 info - EventBridge input transformer provides flat structure
+        bucket = event.get('bucket')
+        key = event.get('key')
 
-        public_id = event.get('public_id', str(uuid.uuid4()))
+        # Fallback for different event formats
+        if not bucket or not key:
+            if 'detail' in event:
+                bucket = event['detail']['bucket']['name']
+                key = event['detail']['object']['key']
+            elif 'Records' in event:
+                record = event['Records'][0]
+                bucket = record['s3']['bucket']['name']
+                key = record['s3']['object']['key']
+
+        if not bucket or not key:
+            raise ValueError(f"Could not extract bucket/key from event: {event}")
+
+        public_id = event.get('request_id') or event.get('public_id') or str(uuid.uuid4())
         image_id = event.get('image_id')
 
         # Skip if this is already a variant
@@ -273,18 +292,31 @@ def orchestrator_handler(event: dict, context) -> dict:
             logger.info(f"Skipping variant image: {key}")
             return {'statusCode': 200, 'message': 'Skipped variant image'}
 
-        # Prepare tasks for parallel processing
-        tasks = []
+        if not SQS_QUEUE_URL:
+            raise ValueError("SQS_QUEUE_URL environment variable not set")
+
+        # Send one message per variant to SQS
+        messages_sent = 0
         for variant_name in VARIANTS.keys():
             for format_type in SUPPORTED_FORMATS:
-                tasks.append({
+                message = {
                     'bucket': bucket,
                     'key': key,
                     'variant': variant_name,
                     'format': format_type,
                     'public_id': public_id,
                     'image_id': image_id
-                })
+                }
+
+                sqs_client.send_message(
+                    QueueUrl=SQS_QUEUE_URL,
+                    MessageBody=json.dumps(message)
+                )
+
+                messages_sent += 1
+                logger.info(f"Sent SQS message for variant: {variant_name}-{format_type}")
+
+        logger.info(f"Orchestrator complete: sent {messages_sent} messages to SQS")
 
         return {
             'statusCode': 200,
@@ -292,8 +324,7 @@ def orchestrator_handler(event: dict, context) -> dict:
             'key': key,
             'public_id': public_id,
             'image_id': image_id,
-            'tasks': tasks,
-            'task_count': len(tasks)
+            'messages_sent': messages_sent
         }
 
     except Exception as e:

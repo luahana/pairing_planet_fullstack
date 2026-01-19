@@ -21,9 +21,9 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Load .env.dev file for AWS dev environment
+# Load .env file for local development
 from dotenv import load_dotenv
-load_dotenv('.env.dev')
+load_dotenv()
 
 from src.api import CookstemmaClient
 from src.config import get_settings
