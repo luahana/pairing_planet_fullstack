@@ -6,6 +6,7 @@ import { getLogDetail } from '@/lib/api/logs';
 import { LogJsonLd } from '@/components/log/LogJsonLd';
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd';
 import { LogDetailClient } from '@/components/log/LogDetailClient';
+import { ContentActions } from '@/components/shared/ContentActions';
 import { StarRating } from '@/components/log/StarRating';
 import { RecipeCard } from '@/components/recipe/RecipeCard';
 import { ShareButtons } from '@/components/common/ShareButtons';
@@ -120,6 +121,12 @@ export default async function LogDetailPage({ params }: Props) {
                 initialSaved={log.isSavedByCurrentUser ?? false}
               />
               <LogDetailClient log={log} />
+              <ContentActions
+                contentType="log"
+                contentTitle={localizedTitle}
+                authorPublicId={log.creatorPublicId}
+                authorName={log.userName}
+              />
             </div>
           </div>
 

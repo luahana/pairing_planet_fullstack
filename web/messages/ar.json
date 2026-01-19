@@ -145,5 +145,36 @@
   },
   "metadata": {
     "siteDescription": "شارك وصفاتك، أنشئ تنويعات، وتتبع رحلتك في الطبخ"
+  },
+  "moderation": {
+    "block": "Block",
+    "unblock": "Unblock",
+    "blocking": "Blocking...",
+    "blockUser": "Block User",
+    "blockAuthor": "Block Author",
+    "report": "Report",
+    "reportUser": "Report User",
+    "reportRecipe": "Report Recipe",
+    "reportLog": "Report Log",
+    "blockConfirmTitle": "Block {username}?",
+    "blockConfirmMessage": "They won't be able to see your content or interact with you.",
+    "reportTitle": "Report {target}",
+    "reportReasonLabel": "Why are you reporting this?",
+    "descriptionPlaceholder": "Please provide more details (optional)",
+    "submitting": "Submitting...",
+    "reportSuccess": "Report submitted. Thank you.",
+    "reportFailed": "Failed to submit report. Please try again.",
+    "blockSuccess": "{username} has been blocked",
+    "blockFailed": "Failed to block user. Please try again.",
+    "unblockSuccess": "{username} has been unblocked",
+    "unblockFailed": "Failed to unblock user. Please try again.",
+    "alreadyBlocked": "You have already blocked this user",
+    "reasons": {
+      "SPAM": "Spam or misleading",
+      "HARASSMENT": "Harassment or bullying",
+      "INAPPROPRIATE_CONTENT": "Inappropriate content",
+      "IMPERSONATION": "Impersonation",
+      "OTHER": "Other"
+    }
   }
 }

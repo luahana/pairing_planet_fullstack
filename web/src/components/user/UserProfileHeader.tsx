@@ -7,6 +7,7 @@ import type { UserProfile } from '@/lib/types';
 import { getImageUrl } from '@/lib/utils/image';
 import { getAvatarInitial } from '@/lib/utils/string';
 import { FollowButton } from '@/components/common/FollowButton';
+import { UserActions } from '@/components/user/UserActions';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface UserProfileHeaderProps {
@@ -63,10 +64,16 @@ export function UserProfileHeader({ user, publicId }: UserProfileHeaderProps) {
                 Edit Profile
               </Link>
             ) : (
-              <FollowButton
-                targetUserPublicId={publicId}
-                onFollowChange={handleFollowChange}
-              />
+              <div className="flex items-center gap-2">
+                <FollowButton
+                  targetUserPublicId={publicId}
+                  onFollowChange={handleFollowChange}
+                />
+                <UserActions
+                  userPublicId={publicId}
+                  username={user.username}
+                />
+              </div>
             )}
           </div>
 

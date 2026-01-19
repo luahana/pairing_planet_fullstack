@@ -145,5 +145,36 @@
   },
   "metadata": {
     "siteDescription": "Share your recipes, create variations, and track your cooking journey"
+  },
+  "moderation": {
+    "block": "屏蔽",
+    "unblock": "取消屏蔽",
+    "blocking": "屏蔽中...",
+    "blockUser": "屏蔽用户",
+    "blockAuthor": "屏蔽作者",
+    "report": "举报",
+    "reportUser": "举报用户",
+    "reportRecipe": "举报食谱",
+    "reportLog": "举报烹饪日志",
+    "blockConfirmTitle": "确定要屏蔽 {username} 吗？",
+    "blockConfirmMessage": "被屏蔽的用户将无法查看您的内容或与您互动。",
+    "reportTitle": "举报 {target}",
+    "reportReasonLabel": "请选择举报原因",
+    "descriptionPlaceholder": "请提供更多详情（可选）",
+    "submitting": "提交中...",
+    "reportSuccess": "举报已提交，感谢您的反馈。",
+    "reportFailed": "举报提交失败，请重试。",
+    "blockSuccess": "已屏蔽 {username}",
+    "blockFailed": "屏蔽失败，请重试。",
+    "unblockSuccess": "已取消屏蔽 {username}",
+    "unblockFailed": "取消屏蔽失败，请重试。",
+    "alreadyBlocked": "您已屏蔽此用户",
+    "reasons": {
+      "SPAM": "垃圾信息或误导内容",
+      "HARASSMENT": "骚扰或欺凌",
+      "INAPPROPRIATE_CONTENT": "不当内容",
+      "IMPERSONATION": "冒充他人",
+      "OTHER": "其他"
+    }
   }
 }

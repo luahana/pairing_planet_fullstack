@@ -145,5 +145,36 @@
   },
   "metadata": {
     "siteDescription": "Share your recipes, create variations, and track your cooking journey"
+  },
+  "moderation": {
+    "block": "차단",
+    "unblock": "차단 해제",
+    "blocking": "차단 중...",
+    "blockUser": "사용자 차단",
+    "blockAuthor": "작성자 차단",
+    "report": "신고",
+    "reportUser": "사용자 신고",
+    "reportRecipe": "레시피 신고",
+    "reportLog": "요리 일지 신고",
+    "blockConfirmTitle": "{username}님을 차단하시겠습니까?",
+    "blockConfirmMessage": "차단된 사용자는 회원님의 콘텐츠를 볼 수 없고 상호작용할 수 없습니다.",
+    "reportTitle": "{target} 신고",
+    "reportReasonLabel": "신고 사유를 선택해 주세요",
+    "descriptionPlaceholder": "상세 내용을 입력해 주세요 (선택)",
+    "submitting": "제출 중...",
+    "reportSuccess": "신고가 접수되었습니다. 감사합니다.",
+    "reportFailed": "신고 제출에 실패했습니다. 다시 시도해 주세요.",
+    "blockSuccess": "{username}님을 차단했습니다",
+    "blockFailed": "차단에 실패했습니다. 다시 시도해 주세요.",
+    "unblockSuccess": "{username}님의 차단을 해제했습니다",
+    "unblockFailed": "차단 해제에 실패했습니다. 다시 시도해 주세요.",
+    "alreadyBlocked": "이미 차단한 사용자입니다",
+    "reasons": {
+      "SPAM": "스팸 또는 허위 정보",
+      "HARASSMENT": "괴롭힘 또는 폭력",
+      "INAPPROPRIATE_CONTENT": "부적절한 콘텐츠",
+      "IMPERSONATION": "사칭",
+      "OTHER": "기타"
+    }
   }
 }

@@ -7,6 +7,7 @@ import { RecipeJsonLd } from '@/components/recipe/RecipeJsonLd';
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd';
 import { VariantsGallery } from '@/components/recipe/VariantsGallery';
 import { RecipeActions } from '@/components/recipe/RecipeActions';
+import { ContentActions } from '@/components/shared/ContentActions';
 import { RecentLogsGallery } from '@/components/recipe/RecentLogsGallery';
 import { IngredientsSection } from '@/components/recipe/IngredientsSection';
 import { ChangeDiffSection } from '@/components/recipe/ChangeDiffSection';
@@ -136,6 +137,12 @@ export default async function RecipeDetailPage({ params }: Props) {
                 recipePublicId={publicId}
                 creatorPublicId={recipe.creatorPublicId}
                 recipeTitle={localizedTitle}
+              />
+              <ContentActions
+                contentType="recipe"
+                contentTitle={localizedTitle}
+                authorPublicId={recipe.creatorPublicId}
+                authorName={recipe.userName}
               />
             </div>
           </div>
