@@ -72,12 +72,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser);
         setSentryUser(newUser);
       } else {
-        console.log('[Auth] Not authenticated, response not ok');
+        console.log('[Auth] Not authenticated, clearing stale cookies via logout endpoint');
+        // Call logout endpoint to clear HttpOnly cookies
+        await fetch(`${siteConfig.apiUrl}/auth/web/logout`, {
+          method: 'POST',
+          credentials: 'include',
+        }).catch(() => {}); // Ignore errors
         setUser(null);
         setSentryUser(null);
       }
     } catch (error) {
       console.error('[Auth] Error checking auth status:', error);
+      // Call logout endpoint to clear HttpOnly cookies
+      await fetch(`${siteConfig.apiUrl}/auth/web/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      }).catch(() => {}); // Ignore errors
       setUser(null);
       setSentryUser(null);
     } finally {

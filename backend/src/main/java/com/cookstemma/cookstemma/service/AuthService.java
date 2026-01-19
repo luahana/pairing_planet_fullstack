@@ -105,27 +105,36 @@ public class AuthService {
     }
 
     private SocialAccount registerNewFirebaseUser(String uid, String email, String name, String picture, Provider provider, String locale) {
-        // 기존 registerNewUser 로직을 Firebase 데이터에 맞게 통합
-        String username = name;
-        if (username == null || userRepository.existsByUsername(username)) {
-            username = "user_" + UUID.randomUUID().toString().substring(0, 8);
-        }
+        // Email-based account linking: Check if user with this email already exists
+        User user = userRepository.findByEmail(email)
+                .orElseGet(() -> createNewUser(email, name, picture, locale));
 
-        User user = User.builder()
-                .username(username)
-                .email(email)
-                .profileImageUrl(picture)
-                .role(Role.USER)
-                .status(AccountStatus.ACTIVE)
-                .locale(locale != null ? locale : "ko-KR")
-                .build();
-        userRepository.save(user);
-
+        // Link new social account to existing/new user
         SocialAccount account = SocialAccount.builder()
                 .user(user)
                 .provider(provider)
                 .providerUserId(uid)
                 .build();
         return socialAccountRepository.save(account);
+    }
+
+    private User createNewUser(String email, String name, String picture, String locale) {
+        String username = name;
+        if (username == null || userRepository.existsByUsername(username)) {
+            username = "user_" + UUID.randomUUID().toString().substring(0, 8);
+        }
+
+        // Auto-admin for specific email
+        Role role = "truepark0@gmail.com".equalsIgnoreCase(email) ? Role.ADMIN : Role.USER;
+
+        User user = User.builder()
+                .username(username)
+                .email(email)
+                .profileImageUrl(picture)
+                .role(role)
+                .status(AccountStatus.ACTIVE)
+                .locale(locale != null ? locale : "ko-KR")
+                .build();
+        return userRepository.save(user);
     }
 }

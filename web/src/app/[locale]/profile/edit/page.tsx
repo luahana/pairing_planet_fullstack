@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { getMyProfile, updateUserProfile } from '@/lib/api/users';
+import { getMyProfile, updateUserProfile, checkUsernameAvailability } from '@/lib/api/users';
 import {
   CookingStyleSelect,
   useCookingStyleOptions,
@@ -109,6 +109,10 @@ export default function ProfileEditPage() {
   const [youtubeError, setYoutubeError] = useState<string | null>(null);
   const [instagramError, setInstagramError] = useState<string | null>(null);
 
+  // Username availability check
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+
   // Load profile data
   useEffect(() => {
     if (authLoading) return;
@@ -178,6 +182,34 @@ export default function ProfileEditPage() {
   const handleInstagramChange = (value: string) => {
     setInstagramHandle(value);
     setInstagramError(validateInstagramHandle(value));
+  };
+
+  // Handle username change - reset availability check
+  const handleUsernameChange = (value: string) => {
+    setUsername(value);
+    setUsernameAvailable(null);
+  };
+
+  // Check username availability
+  const handleCheckUsername = async () => {
+    if (!username.trim() || username === initialValues.username) {
+      // Skip check if empty or same as initial
+      if (username === initialValues.username) {
+        setUsernameAvailable(true);
+      }
+      return;
+    }
+
+    setIsCheckingUsername(true);
+    try {
+      const available = await checkUsernameAvailability(username);
+      setUsernameAvailable(available);
+    } catch (err) {
+      console.error('Failed to check username:', err);
+      setUsernameAvailable(null);
+    } finally {
+      setIsCheckingUsername(false);
+    }
   };
 
   // Handle form submission
@@ -334,14 +366,44 @@ export default function ProfileEditPage() {
           <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
             Username
           </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your username"
-            maxLength={MAX_USERNAME_LENGTH}
-            className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => handleUsernameChange(e.target.value)}
+              placeholder="Enter your username"
+              maxLength={MAX_USERNAME_LENGTH}
+              className="flex-1 px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
+            />
+            <button
+              type="button"
+              onClick={handleCheckUsername}
+              disabled={isCheckingUsername || !username.trim() || username === initialValues.username}
+              className="px-4 py-3 bg-[var(--highlight-bg)] text-[var(--text-primary)] rounded-xl font-medium hover:bg-[var(--border)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            >
+              {isCheckingUsername ? 'Checking...' : 'Check'}
+            </button>
+          </div>
+          {/* Username availability feedback */}
+          {usernameAvailable !== null && (
+            <p className={`text-xs mt-2 flex items-center gap-1 ${usernameAvailable ? 'text-green-600' : 'text-red-500'}`}>
+              {usernameAvailable ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Username is available
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Username is already taken
+                </>
+              )}
+            </p>
+          )}
           <p
             className={`text-xs mt-1 text-right ${
               username.length >= MAX_USERNAME_LENGTH

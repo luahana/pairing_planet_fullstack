@@ -20,6 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     // 로그인/가입용
     Optional<User> findByUsername(String username);
+    Optional<User> findByUsernameIgnoreCase(String username);
     Optional<User> findByEmail(String email);
     boolean existsByUsername(String username);
     boolean existsByUsernameIgnoreCase(String username);

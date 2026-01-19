@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -441,5 +442,20 @@ public class UserService {
                 AccountStatus.ACTIVE,
                 org.springframework.data.domain.PageRequest.of(0, 1000)
         );
+    }
+
+    /**
+     * Check if a username is available for use
+     * @param username the username to check
+     * @param currentUserPublicId the current user's publicId (to allow keeping their own username)
+     * @return true if the username is available or belongs to the current user
+     */
+    public boolean isUsernameAvailable(String username, UUID currentUserPublicId) {
+        Optional<User> existingUser = userRepository.findByUsernameIgnoreCase(username);
+        if (existingUser.isEmpty()) {
+            return true;
+        }
+        // If it exists but belongs to current user, still "available" for them
+        return existingUser.get().getPublicId().equals(currentUserPublicId);
     }
 }

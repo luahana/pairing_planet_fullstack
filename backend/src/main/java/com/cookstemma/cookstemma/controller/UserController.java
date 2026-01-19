@@ -19,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -37,6 +38,18 @@ public class UserController {
     public ResponseEntity<List<UUID>> getUserIdsForSitemap() {
         List<UUID> userIds = userService.getAllUserIdsForSitemap();
         return ResponseEntity.ok(userIds);
+    }
+
+    /**
+     * Check if a username is available for use (authenticated endpoint)
+     * Returns true if the username is available or belongs to the current user
+     */
+    @GetMapping("/check-username")
+    public ResponseEntity<Map<String, Boolean>> checkUsernameAvailability(
+            @RequestParam String username,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        boolean available = userService.isUsernameAvailable(username, principal.getPublicId());
+        return ResponseEntity.ok(Map.of("available", available));
     }
 
     /**

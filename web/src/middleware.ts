@@ -59,14 +59,9 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Handle authenticated users visiting login page
-  if (pathWithoutLocale === '/login') {
-    const accessToken = request.cookies.get('access_token');
-    if (accessToken) {
-      const redirectUrl = request.nextUrl.searchParams.get('redirect') || `/${locale}`;
-      return NextResponse.redirect(new URL(redirectUrl, request.url));
-    }
-  }
+  // Note: We don't redirect authenticated users away from /login in middleware
+  // because we can't validate the token here. The login page handles this
+  // client-side by checking auth status and redirecting if authenticated.
 
   return response;
 }

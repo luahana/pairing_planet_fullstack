@@ -96,3 +96,18 @@ export async function getAllUserIds(): Promise<string[]> {
     next: { revalidate: 3600 }, // Cache for 1 hour
   });
 }
+
+/**
+ * Check if a username is available for use
+ */
+export async function checkUsernameAvailability(
+  username: string,
+): Promise<boolean> {
+  const response = await apiFetch<{ available: boolean }>(
+    `/users/check-username?username=${encodeURIComponent(username)}`,
+    {
+      cache: 'no-store',
+    },
+  );
+  return response.available;
+}
