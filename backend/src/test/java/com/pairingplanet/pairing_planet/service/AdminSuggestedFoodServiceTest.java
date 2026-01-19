@@ -168,9 +168,12 @@ class AdminSuggestedFoodServiceTest extends BaseIntegrationTest {
         @Test
         @DisplayName("Should convert short locale to BCP47 format")
         void shortLocale_ConvertedToBcp47() {
-            String[] shortLocales = {"ko", "en", "ja", "zh", "fr", "es", "it", "de", "ru", "pt", "el", "ar"};
-            String[] expectedBcp47 = {"ko-KR", "en-US", "ja-JP", "zh-CN", "fr-FR", "es-ES",
-                                       "it-IT", "de-DE", "ru-RU", "pt-BR", "el-GR", "ar-SA"};
+            String[] shortLocales = {"en", "ko", "ja", "zh", "fr", "de", "es", "it", "pt", "ru",
+                                     "ar", "id", "vi", "hi", "th", "pl", "tr", "nl", "sv", "fa"};
+            String[] expectedBcp47 = {"en-US", "ko-KR", "ja-JP", "zh-CN", "fr-FR", "de-DE",
+                                      "es-ES", "it-IT", "pt-BR", "ru-RU", "ar-SA", "id-ID",
+                                      "vi-VN", "hi-IN", "th-TH", "pl-PL", "tr-TR", "nl-NL",
+                                      "sv-SE", "fa-IR"};
 
             for (int i = 0; i < shortLocales.length; i++) {
                 UserSuggestedFood suggestion = UserSuggestedFood.builder()

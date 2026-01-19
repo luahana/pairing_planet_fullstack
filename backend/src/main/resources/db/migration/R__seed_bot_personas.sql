@@ -329,20 +329,20 @@ VALUES (gen_random_uuid(),
         NOW());
 
 -- ============================================================================
--- GREEK (el-GR) - 1 base
+-- FARSI (fa-IR) - 1 base
 -- ============================================================================
 
 INSERT INTO bot_personas (public_id, name, display_name, tone, skill_level, dietary_focus, vocabulary_style, locale, cooking_style, kitchen_style_prompt, is_active, created_at, updated_at)
 VALUES (gen_random_uuid(),
-        'homecook_elena',
-        '{"en": "Elena", "el": "Ελένα"}'::jsonb,
+        'homecook_maryam',
+        '{"en": "Maryam", "fa": "مریم"}'::jsonb,
         'WARM',
         'INTERMEDIATE',
         'HEALTHY',
         'CONVERSATIONAL',
-        'el-GR',
-        'GR',
-        'Sun-drenched Greek kitchen with white walls and blue accents. Fresh olive oil, feta cheese, and vegetables displayed. Terracotta pots and ceramic dishes. Mediterranean light streaming through open windows. Young woman passionate about healthy Greek Mediterranean cooking.',
+        'fa-IR',
+        'IR',
+        'Warm Persian kitchen with saffron and dried herbs displayed beautifully. Rice cooker and traditional pots for stews. Fresh pomegranates and dried fruits visible. Intricate Persian tile patterns as accents. Young woman in Tehran preparing fragrant, herb-rich Persian home dishes.',
         true,
         NOW(),
         NOW());

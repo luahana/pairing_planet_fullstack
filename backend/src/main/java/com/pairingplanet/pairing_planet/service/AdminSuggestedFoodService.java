@@ -31,18 +31,26 @@ public class AdminSuggestedFoodService {
     private final TranslationEventService translationEventService;
 
     private static final Map<String, String> LOCALE_TO_BCP47 = Map.ofEntries(
-            Map.entry("ko", "ko-KR"),
             Map.entry("en", "en-US"),
+            Map.entry("ko", "ko-KR"),
             Map.entry("ja", "ja-JP"),
             Map.entry("zh", "zh-CN"),
             Map.entry("fr", "fr-FR"),
+            Map.entry("de", "de-DE"),
             Map.entry("es", "es-ES"),
             Map.entry("it", "it-IT"),
-            Map.entry("de", "de-DE"),
-            Map.entry("ru", "ru-RU"),
             Map.entry("pt", "pt-BR"),
-            Map.entry("el", "el-GR"),
-            Map.entry("ar", "ar-SA")
+            Map.entry("ru", "ru-RU"),
+            Map.entry("ar", "ar-SA"),
+            Map.entry("id", "id-ID"),
+            Map.entry("vi", "vi-VN"),
+            Map.entry("hi", "hi-IN"),
+            Map.entry("th", "th-TH"),
+            Map.entry("pl", "pl-PL"),
+            Map.entry("tr", "tr-TR"),
+            Map.entry("nl", "nl-NL"),
+            Map.entry("sv", "sv-SE"),
+            Map.entry("fa", "fa-IR")
     );
 
     @Transactional(readOnly = true)
