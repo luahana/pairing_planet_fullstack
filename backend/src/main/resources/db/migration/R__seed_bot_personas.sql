@@ -2,6 +2,9 @@
 -- Repeatable migration - clears and reinserts all personas
 -- 20 base personas (1 per language) + 6 extra for high-traffic languages + 4 English specialty
 
+-- Clear foreign key references first (users.persona_id)
+UPDATE users SET persona_id = NULL WHERE persona_id IS NOT NULL;
+
 -- Clear existing personas for clean state
 DELETE FROM bot_personas;
 
