@@ -105,11 +105,36 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
+      # Deploy Translation Lambda
+      - name: Build and push Lambda Translator image
+        working-directory: ./backend/lambda/translator
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: pairing-planet-dev-translator
+        run: |
+          docker build -t $ECR_REGISTRY/$LAMBDA_ECR_REPO:latest .
+          docker push $ECR_REGISTRY/$LAMBDA_ECR_REPO:latest
+
+      - name: Update Lambda Translator function
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: pairing-planet-dev-translator
+          LAMBDA_NAME: pairing-planet-dev-translator
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_NAME \
+            --image-uri $ECR_REGISTRY/$LAMBDA_ECR_REPO:latest \
+            --region ${{ env.AWS_REGION }}
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_NAME \
+            --region ${{ env.AWS_REGION }}
+
       - name: Deployment Summary
         working-directory: .
         run: |
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment:** Dev" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image:** ${{ steps.build-image.outputs.image }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend Image:** ${{ steps.build-image.outputs.image }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Cluster:** ${{ env.ECS_CLUSTER }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Service:** ${{ env.ECS_SERVICE }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lambda Translator:** Updated" >> $GITHUB_STEP_SUMMARY
