@@ -173,7 +173,7 @@ export default async function Home({ params }: Props) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-[var(--primary)]">
+      <section className="py-16 bg-[var(--secondary)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
             Start Your Cooking Journey
@@ -190,7 +190,7 @@ export default async function Home({ params }: Props) {
             </Link>
             <Link
               href="/search"
-              className="px-6 py-3 bg-[var(--primary-dark)] text-white font-semibold rounded-xl hover:bg-[var(--secondary)] hover:scale-105 transition-all"
+              className="px-6 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-dark)] hover:scale-105 transition-all"
             >
               Search
             </Link>
