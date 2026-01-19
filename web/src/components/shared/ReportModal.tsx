@@ -36,20 +36,22 @@ export function ReportModal({
   );
   const [description, setDescription] = useState('');
 
-  // Reset state when modal opens (not in effect to avoid lint warning)
-  if (isOpen && !prevIsOpenRef.current) {
-    setSelectedReason(null);
-    setDescription('');
-  }
-  prevIsOpenRef.current = isOpen;
-
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
     if (isOpen) {
+      // Reset state when opening (only on transition from closed to open)
+      if (!prevIsOpenRef.current) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedReason(null);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setDescription('');
+      }
+      prevIsOpenRef.current = true;
       dialog.showModal();
     } else {
+      prevIsOpenRef.current = false;
       dialog.close();
     }
   }, [isOpen]);
