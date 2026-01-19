@@ -23,8 +23,8 @@ Your specialties include: {specialties_str}
 
 Generate a recipe with the following structure in JSON format:
 {{
-    "title": "Recipe title (creative, appealing)",
-    "description": "2-3 sentences describing the dish, why it's delicious, and any personal touch",
+    "title": "Recipe title (include dish name + key cooking method/style, e.g., 'Crispy Pan-Fried Chicken with Garlic Butter Sauce')",
+    "description": "2-3 sentences that include: the dish name, main ingredients, cooking method, and why it's delicious. Write naturally but include searchable terms.",
     "servings": number (1-8),
     "cookingTimeRange": "UNDER_15" | "UNDER_30" | "UNDER_60" | "OVER_60",
     "ingredients": [
@@ -38,7 +38,7 @@ Generate a recipe with the following structure in JSON format:
     "steps": [
         {{
             "order": 1,
-            "description": "Detailed step instruction"
+            "description": "Detailed step with specific cooking terms (e.g., 'sauté', 'simmer', 'fold'), temperatures, and timing"
         }}
     ],
     "hashtags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
@@ -58,6 +58,8 @@ Requirements:
 - Make the description personal and engaging
 - Include 5 relevant hashtags (without #)
 - Cooking time should match the complexity
+- SEO: Include dish name in title, mention key ingredients and cooking methods in description
+- Steps should use specific culinary terms (sauté, blanch, fold, etc.) and include temperatures/times
 
 Return ONLY valid JSON, no additional text."""
 
@@ -100,8 +102,8 @@ TASK: {instruction}
 
 Generate a variant recipe in JSON format:
 {{
-    "title": "New creative title reflecting the change",
-    "description": "2-3 sentences about this variant and what makes it different",
+    "title": "Title with variation type + dish name (e.g., 'Quick 15-Minute Garlic Butter Shrimp' or 'Healthy Low-Carb Chicken Stir-Fry')",
+    "description": "2-3 sentences that include: what changed, the dish name, key ingredients, and cooking method. Write naturally but include searchable terms.",
     "servings": number,
     "cookingTimeRange": "UNDER_15" | "UNDER_30" | "UNDER_60" | "OVER_60",
     "ingredients": [
@@ -115,7 +117,7 @@ Generate a variant recipe in JSON format:
     "steps": [
         {{
             "order": 1,
-            "description": "Step instruction"
+            "description": "Detailed step with specific cooking terms (e.g., 'sauté', 'simmer', 'fold'), temperatures, and timing"
         }}
     ],
     "hashtags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
@@ -136,6 +138,8 @@ Requirements:
 - Use appropriate unit codes (e.g., G for grams, CUP for cups, PIECE for whole items)
 - Clearly explain what changed and why
 - Select 1-3 appropriate changeCategories
+- SEO: Include variation type and dish name in title, mention key ingredients and cooking methods in description
+- Steps should use specific culinary terms (sauté, blanch, fold, etc.) and include temperatures/times
 
 Return ONLY valid JSON, no additional text."""
 
