@@ -197,7 +197,7 @@ class TextGenerator:
     ) -> List[str]:
         """Generate food name suggestions based on persona specialties."""
         exclude_str = ", ".join(exclude or [])
-        lang = "Korean" if persona.is_korean() else "English"
+        lang = persona.get_language_name()
 
         system_prompt = persona.build_system_prompt()
         user_prompt = f"""Suggest {count} dish names that you would love to cook and share recipes for.
@@ -234,7 +234,7 @@ Return ONLY valid JSON."""
         recipe_description: str,
     ) -> List[str]:
         """Suggest appropriate variation types for a recipe."""
-        lang = "Korean" if persona.is_korean() else "English"
+        lang = persona.get_language_name()
 
         system_prompt = persona.build_system_prompt()
         user_prompt = f"""For the recipe "{recipe_title}" ({recipe_description}),

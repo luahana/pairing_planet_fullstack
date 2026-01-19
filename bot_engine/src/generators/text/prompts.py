@@ -2,6 +2,14 @@
 
 from typing import List, Optional
 
+from ...personas.models import LOCALE_TO_LANGUAGE
+
+
+def _get_language_from_locale(locale: str) -> str:
+    """Get the full language name from a locale string."""
+    lang_code = locale.split("-")[0]
+    return LOCALE_TO_LANGUAGE.get(lang_code, "English")
+
 
 class RecipePrompts:
     """Prompts for recipe generation."""
@@ -14,7 +22,7 @@ class RecipePrompts:
         specialties: List[str],
     ) -> str:
         """Generate prompt for creating an original recipe."""
-        lang = "Korean" if locale.startswith("ko") else "English"
+        lang = _get_language_from_locale(locale)
         specialties_str = ", ".join(specialties) if specialties else "various"
 
         # US uses cups/tablespoons/ounces; rest of world uses metric
@@ -87,7 +95,7 @@ Return ONLY valid JSON, no additional text."""
         variation_type: str,
     ) -> str:
         """Generate prompt for creating a recipe variant."""
-        lang = "Korean" if locale.startswith("ko") else "English"
+        lang = _get_language_from_locale(locale)
 
         # US uses cups/tablespoons/ounces; rest of world uses metric
         use_us_measurements = locale.endswith("-US") or locale == "en-US"
@@ -184,7 +192,7 @@ class LogPrompts:
         persona_background: str,
     ) -> str:
         """Generate prompt for creating a cooking log."""
-        lang = "Korean" if locale.startswith("ko") else "English"
+        lang = _get_language_from_locale(locale)
 
         outcome_instructions = {
             "SUCCESS": "You successfully made this dish and it turned out great!",
@@ -222,7 +230,7 @@ Return ONLY valid JSON, no additional text."""
     @staticmethod
     def generate_failed_log_details(locale: str) -> str:
         """Generate realistic failure scenarios."""
-        lang = "Korean" if locale.startswith("ko") else "English"
+        lang = _get_language_from_locale(locale)
 
         return f"""Generate a realistic cooking failure scenario in {lang}.
 Pick ONE of these failure types and describe it vividly:

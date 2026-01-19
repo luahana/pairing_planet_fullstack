@@ -47,6 +47,31 @@ class VocabularyStyle(str, Enum):
     CONVERSATIONAL = "conversational"
 
 
+# Locale to language name mapping for all supported locales
+LOCALE_TO_LANGUAGE = {
+    "en": "English",
+    "ko": "Korean",
+    "ja": "Japanese",
+    "zh": "Chinese",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "fa": "Persian",
+    "th": "Thai",
+    "vi": "Vietnamese",
+    "hi": "Hindi",
+    "ar": "Arabic",
+    "tr": "Turkish",
+    "nl": "Dutch",
+    "pl": "Polish",
+    "id": "Indonesian",
+    "sv": "Swedish",
+}
+
+
 class BotPersona(BaseModel):
     """Bot persona definition with all personality traits."""
 
@@ -102,9 +127,14 @@ class BotPersona(BaseModel):
         """Check if persona uses English language."""
         return self.locale.startswith("en")
 
+    def get_language_name(self) -> str:
+        """Get the full language name for this persona's locale."""
+        lang_code = self.get_language_code()
+        return LOCALE_TO_LANGUAGE.get(lang_code, "English")
+
     def build_system_prompt(self) -> str:
         """Build the system prompt for ChatGPT based on persona traits."""
-        lang = "Korean" if self.is_korean() else "English"
+        lang = self.get_language_name()
 
         skill_desc = {
             SkillLevel.PROFESSIONAL: "a professional chef with restaurant experience",
