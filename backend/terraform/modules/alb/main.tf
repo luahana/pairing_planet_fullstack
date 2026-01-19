@@ -220,13 +220,52 @@ resource "aws_lb_listener" "https" {
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = var.certificate_arn
 
+  # When web is enabled, default to web; otherwise default to backend
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.blue.arn
+    target_group_arn = var.enable_web ? aws_lb_target_group.web[0].arn : aws_lb_target_group.blue.arn
   }
 
   lifecycle {
     ignore_changes = [default_action]
+  }
+}
+
+# HTTPS Listener Rule for API paths (route /api/* to backend)
+resource "aws_lb_listener_rule" "https_api_rule" {
+  count = var.certificate_arn != null && var.enable_web ? 1 : 0
+
+  listener_arn = aws_lb_listener.https[0].arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.blue.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
+
+# HTTPS Listener Rule for Actuator paths (route /actuator/* to backend)
+resource "aws_lb_listener_rule" "https_actuator_rule" {
+  count = var.certificate_arn != null && var.enable_web ? 1 : 0
+
+  listener_arn = aws_lb_listener.https[0].arn
+  priority     = 101
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.blue.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/actuator/*"]
+    }
   }
 }
 

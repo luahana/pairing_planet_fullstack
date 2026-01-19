@@ -128,3 +128,10 @@ variable "create_dns_record" {
   type        = bool
   default     = true
 }
+
+# SSL/TLS
+variable "certificate_arn" {
+  description = "ACM certificate ARN for HTTPS"
+  type        = string
+  default     = "arn:aws:acm:us-east-2:819551471059:certificate/16192fe2-724c-460e-a4ea-d88270dc6618"
+}

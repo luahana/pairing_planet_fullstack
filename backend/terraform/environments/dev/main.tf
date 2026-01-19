@@ -152,7 +152,7 @@ module "secrets" {
   s3_region     = var.s3_region
 }
 
-# ALB Module - For stable DNS endpoint (HTTP only, no custom domain)
+# ALB Module - For stable DNS endpoint with HTTPS
 module "alb" {
   source = "../../modules/alb"
 
@@ -162,7 +162,7 @@ module "alb" {
   public_subnet_ids = module.vpc.public_subnet_ids
   container_port    = 4000
   health_check_path = "/actuator/health"
-  certificate_arn   = null # No HTTPS for dev, HTTP only
+  certificate_arn   = var.certificate_arn
 
   # Enable web routing
   enable_web            = true
