@@ -125,8 +125,8 @@ class RecipePipeline:
         steps = self._parse_steps(recipe_data.get("steps", []), step_image_public_ids)
 
         request = CreateRecipeRequest(
-            title=recipe_data["title"],
-            description=recipe_data["description"],
+            title=recipe_data["title"][:100],
+            description=recipe_data["description"][:500] if recipe_data.get("description") else None,
             locale=persona.locale,
             cooking_style=persona.cooking_style,
             new_food_name=food_name,
@@ -246,8 +246,8 @@ class RecipePipeline:
         steps = self._parse_steps(variant_data.get("steps", []))
 
         request = CreateRecipeRequest(
-            title=variant_data["title"],
-            description=variant_data["description"],
+            title=variant_data["title"][:100],
+            description=variant_data["description"][:500] if variant_data.get("description") else None,
             locale=persona.locale,
             cooking_style=persona.cooking_style,
             ingredients=ingredients,
