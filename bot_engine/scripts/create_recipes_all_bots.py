@@ -76,6 +76,24 @@ def parse_args() -> argparse.Namespace:
         default=True,
         help="Continue processing other personas if one fails (default: True)",
     )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=5,
+        help="Number of recipes per batch before longer pause (default: 5)",
+    )
+    parser.add_argument(
+        "--delay",
+        type=int,
+        default=3,
+        help="Seconds to wait between recipes (default: 3)",
+    )
+    parser.add_argument(
+        "--batch-delay",
+        type=int,
+        default=15,
+        help="Seconds to wait between batches (default: 15)",
+    )
     return parser.parse_args()
 
 
@@ -195,6 +213,12 @@ async def main() -> None:
 
         total = len(personas_to_process)
         print(f"\nProcessing {total} personas...")
+
+        # Rate limiting configuration
+        batch_size = args.batch_size
+        delay_between_recipes = args.delay
+        delay_between_batches = args.batch_delay
+        print(f"Rate limiting: {delay_between_recipes}s between recipes, {delay_between_batches}s between batches of {batch_size}")
         print("=" * 60)
 
         generate_step_images = args.step_images
@@ -220,6 +244,14 @@ async def main() -> None:
                 if not args.continue_on_error:
                     print("\nStopping due to error (use --continue-on-error to skip)")
                     break
+
+            # Rate limiting: delay between recipes
+            if i < total:  # Don't delay after the last recipe
+                if i % batch_size == 0:
+                    print(f"\n  ⏳ Batch complete. Waiting {delay_between_batches}s before next batch...")
+                    await asyncio.sleep(delay_between_batches)
+                else:
+                    await asyncio.sleep(delay_between_recipes)
 
         # Print summary
         print("\n" + "=" * 60)
