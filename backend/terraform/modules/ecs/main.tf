@@ -278,6 +278,9 @@ resource "aws_ecs_service" "main" {
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
+  # Allow time for Spring Boot to start (~90s) before ELB health checks fail the task
+  health_check_grace_period_seconds = var.target_group_arn != null ? 120 : null
+
   network_configuration {
     subnets          = var.subnet_ids
     security_groups  = [aws_security_group.ecs_tasks.id]
