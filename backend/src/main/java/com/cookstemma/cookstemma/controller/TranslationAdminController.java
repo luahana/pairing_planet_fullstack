@@ -1,7 +1,7 @@
 package com.cookstemma.cookstemma.controller;
 
 import com.cookstemma.cookstemma.domain.entity.recipe.Recipe;
-import com.cookstemma.cookstemma.repository.RecipeRepository;
+import com.cookstemma.cookstemma.repository.recipe.RecipeRepository;
 import com.cookstemma.cookstemma.service.TranslationEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

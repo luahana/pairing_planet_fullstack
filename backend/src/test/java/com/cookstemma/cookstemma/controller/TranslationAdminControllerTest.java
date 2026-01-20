@@ -7,7 +7,7 @@ import com.cookstemma.cookstemma.domain.entity.user.User;
 import com.cookstemma.cookstemma.domain.enums.Role;
 import com.cookstemma.cookstemma.domain.enums.TranslatableEntity;
 import com.cookstemma.cookstemma.domain.enums.TranslationStatus;
-import com.cookstemma.cookstemma.repository.RecipeRepository;
+import com.cookstemma.cookstemma.repository.recipe.RecipeRepository;
 import com.cookstemma.cookstemma.repository.UserRepository;
 import com.cookstemma.cookstemma.repository.food.FoodMasterRepository;
 import com.cookstemma.cookstemma.repository.translation.TranslationEventRepository;
