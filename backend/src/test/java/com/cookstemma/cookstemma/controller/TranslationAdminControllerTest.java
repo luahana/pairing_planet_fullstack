@@ -116,8 +116,8 @@ class TranslationAdminControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return error for non-existent recipe")
-    void retranslateRecipe_NonExistentRecipe_ShouldReturnError() throws Exception {
+    @DisplayName("Should return 400 for non-existent recipe")
+    void retranslateRecipe_NonExistentRecipe_ShouldReturn400() throws Exception {
         mockMvc.perform(post("/api/v1/admin/translations/recipes/{publicId}/retranslate",
                         "00000000-0000-0000-0000-000000000000")
                         .header("Authorization", "Bearer " + adminToken)
@@ -125,6 +125,6 @@ class TranslationAdminControllerTest extends BaseIntegrationTest {
                         .content("""
                                 {"sourceLocale": "en"}
                                 """))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest());
     }
 }
