@@ -16,13 +16,16 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -156,24 +159,22 @@ public class ImageProcessingService {
         int newWidth = (int) (originalWidth * scale);
         int newHeight = (int) (originalHeight * scale);
 
-        // Generate resized image
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Thumbnails.of(sourceImage)
+        // Resize image using Thumbnailator
+        BufferedImage resizedImage = Thumbnails.of(sourceImage)
                 .size(newWidth, newHeight)
-                .outputQuality(variant.getQuality() / 100.0)
-                .outputFormat("jpg")
-                .toOutputStream(baos);
+                .asBufferedImage();
 
-        byte[] resizedBytes = baos.toByteArray();
+        // Encode to WebP format
+        byte[] resizedBytes = encodeToWebP(resizedImage, variant.getQuality());
 
-        // Generate new filename
+        // Generate new filename with .webp extension
         String originalKey = original.getStoredFilename();
         String baseName = originalKey.substring(originalKey.lastIndexOf('/') + 1);
         String nameWithoutExt = baseName.contains(".") ? baseName.substring(0, baseName.lastIndexOf('.')) : baseName;
-        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + ".jpg";
+        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + ".webp";
 
-        // Upload to S3
-        uploadToS3(newKey, resizedBytes, "image/jpeg");
+        // Upload to S3 with WebP content type
+        uploadToS3(newKey, resizedBytes, "image/webp");
 
         // Save variant record
         Image variantImage = Image.builder()
@@ -188,7 +189,7 @@ public class ImageProcessingService {
                 .width(newWidth)
                 .height(newHeight)
                 .fileSize((long) resizedBytes.length)
-                .format("jpg")
+                .format("webp")
                 .build();
 
         original.getVariants().add(variantImage);
@@ -213,24 +214,22 @@ public class ImageProcessingService {
         int newWidth = (int) (originalWidth * scale);
         int newHeight = (int) (originalHeight * scale);
 
-        // Generate resized image
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Thumbnails.of(sourceImage)
+        // Resize image using Thumbnailator
+        BufferedImage resizedImage = Thumbnails.of(sourceImage)
                 .size(newWidth, newHeight)
-                .outputQuality(variant.getQuality() / 100.0)
-                .outputFormat("jpg")
-                .toOutputStream(baos);
+                .asBufferedImage();
 
-        byte[] resizedBytes = baos.toByteArray();
+        // Encode to WebP format
+        byte[] resizedBytes = encodeToWebP(resizedImage, variant.getQuality());
 
-        // Generate new filename
+        // Generate new filename with .webp extension
         String originalKey = original.getStoredFilename();
         String baseName = originalKey.substring(originalKey.lastIndexOf('/') + 1);
         String nameWithoutExt = baseName.contains(".") ? baseName.substring(0, baseName.lastIndexOf('.')) : baseName;
-        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + ".jpg";
+        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + ".webp";
 
-        // Upload to S3
-        uploadToS3(newKey, resizedBytes, "image/jpeg");
+        // Upload to S3 with WebP content type
+        uploadToS3(newKey, resizedBytes, "image/webp");
 
         // Save variant record
         Image variantImage = Image.builder()
@@ -245,11 +244,31 @@ public class ImageProcessingService {
                 .width(newWidth)
                 .height(newHeight)
                 .fileSize((long) resizedBytes.length)
-                .format("jpg")
+                .format("webp")
                 .build();
 
         original.getVariants().add(variantImage);
         log.debug("Generated {} variant: {}x{}, {} bytes", variant, newWidth, newHeight, resizedBytes.length);
+    }
+
+    private byte[] encodeToWebP(BufferedImage image, int quality) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+        ImageWriteParam writeParam = writer.getDefaultWriteParam();
+
+        if (writeParam.canWriteCompressed()) {
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writeParam.setCompressionQuality(quality / 100.0f);
+        }
+
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+            writer.setOutput(ios);
+            writer.write(null, new IIOImage(image, null, null), writeParam);
+        } finally {
+            writer.dispose();
+        }
+
+        return baos.toByteArray();
     }
 
     private byte[] downloadFromS3(String key) throws IOException {
