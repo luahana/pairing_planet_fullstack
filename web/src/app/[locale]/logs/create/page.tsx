@@ -64,11 +64,13 @@ function CreateLogPageContent() {
   const [searchResults, setSearchResults] = useState<RecipeSummary[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [recentRecipes, setRecentRecipes] = useState<ViewHistoryItem[]>([]);
+  const initialRecipeLoadedRef = useRef(false);
 
-  // Load recipe from URL parameter if provided
+  // Load recipe from URL parameter if provided (only once on initial load)
   useEffect(() => {
     const recipeId = searchParams.get('recipeId');
-    if (recipeId && !selectedRecipe) {
+    if (recipeId && !selectedRecipe && !initialRecipeLoadedRef.current) {
+      initialRecipeLoadedRef.current = true;
       getRecipeDetail(recipeId)
         .then(setSelectedRecipe)
         .catch(console.error);
