@@ -35,6 +35,8 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    // Prefer WebP/AVIF for modern browsers, Next.js handles fallback
+    formats: ['image/webp', 'image/avif'],
     // Allow private/localhost images in development
     dangerouslyAllowSVG: true,
     remotePatterns: [
