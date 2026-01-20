@@ -104,7 +104,7 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-          wait-for-minutes: 45
+          wait-for-minutes: 20
 
       # Deploy Translation Lambda
       - name: Build and push Lambda Translator image
