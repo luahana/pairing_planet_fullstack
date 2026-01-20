@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/nextjs';
 import Cookies from 'js-cookie';
 import { siteConfig } from '@/config/site';
+import { routing } from '@/i18n/routing';
 
-// Supported locales - must match routing.locales in i18n/routing.ts
-const SUPPORTED_LOCALES = ['ko', 'en'];
-const DEFAULT_LOCALE = 'ko';
+// Use locales from routing config to ensure API client stays in sync
+const SUPPORTED_LOCALES: readonly string[] = routing.locales;
+const DEFAULT_LOCALE = routing.defaultLocale;
 
 /**
  * Get the current locale from the URL path (client-side) or return default.
