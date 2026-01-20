@@ -1077,7 +1077,7 @@ function CreateRecipeContent() {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    maxLength={100}
+                    maxLength={200}
                     className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
                     placeholder="e.g., Grandma's Secret Kimchi Fried Rice"
                   />
@@ -1086,7 +1086,7 @@ function CreateRecipeContent() {
                       Your unique name for this recipe
                     </p>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {title.length}/100
+                      {title.length}/200
                     </p>
                   </div>
                 </div>
@@ -1101,13 +1101,13 @@ function CreateRecipeContent() {
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  maxLength={500}
+                  maxLength={2000}
                   rows={3}
                   className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)] resize-none"
                   placeholder="Tell us about your recipe..."
                 />
                 <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
-                  {description.length}/500
+                  {description.length}/2000
                 </p>
               </div>
 
@@ -1402,7 +1402,7 @@ function CreateRecipeContent() {
                               <textarea
                                 value={step.description}
                                 onChange={(e) => !step.isOriginal && updateStep(step.id, e.target.value)}
-                                maxLength={500}
+                                maxLength={2000}
                                 rows={3}
                                 readOnly={step.isOriginal}
                                 className={`w-full px-3 py-2 border rounded-lg text-sm resize-none ${
@@ -1413,7 +1413,7 @@ function CreateRecipeContent() {
                                 placeholder="Describe this step..."
                               />
                               <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
-                                {step.description.length}/500
+                                {step.description.length}/2000
                               </p>
                             </div>
                             {/* Step Image */}
@@ -1692,12 +1692,12 @@ function CreateRecipeContent() {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    maxLength={100}
+                    maxLength={200}
                     className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
                     placeholder="e.g., Grandma's Secret Kimchi Fried Rice"
                   />
                   <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
-                    {title.length}/100
+                    {title.length}/200
                   </p>
                 </div>
 
@@ -1710,7 +1710,7 @@ function CreateRecipeContent() {
                     id="changeReason"
                     value={changeReason}
                     onChange={(e) => setChangeReason(e.target.value)}
-                    maxLength={300}
+                    maxLength={2000}
                     rows={3}
                     className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)] resize-none"
                     placeholder="e.g., Added more garlic and reduced sugar for a healthier version"
@@ -1720,7 +1720,7 @@ function CreateRecipeContent() {
                       Explain what makes your variation different
                     </p>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {changeReason.length}/300
+                      {changeReason.length}/2000
                     </p>
                   </div>
                 </div>

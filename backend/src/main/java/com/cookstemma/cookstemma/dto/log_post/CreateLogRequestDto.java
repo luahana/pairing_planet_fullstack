@@ -12,9 +12,10 @@ import java.util.UUID;
 public record CreateLogRequestDto(
         @NotNull(message = "레시피 선택은 필수입니다")
         UUID recipePublicId,
+        @Size(max = 200, message = "제목은 200자 이하여야 합니다")
         String title,
         @NotBlank(message = "요리 후기는 필수입니다")
-        @Size(max = 500, message = "요리 후기는 500자 이하여야 합니다")
+        @Size(max = 2000, message = "요리 후기는 2000자 이하여야 합니다")
         String content,
         @NotNull(message = "별점은 필수입니다")
         @Min(value = 1, message = "별점은 1 이상이어야 합니다")

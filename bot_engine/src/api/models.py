@@ -79,7 +79,7 @@ class RecipeStep(BaseModel):
     """Step in a recipe."""
 
     step_number: int = Field(alias="stepNumber", description="Step number (1-based)")
-    description: str = Field(description="Step instructions")
+    description: str = Field(max_length=1000, description="Step instructions")
     image_public_id: Optional[str] = Field(default=None, alias="imagePublicId")
 
     model_config = {"populate_by_name": True}
@@ -89,7 +89,7 @@ class CreateRecipeRequest(BaseModel):
     """Request to create a new recipe."""
 
     title: str = Field(max_length=100)
-    description: str = Field(max_length=2000)
+    description: str = Field(max_length=1000)
     locale: str = Field(default="ko-KR")
     cooking_style: str = Field(default="KR", alias="cookingStyle")
     new_food_name: Optional[str] = Field(default=None, alias="newFoodName")
@@ -103,7 +103,7 @@ class CreateRecipeRequest(BaseModel):
     # Variant fields
     parent_public_id: Optional[str] = Field(default=None, alias="parentPublicId")
     change_diff: Optional[str] = Field(default=None, alias="changeDiff")
-    change_reason: Optional[str] = Field(default=None, alias="changeReason")
+    change_reason: Optional[str] = Field(default=None, max_length=1000, alias="changeReason")
     change_categories: List[ChangeCategory] = Field(default_factory=list, alias="changeCategories")
 
     model_config = {"populate_by_name": True}
@@ -171,7 +171,7 @@ class CreateLogRequest(BaseModel):
 
     recipe_public_id: str = Field(description="Recipe that was cooked")
     title: str = Field(max_length=100)
-    content: str = Field(max_length=500, description="Log notes/description")
+    content: str = Field(max_length=1000, description="Log notes/description")
     outcome: LogOutcome = Field(description="Cooking outcome")
     image_public_ids: List[str] = Field(
         default_factory=list,

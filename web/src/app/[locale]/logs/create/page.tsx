@@ -16,7 +16,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import type { Rating, RecipeSummary, RecipeDetail } from '@/lib/types';
 
 // Constants matching Flutter app
-const MAX_CONTENT_LENGTH = 500;
+const MAX_CONTENT_LENGTH = 2000;
 const MAX_HASHTAGS = 5;
 const MAX_HASHTAG_LENGTH = 30;
 

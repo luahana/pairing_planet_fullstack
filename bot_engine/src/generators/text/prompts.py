@@ -47,8 +47,8 @@ Your specialties include: {specialties_str}
 
 Generate a recipe with the following structure in JSON format:
 {{
-    "title": "Recipe title (include dish name + key cooking method/style, e.g., 'Crispy Pan-Fried Chicken with Garlic Butter Sauce')",
-    "description": "2-3 sentences that include: the dish name, main ingredients, cooking method, and why it's delicious. Write naturally but include searchable terms.",
+    "title": "Recipe title - max 100 characters (include dish name + key cooking method/style, e.g., 'Crispy Pan-Fried Chicken with Garlic Butter Sauce')",
+    "description": "2-3 sentences, max 1000 characters, that include: the dish name, main ingredients, cooking method, and why it's delicious. Write naturally but include searchable terms.",
     "servings": number (1-8),
     "cookingTimeRange": "UNDER_15_MIN" | "MIN_15_TO_30" | "MIN_30_TO_60" | "HOUR_1_TO_2" | "OVER_2_HOURS",
     "ingredients": [
@@ -62,7 +62,7 @@ Generate a recipe with the following structure in JSON format:
     "steps": [
         {{
             "order": 1,
-            "description": "Detailed step with specific cooking terms (e.g., 'sauté', 'simmer', 'fold'), temperatures, and timing"
+            "description": "Detailed step - max 1000 characters - with specific cooking terms (e.g., 'sauté', 'simmer', 'fold'), temperatures, and timing"
         }}
     ],
     "hashtags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
@@ -73,6 +73,7 @@ Generate a recipe with the following structure in JSON format:
 
 Requirements:
 - Write EVERYTHING in {lang}
+- IMPORTANT: Keep title under 100 characters, description under 1000 characters, each step under 1000 characters
 - Include 5-15 ingredients with realistic amounts
 - {unit_instruction}
 - IMPORTANT: Every ingredient MUST have both quantity (number) and unit filled
@@ -140,8 +141,8 @@ TASK: {instruction}
 
 Generate a variant recipe in JSON format:
 {{
-    "title": "Title with variation type + dish name (e.g., 'Quick 15-Minute Garlic Butter Shrimp' or 'Healthy Low-Carb Chicken Stir-Fry')",
-    "description": "2-3 sentences that include: what changed, the dish name, key ingredients, and cooking method. Write naturally but include searchable terms.",
+    "title": "Title - max 100 characters - with variation type + dish name (e.g., 'Quick 15-Minute Garlic Butter Shrimp' or 'Healthy Low-Carb Chicken Stir-Fry')",
+    "description": "2-3 sentences, max 1000 characters, that include: what changed, the dish name, key ingredients, and cooking method. Write naturally but include searchable terms.",
     "servings": number,
     "cookingTimeRange": "UNDER_15_MIN" | "MIN_15_TO_30" | "MIN_30_TO_60" | "HOUR_1_TO_2" | "OVER_2_HOURS",
     "ingredients": [
@@ -155,12 +156,12 @@ Generate a variant recipe in JSON format:
     "steps": [
         {{
             "order": 1,
-            "description": "Detailed step with specific cooking terms (e.g., 'sauté', 'simmer', 'fold'), temperatures, and timing"
+            "description": "Detailed step - max 1000 characters - with specific cooking terms (e.g., 'sauté', 'simmer', 'fold'), temperatures, and timing"
         }}
     ],
     "hashtags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
     "changeDiff": "Clear description of what changed from the original",
-    "changeReason": "Why you made these changes (1-2 sentences)",
+    "changeReason": "Why you made these changes - max 1000 characters (1-2 sentences)",
     "changeCategories": ["INGREDIENT_SUBSTITUTION", "QUANTITY_ADJUSTMENT", "COOKING_METHOD", "SEASONING_CHANGE", "DIETARY_ADAPTATION", "TIME_OPTIMIZATION", "EQUIPMENT_CHANGE", "PRESENTATION"]
 }}
 
@@ -168,6 +169,7 @@ Generate a variant recipe in JSON format:
 
 Requirements:
 - Write EVERYTHING in {lang}
+- IMPORTANT: Keep title under 100 characters, description under 1000 characters, each step under 1000 characters, changeReason under 1000 characters
 - Make meaningful, noticeable changes (not just minor tweaks)
 - Keep the dish recognizable as a variant of the original
 - {unit_instruction}
@@ -208,8 +210,8 @@ Your background: {persona_background}
 
 Write a cooking log entry in JSON format:
 {{
-    "title": "Short, catchy title for this cooking experience",
-    "content": "2-4 paragraphs describing your cooking experience. Include:
+    "title": "Short, catchy title for this cooking experience - max 100 characters",
+    "content": "Max 1000 characters. 2-4 paragraphs describing your cooking experience. Include:
         - How the cooking process went
         - Any challenges or surprises
         - How it tasted/looked
@@ -220,6 +222,7 @@ Write a cooking log entry in JSON format:
 
 Requirements:
 - Write EVERYTHING in {lang}
+- IMPORTANT: Keep title under 100 characters, content under 1000 characters
 - Be authentic and personal - this is YOUR cooking experience
 - Match the outcome ({outcome}) in your tone and content
 - Include specific details that make it feel real
