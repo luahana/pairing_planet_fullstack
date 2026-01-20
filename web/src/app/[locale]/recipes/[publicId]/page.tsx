@@ -17,7 +17,7 @@ import { ShareButtons } from '@/components/common/ShareButtons';
 import { VariantButton } from '@/components/recipe/VariantButton';
 import { ImageCarousel } from '@/components/common/ImageCarousel';
 import { CookingStyleBadge } from '@/components/common/CookingStyleBadge';
-import { COOKING_TIME_RANGES, type CookingTimeRange } from '@/lib/types';
+import { COOKING_TIME_TRANSLATION_KEYS } from '@/lib/types';
 import { getImageUrl } from '@/lib/utils/image';
 import { getAvatarInitial } from '@/lib/utils/string';
 import { getLocalizedContent } from '@/lib/utils/localization';
@@ -77,15 +77,15 @@ export default async function RecipeDetailPage({ params }: Props) {
     notFound();
   }
 
-  const cookingTime =
-    COOKING_TIME_RANGES[recipe.cookingTimeRange as CookingTimeRange] ||
-    recipe.cookingTimeRange;
-
   const localizedTitle = getLocalizedContent(recipe.titleTranslations, locale, recipe.title);
   const localizedDescription = getLocalizedContent(recipe.descriptionTranslations, locale, recipe.description);
 
   const t = await getTranslations('recipes');
   const tNav = await getTranslations('nav');
+  const tFilters = await getTranslations('filters');
+
+  const cookingTimeKey = COOKING_TIME_TRANSLATION_KEYS[recipe.cookingTimeRange];
+  const cookingTime = cookingTimeKey ? tFilters(cookingTimeKey) : recipe.cookingTimeRange;
 
   return (
     <>

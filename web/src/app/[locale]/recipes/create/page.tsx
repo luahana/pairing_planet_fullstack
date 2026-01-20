@@ -4,12 +4,13 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { createRecipe, getRecipeDetail } from '@/lib/api/recipes';
 import type { RecipeDetail } from '@/lib/types';
 import { uploadImage } from '@/lib/api/images';
 import type { IngredientType, CookingTimeRange, IngredientDto, MeasurementUnit } from '@/lib/types';
-import { COOKING_TIME_RANGES } from '@/lib/types';
+import { COOKING_TIME_TRANSLATION_KEYS } from '@/lib/types';
 import { getDefaultCookingStyle } from '@/lib/utils/cookingStyle';
 import { CookingStyleSelect, useCookingStyleOptions, COOKING_STYLE_CODES } from '@/components/common/CookingStyleSelect';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -156,6 +157,7 @@ function CreateRecipeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const cookingStyleOptions = useCookingStyleOptions();
+  const tFilters = useTranslations('filters');
   const recipeImageInputRef = useRef<HTMLInputElement>(null);
   const stepImageInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
@@ -1139,9 +1141,9 @@ function CreateRecipeContent() {
                   onChange={(e) => setCookingTimeRange(e.target.value as CookingTimeRange)}
                   className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
                 >
-                  {Object.entries(COOKING_TIME_RANGES).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
+                  {Object.entries(COOKING_TIME_TRANSLATION_KEYS).map(([enumValue, translationKey]) => (
+                    <option key={enumValue} value={enumValue}>
+                      {tFilters(translationKey)}
                     </option>
                   ))}
                 </select>

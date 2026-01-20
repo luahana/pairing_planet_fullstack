@@ -126,17 +126,18 @@ export interface TrendingTree {
 }
 
 /**
- * Cooking time range enum values
+ * Cooking time range enum values (matches backend CookingTimeRange.java)
+ * Maps backend enum values to translation keys in the 'filters' namespace
  */
-export const COOKING_TIME_RANGES = {
-  MIN_0_TO_15: '0-15 min',
-  MIN_15_TO_30: '15-30 min',
-  MIN_30_TO_60: '30-60 min',
-  MIN_60_TO_120: '1-2 hours',
-  MIN_120_PLUS: '2+ hours',
-} as const;
+export const COOKING_TIME_TRANSLATION_KEYS: Record<string, string> = {
+  UNDER_15_MIN: 'timeUnder15',
+  MIN_15_TO_30: 'time15to30',
+  MIN_30_TO_60: 'time30to60',
+  HOUR_1_TO_2: 'time1to2hours',
+  OVER_2_HOURS: 'timeOver2hours',
+};
 
-export type CookingTimeRange = keyof typeof COOKING_TIME_RANGES;
+export type CookingTimeRange = keyof typeof COOKING_TIME_TRANSLATION_KEYS;
 
 /**
  * Recipe modifiable check response

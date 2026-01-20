@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { RecipeSummary } from '@/lib/types';
-import { COOKING_TIME_RANGES, type CookingTimeRange } from '@/lib/types';
+import { COOKING_TIME_TRANSLATION_KEYS } from '@/lib/types';
 import { getImageUrl } from '@/lib/utils/image';
 import { getLocalizedContent } from '@/lib/utils/localization';
 import { CookingStyleBadge } from '@/components/common/CookingStyleBadge';
@@ -21,11 +21,11 @@ export function RecipeCard({ recipe, isSaved = false, showTypeLabel = false, loc
   const t = useTranslations('recipes');
   const tCommon = useTranslations('common');
   const tCard = useTranslations('card');
+  const tFilters = useTranslations('filters');
   const localizedTitle = getLocalizedContent(recipe.titleTranslations, locale, recipe.title);
   const localizedDescription = getLocalizedContent(recipe.descriptionTranslations, locale, recipe.description);
-  const cookingTime =
-    COOKING_TIME_RANGES[recipe.cookingTimeRange as CookingTimeRange] ||
-    recipe.cookingTimeRange;
+  const cookingTimeKey = COOKING_TIME_TRANSLATION_KEYS[recipe.cookingTimeRange];
+  const cookingTime = cookingTimeKey ? tFilters(cookingTimeKey) : recipe.cookingTimeRange;
 
   return (
     <Link

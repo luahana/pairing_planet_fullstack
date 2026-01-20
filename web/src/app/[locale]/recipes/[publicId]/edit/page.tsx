@@ -16,7 +16,9 @@ import type {
   IngredientType,
   MeasurementUnit,
   UpdateRecipeRequest,
+  CookingTimeRange,
 } from '@/lib/types';
+import { COOKING_TIME_TRANSLATION_KEYS } from '@/lib/types';
 
 const MAX_RECIPE_PHOTOS = 5;
 const MAX_HASHTAGS = 5;
@@ -85,14 +87,6 @@ const MEASUREMENT_UNITS: { value: MeasurementUnit | ''; label: string }[] = [
   { value: 'TO_TASTE', label: 'To Taste' },
 ];
 
-const COOKING_TIME_OPTIONS = [
-  { value: 'MIN_0_TO_15', label: '0-15 min' },
-  { value: 'MIN_15_TO_30', label: '15-30 min' },
-  { value: 'MIN_30_TO_60', label: '30-60 min' },
-  { value: 'MIN_60_TO_120', label: '1-2 hours' },
-  { value: 'MIN_120_PLUS', label: '2+ hours' },
-];
-
 interface UploadedImage {
   file: File;
   preview: string;
@@ -141,6 +135,7 @@ export default function RecipeEditPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const t = useTranslations('recipeEdit');
+  const tFilters = useTranslations('filters');
   const recipeImageInputRef = useRef<HTMLInputElement>(null);
   const stepImageInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
@@ -775,9 +770,9 @@ export default function RecipeEditPage() {
                     onChange={(e) => setCookingTimeRange(e.target.value)}
                     className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--primary)]"
                   >
-                    {COOKING_TIME_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    {Object.entries(COOKING_TIME_TRANSLATION_KEYS).map(([enumValue, translationKey]) => (
+                      <option key={enumValue} value={enumValue}>
+                        {tFilters(translationKey)}
                       </option>
                     ))}
                   </select>
