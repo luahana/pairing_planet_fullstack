@@ -28,7 +28,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { publicId } = await params;
+  const { publicId, locale } = await params;
 
   try {
     const recipe = await getRecipeDetail(publicId);
