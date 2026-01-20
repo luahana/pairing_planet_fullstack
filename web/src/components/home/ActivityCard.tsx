@@ -11,9 +11,9 @@ interface Activity {
   logPublicId: string;
   foodName: string;
   recipeTitle: string;
-  userName?: string;
-  thumbnailUrl?: string;
-  rating?: number;
+  userName?: string | null;
+  thumbnailUrl?: string | null;
+  rating?: number | null;
 }
 
 interface ActivityCardProps {
