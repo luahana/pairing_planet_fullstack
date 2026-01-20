@@ -45,7 +45,7 @@ def english_persona() -> BotPersona:
         display_name={"ko": "테스트 셰프", "en": "Test Chef"},
         tone=Tone.CASUAL,
         skill_level=SkillLevel.INTERMEDIATE,
-        vocabulary_style=VocabularyStyle.CONVERSATIONAL,
+        vocabulary_style=VocabularyStyle.STANDARD,
         locale="en-US",
         cooking_style="US",
         dietary_focus=DietaryFocus.HEALTHY,

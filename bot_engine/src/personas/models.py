@@ -44,7 +44,7 @@ class VocabularyStyle(str, Enum):
 
     TECHNICAL = "technical"
     SIMPLE = "simple"
-    CONVERSATIONAL = "conversational"
+    STANDARD = "standard"
 
 
 # Locale to language name mapping for all supported locales
@@ -155,7 +155,7 @@ class BotPersona(BaseModel):
         vocab_desc = {
             VocabularyStyle.TECHNICAL: "Use proper culinary terminology.",
             VocabularyStyle.SIMPLE: "Use simple, easy-to-understand words.",
-            VocabularyStyle.CONVERSATIONAL: "Use natural, everyday language.",
+            VocabularyStyle.STANDARD: "Use natural, everyday language.",
         }
 
         prompt = f"""You are {self.get_display_name(self.locale)}, {skill_desc[self.skill_level]}.

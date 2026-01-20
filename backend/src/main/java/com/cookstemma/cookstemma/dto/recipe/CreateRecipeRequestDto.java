@@ -10,9 +10,9 @@ import java.util.UUID;
 
 public record CreateRecipeRequestDto(
         @NotBlank(message = "제목은 필수입니다")
-        @Size(min = 2, max = 100, message = "제목은 2자 이상 100자 이하여야 합니다")
+        @Size(min = 2, max = 200, message = "제목은 2자 이상 200자 이하여야 합니다")
         String title,
-        @Size(max = 500, message = "설명은 500자 이하여야 합니다")
+        @Size(max = 2000, message = "설명은 2000자 이하여야 합니다")
         String description,
         String cookingStyle,
         UUID food1MasterPublicId,
@@ -29,7 +29,7 @@ public record CreateRecipeRequestDto(
         UUID rootPublicId,
         // Phase 7-3: Automatic Change Detection
         Map<String, Object> changeDiff,
-        @Size(max = 300, message = "변경 사유는 300자 이하여야 합니다")
+        @Size(max = 2000, message = "변경 사유는 2000자 이하여야 합니다")
         String changeReason,
         // Hashtags (e.g., ["vegetarian", "quick-meal", "spicy"])
         List<String> hashtags,
