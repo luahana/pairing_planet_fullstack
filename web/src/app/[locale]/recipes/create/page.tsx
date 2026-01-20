@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { createRecipe, getRecipeDetail } from '@/lib/api/recipes';
 import type { RecipeDetail } from '@/lib/types';
@@ -176,17 +176,7 @@ function CreateRecipeContent() {
   const tFilters = useTranslations('filters');
   const t = useTranslations('recipeCreate');
   const tUnits = useTranslations('units');
-  const locale = useLocale();
   const recipeImageInputRef = useRef<HTMLInputElement>(null);
-
-  // Helper to get translated content with fallback to original
-  const getTranslated = (
-    original: string,
-    translations: Record<string, string> | null | undefined,
-    loc: string
-  ): string => {
-    return translations?.[loc] || original;
-  };
 
   const stepImageInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
@@ -239,17 +229,17 @@ function CreateRecipeContent() {
         const parent = await getRecipeDetail(parentPublicId);
         setParentRecipe(parent);
 
-        // Pre-populate form fields from parent (using translations for user's locale)
-        setDescription(getTranslated(parent.description, parent.descriptionTranslations, locale));
+        // Pre-populate form fields from parent
+        setDescription(parent.description);
         setFoodName(parent.foodName);
         setCookingStyle(parent.cookingStyle);
         setServings(parent.servings);
         setCookingTimeRange(parent.cookingTimeRange as CookingTimeRange);
 
-        // Pre-populate ingredients (marked as original/inherited, with translated names)
+        // Pre-populate ingredients (marked as original/inherited)
         const inheritedIngredients: FormIngredient[] = parent.ingredients.map((ing) => ({
           id: crypto.randomUUID(),
-          name: getTranslated(ing.name, ing.nameTranslations, locale),
+          name: ing.name,
           quantity: ing.quantity?.toString() ?? '',
           unit: (ing.unit ?? '') as MeasurementUnit | '',
           type: ing.type,
@@ -258,10 +248,10 @@ function CreateRecipeContent() {
         }));
         setIngredients(inheritedIngredients);
 
-        // Pre-populate steps (marked as original/inherited, with translated descriptions)
+        // Pre-populate steps (marked as original/inherited)
         const inheritedSteps: FormStep[] = parent.steps.map((step) => ({
           id: crypto.randomUUID(),
-          description: getTranslated(step.description, step.descriptionTranslations, locale),
+          description: step.description,
           image: null, // New uploaded image (null until user uploads)
           inheritedImageUrl: step.imageUrl, // Show parent's image
           inheritedImagePublicId: step.imagePublicId, // For submission
@@ -296,7 +286,7 @@ function CreateRecipeContent() {
     };
 
     fetchParent();
-  }, [parentPublicId, isAuthenticated, locale]);
+  }, [parentPublicId, isAuthenticated, t]);
 
   // Set default cooking style based on browser locale (only for non-variant mode)
   useEffect(() => {
