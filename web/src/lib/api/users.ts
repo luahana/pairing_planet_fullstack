@@ -31,7 +31,10 @@ export async function getUserProfile(publicId: string): Promise<UserProfile> {
  */
 export async function getUserRecipes(
   userId: string,
-  params: PaginationParams & { typeFilter?: 'original' | 'variants' } = {},
+  params: PaginationParams & {
+    typeFilter?: 'original' | 'variants';
+    contentLocale?: string;
+  } = {},
 ): Promise<SliceResponse<RecipeSummary>> {
   const queryString = buildQueryString({
     page: params.page ?? 0,
@@ -43,6 +46,7 @@ export async function getUserRecipes(
     `/users/${userId}/recipes${queryString}`,
     {
       next: { revalidate: 60 },
+      locale: params.contentLocale,
     },
   );
 }
@@ -52,7 +56,7 @@ export async function getUserRecipes(
  */
 export async function getUserLogs(
   userId: string,
-  params: PaginationParams = {},
+  params: PaginationParams & { contentLocale?: string } = {},
 ): Promise<SliceResponse<LogPostSummary>> {
   const queryString = buildQueryString({
     page: params.page ?? 0,
@@ -63,6 +67,7 @@ export async function getUserLogs(
     `/users/${userId}/logs${queryString}`,
     {
       next: { revalidate: 60 },
+      locale: params.contentLocale,
     },
   );
 }

@@ -57,8 +57,8 @@ export default async function UserProfilePage({ params, searchParams }: Props) {
   }
 
   const [recipesData, logsData] = await Promise.all([
-    getUserRecipes(publicId, { size: 6 }),
-    getUserLogs(publicId, { size: 6 }),
+    getUserRecipes(publicId, { size: 6, contentLocale: locale }),
+    getUserLogs(publicId, { size: 6, contentLocale: locale }),
   ]);
 
   const tabs = [
