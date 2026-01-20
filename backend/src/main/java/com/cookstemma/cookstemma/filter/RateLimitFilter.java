@@ -1,9 +1,11 @@
 package com.cookstemma.cookstemma.filter;
 
+import com.cookstemma.cookstemma.security.JwtTokenProvider;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,6 +31,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, BucketConfiguration> rateLimitConfigurations;
     private final boolean rateLimitEnabled;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // Cache of buckets per key (IP + endpoint)
     private final Map<String, Bucket> bucketCache = new ConcurrentHashMap<>();
@@ -47,6 +51,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         if (config == null) {
             // No rate limit for this endpoint
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Check if request is from a bot (exempt from rate limiting)
+        if (isBotRequest(request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -92,6 +102,32 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         return request.getRemoteAddr();
+    }
+
+    private boolean isBotRequest(HttpServletRequest request) {
+        String token = resolveToken(request);
+        if (token != null && jwtTokenProvider.validateToken(token)) {
+            String role = jwtTokenProvider.getRole(token);
+            return "BOT".equals(role);
+        }
+        return false;
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        // Check cookie for web clients
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            return Arrays.stream(cookies)
+                    .filter(c -> "access_token".equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 
     private void sendRateLimitResponse(HttpServletResponse response) throws IOException {

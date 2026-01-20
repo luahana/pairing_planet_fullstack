@@ -29,6 +29,12 @@ public class RateLimitConfig {
     @Value("${app.rate-limit.bot-login.requests-per-minute:20}")
     private int botLoginRequestsPerMinute;
 
+    @Value("${app.rate-limit.content.requests-per-minute:30}")
+    private int contentRequestsPerMinute;
+
+    @Value("${app.rate-limit.upload.requests-per-minute:20}")
+    private int uploadRequestsPerMinute;
+
     /**
      * Cache for storing bucket configurations per endpoint pattern.
      */
@@ -49,6 +55,13 @@ public class RateLimitConfig {
 
         // Rate limit for bot login: 20 requests per minute (higher limit for automated systems)
         configs.put("/api/v1/auth/bot-login", createBucketConfig(botLoginRequestsPerMinute, Duration.ofMinutes(1)));
+
+        // Rate limit for content creation: 30 requests per minute
+        configs.put("/api/v1/recipes", createBucketConfig(contentRequestsPerMinute, Duration.ofMinutes(1)));
+        configs.put("/api/v1/log_posts", createBucketConfig(contentRequestsPerMinute, Duration.ofMinutes(1)));
+
+        // Rate limit for image upload: 20 requests per minute (resource intensive)
+        configs.put("/api/v1/images/upload", createBucketConfig(uploadRequestsPerMinute, Duration.ofMinutes(1)));
 
         return configs;
     }
