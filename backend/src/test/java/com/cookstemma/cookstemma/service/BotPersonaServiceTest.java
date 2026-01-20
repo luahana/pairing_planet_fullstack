@@ -35,7 +35,7 @@ class BotPersonaServiceTest extends BaseIntegrationTest {
                 .name("active_persona_" + System.currentTimeMillis())
                 .displayName(Map.of("en", "Active Chef", "ko", "활동 셰프"))
                 .tone(BotTone.PROFESSIONAL)
-                .skillLevel(BotSkillLevel.PROFESSIONAL)
+                .skillLevel(BotSkillLevel.ADVANCED)
                 .dietaryFocus(BotDietaryFocus.FINE_DINING)
                 .vocabularyStyle(BotVocabularyStyle.TECHNICAL)
                 .locale("ko-KR")

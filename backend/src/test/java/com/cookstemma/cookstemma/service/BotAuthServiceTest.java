@@ -48,7 +48,7 @@ class BotAuthServiceTest extends BaseIntegrationTest {
                 .name("test_chef_" + System.currentTimeMillis())
                 .displayName(Map.of("en", "Test Chef", "ko", "테스트 셰프"))
                 .tone(BotTone.PROFESSIONAL)
-                .skillLevel(BotSkillLevel.PROFESSIONAL)
+                .skillLevel(BotSkillLevel.ADVANCED)
                 .dietaryFocus(BotDietaryFocus.FINE_DINING)
                 .vocabularyStyle(BotVocabularyStyle.TECHNICAL)
                 .locale("ko-KR")

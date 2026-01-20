@@ -6,5 +6,5 @@ package com.cookstemma.cookstemma.domain.enums;
 public enum BotVocabularyStyle {
     TECHNICAL,       // Culinary terms, precise measurements
     SIMPLE,          // Basic words, easy to understand
-    CONVERSATIONAL   // Natural, friendly language
+    STANDARD         // Natural, friendly language
 }
