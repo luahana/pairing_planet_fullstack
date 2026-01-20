@@ -16,6 +16,7 @@ export function CookingStyleBadge({
   showLabel = true,
 }: CookingStyleBadgeProps) {
   const t = useTranslations('cookingStyles');
+  const tCommon = useTranslations('common');
 
   if (!localeCode) return null;
 
@@ -35,8 +36,7 @@ export function CookingStyleBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 bg-[var(--background)] text-[var(--text-secondary)] rounded border border-[var(--border)] ${sizeClasses[size]}`}
-      title={`${name} Style`}
+      className={`relative group inline-flex items-center gap-1.5 bg-[var(--background)] text-[var(--text-secondary)] rounded border border-[var(--border)] ${sizeClasses[size]}`}
     >
       <Image
         src={flagUrl}
@@ -46,7 +46,12 @@ export function CookingStyleBadge({
         className="rounded-sm"
         unoptimized
       />
-      {showLabel && <span className="font-medium">Style</span>}
+      {showLabel && <span className="font-medium">{tCommon('style')}</span>}
+
+      {/* Styled Tooltip */}
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[var(--text-primary)] text-[var(--background)] text-xs rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 pointer-events-none z-10">
+        {name}
+      </span>
     </span>
   );
 }
