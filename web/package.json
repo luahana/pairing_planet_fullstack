@@ -13,6 +13,7 @@
     "check-translations": "npx tsx scripts/check-translations.ts"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.35.0",
     "firebase": "^11.10.0",
     "js-cookie": "^3.0.5",
     "next": "16.1.1",

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import Cookies from 'js-cookie';
 import { siteConfig } from '@/config/site';
 
@@ -124,9 +125,16 @@ export async function apiFetch<T>(
 
     const error = new ApiError(response.status, errorMessage, errorCode);
 
-    // Log server errors (5xx) for debugging
-    // Note: Sentry capture disabled until @sentry/nextjs supports Next.js 16
+    // Capture server errors (5xx) in Sentry
     if (response.status >= 500) {
+      Sentry.captureException(error, {
+        extra: {
+          endpoint,
+          method: fetchOptions.method || 'GET',
+          status: response.status,
+          code: errorCode,
+        },
+      });
       console.error('[API Error]', {
         endpoint,
         method: fetchOptions.method || 'GET',

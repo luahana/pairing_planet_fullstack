@@ -5,8 +5,8 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const isDev = process.env.NODE_ENV === 'development';
 
-// Note: @sentry/nextjs doesn't support Next.js 16 yet
-// Sentry integration will be re-enabled when support is available
+// Sentry integration - enabled when DSN is set in environment
+// Errors are only sent in staging/production (DSN empty in dev)
 let withSentryConfig: ((config: NextConfig, options: object) => NextConfig) | null = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -94,7 +94,6 @@ const sentryWebpackPluginOptions = {
 
   // Only upload source maps in CI when auth token is available
   silent: !process.env.SENTRY_AUTH_TOKEN,
-  disableLogger: true,
 
   // Hide source maps from client bundles
   hideSourceMaps: true,

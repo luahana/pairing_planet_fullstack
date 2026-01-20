@@ -1,5 +1,13 @@
-// Note: @sentry/nextjs doesn't support Next.js 16 yet
-// This file is a no-op until Sentry support is available
+import * as Sentry from "@sentry/nextjs";
 
-// Export empty to satisfy any imports
-export {};
+const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
+
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || "development",
+    tracesSampleRate: parseFloat(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0"),
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
+  });
+}

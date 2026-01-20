@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 
 export default function GlobalError({
@@ -10,8 +11,8 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log error for debugging
-    // Note: Sentry capture disabled until @sentry/nextjs supports Next.js 16
+    // Capture error in Sentry (only sends if DSN is configured)
+    Sentry.captureException(error);
     console.error('[Global Error]', error);
   }, [error]);
 
