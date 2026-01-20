@@ -82,39 +82,68 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query("SELECT r FROM Recipe r WHERE r.rootRecipe IS NOT NULL AND r.cookingStyle = :locale AND r.deletedAt IS NULL AND r.isPrivate = false")
     Slice<Recipe> findOnlyVariantsByLocale(@Param("locale") String locale, Pageable pageable);
 
-    // [검색] pg_trgm 기반 레시피 검색 (제목, 설명, 재료명) - 퍼지 매칭 + 관련도 정렬
+    // [검색] pg_trgm 기반 레시피 검색 (제목, 설명, 재료명, 번역 필드 포함) - 퍼지 매칭 + 관련도 정렬
     @Query(value = """
         SELECT r.* FROM (
             SELECT DISTINCT ON (r2.id) r2.*,
                 GREATEST(
                     COALESCE(SIMILARITY(r2.title, :keyword), 0),
-                    COALESCE(SIMILARITY(r2.description, :keyword), 0)
+                    COALESCE(SIMILARITY(r2.description, :keyword), 0),
+                    COALESCE(SIMILARITY(jsonb_values_text(r2.title_translations), :keyword), 0),
+                    COALESCE(SIMILARITY(jsonb_values_text(r2.description_translations), :keyword), 0),
+                    COALESCE(SIMILARITY(jsonb_values_text(fm.name), :keyword), 0)
                 ) AS relevance_score
             FROM recipes r2
+            LEFT JOIN foods_master fm ON fm.id = r2.food_master_id
             LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r2.id
+            LEFT JOIN recipe_steps rs ON rs.recipe_id = r2.id
             WHERE r2.deleted_at IS NULL AND r2.is_private = false
             AND (
-                r2.title % :keyword
-                OR r2.description % :keyword
-                OR ri.name % :keyword
-                OR r2.title ILIKE '%' || :keyword || '%'
-                OR r2.description ILIKE '%' || :keyword || '%'
-                OR ri.name ILIKE '%' || :keyword || '%'
+                -- Base fields
+                r2.title % :keyword OR r2.title ILIKE '%' || :keyword || '%'
+                OR r2.description % :keyword OR r2.description ILIKE '%' || :keyword || '%'
+                -- Title translations
+                OR jsonb_values_text(r2.title_translations) % :keyword
+                OR jsonb_values_text(r2.title_translations) ILIKE '%' || :keyword || '%'
+                -- Description translations
+                OR jsonb_values_text(r2.description_translations) % :keyword
+                OR jsonb_values_text(r2.description_translations) ILIKE '%' || :keyword || '%'
+                -- FoodMaster name (all locales)
+                OR jsonb_values_text(fm.name) % :keyword
+                OR jsonb_values_text(fm.name) ILIKE '%' || :keyword || '%'
+                -- Ingredients (base + translations)
+                OR ri.name % :keyword OR ri.name ILIKE '%' || :keyword || '%'
+                OR jsonb_values_text(ri.name_translations) % :keyword
+                OR jsonb_values_text(ri.name_translations) ILIKE '%' || :keyword || '%'
+                -- Steps (base + translations)
+                OR rs.description % :keyword OR rs.description ILIKE '%' || :keyword || '%'
+                OR jsonb_values_text(rs.description_translations) % :keyword
+                OR jsonb_values_text(rs.description_translations) ILIKE '%' || :keyword || '%'
             )
         ) r
         ORDER BY r.relevance_score DESC, r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(DISTINCT r.id) FROM recipes r
+        LEFT JOIN foods_master fm ON fm.id = r.food_master_id
         LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+        LEFT JOIN recipe_steps rs ON rs.recipe_id = r.id
         WHERE r.deleted_at IS NULL AND r.is_private = false
         AND (
-            r.title % :keyword
-            OR r.description % :keyword
-            OR ri.name % :keyword
-            OR r.title ILIKE '%' || :keyword || '%'
-            OR r.description ILIKE '%' || :keyword || '%'
-            OR ri.name ILIKE '%' || :keyword || '%'
+            r.title % :keyword OR r.title ILIKE '%' || :keyword || '%'
+            OR r.description % :keyword OR r.description ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) % :keyword
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.description_translations) % :keyword
+            OR jsonb_values_text(r.description_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(fm.name) % :keyword
+            OR jsonb_values_text(fm.name) ILIKE '%' || :keyword || '%'
+            OR ri.name % :keyword OR ri.name ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(ri.name_translations) % :keyword
+            OR jsonb_values_text(ri.name_translations) ILIKE '%' || :keyword || '%'
+            OR rs.description % :keyword OR rs.description ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(rs.description_translations) % :keyword
+            OR jsonb_values_text(rs.description_translations) ILIKE '%' || :keyword || '%'
         )
         """,
         nativeQuery = true)
@@ -250,39 +279,68 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query("SELECT r FROM Recipe r WHERE r.creatorId = :creatorId AND r.deletedAt IS NULL AND r.parentRecipe IS NOT NULL")
     org.springframework.data.domain.Page<Recipe> findMyVariantRecipesPage(@Param("creatorId") Long creatorId, Pageable pageable);
 
-    // [Offset] Search recipes with Page (includes total count for pagination UI)
+    // [Offset] Search recipes with Page (includes total count for pagination UI, multi-language)
     @Query(value = """
         SELECT r.* FROM (
             SELECT DISTINCT ON (r2.id) r2.*,
                 GREATEST(
                     COALESCE(SIMILARITY(r2.title, :keyword), 0),
-                    COALESCE(SIMILARITY(r2.description, :keyword), 0)
+                    COALESCE(SIMILARITY(r2.description, :keyword), 0),
+                    COALESCE(SIMILARITY(jsonb_values_text(r2.title_translations), :keyword), 0),
+                    COALESCE(SIMILARITY(jsonb_values_text(r2.description_translations), :keyword), 0),
+                    COALESCE(SIMILARITY(jsonb_values_text(fm.name), :keyword), 0)
                 ) AS relevance_score
             FROM recipes r2
+            LEFT JOIN foods_master fm ON fm.id = r2.food_master_id
             LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r2.id
+            LEFT JOIN recipe_steps rs ON rs.recipe_id = r2.id
             WHERE r2.deleted_at IS NULL AND r2.is_private = false
             AND (
-                r2.title % :keyword
-                OR r2.description % :keyword
-                OR ri.name % :keyword
-                OR r2.title ILIKE '%' || :keyword || '%'
-                OR r2.description ILIKE '%' || :keyword || '%'
-                OR ri.name ILIKE '%' || :keyword || '%'
+                -- Base fields
+                r2.title % :keyword OR r2.title ILIKE '%' || :keyword || '%'
+                OR r2.description % :keyword OR r2.description ILIKE '%' || :keyword || '%'
+                -- Title translations
+                OR jsonb_values_text(r2.title_translations) % :keyword
+                OR jsonb_values_text(r2.title_translations) ILIKE '%' || :keyword || '%'
+                -- Description translations
+                OR jsonb_values_text(r2.description_translations) % :keyword
+                OR jsonb_values_text(r2.description_translations) ILIKE '%' || :keyword || '%'
+                -- FoodMaster name (all locales)
+                OR jsonb_values_text(fm.name) % :keyword
+                OR jsonb_values_text(fm.name) ILIKE '%' || :keyword || '%'
+                -- Ingredients (base + translations)
+                OR ri.name % :keyword OR ri.name ILIKE '%' || :keyword || '%'
+                OR jsonb_values_text(ri.name_translations) % :keyword
+                OR jsonb_values_text(ri.name_translations) ILIKE '%' || :keyword || '%'
+                -- Steps (base + translations)
+                OR rs.description % :keyword OR rs.description ILIKE '%' || :keyword || '%'
+                OR jsonb_values_text(rs.description_translations) % :keyword
+                OR jsonb_values_text(rs.description_translations) ILIKE '%' || :keyword || '%'
             )
         ) r
         ORDER BY r.relevance_score DESC, r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(DISTINCT r.id) FROM recipes r
+        LEFT JOIN foods_master fm ON fm.id = r.food_master_id
         LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+        LEFT JOIN recipe_steps rs ON rs.recipe_id = r.id
         WHERE r.deleted_at IS NULL AND r.is_private = false
         AND (
-            r.title % :keyword
-            OR r.description % :keyword
-            OR ri.name % :keyword
-            OR r.title ILIKE '%' || :keyword || '%'
-            OR r.description ILIKE '%' || :keyword || '%'
-            OR ri.name ILIKE '%' || :keyword || '%'
+            r.title % :keyword OR r.title ILIKE '%' || :keyword || '%'
+            OR r.description % :keyword OR r.description ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) % :keyword
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.description_translations) % :keyword
+            OR jsonb_values_text(r.description_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(fm.name) % :keyword
+            OR jsonb_values_text(fm.name) ILIKE '%' || :keyword || '%'
+            OR ri.name % :keyword OR ri.name ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(ri.name_translations) % :keyword
+            OR jsonb_values_text(ri.name_translations) ILIKE '%' || :keyword || '%'
+            OR rs.description % :keyword OR rs.description ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(rs.description_translations) % :keyword
+            OR jsonb_values_text(rs.description_translations) ILIKE '%' || :keyword || '%'
         )
         """,
         nativeQuery = true)
@@ -407,19 +465,29 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     // ==================== UNIFIED SEARCH COUNT ====================
 
     /**
-     * Count recipes matching search keyword (for unified search chips).
+     * Count recipes matching search keyword (for unified search chips, multi-language).
      */
     @Query(value = """
         SELECT COUNT(DISTINCT r.id) FROM recipes r
+        LEFT JOIN foods_master fm ON fm.id = r.food_master_id
         LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+        LEFT JOIN recipe_steps rs ON rs.recipe_id = r.id
         WHERE r.deleted_at IS NULL AND r.is_private = false
         AND (
-            r.title % :keyword
-            OR r.description % :keyword
-            OR ri.name % :keyword
-            OR r.title ILIKE '%' || :keyword || '%'
-            OR r.description ILIKE '%' || :keyword || '%'
-            OR ri.name ILIKE '%' || :keyword || '%'
+            r.title % :keyword OR r.title ILIKE '%' || :keyword || '%'
+            OR r.description % :keyword OR r.description ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) % :keyword
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.description_translations) % :keyword
+            OR jsonb_values_text(r.description_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(fm.name) % :keyword
+            OR jsonb_values_text(fm.name) ILIKE '%' || :keyword || '%'
+            OR ri.name % :keyword OR ri.name ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(ri.name_translations) % :keyword
+            OR jsonb_values_text(ri.name_translations) ILIKE '%' || :keyword || '%'
+            OR rs.description % :keyword OR rs.description ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(rs.description_translations) % :keyword
+            OR jsonb_values_text(rs.description_translations) ILIKE '%' || :keyword || '%'
         )
         """,
         nativeQuery = true)

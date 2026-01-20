@@ -58,16 +58,23 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
     // 4. 사용자의 로그 개수 (삭제되지 않은 것만)
     long countByCreatorIdAndDeletedAtIsNull(Long creatorId);
 
-    // [검색] pg_trgm 기반 로그 검색 (제목, 내용, 연결된 레시피명)
+    // [검색] pg_trgm 기반 로그 검색 (제목, 내용, 연결된 레시피명, 번역 필드 포함)
     @Query(value = """
         SELECT DISTINCT lp.* FROM log_posts lp
         LEFT JOIN recipe_logs rl ON rl.log_post_id = lp.id
         LEFT JOIN recipes r ON r.id = rl.recipe_id
         WHERE lp.deleted_at IS NULL AND lp.is_private = false
         AND (
+            -- Base fields
             lp.title ILIKE '%' || :keyword || '%'
             OR lp.content ILIKE '%' || :keyword || '%'
+            -- Title translations
+            OR jsonb_values_text(lp.title_translations) ILIKE '%' || :keyword || '%'
+            -- Content translations
+            OR jsonb_values_text(lp.content_translations) ILIKE '%' || :keyword || '%'
+            -- Linked recipe title (base + translations)
             OR r.title ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
         )
         ORDER BY lp.created_at DESC
         """,
@@ -79,7 +86,10 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
         AND (
             lp.title ILIKE '%' || :keyword || '%'
             OR lp.content ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(lp.title_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(lp.content_translations) ILIKE '%' || :keyword || '%'
             OR r.title ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
         )
         """,
         nativeQuery = true)
@@ -228,17 +238,25 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
         nativeQuery = true)
     Page<LogPost> findMyLogsByRatingPage(@Param("creatorId") Long creatorId, @Param("minRating") Integer minRating, @Param("maxRating") Integer maxRating, Pageable pageable);
 
-    // [Offset] Search logs - page
+    // [Offset] Search logs - page (multi-language)
     @Query(value = """
         SELECT DISTINCT lp.* FROM log_posts lp
         LEFT JOIN recipe_logs rl ON rl.log_post_id = lp.id
         LEFT JOIN recipes r ON r.id = rl.recipe_id
         WHERE lp.deleted_at IS NULL AND lp.is_private = false
         AND (
+            -- Base fields
             lp.title ILIKE '%' || :keyword || '%'
             OR lp.content ILIKE '%' || :keyword || '%'
+            -- Title translations
+            OR jsonb_values_text(lp.title_translations) ILIKE '%' || :keyword || '%'
+            -- Content translations
+            OR jsonb_values_text(lp.content_translations) ILIKE '%' || :keyword || '%'
+            -- Linked recipe title (base + translations)
             OR r.title ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
         )
+        ORDER BY lp.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(DISTINCT lp.id) FROM log_posts lp
@@ -248,7 +266,10 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
         AND (
             lp.title ILIKE '%' || :keyword || '%'
             OR lp.content ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(lp.title_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(lp.content_translations) ILIKE '%' || :keyword || '%'
             OR r.title ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
         )
         """,
         nativeQuery = true)
@@ -286,7 +307,7 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
     // ==================== UNIFIED SEARCH COUNT ====================
 
     /**
-     * Count log posts matching search keyword (for unified search chips).
+     * Count log posts matching search keyword (for unified search chips, multi-language).
      */
     @Query(value = """
         SELECT COUNT(DISTINCT lp.id) FROM log_posts lp
@@ -296,7 +317,10 @@ public interface LogPostRepository extends JpaRepository<LogPost, Long> {
         AND (
             lp.title ILIKE '%' || :keyword || '%'
             OR lp.content ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(lp.title_translations) ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(lp.content_translations) ILIKE '%' || :keyword || '%'
             OR r.title ILIKE '%' || :keyword || '%'
+            OR jsonb_values_text(r.title_translations) ILIKE '%' || :keyword || '%'
         )
         """,
         nativeQuery = true)
