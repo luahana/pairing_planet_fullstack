@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { getRecipes, type CookingTimeFilter } from '@/lib/api/recipes';
 import { RecipeGrid } from '@/components/recipe/RecipeGrid';
@@ -103,7 +104,9 @@ export default async function RecipesPage({ params, searchParams }: Props) {
       </div>
 
       {/* Filters */}
-      <RecipeFilters baseUrl="/recipes" />
+      <Suspense fallback={<div className="h-12 mb-6" />}>
+        <RecipeFilters baseUrl="/recipes" />
+      </Suspense>
 
       {/* Results count */}
       {recipes.totalElements !== null && recipes.totalElements > 0 && (
