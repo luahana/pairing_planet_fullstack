@@ -8,7 +8,13 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS bio_translations JSONB DEFAULT '{}';
 CREATE INDEX IF NOT EXISTS idx_users_bio_trans_gin
     ON users USING GIN (bio_translations jsonb_path_ops);
 
--- Add USER value to translatable_entity enum
+-- Create translatable_entity enum type if it doesn't exist, then add USER value
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'translatable_entity') THEN
+        CREATE TYPE translatable_entity AS ENUM ('RECIPE', 'LOG_POST', 'FOOD');
+    END IF;
+END $$;
+
 DO $$ BEGIN
     ALTER TYPE translatable_entity ADD VALUE IF NOT EXISTS 'USER';
 EXCEPTION WHEN duplicate_object THEN null;
