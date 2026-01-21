@@ -279,7 +279,7 @@ module "lambda_translation" {
   # Lambda configuration
   schedule_expression            = "rate(5 minutes)"
   memory_size                    = 512
-  timeout                        = 300
+  timeout                        = 600 # 10 minutes to handle large recipe batches
   reserved_concurrent_executions = -1 # No reserved concurrency (account quota limit)
 
   # CDN URL for content moderation (image validation)
