@@ -249,4 +249,88 @@ class LocaleUtilsTest {
             assertThat(LocaleUtils.getLanguageCode("en")).isEqualTo("en");
         }
     }
+
+    @Nested
+    @DisplayName("toBcp47")
+    class ToBcp47Tests {
+
+        @Test
+        @DisplayName("Should return as-is when already BCP47 format")
+        void toBcp47_WithBCP47_ReturnsAsIs() {
+            assertThat(LocaleUtils.toBcp47("ko-KR")).isEqualTo("ko-KR");
+            assertThat(LocaleUtils.toBcp47("en-US")).isEqualTo("en-US");
+            assertThat(LocaleUtils.toBcp47("ja-JP")).isEqualTo("ja-JP");
+            assertThat(LocaleUtils.toBcp47("zh-CN")).isEqualTo("zh-CN");
+        }
+
+        @Test
+        @DisplayName("Should convert short code to BCP47 for known locales")
+        void toBcp47_WithShortCode_ConvertsToBCP47() {
+            assertThat(LocaleUtils.toBcp47("ko")).isEqualTo("ko-KR");
+            assertThat(LocaleUtils.toBcp47("en")).isEqualTo("en-US");
+            assertThat(LocaleUtils.toBcp47("ja")).isEqualTo("ja-JP");
+            assertThat(LocaleUtils.toBcp47("zh")).isEqualTo("zh-CN");
+            assertThat(LocaleUtils.toBcp47("ar")).isEqualTo("ar-SA");
+            assertThat(LocaleUtils.toBcp47("pt")).isEqualTo("pt-BR");
+            assertThat(LocaleUtils.toBcp47("sv")).isEqualTo("sv-SE");
+            assertThat(LocaleUtils.toBcp47("fa")).isEqualTo("fa-IR");
+        }
+
+        @Test
+        @DisplayName("Should convert all 20 supported locales")
+        void toBcp47_AllSupportedLocales_ConvertCorrectly() {
+            // All 20 supported languages
+            assertThat(LocaleUtils.toBcp47("en")).isEqualTo("en-US");
+            assertThat(LocaleUtils.toBcp47("zh")).isEqualTo("zh-CN");
+            assertThat(LocaleUtils.toBcp47("es")).isEqualTo("es-ES");
+            assertThat(LocaleUtils.toBcp47("ja")).isEqualTo("ja-JP");
+            assertThat(LocaleUtils.toBcp47("de")).isEqualTo("de-DE");
+            assertThat(LocaleUtils.toBcp47("fr")).isEqualTo("fr-FR");
+            assertThat(LocaleUtils.toBcp47("pt")).isEqualTo("pt-BR");
+            assertThat(LocaleUtils.toBcp47("ko")).isEqualTo("ko-KR");
+            assertThat(LocaleUtils.toBcp47("it")).isEqualTo("it-IT");
+            assertThat(LocaleUtils.toBcp47("ar")).isEqualTo("ar-SA");
+            assertThat(LocaleUtils.toBcp47("ru")).isEqualTo("ru-RU");
+            assertThat(LocaleUtils.toBcp47("id")).isEqualTo("id-ID");
+            assertThat(LocaleUtils.toBcp47("vi")).isEqualTo("vi-VN");
+            assertThat(LocaleUtils.toBcp47("hi")).isEqualTo("hi-IN");
+            assertThat(LocaleUtils.toBcp47("th")).isEqualTo("th-TH");
+            assertThat(LocaleUtils.toBcp47("pl")).isEqualTo("pl-PL");
+            assertThat(LocaleUtils.toBcp47("tr")).isEqualTo("tr-TR");
+            assertThat(LocaleUtils.toBcp47("nl")).isEqualTo("nl-NL");
+            assertThat(LocaleUtils.toBcp47("sv")).isEqualTo("sv-SE");
+            assertThat(LocaleUtils.toBcp47("fa")).isEqualTo("fa-IR");
+        }
+
+        @Test
+        @DisplayName("Should normalize underscore to dash before conversion")
+        void toBcp47_WithUnderscore_NormalizesAndConverts() {
+            assertThat(LocaleUtils.toBcp47("ko_KR")).isEqualTo("ko-KR");
+            assertThat(LocaleUtils.toBcp47("en_US")).isEqualTo("en-US");
+        }
+
+        @Test
+        @DisplayName("Should return default locale for null or blank input")
+        void toBcp47_WithNullOrBlank_ReturnsDefault() {
+            assertThat(LocaleUtils.toBcp47(null)).isEqualTo("en-US");
+            assertThat(LocaleUtils.toBcp47("")).isEqualTo("en-US");
+            assertThat(LocaleUtils.toBcp47("  ")).isEqualTo("en-US");
+        }
+
+        @Test
+        @DisplayName("Should generate BCP47 for unknown short codes")
+        void toBcp47_WithUnknownShortCode_GeneratesDefault() {
+            // Unknown short codes should generate xx-XX format
+            assertThat(LocaleUtils.toBcp47("xx")).isEqualTo("xx-XX");
+            assertThat(LocaleUtils.toBcp47("abc")).isEqualTo("abc-ABC");
+        }
+
+        @Test
+        @DisplayName("Should be case insensitive for short codes")
+        void toBcp47_WithUppercaseShortCode_ConvertCorrectly() {
+            assertThat(LocaleUtils.toBcp47("KO")).isEqualTo("ko-KR");
+            assertThat(LocaleUtils.toBcp47("EN")).isEqualTo("en-US");
+            assertThat(LocaleUtils.toBcp47("Ko")).isEqualTo("ko-KR");
+        }
+    }
 }

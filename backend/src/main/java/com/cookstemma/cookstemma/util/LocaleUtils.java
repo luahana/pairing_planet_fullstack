@@ -15,6 +15,57 @@ public final class LocaleUtils {
     public static final String DEFAULT_LOCALE = "en-US";
 
     /**
+     * Mapping from short locale codes to BCP47 format.
+     * All 20 supported languages.
+     */
+    private static final Map<String, String> SHORT_TO_BCP47 = Map.ofEntries(
+            Map.entry("en", "en-US"),
+            Map.entry("zh", "zh-CN"),
+            Map.entry("es", "es-ES"),
+            Map.entry("ja", "ja-JP"),
+            Map.entry("de", "de-DE"),
+            Map.entry("fr", "fr-FR"),
+            Map.entry("pt", "pt-BR"),
+            Map.entry("ko", "ko-KR"),
+            Map.entry("it", "it-IT"),
+            Map.entry("ar", "ar-SA"),
+            Map.entry("ru", "ru-RU"),
+            Map.entry("id", "id-ID"),
+            Map.entry("vi", "vi-VN"),
+            Map.entry("hi", "hi-IN"),
+            Map.entry("th", "th-TH"),
+            Map.entry("pl", "pl-PL"),
+            Map.entry("tr", "tr-TR"),
+            Map.entry("nl", "nl-NL"),
+            Map.entry("sv", "sv-SE"),
+            Map.entry("fa", "fa-IR")
+    );
+
+    /**
+     * Convert a locale code to BCP47 format.
+     * If already BCP47, returns as-is. If short code, converts to BCP47.
+     *
+     * @param locale The locale code (e.g., "ko", "ko-KR", "en_US")
+     * @return BCP47 format locale (e.g., "ko-KR", "en-US")
+     */
+    public static String toBcp47(String locale) {
+        if (locale == null || locale.isBlank()) {
+            return DEFAULT_LOCALE;
+        }
+
+        String normalized = normalizeLocale(locale);
+
+        // If already BCP47 format (contains dash), return as-is
+        if (normalized.contains("-")) {
+            return normalized;
+        }
+
+        // Convert short code to BCP47
+        String lower = normalized.toLowerCase();
+        return SHORT_TO_BCP47.getOrDefault(lower, lower + "-" + lower.toUpperCase());
+    }
+
+    /**
      * Get a localized value from a translations map.
      * Fallback order: requested locale → language-only match → default locale (en-US) → English variants → fallback value → first available → null.
      *

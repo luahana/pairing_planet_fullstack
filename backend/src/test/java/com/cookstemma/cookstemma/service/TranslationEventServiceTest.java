@@ -69,7 +69,7 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should set source locale correctly")
+        @DisplayName("Should set source locale correctly in BCP47 format")
         void queueFoodMasterTranslation_SetsSourceLocale() {
             translationEventService.queueFoodMasterTranslation(testFoodMaster, "ko");
 
@@ -77,11 +77,12 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .findByEntityTypeAndEntityId(TranslatableEntity.FOOD_MASTER, testFoodMaster.getId())
                     .orElseThrow();
 
-            assertThat(event.getSourceLocale()).isEqualTo("ko");
+            // Now uses BCP47 format
+            assertThat(event.getSourceLocale()).isEqualTo("ko-KR");
         }
 
         @Test
-        @DisplayName("Should set all target locales except source")
+        @DisplayName("Should set all target locales except source in BCP47 format")
         void queueFoodMasterTranslation_SetsTargetLocales() {
             translationEventService.queueFoodMasterTranslation(testFoodMaster, "ko");
 
@@ -90,8 +91,9 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .orElseThrow();
 
             assertThat(event.getTargetLocales()).hasSize(19);
-            assertThat(event.getTargetLocales()).contains("en", "ja", "zh", "fr", "es", "it", "de", "ru", "pt", "ar", "id", "vi", "hi", "th", "pl", "tr", "nl", "sv", "fa");
-            assertThat(event.getTargetLocales()).doesNotContain("ko");
+            // All locales are now in BCP47 format
+            assertThat(event.getTargetLocales()).contains("en-US", "ja-JP", "zh-CN", "fr-FR", "es-ES", "it-IT", "de-DE", "ru-RU", "pt-BR", "ar-SA", "id-ID", "vi-VN", "hi-IN", "th-TH", "pl-PL", "tr-TR", "nl-NL", "sv-SE", "fa-IR");
+            assertThat(event.getTargetLocales()).doesNotContain("ko-KR");
         }
 
         @Test
@@ -107,15 +109,16 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should normalize BCP47 locale to short format")
-        void queueFoodMasterTranslation_NormalizesLocale() {
+        @DisplayName("Should keep BCP47 locale format when already BCP47")
+        void queueFoodMasterTranslation_KeepsBCP47Locale() {
             translationEventService.queueFoodMasterTranslation(testFoodMaster, "ko-KR");
 
             TranslationEvent event = translationEventRepository
                     .findByEntityTypeAndEntityId(TranslatableEntity.FOOD_MASTER, testFoodMaster.getId())
                     .orElseThrow();
 
-            assertThat(event.getSourceLocale()).isEqualTo("ko");
+            // BCP47 format is preserved
+            assertThat(event.getSourceLocale()).isEqualTo("ko-KR");
         }
 
         @Test
@@ -147,21 +150,23 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .findByEntityTypeAndEntityId(TranslatableEntity.FOOD_MASTER, englishFood.getId())
                     .orElseThrow();
 
-            assertThat(event.getSourceLocale()).isEqualTo("en");
-            assertThat(event.getTargetLocales()).contains("ko");
-            assertThat(event.getTargetLocales()).doesNotContain("en");
+            // Now uses BCP47 format
+            assertThat(event.getSourceLocale()).isEqualTo("en-US");
+            assertThat(event.getTargetLocales()).contains("ko-KR");
+            assertThat(event.getTargetLocales()).doesNotContain("en-US");
         }
 
         @Test
-        @DisplayName("Should default to ko for unknown locale")
-        void queueFoodMasterTranslation_DefaultsToKorean() {
+        @DisplayName("Should default to en-US for unknown locale")
+        void queueFoodMasterTranslation_DefaultsToEnglish() {
             translationEventService.queueFoodMasterTranslation(testFoodMaster, "xx-XX");
 
             TranslationEvent event = translationEventRepository
                     .findByEntityTypeAndEntityId(TranslatableEntity.FOOD_MASTER, testFoodMaster.getId())
                     .orElseThrow();
 
-            assertThat(event.getSourceLocale()).isEqualTo("ko");
+            // Unknown locales default to en-US
+            assertThat(event.getSourceLocale()).isEqualTo("en-US");
         }
 
         @Test
@@ -173,7 +178,8 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .findByEntityTypeAndEntityId(TranslatableEntity.FOOD_MASTER, testFoodMaster.getId())
                     .orElseThrow();
 
-            assertThat(event.getSourceLocale()).isEqualTo("ko");
+            // Null locale defaults to en-US
+            assertThat(event.getSourceLocale()).isEqualTo("en-US");
         }
     }
 
@@ -220,7 +226,7 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should create RECIPE_FULL translation event with specified source locale")
+        @DisplayName("Should create RECIPE_FULL translation event with specified source locale in BCP47")
         void forceRecipeTranslation_CreatesEvent() {
             translationEventService.forceRecipeTranslation(testRecipe, "en");
 
@@ -229,11 +235,12 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     List.of(TranslationStatus.PENDING));
 
             assertThat(events).hasSize(1);
-            assertThat(events.get(0).getSourceLocale()).isEqualTo("en");
+            // Now uses BCP47 format
+            assertThat(events.get(0).getSourceLocale()).isEqualTo("en-US");
         }
 
         @Test
-        @DisplayName("Should target ALL 20 locales when force translating")
+        @DisplayName("Should target ALL 20 locales when force translating in BCP47 format")
         void forceRecipeTranslation_TargetsAllLocales() {
             translationEventService.forceRecipeTranslation(testRecipe, "en");
 
@@ -241,9 +248,9 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     TranslatableEntity.RECIPE_FULL, testRecipe.getId(),
                     List.of(TranslationStatus.PENDING)).get(0);
 
-            // Force translation includes ALL locales (including source)
+            // Force translation includes ALL locales (including source) in BCP47 format
             assertThat(event.getTargetLocales()).hasSize(20);
-            assertThat(event.getTargetLocales()).contains("ja", "ko", "zh", "en");
+            assertThat(event.getTargetLocales()).contains("ja-JP", "ko-KR", "zh-CN", "en-US");
         }
 
         @Test
@@ -290,12 +297,12 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
             assertThat(initialEvent.getStatus()).isEqualTo(TranslationStatus.FAILED);
             assertThat(initialEvent.getLastError()).contains("Cancelled for re-translation");
 
-            // Check new event is PENDING with new source
+            // Check new event is PENDING with new source in BCP47 format
             List<TranslationEvent> newEvents = translationEventRepository.findByEntityTypeAndEntityIdAndStatusIn(
                     TranslatableEntity.RECIPE_FULL, testRecipe.getId(),
                     List.of(TranslationStatus.PENDING));
             assertThat(newEvents).hasSize(1);
-            assertThat(newEvents.get(0).getSourceLocale()).isEqualTo("en");
+            assertThat(newEvents.get(0).getSourceLocale()).isEqualTo("en-US");
         }
     }
 
@@ -386,7 +393,7 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should set source locale based on cooking style")
+        @DisplayName("Should set source locale based on cooking style in BCP47 format")
         void queueRecipeTranslation_SetsSourceLocale() {
             translationEventService.queueRecipeTranslation(testRecipe);
 
@@ -394,12 +401,12 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     TranslatableEntity.RECIPE_FULL, testRecipe.getId(),
                     List.of(TranslationStatus.PENDING)).get(0);
 
-            // KR cooking style should map to ko locale
-            assertThat(event.getSourceLocale()).isEqualTo("ko");
+            // KR cooking style should map to ko-KR locale (BCP47 format)
+            assertThat(event.getSourceLocale()).isEqualTo("ko-KR");
         }
 
         @Test
-        @DisplayName("Should set 19 target locales (all except source)")
+        @DisplayName("Should set 19 target locales (all except source) in BCP47 format")
         void queueRecipeTranslation_SetsTargetLocales() {
             translationEventService.queueRecipeTranslation(testRecipe);
 
@@ -408,8 +415,9 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     List.of(TranslationStatus.PENDING)).get(0);
 
             assertThat(event.getTargetLocales()).hasSize(19);
-            assertThat(event.getTargetLocales()).contains("en", "ja", "zh", "fr", "es");
-            assertThat(event.getTargetLocales()).doesNotContain("ko");
+            // All locales are now in BCP47 format
+            assertThat(event.getTargetLocales()).contains("en-US", "ja-JP", "zh-CN", "fr-FR", "es-ES");
+            assertThat(event.getTargetLocales()).doesNotContain("ko-KR");
         }
 
         @Test
@@ -479,7 +487,7 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should set source locale from creator's locale")
+        @DisplayName("Should set source locale from creator's locale in BCP47 format")
         void queueCommentTranslation_SetsSourceLocale() {
             translationEventService.queueCommentTranslation(testComment);
 
@@ -487,11 +495,12 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, testComment.getId())
                     .orElseThrow();
 
-            assertThat(event.getSourceLocale()).isEqualTo("ko");
+            // Now uses BCP47 format
+            assertThat(event.getSourceLocale()).isEqualTo("ko-KR");
         }
 
         @Test
-        @DisplayName("Should set all target locales except source")
+        @DisplayName("Should set all target locales except source in BCP47 format")
         void queueCommentTranslation_SetsTargetLocales() {
             translationEventService.queueCommentTranslation(testComment);
 
@@ -500,8 +509,9 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .orElseThrow();
 
             assertThat(event.getTargetLocales()).hasSize(19);
-            assertThat(event.getTargetLocales()).contains("en", "ja", "zh", "fr", "es");
-            assertThat(event.getTargetLocales()).doesNotContain("ko");
+            // All locales are now in BCP47 format
+            assertThat(event.getTargetLocales()).contains("en-US", "ja-JP", "zh-CN", "fr-FR", "es-ES");
+            assertThat(event.getTargetLocales()).doesNotContain("ko-KR");
         }
 
         @Test
@@ -567,7 +577,7 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should handle English as source locale")
+        @DisplayName("Should handle English as source locale in BCP47 format")
         void queueCommentTranslation_EnglishSource() {
             User englishUser = testUserFactory.createTestUser("english_user_" + System.currentTimeMillis());
             englishUser.setLocale("en-US");
@@ -585,9 +595,10 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, englishComment.getId())
                     .orElseThrow();
 
-            assertThat(event.getSourceLocale()).isEqualTo("en");
-            assertThat(event.getTargetLocales()).contains("ko");
-            assertThat(event.getTargetLocales()).doesNotContain("en");
+            // Now uses BCP47 format
+            assertThat(event.getSourceLocale()).isEqualTo("en-US");
+            assertThat(event.getTargetLocales()).contains("ko-KR");
+            assertThat(event.getTargetLocales()).doesNotContain("en-US");
         }
 
     }

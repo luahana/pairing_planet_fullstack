@@ -13,6 +13,7 @@ import com.cookstemma.cookstemma.domain.enums.TranslatableEntity;
 import com.cookstemma.cookstemma.domain.enums.TranslationStatus;
 import com.cookstemma.cookstemma.repository.food.FoodMasterRepository;
 import com.cookstemma.cookstemma.repository.translation.TranslationEventRepository;
+import com.cookstemma.cookstemma.util.LocaleUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,10 +31,10 @@ public class TranslationEventService {
     private final TranslationEventRepository translationEventRepository;
     private final FoodMasterRepository foodMasterRepository;
 
-    // All supported languages (20 total)
+    // All supported languages in BCP47 format (20 total)
     private static final List<String> ALL_LOCALES = List.of(
-            "en", "zh", "es", "ja", "de", "fr", "pt", "ko", "it", "ar",
-            "ru", "id", "vi", "hi", "th", "pl", "tr", "nl", "sv", "fa"
+            "en-US", "zh-CN", "es-ES", "ja-JP", "de-DE", "fr-FR", "pt-BR", "ko-KR", "it-IT", "ar-SA",
+            "ru-RU", "id-ID", "vi-VN", "hi-IN", "th-TH", "pl-PL", "tr-TR", "nl-NL", "sv-SE", "fa-IR"
     );
 
     // Country code to language code mapping (cookingStyle uses country codes)
@@ -412,27 +413,37 @@ public class TranslationEventService {
                 entityType, entityId, List.of(TranslationStatus.PENDING, TranslationStatus.PROCESSING));
     }
 
+    private static final String DEFAULT_LOCALE = "en-US";
+
+    /**
+     * Normalize locale to BCP47 format for consistent translation keys.
+     * Handles country codes (KR → ko-KR), short codes (ko → ko-KR), and full BCP47 (ko-KR → ko-KR).
+     * Unknown locales default to en-US.
+     */
     private String normalizeLocale(String locale) {
         if (locale == null || locale.isBlank()) {
-            return "ko";
+            return DEFAULT_LOCALE;
         }
 
-        String normalized = locale.split("[-_]")[0];
-        String upper = normalized.toUpperCase();
-        String lower = normalized.toLowerCase();
+        // Handle country-only codes first (e.g., "KR" from cookingStyle)
+        String firstPart = locale.split("[-_]")[0];
+        String upper = firstPart.toUpperCase();
 
-        // First check if it's a country code (e.g., "SA", "KR", "TR")
         if (COUNTRY_TO_LANGUAGE.containsKey(upper)) {
-            return COUNTRY_TO_LANGUAGE.get(upper);
+            // Convert country code to language code, then to BCP47
+            String langCode = COUNTRY_TO_LANGUAGE.get(upper);
+            return LocaleUtils.toBcp47(langCode);
         }
 
-        // Then check if it's already a language code (e.g., "ko", "en", "ar")
-        if (ALL_LOCALES.contains(lower)) {
-            return lower;
+        // Convert to BCP47 and check if it's a supported locale
+        String bcp47 = LocaleUtils.toBcp47(locale);
+
+        // If the resulting BCP47 locale is not in our supported list, default to en-US
+        if (!ALL_LOCALES.contains(bcp47)) {
+            return DEFAULT_LOCALE;
         }
 
-        // Default to Korean
-        return "ko";
+        return bcp47;
     }
 
     private List<String> getTargetLocales(String sourceLocale) {
