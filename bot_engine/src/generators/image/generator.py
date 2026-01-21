@@ -36,6 +36,7 @@ class ImageGenerator:
         )
         # Nano Banana: gemini-2.5-flash-image (fast) or gemini-3-pro-image-preview (pro)
         self.model = settings.gemini_image_model or "gemini-2.5-flash-image"
+        logger.info("image_generator_init", model=self.model)
 
     async def close(self) -> None:
         """Close any resources (kept for interface compatibility)."""
@@ -48,26 +49,27 @@ class ImageGenerator:
         style: str = "cover",
     ) -> str:
         """Build detailed prompts for food image generation."""
-        base_prompt = f"Professional food photography of {dish_name}."
+        # Base: focus on food, centered, top-down, no people
+        base_prompt = f"Overhead flat lay food photography of {dish_name}. Shot directly from above. Food centered in frame. No people, no hands, no human body parts."
 
         if style == "cover":
             return f"""{base_prompt}
 {persona.kitchen_style_prompt}
-Composition: Beautifully plated, appetizing, shallow depth of field.
-Lighting: Soft natural daylight, high-detail textures.
-Technical: 4K resolution, cinematic food magazine style."""
+Composition: Bird's eye view, dish perfectly centered, plate on table.
+Lighting: Soft natural daylight, high-detail food textures.
+Style: Food magazine, appetizing, professional."""
 
         elif style == "step":
             return f"""{base_prompt}
 {persona.kitchen_style_prompt}
-Composition: Cooking in progress, hands visible moving ingredients.
-Environment: Realistic home kitchen counter, natural lighting."""
+Composition: Top-down view, ingredients arranged on cutting board.
+Lighting: Clean kitchen, natural lighting."""
 
         elif style == "log":
             return f"""{base_prompt}
 {persona.kitchen_style_prompt}
-Style: Casual smartphone photo, slightly imperfect, realistic presentation.
-Lighting: Natural indoor lighting, high-quality amateur photography."""
+Style: Casual overhead food photo, home-cooked feel.
+Composition: Top-down, plate centered on table."""
 
         return base_prompt
 
@@ -81,44 +83,106 @@ Lighting: Natural indoor lighting, high-quality amateur photography."""
         selected = random.sample(imperfections, k=min(2, len(imperfections)))
         return f"{prompt}\nInclude these realistic details: {', '.join(selected)}."
 
-    @retry(
-        retry=retry_if_exception_type(Exception),
-        stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=2, min=10, max=120),
-        before_sleep=lambda retry_state: logger.warning(
-            "nano_banana_retry",
-            attempt=retry_state.attempt_number,
-            wait=retry_state.next_action.sleep,
-        ),
-    )
     async def _generate_image_internal(
         self,
         prompt: str,
     ) -> bytes:
-        """Generate image using Gemini Nano Banana with retry."""
-        response = await self.client.aio.models.generate_content(
-            model=self.model,
-            contents=[prompt],
-            config=types.GenerateContentConfig(
-                response_modalities=["IMAGE"],
-                image_config=types.ImageConfig(
-                    aspect_ratio="1:1",
+        """Generate image using Gemini Nano Banana."""
+        try:
+            logger.debug("nano_banana_request", model=self.model, prompt_len=len(prompt))
+            response = await self.client.aio.models.generate_content(
+                model=self.model,
+                contents=[prompt],
+                config=types.GenerateContentConfig(
+                    response_modalities=["IMAGE"],
+                    image_config=types.ImageConfig(
+                        aspect_ratio="16:9",
+                    ),
                 ),
-            ),
-        )
+            )
 
-        # Extract image from response parts
-        for part in response.parts:
-            if part.inline_data is not None:
-                logger.info(
-                    "nano_banana_generated",
-                    model=self.model,
-                    prompt_preview=prompt[:50],
-                )
-                return part.inline_data.data
+            # Debug: log response structure
+            logger.debug(
+                "nano_banana_response",
+                has_candidates=bool(response.candidates) if hasattr(response, 'candidates') else None,
+                has_parts=bool(response.parts) if hasattr(response, 'parts') else None,
+            )
 
-        raise ValueError("Nano Banana failed to return an image")
+            # Extract image from response parts
+            if response.parts:
+                for part in response.parts:
+                    if part.inline_data is not None:
+                        logger.info(
+                            "nano_banana_generated",
+                            model=self.model,
+                            prompt_preview=prompt[:50],
+                        )
+                        return part.inline_data.data
 
+            # Try candidates structure
+            if hasattr(response, 'candidates') and response.candidates:
+                for i, candidate in enumerate(response.candidates):
+                    logger.debug(
+                        "nano_banana_candidate",
+                        index=i,
+                        candidate_type=type(candidate).__name__,
+                        has_content=hasattr(candidate, 'content'),
+                        content_type=type(candidate.content).__name__ if hasattr(candidate, 'content') and candidate.content else None,
+                    )
+                    if hasattr(candidate, 'content') and candidate.content:
+                        content = candidate.content
+                        logger.debug(
+                            "nano_banana_content",
+                            has_parts=hasattr(content, 'parts'),
+                            parts_len=len(content.parts) if hasattr(content, 'parts') and content.parts else 0,
+                        )
+                        if hasattr(content, 'parts') and content.parts:
+                            for j, part in enumerate(content.parts):
+                                logger.debug(
+                                    "nano_banana_part",
+                                    index=j,
+                                    part_type=type(part).__name__,
+                                    has_inline_data=hasattr(part, 'inline_data'),
+                                    has_data=hasattr(part, 'data'),
+                                    part_attrs=dir(part)[:20],
+                                )
+                                if hasattr(part, 'inline_data') and part.inline_data:
+                                    logger.info(
+                                        "nano_banana_generated",
+                                        model=self.model,
+                                        prompt_preview=prompt[:50],
+                                    )
+                                    return part.inline_data.data
+                                # Try direct data attribute
+                                if hasattr(part, 'data') and part.data:
+                                    logger.info(
+                                        "nano_banana_generated_data",
+                                        model=self.model,
+                                        prompt_preview=prompt[:50],
+                                    )
+                                    return part.data
+
+            # Log what we got for debugging
+            logger.error(
+                "nano_banana_no_image",
+                response_type=type(response).__name__,
+            )
+            raise ValueError("Nano Banana failed to return an image")
+        except Exception as e:
+            logger.error("nano_banana_error", error=str(e), error_type=type(e).__name__)
+            raise
+
+    @retry(
+        retry=retry_if_exception_type(Exception),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=2, min=5, max=30),
+        before_sleep=lambda retry_state: logger.warning(
+            "nano_banana_retry",
+            attempt=retry_state.attempt_number,
+            wait=retry_state.next_action.sleep,
+            error=str(retry_state.outcome.exception()) if retry_state.outcome else None,
+        ),
+    )
     async def generate_image(
         self,
         prompt: str,

@@ -48,15 +48,37 @@ public class FoodMaster extends BaseEntity {
             return "Unknown Food";
         }
 
+        // 1. Try exact key match: "ko-KR", "zh-CN", etc.
         if (name.containsKey(locale)) {
             return name.get(locale);
         }
 
+        // 2. Extract language code and try matching
+        String langCode = locale.contains("-") ? locale.split("-")[0] : locale;
+
+        // 3. Try to find a key that starts with the language code
+        for (Map.Entry<String, String> entry : name.entrySet()) {
+            String key = entry.getKey();
+            String keyLang = key.contains("-") ? key.split("-")[0] : key;
+            if (keyLang.equalsIgnoreCase(langCode)) {
+                return entry.getValue();
+            }
+        }
+
+        // 4. Try "en-US" fallback
         if (name.containsKey("en-US")) {
             return name.get("en-US");
         }
 
-        // 3. 영어도 없을 경우 맵에 저장된 첫 번째 이름을 반환
+        // 5. Try "en" fallback (any English variant)
+        for (Map.Entry<String, String> entry : name.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("en")) {
+                return entry.getValue();
+            }
+        }
+
+        // 6. Return first available translation
         return name.values().iterator().next();
     }
 
