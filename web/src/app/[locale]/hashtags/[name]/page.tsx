@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getHashtagCounts, getRecipesByHashtag, getLogsByHashtag } from '@/lib/api/hashtags';
 import { RecipeGrid } from '@/components/recipe/RecipeGrid';

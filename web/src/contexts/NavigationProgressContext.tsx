@@ -41,10 +41,15 @@ export function NavigationProgressProvider({ children }: { children: ReactNode }
   );
 }
 
+// No-op fallback for when used outside provider (e.g., during static generation)
+const noopContext: NavigationProgressContextType = {
+  isLoading: false,
+  startLoading: () => {},
+  stopLoading: () => {},
+};
+
 export function useNavigationProgress() {
   const context = useContext(NavigationProgressContext);
-  if (!context) {
-    throw new Error('useNavigationProgress must be used within NavigationProgressProvider');
-  }
-  return context;
+  // Return no-op context if used outside provider (safe for static rendering)
+  return context ?? noopContext;
 }
