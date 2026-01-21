@@ -222,7 +222,7 @@ resource "aws_sqs_queue" "translation_dlq" {
 
 resource "aws_sqs_queue" "translation_queue" {
   name                       = "${var.project_name}-${var.environment}-translation-queue"
-  visibility_timeout_seconds = 330   # Slightly longer than Lambda timeout
+  visibility_timeout_seconds = 660   # 30s buffer over 600s Lambda timeout
   message_retention_seconds  = 86400 # 1 day
   receive_wait_time_seconds  = 20    # Long polling
 
@@ -276,4 +276,153 @@ resource "aws_lambda_permission" "eventbridge" {
   function_name = aws_lambda_function.translator.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.translation_schedule.arn
+}
+
+# -----------------------------------------------------------------------------
+# CLOUDWATCH ALARMS FOR MONITORING
+# -----------------------------------------------------------------------------
+
+# Alarm #1: Lambda Duration Approaching Timeout
+resource "aws_cloudwatch_metric_alarm" "translator_duration" {
+  count = var.sns_alarm_topic_arn != "" ? 1 : 0
+
+  alarm_name          = "${var.project_name}-${var.environment}-translator-duration-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "Duration"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 540000 # 9 minutes (90% of 10min timeout)
+  alarm_description   = "Translation Lambda approaching timeout"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    FunctionName = aws_lambda_function.translator.function_name
+  }
+
+  alarm_actions = [var.sns_alarm_topic_arn]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-translator-duration-alarm"
+    Project     = var.project_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+# Alarm #2: Lambda Errors
+resource "aws_cloudwatch_metric_alarm" "translator_errors" {
+  count = var.sns_alarm_topic_arn != "" ? 1 : 0
+
+  alarm_name          = "${var.project_name}-${var.environment}-translator-errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 3 # Alert if >3 errors in 5 minutes
+  alarm_description   = "Translation Lambda experiencing errors"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    FunctionName = aws_lambda_function.translator.function_name
+  }
+
+  alarm_actions = [var.sns_alarm_topic_arn]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-translator-errors-alarm"
+    Project     = var.project_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+# Alarm #3: SQS Queue Depth
+resource "aws_cloudwatch_metric_alarm" "translation_queue_depth" {
+  count = var.sns_alarm_topic_arn != "" ? 1 : 0
+
+  alarm_name          = "${var.project_name}-${var.environment}-translation-queue-depth"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 20 # Alert if queue backs up
+  alarm_description   = "Translation queue backing up - possible Lambda issues"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    QueueName = aws_sqs_queue.translation_queue.name
+  }
+
+  alarm_actions = [var.sns_alarm_topic_arn]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-translation-queue-depth-alarm"
+    Project     = var.project_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+# Alarm #4: Dead Letter Queue Messages
+resource "aws_cloudwatch_metric_alarm" "translation_dlq" {
+  count = var.sns_alarm_topic_arn != "" ? 1 : 0
+
+  alarm_name          = "${var.project_name}-${var.environment}-translation-dlq"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 0 # Alert on ANY message in DLQ
+  alarm_description   = "Translation events failing after 3 retries"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    QueueName = aws_sqs_queue.translation_dlq.name
+  }
+
+  alarm_actions = [var.sns_alarm_topic_arn]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-translation-dlq-alarm"
+    Project     = var.project_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+# Alarm #5: Lambda Throttles
+resource "aws_cloudwatch_metric_alarm" "translator_throttles" {
+  count = var.sns_alarm_topic_arn != "" ? 1 : 0
+
+  alarm_name          = "${var.project_name}-${var.environment}-translator-throttles"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Throttles"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 0 # Alert on ANY throttle
+  alarm_description   = "Translation Lambda being throttled"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    FunctionName = aws_lambda_function.translator.function_name
+  }
+
+  alarm_actions = [var.sns_alarm_topic_arn]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-translator-throttles-alarm"
+    Project     = var.project_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
 }

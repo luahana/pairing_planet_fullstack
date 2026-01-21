@@ -44,7 +44,7 @@ variable "memory_size" {
 variable "timeout" {
   description = "Lambda timeout in seconds"
   type        = number
-  default     = 300
+  default     = 600  # 10 minutes to handle large recipe batches
 }
 
 variable "reserved_concurrent_executions" {
@@ -74,4 +74,10 @@ variable "cdn_url_prefix" {
   description = "CDN URL prefix for image URLs (used for content moderation)"
   type        = string
   default     = ""
+}
+
+variable "sns_alarm_topic_arn" {
+  description = "SNS topic ARN for CloudWatch alarm notifications"
+  type        = string
+  default     = ""  # Optional - alarms won't notify if not provided
 }

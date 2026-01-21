@@ -344,6 +344,10 @@ def run_migrations(conn):
         CREATE INDEX IF NOT EXISTS idx_translation_events_pending ON translation_events(status, created_at)
             WHERE status IN ('PENDING', 'FAILED');
         CREATE INDEX IF NOT EXISTS idx_translation_events_entity ON translation_events(entity_type, entity_id);
+
+        -- Composite index for efficient duplicate detection (isTranslationPending query)
+        CREATE INDEX IF NOT EXISTS idx_translation_events_entity_status
+            ON translation_events(entity_type, entity_id, status);
         """
         cur.execute(migration_sql)
         conn.commit()
@@ -363,7 +367,7 @@ def fetch_pending_events(conn, limit: int = 10) -> list[dict]:
     Includes:
     - PENDING events
     - FAILED events with retry_count < 3
-    - PROCESSING events stuck for >10 minutes (likely from crashed Lambda)
+    - PROCESSING events stuck for >3 minutes (likely from crashed Lambda)
     """
     with conn.cursor() as cur:
         cur.execute("""
@@ -371,7 +375,7 @@ def fetch_pending_events(conn, limit: int = 10) -> list[dict]:
             FROM translation_events
             WHERE status = 'PENDING'
                OR (status = 'FAILED' AND retry_count < 3)
-               OR (status = 'PROCESSING' AND started_at < NOW() - INTERVAL '10 minutes')
+               OR (status = 'PROCESSING' AND started_at < NOW() - INTERVAL '3 minutes')
             ORDER BY created_at ASC
             LIMIT %s
             FOR UPDATE SKIP LOCKED
@@ -763,6 +767,10 @@ def process_full_recipe_event(conn, translator: GeminiTranslator, event: dict,
     logger.info(f"Translating full recipe {entity_id}: '{recipe['title']}' "
                 f"(food: '{food_master.get('name', 'N/A')}', "
                 f"{len(steps)} steps, {len(ingredients)} ingredients)")
+
+    # Debug logging for locale verification
+    logger.info(f"Recipe {entity_id} source locale: {source_locale}, "
+                f"cookingStyle from DB: {recipe.get('cooking_style', 'N/A')}")
 
     # Build content for batch translation (includes food_name for FoodMaster propagation)
     content_to_translate = {
