@@ -336,22 +336,23 @@ public class RecipeService {
     }
 
     private FoodMaster createSuggestedFoodEntity(String foodName, Long userId, String locale) {
-        String normalizedLocale = locale.replace("_", "-");
+        // Convert locale to BCP47 format for consistent FoodMaster keys
+        String bcp47Locale = LocaleUtils.toBcp47(locale);
 
         // 1. foods_master에 비검증 상태로 등록
         FoodMaster newFood = FoodMaster.builder()
-                .name(Map.of(normalizedLocale, foodName))
+                .name(Map.of(bcp47Locale, foodName))
                 .isVerified(false)
                 .build();
         foodMasterRepository.save(newFood);
 
         // Queue translation for the new food name to all supported locales
-        translationEventService.queueFoodMasterTranslation(newFood, normalizedLocale);
+        translationEventService.queueFoodMasterTranslation(newFood, bcp47Locale);
 
         // 2. user_suggested_foods 기록 생성
         UserSuggestedFood suggestion = UserSuggestedFood.builder()
                 .suggestedName(foodName)
-                .localeCode(normalizedLocale)
+                .localeCode(bcp47Locale)
                 .user(userRepository.getReferenceById(userId))
                 .status(SuggestionStatus.PENDING)
                 .masterFoodRef(newFood)

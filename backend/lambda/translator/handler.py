@@ -26,6 +26,27 @@ LOCALE_MAP = {
     'tr': 'tr-TR', 'nl': 'nl-NL', 'sv': 'sv-SE', 'fa': 'fa-IR'
 }
 
+
+def to_bcp47(locale: str) -> str:
+    """
+    Convert locale to BCP47 format.
+    If already BCP47, returns as-is. If short code, converts to BCP47.
+
+    Examples:
+        'ko' -> 'ko-KR'
+        'ko-KR' -> 'ko-KR'
+        'en' -> 'en-US'
+    """
+    if not locale:
+        return 'en-US'
+
+    # Already BCP47 format
+    if '-' in locale:
+        return locale
+
+    # Convert short code to BCP47
+    return LOCALE_MAP.get(locale, f"{locale}-{locale.upper()}")
+
 # Map RecipeIngredient.type to AutocompleteItem.type
 INGREDIENT_TO_AUTOCOMPLETE_TYPE = {
     'MAIN': 'MAIN_INGREDIENT',
@@ -507,18 +528,19 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
     Save translations for recipe, steps, ingredients AND propagate to master tables.
     - FoodMaster name is propagated from food_name translation
     - AutocompleteItem names are propagated from ingredient translations (matched by name + type)
+    - All translation keys use BCP47 format for consistency
     """
-    # Convert locale to BCP47 for master tables
-    target_bcp47 = LOCALE_MAP.get(target_locale, f"{target_locale}-{target_locale.upper()}")
+    # Convert locale to BCP47 for ALL translation keys (standardized format)
+    target_bcp47 = to_bcp47(target_locale)
     source_bcp47 = full_recipe.get('source_bcp47', 'ko-KR')
 
     with conn.cursor() as cur:
-        # 1. Update recipe title and description
+        # 1. Update recipe title and description (use BCP47 keys)
         existing_title = full_recipe['recipe']['title_translations'] or {}
         existing_desc = full_recipe['recipe']['description_translations'] or {}
 
-        existing_title[target_locale] = translated.get('title', '')
-        existing_desc[target_locale] = translated.get('description', '')
+        existing_title[target_bcp47] = translated.get('title', '')
+        existing_desc[target_bcp47] = translated.get('description', '')
 
         cur.execute("""
             UPDATE recipes
@@ -545,25 +567,25 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
             ))
             logger.info(f"Propagated food_name translation to FoodMaster {food_master['id']} ({target_bcp47})")
 
-        # 3. Update each step
+        # 3. Update each step (use BCP47 keys)
         translated_steps = translated.get('steps', [])
         for i, step in enumerate(full_recipe['steps']):
             if i < len(translated_steps):
                 existing_step_trans = step['description_translations'] or {}
-                existing_step_trans[target_locale] = translated_steps[i]
+                existing_step_trans[target_bcp47] = translated_steps[i]
                 cur.execute("""
                     UPDATE recipe_steps
                     SET description_translations = %s
                     WHERE id = %s
                 """, (json.dumps(existing_step_trans), step['id']))
 
-        # 4. Update each ingredient + propagate to autocomplete_items
+        # 4. Update each ingredient + propagate to autocomplete_items (use BCP47 keys)
         translated_ingredients = translated.get('ingredients', [])
         for i, ingredient in enumerate(full_recipe['ingredients']):
             if i < len(translated_ingredients):
                 translated_name = translated_ingredients[i]
                 existing_ing_trans = ingredient['name_translations'] or {}
-                existing_ing_trans[target_locale] = translated_name
+                existing_ing_trans[target_bcp47] = translated_name
 
                 # Update recipe_ingredients
                 cur.execute("""
@@ -947,11 +969,8 @@ def process_event(conn, translator: GeminiTranslator, event: dict) -> bool:
                 context=context
             )
 
-            # Merge translations
-            # For FOOD_MASTER and AUTOCOMPLETE_ITEM, use BCP47 locale keys (ko-KR, en-US, etc.)
-            translation_key = target_locale
-            if entity_type in ('FOOD_MASTER', 'AUTOCOMPLETE_ITEM'):
-                translation_key = LOCALE_MAP.get(target_locale, f"{target_locale}-{target_locale.upper()}")
+            # Merge translations - always use BCP47 locale keys for consistency
+            translation_key = to_bcp47(target_locale)
 
             for field, value in translated.items():
                 if field not in existing_translations:
