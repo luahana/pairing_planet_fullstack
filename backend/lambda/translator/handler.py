@@ -274,6 +274,12 @@ def run_migrations(conn):
             EXCEPTION WHEN duplicate_object THEN null;
             END $$
         """)
+        cur.execute("""
+            DO $$ BEGIN
+                ALTER TYPE translatable_entity ADD VALUE IF NOT EXISTS 'COMMENT';
+            EXCEPTION WHEN duplicate_object THEN null;
+            END $$
+        """)
 
         # Add translation columns to tables
         migration_sql = """
@@ -290,6 +296,11 @@ def run_migrations(conn):
         -- LOG POSTS
         ALTER TABLE log_posts ADD COLUMN IF NOT EXISTS title_translations JSONB DEFAULT '{}';
         ALTER TABLE log_posts ADD COLUMN IF NOT EXISTS content_translations JSONB DEFAULT '{}';
+
+        -- COMMENTS
+        ALTER TABLE comments ADD COLUMN IF NOT EXISTS content_translations JSONB DEFAULT '{}';
+        ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT FALSE;
+        ALTER TABLE comments ADD COLUMN IF NOT EXISTS hidden_reason TEXT;
 
         -- TRANSLATION EVENTS TABLE
         CREATE TABLE IF NOT EXISTS translation_events (
@@ -416,6 +427,14 @@ def fetch_entity_content(conn, entity_type: str, entity_id: int) -> dict | None:
             cur.execute("""
                 SELECT id, bio, bio_translations
                 FROM users WHERE id = %s
+            """, (entity_id,))
+        elif entity_type == 'COMMENT':
+            cur.execute("""
+                SELECT c.id, c.content, c.content_translations, c.creator_id,
+                       u.locale as creator_locale
+                FROM comments c
+                JOIN users u ON c.creator_id = u.id
+                WHERE c.id = %s AND c.deleted_at IS NULL AND c.is_hidden = FALSE
             """, (entity_id,))
         else:
             return None
@@ -633,6 +652,12 @@ def save_translations(conn, entity_type: str, entity_id: int, translations: dict
                 SET bio_translations = %s
                 WHERE id = %s
             """, (json.dumps(translations.get('bio', {})), entity_id))
+        elif entity_type == 'COMMENT':
+            cur.execute("""
+                UPDATE comments
+                SET content_translations = %s
+                WHERE id = %s
+            """, (json.dumps(translations.get('content', {})), entity_id))
 
 
 class ModerationFailure(Exception):
@@ -640,6 +665,17 @@ class ModerationFailure(Exception):
     def __init__(self, reason: str):
         self.reason = reason
         super().__init__(f"Content moderation failed: {reason}")
+
+
+def hide_comment(conn, comment_id: int, reason: str):
+    """Hide a comment that failed content moderation."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE comments
+            SET is_hidden = TRUE, hidden_reason = %s
+            WHERE id = %s
+        """, (reason[:500], comment_id))
+    logger.info(f"Comment {comment_id} hidden due to moderation failure: {reason[:100]}")
 
 
 def process_full_recipe_event(conn, translator: GeminiTranslator, event: dict,
@@ -838,10 +874,13 @@ def process_event(conn, translator: GeminiTranslator, event: dict) -> bool:
     elif entity_type == 'USER':
         content_to_translate = {'bio': entity['bio'] or ''}
         existing_translations = {'bio': entity['bio_translations'] or {}}
+    elif entity_type == 'COMMENT':
+        content_to_translate = {'content': entity['content'] or ''}
+        existing_translations = {'content': entity['content_translations'] or {}}
 
     # =============================================================================
     # CONTENT MODERATION: Validate content and images BEFORE translation
-    # Applies to LOG_POST (and can be extended to other types as needed)
+    # Applies to LOG_POST and COMMENT
     # =============================================================================
     if entity_type == 'LOG_POST':
         logger.info(f"Validating log post {entity_id} content before translation...")
@@ -865,6 +904,23 @@ def process_event(conn, translator: GeminiTranslator, event: dict) -> bool:
                 raise ModerationFailure(f"Image inappropriate: {image_result.reason}")
 
         logger.info(f"Log post {entity_id} passed content moderation (text + {len(image_urls)} images)")
+
+    elif entity_type == 'COMMENT':
+        logger.info(f"Validating comment {entity_id} content before translation...")
+
+        # Validate text content
+        text_result = translator.moderate_text_content(
+            title=None,
+            content=content_to_translate.get('content'),
+            context="user comment on cooking log post"
+        )
+        if not text_result:
+            logger.warning(f"Comment {entity_id} failed moderation: {text_result.reason}")
+            # Hide the comment instead of raising an exception
+            hide_comment(conn, entity_id, text_result.reason)
+            raise ModerationFailure(f"Comment hidden due to inappropriate content: {text_result.reason}")
+
+        logger.info(f"Comment {entity_id} passed content moderation")
     # =============================================================================
 
     # Translate to each pending locale
@@ -879,6 +935,8 @@ def process_event(conn, translator: GeminiTranslator, event: dict) -> bool:
                 context = "food ingredient name for a cooking recipe app"
             elif entity_type == 'USER':
                 context = "user bio/profile description for a cooking recipe app"
+            elif entity_type == 'COMMENT':
+                context = "user comment on a cooking log post"
             else:
                 context = "cooking recipe content"
 

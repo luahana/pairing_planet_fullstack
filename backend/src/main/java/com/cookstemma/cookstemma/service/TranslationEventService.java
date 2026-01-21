@@ -1,6 +1,7 @@
 package com.cookstemma.cookstemma.service;
 
 import com.cookstemma.cookstemma.domain.entity.autocomplete.AutocompleteItem;
+import com.cookstemma.cookstemma.domain.entity.comment.Comment;
 import com.cookstemma.cookstemma.domain.entity.food.FoodMaster;
 import com.cookstemma.cookstemma.domain.entity.log_post.LogPost;
 import com.cookstemma.cookstemma.domain.entity.recipe.Recipe;
@@ -170,6 +171,44 @@ public class TranslationEventService {
         translationEventRepository.save(event);
         log.info("Queued translation for log post {} (source: {}, targets: {})",
                 logPost.getId(), sourceLocale, targetLocales.size());
+    }
+
+    /**
+     * Queue comment translation.
+     * Uses the creator's locale setting as source locale.
+     * Content moderation is performed by the Lambda handler before translation.
+     * If moderation fails, the comment will be hidden instead of translated.
+     */
+    @Transactional
+    public void queueCommentTranslation(Comment comment) {
+        if (comment.getContent() == null || comment.getContent().isBlank()) {
+            log.debug("Comment {} has no content to translate", comment.getId());
+            return;
+        }
+
+        String sourceLocale = normalizeLocale(comment.getCreator().getLocale());
+        List<String> targetLocales = getTargetLocales(sourceLocale);
+
+        if (targetLocales.isEmpty()) {
+            log.debug("No target locales for comment {} (source: {})", comment.getId(), sourceLocale);
+            return;
+        }
+
+        if (isTranslationPending(TranslatableEntity.COMMENT, comment.getId())) {
+            log.debug("Translation already pending for comment {}", comment.getId());
+            return;
+        }
+
+        TranslationEvent event = TranslationEvent.builder()
+                .entityType(TranslatableEntity.COMMENT)
+                .entityId(comment.getId())
+                .sourceLocale(sourceLocale)
+                .targetLocales(targetLocales)
+                .build();
+
+        translationEventRepository.save(event);
+        log.info("Queued translation for comment {} (source: {}, targets: {})",
+                comment.getId(), sourceLocale, targetLocales.size());
     }
 
     @Transactional

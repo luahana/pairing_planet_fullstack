@@ -56,6 +56,13 @@ public class Comment extends BaseEntity {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Builder.Default
+    @Column(name = "is_hidden")
+    private Boolean isHidden = false;
+
+    @Column(name = "hidden_reason")
+    private String hiddenReason;
+
     public boolean isDeleted() {
         return deletedAt != null;
     }
@@ -90,5 +97,14 @@ public class Comment extends BaseEntity {
 
     public void decrementLikeCount() {
         this.likeCount = Math.max(0, (this.likeCount == null ? 0 : this.likeCount) - 1);
+    }
+
+    public boolean isHidden() {
+        return isHidden != null && isHidden;
+    }
+
+    public void hide(String reason) {
+        this.isHidden = true;
+        this.hiddenReason = reason;
     }
 }

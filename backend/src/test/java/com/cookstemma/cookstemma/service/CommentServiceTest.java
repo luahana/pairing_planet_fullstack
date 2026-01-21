@@ -534,6 +534,112 @@ class CommentServiceTest extends BaseIntegrationTest {
     }
 
     @Nested
+    @DisplayName("Hidden Comments")
+    class HiddenCommentTests {
+
+        private Comment hiddenComment;
+
+        @BeforeEach
+        void setUpHiddenComment() {
+            hiddenComment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(commenter)
+                    .content("Hidden content")
+                    .build();
+            hiddenComment.hide("Content moderation failure");
+            commentRepository.saveAndFlush(hiddenComment);
+        }
+
+        @Test
+        @DisplayName("Hidden comment should show content to creator")
+        void hiddenComment_ShowsContentToCreator() {
+            Page<CommentWithRepliesDto> result = commentService.getComments(
+                    testLogPost.getPublicId(), PageRequest.of(0, 10), commenter.getId());
+
+            assertThat(result.getContent()).hasSize(1);
+            CommentResponseDto dto = result.getContent().get(0).comment();
+            assertThat(dto.isHidden()).isTrue();
+            assertThat(dto.content()).isEqualTo("Hidden content");
+        }
+
+        @Test
+        @DisplayName("Hidden comment should hide content from others")
+        void hiddenComment_HidesContentFromOthers() {
+            Page<CommentWithRepliesDto> result = commentService.getComments(
+                    testLogPost.getPublicId(), PageRequest.of(0, 10), anotherUser.getId());
+
+            assertThat(result.getContent()).hasSize(1);
+            CommentResponseDto dto = result.getContent().get(0).comment();
+            assertThat(dto.isHidden()).isTrue();
+            assertThat(dto.content()).isNull();
+        }
+
+        @Test
+        @DisplayName("Hidden comment should hide content from anonymous users")
+        void hiddenComment_HidesContentFromAnonymous() {
+            Page<CommentWithRepliesDto> result = commentService.getComments(
+                    testLogPost.getPublicId(), PageRequest.of(0, 10), null);
+
+            assertThat(result.getContent()).hasSize(1);
+            CommentResponseDto dto = result.getContent().get(0).comment();
+            assertThat(dto.isHidden()).isTrue();
+            assertThat(dto.content()).isNull();
+        }
+
+        @Test
+        @DisplayName("isHidden flag should be correctly set in response")
+        void hiddenComment_IsHiddenFlagSet() {
+            // Create a normal comment for comparison
+            Comment normalComment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(anotherUser)
+                    .content("Normal content")
+                    .build();
+            commentRepository.saveAndFlush(normalComment);
+
+            Page<CommentWithRepliesDto> result = commentService.getComments(
+                    testLogPost.getPublicId(), PageRequest.of(0, 10), anotherUser.getId());
+
+            assertThat(result.getContent()).hasSize(2);
+
+            // Find normal and hidden comments
+            CommentResponseDto normalDto = result.getContent().stream()
+                    .map(CommentWithRepliesDto::comment)
+                    .filter(c -> !c.isHidden())
+                    .findFirst()
+                    .orElseThrow();
+            CommentResponseDto hiddenDto = result.getContent().stream()
+                    .map(CommentWithRepliesDto::comment)
+                    .filter(CommentResponseDto::isHidden)
+                    .findFirst()
+                    .orElseThrow();
+
+            assertThat(normalDto.isHidden()).isFalse();
+            assertThat(normalDto.content()).isEqualTo("Normal content");
+
+            assertThat(hiddenDto.isHidden()).isTrue();
+            assertThat(hiddenDto.content()).isNull();
+        }
+
+        @Test
+        @DisplayName("Comment entity hide method should set fields correctly")
+        void hideMethod_SetsFieldsCorrectly() {
+            Comment comment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(commenter)
+                    .content("Test content")
+                    .build();
+
+            assertThat(comment.isHidden()).isFalse();
+
+            comment.hide("Test reason");
+
+            assertThat(comment.isHidden()).isTrue();
+            assertThat(comment.getHiddenReason()).isEqualTo("Test reason");
+        }
+    }
+
+    @Nested
     @DisplayName("Unlike Comment")
     class UnlikeCommentTests {
 
