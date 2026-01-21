@@ -36,20 +36,10 @@ class Settings(BaseSettings):
         description="Gemini model for image generation",
     )
     gemini_text_model: str = Field(
-        default="gemini-2.0-flash",
-        description="Gemini model for text generation (via OpenAI compat)",
+        default="gemini-2.0-flash-lite",
+        description="Gemini model for text generation (lightweight)",
     )
-
-    # OpenAI Configuration
-    openai_api_key: str = Field(
-        default="sk-test-placeholder",
-        description="OpenAI API key for ChatGPT",
-    )
-    openai_model: str = Field(
-        default="gpt-4o",
-        description="OpenAI model to use for text generation",
-    )
-    openai_temperature: float = Field(
+    temperature: float = Field(
         default=0.8,
         description="Temperature for text generation (0.0-2.0)",
     )
@@ -88,10 +78,6 @@ class Settings(BaseSettings):
     api_requests_per_minute: int = Field(
         default=20,
         description="Max API requests per minute to backend",
-    )
-    openai_requests_per_minute: int = Field(
-        default=60,
-        description="Max requests per minute to OpenAI API",
     )
     gemini_requests_per_minute: int = Field(
         default=60,
