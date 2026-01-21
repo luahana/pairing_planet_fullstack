@@ -36,11 +36,16 @@ public final class LocaleUtils {
             return translations.get(normalizedLocale);
         }
 
-        // 2. Try language-only match (e.g., "ko" from "ko-KR")
-        if (normalizedLocale != null && normalizedLocale.contains("-")) {
-            String languageOnly = normalizedLocale.split("-")[0];
+        // 2. Try language-only match (e.g., "ko" matches "ko-KR", or "ko-KR" matches "ko")
+        if (normalizedLocale != null) {
+            String languageOnly = normalizedLocale.contains("-")
+                    ? normalizedLocale.split("-")[0]
+                    : normalizedLocale;
             for (Map.Entry<String, String> entry : translations.entrySet()) {
-                if (entry.getKey().startsWith(languageOnly + "-") || entry.getKey().equals(languageOnly)) {
+                String keyLang = entry.getKey().contains("-")
+                        ? entry.getKey().split("-")[0]
+                        : entry.getKey();
+                if (keyLang.equalsIgnoreCase(languageOnly)) {
                     return entry.getValue();
                 }
             }
