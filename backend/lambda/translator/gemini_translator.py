@@ -386,15 +386,21 @@ Return ONLY the JSON object with translated values, no explanation."""
                 else:
                     raise
 
-            # Ensure all original keys are present
+            # Strict validation - all non-empty fields must be translated
             result = {}
             for key in content.keys():
-                if key in translated:
+                if key in non_empty_content:
+                    # Field had content to translate
+                    if key not in translated:
+                        raise ValueError(f"Translation missing required field: {key}")
+                    if not translated[key]:
+                        raise ValueError(f"Translation returned empty for field: {key}")
+                    # Verify translation is not identical to source (detect failure)
+                    if translated[key] == content[key]:
+                        raise ValueError(f"Translation unchanged from source for field: {key}")
                     result[key] = translated[key]
-                elif key in non_empty_content:
-                    # If translation failed for this field, use original
-                    result[key] = content[key]
                 else:
+                    # Field was empty, keep empty
                     result[key] = ''
 
             logger.info(f"Successfully translated {len(non_empty_content)} fields to {target_lang}")
@@ -426,7 +432,14 @@ Return ONLY the JSON object with translated values, no explanation."""
             target_locale=target_locale,
             context=context
         )
-        return result.get('text', text)
+
+        # Strict validation - no fallback to original
+        if 'text' not in result:
+            raise ValueError("Translation missing 'text' field")
+        if not result['text']:
+            raise ValueError("Translation returned empty text")
+
+        return result['text']
 
     def translate_recipe_batch(
         self,
@@ -517,24 +530,37 @@ Return ONLY the JSON object, no explanation or markdown formatting."""
                 else:
                     raise
 
-            # Validate output structure
+            # Validate output structure - STRICT validation, no fallbacks
             expected_steps = len(content.get('steps', []))
             expected_ingredients = len(content.get('ingredients', []))
             actual_steps = len(translated.get('steps', []))
             actual_ingredients = len(translated.get('ingredients', []))
 
-            if actual_steps != expected_steps:
-                logger.warning(f"Step count mismatch: expected {expected_steps}, got {actual_steps}")
-            if actual_ingredients != expected_ingredients:
-                logger.warning(f"Ingredient count mismatch: expected {expected_ingredients}, got {actual_ingredients}")
+            # Verify all required fields are present
+            if not translated.get('title'):
+                raise ValueError(f"Translation missing 'title' field")
+            if not translated.get('steps'):
+                raise ValueError(f"Translation missing 'steps' field")
+            if not translated.get('ingredients'):
+                raise ValueError(f"Translation missing 'ingredients' field")
 
-            # Ensure all fields are present
+            # Verify counts match exactly
+            if actual_steps != expected_steps:
+                raise ValueError(f"Step count mismatch: expected {expected_steps}, got {actual_steps}")
+            if actual_ingredients != expected_ingredients:
+                raise ValueError(f"Ingredient count mismatch: expected {expected_ingredients}, got {actual_ingredients}")
+
+            # Verify translation is not just the original content (detect translation failure)
+            if translated.get('title') == content.get('title'):
+                raise ValueError(f"Translation appears unchanged from source (title identical)")
+
+            # Return only translated content, NO fallbacks to original
             result = {
-                'title': translated.get('title', content.get('title', '')),
-                'description': translated.get('description', content.get('description', '')),
-                'food_name': translated.get('food_name', content.get('food_name', '')),
-                'steps': translated.get('steps', content.get('steps', [])),
-                'ingredients': translated.get('ingredients', content.get('ingredients', []))
+                'title': translated['title'],
+                'description': translated.get('description', ''),  # Description can be empty
+                'food_name': translated.get('food_name', ''),  # Food name can be empty
+                'steps': translated['steps'],
+                'ingredients': translated['ingredients']
             }
 
             logger.info(f"Successfully translated full recipe to {target_lang}")
