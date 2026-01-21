@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import type { RecipeSummary } from '@/lib/types';
 import { COOKING_TIME_TRANSLATION_KEYS } from '@/lib/types';

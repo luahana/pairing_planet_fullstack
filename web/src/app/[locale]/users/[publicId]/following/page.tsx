@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { getFollowing, type FollowerDto } from '@/lib/api/follows';
