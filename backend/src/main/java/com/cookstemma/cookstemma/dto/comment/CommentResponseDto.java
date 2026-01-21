@@ -14,5 +14,6 @@ public record CommentResponseDto(
     Boolean isLikedByCurrentUser,
     Boolean isEdited,
     Boolean isDeleted,
+    Boolean isHidden,
     Instant createdAt
 ) {}

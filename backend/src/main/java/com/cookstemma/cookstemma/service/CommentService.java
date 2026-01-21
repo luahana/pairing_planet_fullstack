@@ -39,6 +39,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
     private final PushNotificationService pushNotificationService;
+    private final TranslationEventService translationEventService;
 
     private static final int MAX_PREVIEW_REPLIES = 3;
 
@@ -69,6 +70,9 @@ public class CommentService {
 
         // Send notification to log author (if not self)
         notifyCommentOnLog(logPost, comment, creator);
+
+        // Queue translation (with content moderation in Lambda)
+        translationEventService.queueCommentTranslation(comment);
 
         log.info("Comment created on log {} by user {}", logPublicId, principal.getId());
         return toCommentResponse(comment, principal.getId());
@@ -108,6 +112,9 @@ public class CommentService {
 
         // Send notification to parent comment author (if not self)
         notifyCommentReply(parentComment, reply, creator);
+
+        // Queue translation (with content moderation in Lambda)
+        translationEventService.queueCommentTranslation(reply);
 
         log.info("Reply created to comment {} by user {}", parentCommentPublicId, principal.getId());
         return toCommentResponse(reply, principal.getId());
@@ -364,19 +371,28 @@ public class CommentService {
     private CommentResponseDto toCommentResponse(Comment comment, Long currentUserId) {
         boolean isLiked = currentUserId != null &&
             commentLikeRepository.existsByUserIdAndCommentId(currentUserId, comment.getId());
-        return toCommentResponseInternal(comment, currentUserId != null ? isLiked : null);
+        return toCommentResponseInternal(comment, currentUserId, currentUserId != null ? isLiked : null);
     }
 
     private CommentResponseDto toCommentResponse(Comment comment, Long currentUserId, Set<Long> likedCommentIds) {
         Boolean isLiked = currentUserId != null ? likedCommentIds.contains(comment.getId()) : null;
-        return toCommentResponseInternal(comment, isLiked);
+        return toCommentResponseInternal(comment, currentUserId, isLiked);
     }
 
-    private CommentResponseDto toCommentResponseInternal(Comment comment, Boolean isLiked) {
+    private CommentResponseDto toCommentResponseInternal(Comment comment, Long currentUserId, Boolean isLiked) {
         User creator = comment.getCreator();
 
-        // For deleted comments, show placeholder content
-        String content = comment.isDeleted() ? null : comment.getContent();
+        // For deleted comments, always hide content
+        // For hidden comments, show content only to the creator
+        boolean isCreator = currentUserId != null && currentUserId.equals(creator.getId());
+        String content;
+        if (comment.isDeleted()) {
+            content = null;
+        } else if (comment.isHidden() && !isCreator) {
+            content = null;
+        } else {
+            content = comment.getContent();
+        }
 
         return new CommentResponseDto(
             comment.getPublicId(),
@@ -389,6 +405,7 @@ public class CommentService {
             isLiked,
             comment.isEdited(),
             comment.isDeleted(),
+            comment.isHidden(),
             comment.getCreatedAt()
         );
     }

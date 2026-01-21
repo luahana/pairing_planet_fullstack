@@ -1,6 +1,8 @@
 package com.cookstemma.cookstemma.service;
 
+import com.cookstemma.cookstemma.domain.entity.comment.Comment;
 import com.cookstemma.cookstemma.domain.entity.food.FoodMaster;
+import com.cookstemma.cookstemma.domain.entity.log_post.LogPost;
 import com.cookstemma.cookstemma.domain.entity.recipe.Recipe;
 import com.cookstemma.cookstemma.domain.entity.recipe.RecipeIngredient;
 import com.cookstemma.cookstemma.domain.entity.recipe.RecipeStep;
@@ -8,6 +10,8 @@ import com.cookstemma.cookstemma.domain.entity.translation.TranslationEvent;
 import com.cookstemma.cookstemma.domain.entity.user.User;
 import com.cookstemma.cookstemma.domain.enums.TranslatableEntity;
 import com.cookstemma.cookstemma.domain.enums.TranslationStatus;
+import com.cookstemma.cookstemma.repository.comment.CommentRepository;
+import com.cookstemma.cookstemma.repository.log_post.LogPostRepository;
 import com.cookstemma.cookstemma.repository.recipe.RecipeRepository;
 import com.cookstemma.cookstemma.repository.food.FoodMasterRepository;
 import com.cookstemma.cookstemma.repository.translation.TranslationEventRepository;
@@ -420,6 +424,192 @@ class TranslationEventServiceTest extends BaseIntegrationTest {
                     .count();
 
             assertThat(count).isEqualTo(1);
+        }
+    }
+
+    @Nested
+    @DisplayName("Queue Comment Translation")
+    class QueueCommentTranslationTests {
+
+        @Autowired
+        private CommentRepository commentRepository;
+
+        @Autowired
+        private LogPostRepository logPostRepository;
+
+        @Autowired
+        private TestUserFactory testUserFactory;
+
+        private User testUser;
+        private LogPost testLogPost;
+        private Comment testComment;
+
+        @BeforeEach
+        void setUpComment() {
+            testUser = testUserFactory.createTestUser();
+            testUser.setLocale("ko-KR");
+
+            testLogPost = LogPost.builder()
+                    .title("Test Log Post")
+                    .content("Test content")
+                    .locale("ko-KR")
+                    .creatorId(testUser.getId())
+                    .build();
+            logPostRepository.saveAndFlush(testLogPost);
+
+            testComment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(testUser)
+                    .content("Test comment content for translation")
+                    .build();
+            commentRepository.saveAndFlush(testComment);
+        }
+
+        @Test
+        @DisplayName("Should create translation event with COMMENT entity type")
+        void queueCommentTranslation_CreatesEvent() {
+            translationEventService.queueCommentTranslation(testComment);
+
+            Optional<TranslationEvent> event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, testComment.getId());
+
+            assertThat(event).isPresent();
+            assertThat(event.get().getEntityType()).isEqualTo(TranslatableEntity.COMMENT);
+            assertThat(event.get().getEntityId()).isEqualTo(testComment.getId());
+        }
+
+        @Test
+        @DisplayName("Should set source locale from creator's locale")
+        void queueCommentTranslation_SetsSourceLocale() {
+            translationEventService.queueCommentTranslation(testComment);
+
+            TranslationEvent event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, testComment.getId())
+                    .orElseThrow();
+
+            assertThat(event.getSourceLocale()).isEqualTo("ko");
+        }
+
+        @Test
+        @DisplayName("Should set all target locales except source")
+        void queueCommentTranslation_SetsTargetLocales() {
+            translationEventService.queueCommentTranslation(testComment);
+
+            TranslationEvent event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, testComment.getId())
+                    .orElseThrow();
+
+            assertThat(event.getTargetLocales()).hasSize(19);
+            assertThat(event.getTargetLocales()).contains("en", "ja", "zh", "fr", "es");
+            assertThat(event.getTargetLocales()).doesNotContain("ko");
+        }
+
+        @Test
+        @DisplayName("Should set status to PENDING")
+        void queueCommentTranslation_StatusIsPending() {
+            translationEventService.queueCommentTranslation(testComment);
+
+            TranslationEvent event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, testComment.getId())
+                    .orElseThrow();
+
+            assertThat(event.getStatus()).isEqualTo(TranslationStatus.PENDING);
+        }
+
+        @Test
+        @DisplayName("Should not create event for empty content")
+        void queueCommentTranslation_EmptyContent_NoEvent() {
+            Comment emptyComment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(testUser)
+                    .content("")
+                    .build();
+            commentRepository.saveAndFlush(emptyComment);
+
+            translationEventService.queueCommentTranslation(emptyComment);
+
+            Optional<TranslationEvent> event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, emptyComment.getId());
+
+            assertThat(event).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should not create event for blank content")
+        void queueCommentTranslation_BlankContent_NoEvent() {
+            Comment blankComment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(testUser)
+                    .content("   ")
+                    .build();
+            commentRepository.saveAndFlush(blankComment);
+
+            translationEventService.queueCommentTranslation(blankComment);
+
+            Optional<TranslationEvent> event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, blankComment.getId());
+
+            assertThat(event).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should not create duplicate event if one is pending")
+        void queueCommentTranslation_NoDuplicateWhenPending() {
+            translationEventService.queueCommentTranslation(testComment);
+            translationEventService.queueCommentTranslation(testComment);
+
+            long count = translationEventRepository.findAll().stream()
+                    .filter(e -> e.getEntityType() == TranslatableEntity.COMMENT)
+                    .filter(e -> e.getEntityId().equals(testComment.getId()))
+                    .count();
+
+            assertThat(count).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("Should handle English as source locale")
+        void queueCommentTranslation_EnglishSource() {
+            User englishUser = testUserFactory.createTestUser("english_user_" + System.currentTimeMillis());
+            englishUser.setLocale("en-US");
+
+            Comment englishComment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(englishUser)
+                    .content("English comment")
+                    .build();
+            commentRepository.saveAndFlush(englishComment);
+
+            translationEventService.queueCommentTranslation(englishComment);
+
+            TranslationEvent event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, englishComment.getId())
+                    .orElseThrow();
+
+            assertThat(event.getSourceLocale()).isEqualTo("en");
+            assertThat(event.getTargetLocales()).contains("ko");
+            assertThat(event.getTargetLocales()).doesNotContain("en");
+        }
+
+        @Test
+        @DisplayName("Should default to ko for null locale")
+        void queueCommentTranslation_NullLocale_DefaultsToKorean() {
+            User noLocaleUser = testUserFactory.createTestUser("no_locale_" + System.currentTimeMillis());
+            noLocaleUser.setLocale(null);
+
+            Comment comment = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(noLocaleUser)
+                    .content("Comment content")
+                    .build();
+            commentRepository.saveAndFlush(comment);
+
+            translationEventService.queueCommentTranslation(comment);
+
+            TranslationEvent event = translationEventRepository
+                    .findByEntityTypeAndEntityId(TranslatableEntity.COMMENT, comment.getId())
+                    .orElseThrow();
+
+            assertThat(event.getSourceLocale()).isEqualTo("ko");
         }
     }
 }
