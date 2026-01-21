@@ -184,7 +184,9 @@
     "unfollow": "Sluta följa",
     "level": "Nivå {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{xp} XP till {tierName}"
+    "xpToNextTier": "{xp} XP till {tierName}",
+    "bioPlaceholder": "Lägg till en bio för att presentera dig",
+    "socialLinksPlaceholder": "Lägg till dina sociala länkar för att ansluta med andra"
   },
   "levels": {
     "beginner": "Nybörjare",

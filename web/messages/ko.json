@@ -185,7 +185,9 @@
     "unfollow": "팔로우 취소",
     "level": "레벨 {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{tierName}까지 {xp} XP"
+    "xpToNextTier": "{tierName}까지 {xp} XP",
+    "bioPlaceholder": "자신을 소개하는 한줄 소개를 추가하세요",
+    "socialLinksPlaceholder": "소셜 링크를 추가하여 다른 사람들과 연결하세요"
   },
   "levels": {
     "beginner": "초보자",

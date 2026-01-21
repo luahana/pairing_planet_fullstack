@@ -184,7 +184,9 @@
     "unfollow": "إلغاء المتابعة",
     "level": "المستوى {level}",
     "xpProgress": "{current} / {next} نقطة خبرة",
-    "xpToNextTier": "{xp} نقطة خبرة لـ{tierName}"
+    "xpToNextTier": "{xp} نقطة خبرة لـ{tierName}",
+    "bioPlaceholder": "أضف نبذة عنك ليتعرف عليك الآخرون",
+    "socialLinksPlaceholder": "أضف روابط التواصل الاجتماعي للتواصل مع الآخرين"
   },
   "levels": {
     "beginner": "مبتدئ",

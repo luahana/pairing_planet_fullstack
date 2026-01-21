@@ -184,7 +184,9 @@
     "unfollow": "Ontvolgen",
     "level": "Niveau {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{xp} XP tot {tierName}"
+    "xpToNextTier": "{xp} XP tot {tierName}",
+    "bioPlaceholder": "Voeg een bio toe om jezelf voor te stellen",
+    "socialLinksPlaceholder": "Voeg je sociale links toe om met anderen te verbinden"
   },
   "levels": {
     "beginner": "Beginner",
