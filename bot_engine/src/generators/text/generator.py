@@ -1,4 +1,4 @@
-"""Text generator using Gemini with OpenAI ChatGPT fallback."""
+"""Text generator using Gemini with retry logic."""
 
 import json
 from typing import Any, Dict, List, Optional
@@ -20,38 +20,33 @@ logger = structlog.get_logger()
 
 
 class TextGenerator:
-    """Generate recipe and log content using Gemini with GPT fallback."""
+    """Generate recipe and log content using Gemini."""
 
     def __init__(
         self,
         gemini_api_key: Optional[str] = None,
-        openai_api_key: Optional[str] = None,
-        model: Optional[str] = None,
         temperature: Optional[float] = None,
     ) -> None:
         settings = get_settings()
 
-        # 1. Initialize Gemini Client (Primary)
-        # Uses the OpenAI-compatible base URL for Gemini
-        self.gemini_client = AsyncOpenAI(
+        # Initialize Gemini Client via OpenAI-compatible API
+        self.client = AsyncOpenAI(
             api_key=gemini_api_key or settings.gemini_api_key,
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
 
-        # 2. Initialize OpenAI Client (Fallback)
-        self.openai_client = AsyncOpenAI(
-            api_key=openai_api_key or settings.openai_api_key,
-        )
-
-        # Default models from settings
-        self.gemini_model = settings.gemini_text_model or "gemini-2.0-flash"
-        self.openai_model = settings.openai_model or "gpt-4o"
-        self.temperature = temperature or settings.openai_temperature
+        self.model = settings.gemini_text_model or "gemini-2.0-flash-lite"
+        self.temperature = temperature or settings.temperature
 
     @retry(
         retry=retry_if_exception_type(Exception),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=30),
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, min=5, max=60),
+        before_sleep=lambda retry_state: logger.warning(
+            "gemini_text_retry",
+            attempt=retry_state.attempt_number,
+            wait=retry_state.next_action.sleep,
+        ),
     )
     async def _chat_completion(
         self,
@@ -59,55 +54,31 @@ class TextGenerator:
         user_prompt: str,
         temperature: Optional[float] = None,
     ) -> str:
-        """Make a chat completion request with fallback logic."""
+        """Make a chat completion request with retry logic."""
 
         # Ensure the prompt contains 'json' for JSON mode
         if "json" not in system_prompt.lower() and "json" not in user_prompt.lower():
             system_prompt += "\nRespond ONLY with a valid JSON object."
 
-        try:
-            # Step 1: Attempt with Gemini (Primary)
-            logger.debug("attempting_gemini_completion", model=self.gemini_model)
-            response = await self.gemini_client.chat.completions.create(
-                model=self.gemini_model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=temperature or self.temperature,
-                response_format={"type": "json_object"},
-            )
-            content = response.choices[0].message.content
-            if not content:
-                raise ValueError("Empty response from Gemini")
-            logger.debug(
-                "gemini_response",
-                model=self.gemini_model,
-                tokens=response.usage.total_tokens if response.usage else None,
-            )
-            return content
-
-        except Exception as e:
-            # Step 2: Fallback to OpenAI if Gemini fails
-            logger.warning("gemini_failed_falling_back_to_gpt", error=str(e))
-            response = await self.openai_client.chat.completions.create(
-                model=self.openai_model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=temperature or self.temperature,
-                response_format={"type": "json_object"},
-            )
-            content = response.choices[0].message.content
-            if not content:
-                raise ValueError("Empty response from OpenAI")
-            logger.debug(
-                "openai_response",
-                model=self.openai_model,
-                tokens=response.usage.total_tokens if response.usage else None,
-            )
-            return content
+        logger.debug("attempting_gemini_completion", model=self.model)
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=temperature or self.temperature,
+            response_format={"type": "json_object"},
+        )
+        content = response.choices[0].message.content
+        if not content:
+            raise ValueError("Empty response from Gemini")
+        logger.debug(
+            "gemini_response",
+            model=self.model,
+            tokens=response.usage.total_tokens if response.usage else None,
+        )
+        return content
 
     def _parse_json_response(self, response: str) -> Dict[str, Any]:
         """Parse JSON from AI response."""
