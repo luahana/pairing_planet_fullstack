@@ -123,12 +123,16 @@ export function UserProfileHeader({ user, publicId }: UserProfileHeaderProps) {
             </div>
           )}
 
-          {user.bio && (
+          {user.bio ? (
             <p className="text-[var(--text-secondary)] mt-4 max-w-xl">{user.bio}</p>
-          )}
+          ) : isOwnProfile ? (
+            <p className="text-[var(--text-tertiary)] mt-4 max-w-xl italic">
+              {t('bioPlaceholder')}
+            </p>
+          ) : null}
 
           {/* Social Links Pills */}
-          {(user.youtubeUrl || user.instagramHandle) && (
+          {(user.youtubeUrl || user.instagramHandle) ? (
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-4">
               {user.youtubeUrl && (
                 <a
@@ -162,7 +166,11 @@ export function UserProfileHeader({ user, publicId }: UserProfileHeaderProps) {
                 </a>
               )}
             </div>
-          )}
+          ) : isOwnProfile ? (
+            <p className="text-[var(--text-tertiary)] mt-4 italic">
+              {t('socialLinksPlaceholder')}
+            </p>
+          ) : null}
 
           {/* Stats */}
           <div className="flex items-center justify-center sm:justify-start gap-6 mt-4">

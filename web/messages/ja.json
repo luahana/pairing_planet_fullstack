@@ -184,7 +184,9 @@
     "unfollow": "フォロー解除",
     "level": "レベル{level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{tierName}まであと{xp} XP"
+    "xpToNextTier": "{tierName}まであと{xp} XP",
+    "bioPlaceholder": "自己紹介を追加してみましょう",
+    "socialLinksPlaceholder": "ソーシャルリンクを追加して他の人とつながりましょう"
   },
   "levels": {
     "beginner": "初心者",

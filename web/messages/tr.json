@@ -184,7 +184,9 @@
     "unfollow": "Takibi Bırak",
     "level": "Seviye {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{tierName} için {xp} XP"
+    "xpToNextTier": "{tierName} için {xp} XP",
+    "bioPlaceholder": "Kendinizi tanıtmak için bir biyografi ekleyin",
+    "socialLinksPlaceholder": "Başkalarıyla bağlantı kurmak için sosyal bağlantılarınızı ekleyin"
   },
   "levels": {
     "beginner": "Başlangıç",

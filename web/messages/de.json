@@ -184,7 +184,9 @@
     "unfollow": "Entfolgen",
     "level": "Level {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{xp} XP bis {tierName}"
+    "xpToNextTier": "{xp} XP bis {tierName}",
+    "bioPlaceholder": "Füge eine Bio hinzu, um dich vorzustellen",
+    "socialLinksPlaceholder": "Füge deine Social-Media-Links hinzu, um dich mit anderen zu verbinden"
   },
   "levels": {
     "beginner": "Anfänger",

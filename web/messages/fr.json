@@ -176,7 +176,9 @@
     "unfollow": "Ne plus suivre",
     "level": "Niveau {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{xp} XP pour {tierName}"
+    "xpToNextTier": "{xp} XP pour {tierName}",
+    "bioPlaceholder": "Ajoutez une bio pour vous présenter",
+    "socialLinksPlaceholder": "Ajoutez vos liens sociaux pour vous connecter avec d'autres"
   },
   "levels": {
     "beginner": "Débutant",

@@ -184,7 +184,9 @@
     "unfollow": "เลิกติดตาม",
     "level": "ระดับ {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{xp} XP ถึง{tierName}"
+    "xpToNextTier": "{xp} XP ถึง{tierName}",
+    "bioPlaceholder": "เพิ่มประวัติเพื่อแนะนำตัวเอง",
+    "socialLinksPlaceholder": "เพิ่มลิงก์โซเชียลเพื่อเชื่อมต่อกับผู้อื่น"
   },
   "levels": {
     "beginner": "เริ่มต้น",

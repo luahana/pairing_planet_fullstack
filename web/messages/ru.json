@@ -184,7 +184,9 @@
     "unfollow": "Отписаться",
     "level": "Уровень {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{xp} XP до {tierName}"
+    "xpToNextTier": "{xp} XP до {tierName}",
+    "bioPlaceholder": "Добавьте информацию о себе",
+    "socialLinksPlaceholder": "Добавьте ссылки на соцсети, чтобы связаться с другими"
   },
   "levels": {
     "beginner": "Новичок",

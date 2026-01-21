@@ -184,7 +184,9 @@
     "unfollow": "لغو دنبال کردن",
     "level": "سطح {level}",
     "xpProgress": "{current} / {next} XP",
-    "xpToNextTier": "{xp} XP تا {tierName}"
+    "xpToNextTier": "{xp} XP تا {tierName}",
+    "bioPlaceholder": "بیوگرافی اضافه کنید تا دیگران شما را بشناسند",
+    "socialLinksPlaceholder": "لینک‌های شبکه‌های اجتماعی خود را اضافه کنید"
   },
   "levels": {
     "beginner": "مبتدی",
