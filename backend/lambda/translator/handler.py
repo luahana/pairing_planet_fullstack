@@ -553,6 +553,9 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
             recipe_id
         ))
 
+        if cur.rowcount == 0:
+            raise ValueError(f"Recipe {recipe_id} not found - UPDATE affected 0 rows")
+
         # 2. Propagate FoodMaster name translation
         food_master = full_recipe.get('food_master', {})
         translated_food_name = translated.get('food_name')
@@ -569,6 +572,7 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
 
         # 3. Update each step (use BCP47 keys)
         translated_steps = translated.get('steps', [])
+        steps_updated = 0
         for i, step in enumerate(full_recipe['steps']):
             if i < len(translated_steps):
                 existing_step_trans = step['description_translations'] or {}
@@ -579,8 +583,16 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
                     WHERE id = %s
                 """, (json.dumps(existing_step_trans), step['id']))
 
+                if cur.rowcount > 0:
+                    steps_updated += 1
+                else:
+                    logger.warning(f"Step {step['id']} not found - skipping")
+
+        logger.info(f"Updated {steps_updated}/{len(full_recipe['steps'])} steps for recipe {recipe_id}")
+
         # 4. Update each ingredient + propagate to autocomplete_items (use BCP47 keys)
         translated_ingredients = translated.get('ingredients', [])
+        ingredients_updated = 0
         for i, ingredient in enumerate(full_recipe['ingredients']):
             if i < len(translated_ingredients):
                 translated_name = translated_ingredients[i]
@@ -593,6 +605,11 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
                     SET name_translations = %s
                     WHERE id = %s
                 """, (json.dumps(existing_ing_trans), ingredient['id']))
+
+                if cur.rowcount > 0:
+                    ingredients_updated += 1
+                else:
+                    logger.warning(f"Ingredient {ingredient['id']} not found - skipping")
 
                 # Propagate to autocomplete_items (match by exact name + type)
                 autocomplete_type = map_ingredient_to_autocomplete_type(ingredient.get('type'))
@@ -612,6 +629,8 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
                     if cur.rowcount > 0:
                         logger.info(f"Propagated ingredient translation to AutocompleteItem: "
                                     f"'{ingredient['name']}' -> '{translated_name}' ({target_bcp47})")
+
+        logger.info(f"Updated {ingredients_updated}/{len(full_recipe['ingredients'])} ingredients for recipe {recipe_id}")
 
 
 def save_translations(conn, entity_type: str, entity_id: int, translations: dict):
@@ -776,6 +795,20 @@ def process_full_recipe_event(conn, translator: GeminiTranslator, event: dict,
                 source_locale=source_locale,
                 target_locale=target_locale
             )
+
+            # Validate translation completeness
+            if not translated.get('title') or not translated.get('steps') or not translated.get('ingredients'):
+                raise ValueError(f"Incomplete translation: missing title, steps, or ingredients")
+
+            expected_steps = len(content_to_translate.get('steps', []))
+            expected_ingredients = len(content_to_translate.get('ingredients', []))
+            actual_steps = len(translated.get('steps', []))
+            actual_ingredients = len(translated.get('ingredients', []))
+
+            if actual_steps != expected_steps:
+                raise ValueError(f"Translation step count mismatch: expected {expected_steps}, got {actual_steps}")
+            if actual_ingredients != expected_ingredients:
+                raise ValueError(f"Translation ingredient count mismatch: expected {expected_ingredients}, got {actual_ingredients}")
 
             # Save all translations (recipe, steps, ingredients)
             # + propagate to FoodMaster and AutocompleteItem
