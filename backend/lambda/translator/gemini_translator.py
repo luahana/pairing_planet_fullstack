@@ -388,6 +388,8 @@ Return ONLY the JSON object with translated values, no explanation."""
 
             # Strict validation - all non-empty fields must be translated
             result = {}
+            unchanged_fields = []
+
             for key in content.keys():
                 if key in non_empty_content:
                     # Field had content to translate
@@ -395,13 +397,23 @@ Return ONLY the JSON object with translated values, no explanation."""
                         raise ValueError(f"Translation missing required field: {key}")
                     if not translated[key]:
                         raise ValueError(f"Translation returned empty for field: {key}")
-                    # Verify translation is not identical to source (detect failure)
+
+                    # Check if translation is unchanged from source
                     if translated[key] == content[key]:
-                        raise ValueError(f"Translation unchanged from source for field: {key}")
+                        # Allow unchanged for very short content (emojis, punctuation, proper nouns, numbers)
+                        # or when content is likely universal (< 10 chars often contains names, brands, etc.)
+                        if len(content[key].strip()) >= 10:
+                            unchanged_fields.append(key)
+                            logger.warning(f"Translation unchanged from source for field '{key}': {content[key][:50]}")
+
                     result[key] = translated[key]
                 else:
                     # Field was empty, keep empty
                     result[key] = ''
+
+            # Only fail if ALL non-empty fields are unchanged (indicates real translation failure)
+            if unchanged_fields and len(unchanged_fields) == len(non_empty_content):
+                raise ValueError(f"All fields unchanged from source: {', '.join(unchanged_fields)}")
 
             logger.info(f"Successfully translated {len(non_empty_content)} fields to {target_lang}")
             return result
@@ -551,8 +563,21 @@ Return ONLY the JSON object, no explanation or markdown formatting."""
                 raise ValueError(f"Ingredient count mismatch: expected {expected_ingredients}, got {actual_ingredients}")
 
             # Verify translation is not just the original content (detect translation failure)
+            # Allow unchanged titles for very short content (brand names, proper nouns)
             if translated.get('title') == content.get('title'):
-                raise ValueError(f"Translation appears unchanged from source (title identical)")
+                if len(content.get('title', '').strip()) >= 10:
+                    # Title is long enough that it should have been translated
+                    # Check if other fields also unchanged (indicates complete failure)
+                    steps_unchanged = all(
+                        translated['steps'][i] == content['steps'][i]
+                        for i in range(len(content.get('steps', [])))
+                    ) if content.get('steps') else False
+
+                    if steps_unchanged:
+                        raise ValueError(f"Translation appears completely unchanged from source")
+                    else:
+                        # Title unchanged but steps translated - allow it (might be a proper noun)
+                        logger.warning(f"Recipe title unchanged from source but steps translated: {content.get('title', '')[:50]}")
 
             # Return only translated content, NO fallbacks to original
             result = {
