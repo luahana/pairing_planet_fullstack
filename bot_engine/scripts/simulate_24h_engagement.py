@@ -248,6 +248,8 @@ class ContentOrchestrator:
                     cwd=self.scripts_dir.parent,
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
+                    errors='replace',  # Replace problematic characters instead of failing
                     timeout=120,
                 )
 
@@ -300,6 +302,8 @@ class ContentOrchestrator:
                     cwd=self.scripts_dir.parent,
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
+                    errors='replace',  # Replace problematic characters instead of failing
                     timeout=120,
                 )
 
