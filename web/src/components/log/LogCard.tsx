@@ -16,7 +16,6 @@ interface LogCardProps {
 }
 
 export function LogCard({ log, isSaved = false, showTypeLabel = false }: LogCardProps) {
-  const tCommon = useTranslations('common');
   const tCard = useTranslations('card');
   const tComments = useTranslations('comments');
   const router = useRouter();

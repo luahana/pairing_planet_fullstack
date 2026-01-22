@@ -27,7 +27,7 @@ jest.mock('next-intl', () => ({
       reportSuccess: 'Report submitted',
       reportFailed: 'Failed to report',
     };
-    return (args?: any) => {
+    return (args?: { username?: string; [key: string]: unknown }) => {
       const result = translations[key] || key;
       if (args && typeof result === 'string') {
         return result.replace('{username}', args.username || '');
@@ -63,7 +63,7 @@ jest.mock('@/lib/api/moderation', () => ({
 
 // Mock shared components
 jest.mock('@/components/shared/ActionMenu', () => ({
-  ActionMenu: ({ items }: { items: any[] }) => (
+  ActionMenu: ({ items }: { items: Array<{ label: string; onClick: () => void; disabled?: boolean; tooltip?: string }> }) => (
     <div data-testid="action-menu">
       {items.map((item, index) => (
         <button
@@ -91,7 +91,12 @@ jest.mock('@/components/shared/BlockConfirmDialog', () => ({
     username,
     onConfirm,
     onCancel,
-  }: any) =>
+  }: {
+    isOpen: boolean;
+    username: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+  }) =>
     isOpen ? (
       <div data-testid="block-dialog">
         <p>Block {username}?</p>
@@ -102,7 +107,12 @@ jest.mock('@/components/shared/BlockConfirmDialog', () => ({
 }));
 
 jest.mock('@/components/shared/ReportModal', () => ({
-  ReportModal: ({ isOpen, targetName, onSubmit, onCancel }: any) =>
+  ReportModal: ({ isOpen, targetName, onSubmit, onCancel }: {
+    isOpen: boolean;
+    targetName: string;
+    onSubmit: (reason: string, description?: string) => void;
+    onCancel: () => void;
+  }) =>
     isOpen ? (
       <div data-testid="report-modal">
         <p>Report {targetName}</p>
@@ -126,7 +136,6 @@ import { editComment, deleteComment, likeComment, unlikeComment } from '@/lib/ap
 import { blockUser, getBlockStatus, reportUser } from '@/lib/api/moderation';
 import { useAuth } from '@/contexts/AuthContext';
 
-const mockEditComment = editComment as jest.Mock;
 const mockDeleteComment = deleteComment as jest.Mock;
 const mockLikeComment = likeComment as jest.Mock;
 const mockUnlikeComment = unlikeComment as jest.Mock;
@@ -158,8 +167,8 @@ describe('CommentCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    delete (window as any).location;
-    (window as any).location = { reload: jest.fn() };
+    delete (window as Window & typeof globalThis & { location: unknown }).location;
+    (window as Window & typeof globalThis & { location: { reload: jest.Mock } }).location = { reload: jest.fn() };
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
       user: { publicId: 'current-user-123', username: 'currentuser' },
@@ -655,7 +664,7 @@ describe('CommentCard', () => {
     it('should disable block button if already blocked', async () => {
       mockGetBlockStatus.mockResolvedValue({ isBlocked: true, amBlocked: false });
 
-      const { container } = render(
+      render(
         <CommentCard
           comment={mockComment}
           onReply={mockOnReply}

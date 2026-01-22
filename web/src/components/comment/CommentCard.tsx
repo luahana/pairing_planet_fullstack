@@ -45,7 +45,6 @@ export function CommentCard({
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [isBlocked, setIsBlocked] = useState<boolean | null>(null);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -104,7 +103,6 @@ export function CommentCard({
       console.error('Failed to delete comment:', error);
     } finally {
       setIsDeleting(false);
-      setShowMenu(false);
     }
   }, [comment.publicId, onDelete, t]);
 
