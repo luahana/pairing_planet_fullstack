@@ -2,12 +2,12 @@
 # Copy this file to terraform.tfvars and fill in actual values
 
 aws_region          = "ap-northeast-2"
-project_name        = "pairing-planet"
+project_name        = "cookstemma"
 environment         = "dev"
-ecr_repository_name = "pairing-planet"
+ecr_repository_name = "cookstemma"
 
 # Database
-db_name     = "pairingplanet"
+db_name     = "cookstemma"
 db_username = "postgres"
 db_password = "your-secure-password-here"
 
