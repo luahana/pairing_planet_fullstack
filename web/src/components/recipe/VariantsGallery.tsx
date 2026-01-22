@@ -77,6 +77,7 @@ export function VariantsGallery({ variants, rootRecipePublicId }: VariantsGaller
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="144px"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[var(--surface)]">

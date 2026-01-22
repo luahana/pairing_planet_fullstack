@@ -135,6 +135,7 @@ export function RecentLogsGallery({ logs, recipePublicId }: RecentLogsGalleryPro
                       fill
                       className="object-cover"
                       sizes="112px"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[var(--surface)]">

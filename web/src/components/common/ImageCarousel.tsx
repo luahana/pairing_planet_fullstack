@@ -67,6 +67,7 @@ export function ImageCarousel({ images, alt }: ImageCarouselProps) {
             className="object-cover"
             priority={currentIndex === 0}
             sizes="(max-width: 896px) 100vw, 896px"
+            unoptimized
           />
         )}
 
@@ -156,6 +157,7 @@ export function ImageCarousel({ images, alt }: ImageCarouselProps) {
                   fill
                   className="object-cover"
                   sizes="64px"
+                  unoptimized
                 />
               </button>
             );
