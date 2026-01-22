@@ -587,10 +587,13 @@ public class RecipeService {
     @Transactional(readOnly = true)
     public HomeFeedResponseDto getHomeFeed(String locale) {
         String normalizedLocale = LocaleUtils.normalizeLocale(locale);
+        // Use BCP47 format for translation filtering (matches how Lambda translator stores keys)
+        String langCode = LocaleUtils.toBcp47(normalizedLocale);
 
         // 1. 최근 요리 활동 (로그) 조회 - "📍 최근 요리 활동" 섹션
+        // Use translation-aware query to only show logs available in user's locale
         List<RecentActivityDto> recentActivity = logPostRepository
-                .findAllOrderByCreatedAtDesc(PageRequest.of(0, 5))
+                .findAllLogsPage(langCode, PageRequest.of(0, 5))
                 .stream()
                 .map(log -> {
                     var recipeLog = log.getRecipeLog();
@@ -625,13 +628,19 @@ public class RecipeService {
                 })
                 .toList();
 
-        // 2. 최근 레시피 조회
-        List<RecipeSummaryDto> recentRecipes = recipeRepository.findTop5ByDeletedAtIsNullAndIsPrivateFalseOrderByCreatedAtDesc()
-                .stream().map(r -> convertToSummary(r, normalizedLocale)).toList();
+        // 2. 최근 레시피 조회 - Use translation-aware query to only show recipes available in user's locale
+        List<RecipeSummaryDto> recentRecipes = recipeRepository
+                .findPublicRecipesPage(langCode, PageRequest.of(0, 5))
+                .stream()
+                .map(r -> convertToSummary(r, normalizedLocale))
+                .toList();
 
         // 3. 활발한 변형 트리 조회 (기획서: "🔥 이 레시피, 이렇게 바뀌고 있어요")
-        List<TrendingTreeDto> trending = recipeRepository.findTrendingOriginals(PageRequest.of(0, 5))
-                .stream().map(root -> {
+        // Use translation-aware query to only show recipes available in user's locale
+        List<TrendingTreeDto> trending = recipeRepository
+                .findRecipesOrderByTrending(langCode, PageRequest.of(0, 5))
+                .stream()
+                .map(root -> {
                     long variants = recipeRepository.countByRootRecipeIdAndDeletedAtIsNull(root.getId());
                     long logs = recipeLogRepository.countByRecipeId(root.getId());
                     String thumbnail = root.getCoverImages().stream()
