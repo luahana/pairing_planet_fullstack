@@ -557,11 +557,17 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
 
     with conn.cursor() as cur:
         # 1. Update recipe title and description (use BCP47 keys)
+        # STRICT: No fallbacks - fail if translation missing
+        if 'title' not in translated or not translated['title']:
+            raise ValueError(f"Translation missing required 'title' for locale {target_locale}")
+        if 'description' not in translated:
+            raise ValueError(f"Translation missing 'description' for locale {target_locale}")
+
         existing_title = full_recipe['recipe']['title_translations'] or {}
         existing_desc = full_recipe['recipe']['description_translations'] or {}
 
-        existing_title[target_bcp47] = translated.get('title', '')
-        existing_desc[target_bcp47] = translated.get('description', '')
+        existing_title[target_bcp47] = translated['title']
+        existing_desc[target_bcp47] = translated['description']  # Can be empty string
 
         cur.execute("""
             UPDATE recipes
@@ -592,64 +598,80 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
             logger.info(f"Propagated food_name translation to FoodMaster {food_master['id']} ({target_bcp47})")
 
         # 3. Update each step (use BCP47 keys)
-        translated_steps = translated.get('steps', [])
+        # STRICT: Verify steps exist and match count
+        if 'steps' not in translated:
+            raise ValueError(f"Translation missing required 'steps' for locale {target_locale}")
+        translated_steps = translated['steps']
+        if len(translated_steps) != len(full_recipe['steps']):
+            raise ValueError(f"Step count mismatch: expected {len(full_recipe['steps'])}, got {len(translated_steps)}")
+
         steps_updated = 0
         for i, step in enumerate(full_recipe['steps']):
-            if i < len(translated_steps):
-                existing_step_trans = step['description_translations'] or {}
-                existing_step_trans[target_bcp47] = translated_steps[i]
-                cur.execute("""
-                    UPDATE recipe_steps
-                    SET description_translations = %s
-                    WHERE id = %s
-                """, (json.dumps(existing_step_trans), step['id']))
+            if not translated_steps[i]:
+                raise ValueError(f"Step {i} translation is empty for locale {target_locale}")
 
-                if cur.rowcount > 0:
-                    steps_updated += 1
-                else:
-                    logger.warning(f"Step {step['id']} not found - skipping")
+            existing_step_trans = step['description_translations'] or {}
+            existing_step_trans[target_bcp47] = translated_steps[i]
+            cur.execute("""
+                UPDATE recipe_steps
+                SET description_translations = %s
+                WHERE id = %s
+            """, (json.dumps(existing_step_trans), step['id']))
+
+            if cur.rowcount > 0:
+                steps_updated += 1
+            else:
+                raise ValueError(f"Step {step['id']} not found in database")
 
         logger.info(f"Updated {steps_updated}/{len(full_recipe['steps'])} steps for recipe {recipe_id}")
 
         # 4. Update each ingredient + propagate to autocomplete_items (use BCP47 keys)
-        translated_ingredients = translated.get('ingredients', [])
+        # STRICT: Verify ingredients exist and match count
+        if 'ingredients' not in translated:
+            raise ValueError(f"Translation missing required 'ingredients' for locale {target_locale}")
+        translated_ingredients = translated['ingredients']
+        if len(translated_ingredients) != len(full_recipe['ingredients']):
+            raise ValueError(f"Ingredient count mismatch: expected {len(full_recipe['ingredients'])}, got {len(translated_ingredients)}")
+
         ingredients_updated = 0
         for i, ingredient in enumerate(full_recipe['ingredients']):
-            if i < len(translated_ingredients):
-                translated_name = translated_ingredients[i]
-                existing_ing_trans = ingredient['name_translations'] or {}
-                existing_ing_trans[target_bcp47] = translated_name
+            translated_name = translated_ingredients[i]
+            if not translated_name:
+                raise ValueError(f"Ingredient {i} translation is empty for locale {target_locale}")
 
-                # Update recipe_ingredients
+            existing_ing_trans = ingredient['name_translations'] or {}
+            existing_ing_trans[target_bcp47] = translated_name
+
+            # Update recipe_ingredients
+            cur.execute("""
+                UPDATE recipe_ingredients
+                SET name_translations = %s
+                WHERE id = %s
+            """, (json.dumps(existing_ing_trans), ingredient['id']))
+
+            if cur.rowcount > 0:
+                ingredients_updated += 1
+            else:
+                raise ValueError(f"Ingredient {ingredient['id']} not found in database")
+
+            # Propagate to autocomplete_items (match by exact name + type)
+            autocomplete_type = map_ingredient_to_autocomplete_type(ingredient.get('type'))
+            if autocomplete_type and ingredient.get('name'):
+                # Match ingredient by original name (case-insensitive) and type
                 cur.execute("""
-                    UPDATE recipe_ingredients
-                    SET name_translations = %s
-                    WHERE id = %s
-                """, (json.dumps(existing_ing_trans), ingredient['id']))
-
+                    UPDATE autocomplete_items
+                    SET name = name || %s
+                    WHERE type::text = %s
+                      AND LOWER(name ->> %s) = LOWER(%s)
+                """, (
+                    json.dumps({target_bcp47: translated_name}),
+                    autocomplete_type,
+                    source_bcp47,
+                    ingredient['name']
+                ))
                 if cur.rowcount > 0:
-                    ingredients_updated += 1
-                else:
-                    logger.warning(f"Ingredient {ingredient['id']} not found - skipping")
-
-                # Propagate to autocomplete_items (match by exact name + type)
-                autocomplete_type = map_ingredient_to_autocomplete_type(ingredient.get('type'))
-                if autocomplete_type and ingredient.get('name'):
-                    # Match ingredient by original name (case-insensitive) and type
-                    cur.execute("""
-                        UPDATE autocomplete_items
-                        SET name = name || %s
-                        WHERE type::text = %s
-                          AND LOWER(name ->> %s) = LOWER(%s)
-                    """, (
-                        json.dumps({target_bcp47: translated_name}),
-                        autocomplete_type,
-                        source_bcp47,
-                        ingredient['name']
-                    ))
-                    if cur.rowcount > 0:
-                        logger.info(f"Propagated ingredient translation to AutocompleteItem: "
-                                    f"'{ingredient['name']}' -> '{translated_name}' ({target_bcp47})")
+                    logger.info(f"Propagated ingredient translation to AutocompleteItem: "
+                                f"'{ingredient['name']}' -> '{translated_name}' ({target_bcp47})")
 
         logger.info(f"Updated {ingredients_updated}/{len(full_recipe['ingredients'])} ingredients for recipe {recipe_id}")
 
