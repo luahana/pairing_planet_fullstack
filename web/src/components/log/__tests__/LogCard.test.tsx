@@ -8,7 +8,7 @@ jest.mock('next/navigation', () => ({
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
-  useTranslations: (namespace: string) => (key: string, args?: Record<string, string | number | undefined>) => {
+  useTranslations: (namespace: string) => (key: string, args?: { count?: number }) => {
     const translations: Record<string, Record<string, string>> = {
       common: {
         by: 'by',
@@ -149,7 +149,7 @@ describe('LogCard - Comment Count', () => {
 
   it('displays comment count in engagement metrics section', () => {
     const log = { ...mockLog, commentCount: 10 };
-    const { container } = render(<LogCard log={log} />);
+    render(<LogCard log={log} />);
 
     // Check that the comment count button exists within the engagement metrics section
     const button = screen.getByLabelText('10 comments');

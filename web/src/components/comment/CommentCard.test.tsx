@@ -132,7 +132,7 @@ jest.mock('@/contexts/AuthContext', () => ({
   })),
 }));
 
-import { editComment, deleteComment, likeComment, unlikeComment } from '@/lib/api/comments';
+import { deleteComment, likeComment, unlikeComment } from '@/lib/api/comments';
 import { blockUser, getBlockStatus, reportUser } from '@/lib/api/moderation';
 import { useAuth } from '@/contexts/AuthContext';
 
