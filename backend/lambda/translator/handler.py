@@ -563,36 +563,22 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
         if 'description' not in translated:
             raise ValueError(f"Translation missing 'description' for locale {target_locale}")
 
-        # CRITICAL: Fetch CURRENT translations from database, not from stale full_recipe
-        # Otherwise each iteration overwrites the previous translations!
-        cur.execute("""
-            SELECT title_translations, description_translations
-            FROM recipes
-            WHERE id = %s
-        """, (recipe_id,))
-        row = cur.fetchone()
-        if not row:
-            raise ValueError(f"Recipe {recipe_id} not found in database")
-
-        existing_title = row[0] or {}
-        existing_desc = row[1] or {}
-
-        existing_title[target_bcp47] = translated['title']
-        existing_desc[target_bcp47] = translated['description']  # Can be empty string
-
+        # CRITICAL: Use atomic UPDATE with JSONB merge to avoid race conditions
+        # PostgreSQL ||operator merges JSONB objects, appending new keys
         cur.execute("""
             UPDATE recipes
-            SET title_translations = %s,
-                description_translations = %s
+            SET title_translations = COALESCE(title_translations, '{}'::jsonb) || %s::jsonb,
+                description_translations = COALESCE(description_translations, '{}'::jsonb) || %s::jsonb
             WHERE id = %s
+            RETURNING id
         """, (
-            json.dumps(existing_title),
-            json.dumps(existing_desc),
+            json.dumps({target_bcp47: translated['title']}),
+            json.dumps({target_bcp47: translated['description']}),
             recipe_id
         ))
 
-        if cur.rowcount == 0:
-            raise ValueError(f"Recipe {recipe_id} not found - UPDATE affected 0 rows")
+        if not cur.fetchone():
+            raise ValueError(f"Recipe {recipe_id} not found in database")
 
         # 2. Propagate FoodMaster name translation
         food_master = full_recipe.get('food_master', {})
@@ -622,24 +608,18 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
                 raise ValueError(f"Step {i} translation is empty for locale {target_locale}")
 
             # CRITICAL: Fetch CURRENT translations from database, not from stale full_recipe
-            cur.execute("""
-                SELECT description_translations
-                FROM recipe_steps
-                WHERE id = %s
-            """, (step['id'],))
-            step_row = cur.fetchone()
-            if not step_row:
-                raise ValueError(f"Step {step['id']} not found in database")
-
-            existing_step_trans = step_row[0] or {}
-            existing_step_trans[target_bcp47] = translated_steps[i]
+            # Use UPDATE with RETURNING to fetch and update in one atomic operation
             cur.execute("""
                 UPDATE recipe_steps
-                SET description_translations = %s
+                SET description_translations = (
+                    COALESCE(description_translations, '{}'::jsonb) || %s::jsonb
+                )
                 WHERE id = %s
-            """, (json.dumps(existing_step_trans), step['id']))
+                RETURNING description_translations
+            """, (json.dumps({target_bcp47: translated_steps[i]}), step['id']))
 
-            if cur.rowcount > 0:
+            updated_row = cur.fetchone()
+            if updated_row:
                 steps_updated += 1
             else:
                 raise ValueError(f"Step {step['id']} not found in database")
@@ -660,27 +640,16 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
             if not translated_name:
                 raise ValueError(f"Ingredient {i} translation is empty for locale {target_locale}")
 
-            # CRITICAL: Fetch CURRENT translations from database, not from stale full_recipe
-            cur.execute("""
-                SELECT name_translations
-                FROM recipe_ingredients
-                WHERE id = %s
-            """, (ingredient['id'],))
-            ing_row = cur.fetchone()
-            if not ing_row:
-                raise ValueError(f"Ingredient {ingredient['id']} not found in database")
-
-            existing_ing_trans = ing_row[0] or {}
-            existing_ing_trans[target_bcp47] = translated_name
-
-            # Update recipe_ingredients
+            # CRITICAL: Use atomic UPDATE with JSONB merge
             cur.execute("""
                 UPDATE recipe_ingredients
-                SET name_translations = %s
+                SET name_translations = COALESCE(name_translations, '{}'::jsonb) || %s::jsonb
                 WHERE id = %s
-            """, (json.dumps(existing_ing_trans), ingredient['id']))
+                RETURNING name_translations
+            """, (json.dumps({target_bcp47: translated_name}), ingredient['id']))
 
-            if cur.rowcount > 0:
+            updated_ing = cur.fetchone()
+            if updated_ing:
                 ingredients_updated += 1
             else:
                 raise ValueError(f"Ingredient {ingredient['id']} not found in database")
