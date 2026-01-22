@@ -106,7 +106,7 @@ def fetch_log_post_image_urls(conn, log_post_id: int, limit: int = 3) -> list[st
             SELECT stored_filename
             FROM images
             WHERE log_post_id = %s
-              AND status = 'READY'
+              AND status = 'ACTIVE'
               AND deleted_at IS NULL
               AND variant_type IS NULL
             ORDER BY display_order

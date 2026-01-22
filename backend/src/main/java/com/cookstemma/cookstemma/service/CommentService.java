@@ -193,6 +193,9 @@ public class CommentService {
         comment.markAsEdited();
         commentRepository.save(comment);
 
+        // Queue translation for updated content (hybrid SQS push)
+        translationEventService.queueCommentTranslation(comment);
+
         log.info("Comment {} edited by user {}", commentPublicId, userId);
         return toCommentResponse(comment, userId);
     }

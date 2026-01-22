@@ -153,10 +153,15 @@ public class TranslationEventService {
             return;
         }
 
-        // Check if translation already pending (using RECIPE_FULL)
-        if (isTranslationPending(TranslatableEntity.RECIPE_FULL, recipe.getId())) {
-            log.debug("Translation already pending for recipe {}", recipe.getId());
-            return;
+        // Cancel any PENDING translations (not PROCESSING, as they're already being worked on)
+        // This ensures edited content gets re-translated immediately
+        List<TranslationEvent> pendingEvents = translationEventRepository.findByEntityTypeAndEntityIdAndStatusIn(
+                TranslatableEntity.RECIPE_FULL, recipe.getId(), List.of(TranslationStatus.PENDING));
+
+        for (TranslationEvent pendingEvent : pendingEvents) {
+            pendingEvent.markFailed("Cancelled due to content edit");
+            translationEventRepository.save(pendingEvent);
+            log.info("Cancelled pending translation {} for edited recipe {}", pendingEvent.getId(), recipe.getId());
         }
 
         // Create single RECIPE_FULL event (replaces RECIPE + RECIPE_STEP + RECIPE_INGREDIENT events)
@@ -232,9 +237,15 @@ public class TranslationEventService {
             return;
         }
 
-        if (isTranslationPending(TranslatableEntity.LOG_POST, logPost.getId())) {
-            log.debug("Translation already pending for log post {}", logPost.getId());
-            return;
+        // Cancel any PENDING translations (not PROCESSING, as they're already being worked on)
+        // This ensures edited content gets re-translated immediately
+        List<TranslationEvent> pendingEvents = translationEventRepository.findByEntityTypeAndEntityIdAndStatusIn(
+                TranslatableEntity.LOG_POST, logPost.getId(), List.of(TranslationStatus.PENDING));
+
+        for (TranslationEvent pendingEvent : pendingEvents) {
+            pendingEvent.markFailed("Cancelled due to content edit");
+            translationEventRepository.save(pendingEvent);
+            log.info("Cancelled pending translation {} for edited log post {}", pendingEvent.getId(), logPost.getId());
         }
 
         TranslationEvent event = TranslationEvent.builder()
@@ -273,9 +284,15 @@ public class TranslationEventService {
             return;
         }
 
-        if (isTranslationPending(TranslatableEntity.COMMENT, comment.getId())) {
-            log.debug("Translation already pending for comment {}", comment.getId());
-            return;
+        // Cancel any PENDING translations (not PROCESSING, as they're already being worked on)
+        // This ensures edited content gets re-translated immediately
+        List<TranslationEvent> pendingEvents = translationEventRepository.findByEntityTypeAndEntityIdAndStatusIn(
+                TranslatableEntity.COMMENT, comment.getId(), List.of(TranslationStatus.PENDING));
+
+        for (TranslationEvent pendingEvent : pendingEvents) {
+            pendingEvent.markFailed("Cancelled due to content edit");
+            translationEventRepository.save(pendingEvent);
+            log.info("Cancelled pending translation {} for edited comment {}", pendingEvent.getId(), comment.getId());
         }
 
         TranslationEvent event = TranslationEvent.builder()

@@ -532,6 +532,9 @@ public class LogPostService {
 
         logPostRepository.save(logPost);
 
+        // Queue translation for updated content (hybrid SQS push)
+        translationEventService.queueLogPostTranslation(logPost);
+
         return getLogDetail(publicId, userId);
     }
 
