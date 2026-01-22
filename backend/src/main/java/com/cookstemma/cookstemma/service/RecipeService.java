@@ -882,6 +882,10 @@ public class RecipeService {
         }
 
         recipeRepository.save(recipe);
+
+        // Queue translation for updated content (hybrid SQS push)
+        translationEventService.queueRecipeTranslation(recipe);
+
         return getRecipeDetail(recipe.getPublicId(), userId);
     }
 
