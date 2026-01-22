@@ -8,7 +8,7 @@ jest.mock('next/navigation', () => ({
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
-  useTranslations: (namespace: string) => (key: string, args?: any) => {
+  useTranslations: (namespace: string) => (key: string, args?: Record<string, string | number | undefined>) => {
     const translations: Record<string, Record<string, string>> = {
       common: {
         by: 'by',
