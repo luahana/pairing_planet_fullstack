@@ -46,6 +46,7 @@ export function UserProfileHeader({ user, publicId }: UserProfileHeaderProps) {
               className="object-cover"
               sizes="128px"
               onError={() => setImageError(true)}
+              unoptimized
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl text-[var(--primary)]">

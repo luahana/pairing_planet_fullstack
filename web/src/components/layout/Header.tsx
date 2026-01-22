@@ -182,6 +182,7 @@ export function Header() {
                 width={32}
                 height={32}
                 className="w-8 h-8"
+                unoptimized
               />
               <span className="font-bold text-xl text-[var(--text-logo)]">
                 {siteConfig.name}
