@@ -154,8 +154,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
     Slice<Recipe> findPublicRecipesWithCursorInitial(@Param("langCode") String langCode, Pageable pageable);
@@ -165,8 +163,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         AND (r.created_at < :cursorTime OR (r.created_at = :cursorTime AND r.id < :cursorId))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
@@ -187,8 +183,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.root_recipe_id IS NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
     Slice<Recipe> findOriginalRecipesWithCursorInitial(@Param("langCode") String langCode, Pageable pageable);
@@ -198,8 +192,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.root_recipe_id IS NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         AND (r.created_at < :cursorTime OR (r.created_at = :cursorTime AND r.id < :cursorId))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
@@ -220,8 +212,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.root_recipe_id IS NOT NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
     Slice<Recipe> findVariantRecipesWithCursorInitial(@Param("langCode") String langCode, Pageable pageable);
@@ -231,8 +221,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.root_recipe_id IS NOT NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         AND (r.created_at < :cursorTime OR (r.created_at = :cursorTime AND r.id < :cursorId))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
@@ -285,15 +273,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(*) FROM recipes r
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findPublicRecipesPage(@Param("langCode") String langCode, Pageable pageable);
@@ -307,15 +291,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.root_recipe_id IS NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(*) FROM recipes r
         WHERE r.root_recipe_id IS NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findOriginalRecipesPage(@Param("langCode") String langCode, Pageable pageable);
@@ -329,15 +309,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     @Query(value = """
         SELECT r.* FROM recipes r
         WHERE r.root_recipe_id IS NOT NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(*) FROM recipes r
         WHERE r.root_recipe_id IS NOT NULL AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findVariantRecipesPage(@Param("langCode") String langCode, Pageable pageable);
@@ -426,15 +402,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
             GROUP BY root_recipe_id
         ) vc ON r.id = vc.root_recipe_id
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false) AND r.parent_recipe_id IS NULL
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY COALESCE(vc.variant_count, 0) DESC, r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(*) FROM recipes r
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false) AND r.parent_recipe_id IS NULL
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findRecipesOrderByVariantCount(@Param("langCode") String langCode, Pageable pageable);
@@ -462,15 +434,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
             GROUP BY rl.recipe_id
         ) rlc ON r.id = rlc.recipe_id
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false) AND r.parent_recipe_id IS NULL
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY (COALESCE(rv.recent_variants, 0) + COALESCE(rlc.recent_logs, 0)) DESC, r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(*) FROM recipes r
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false) AND r.parent_recipe_id IS NULL
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findRecipesOrderByTrending(@Param("langCode") String langCode, Pageable pageable);
@@ -496,16 +464,12 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
             GROUP BY rl.recipe_id
         ) lc ON r.id = lc.recipe_id
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false) AND r.parent_recipe_id IS NULL
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY (COALESCE(r.view_count, 0) * 1 + COALESCE(r.saved_count, 0) * 3 + COALESCE(vc.variant_count, 0) * 5 + COALESCE(lc.log_count, 0) * 2) DESC,
                  r.created_at DESC
         """,
         countQuery = """
         SELECT COUNT(*) FROM recipes r
         WHERE r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false) AND r.parent_recipe_id IS NULL
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findRecipesOrderByPopular(@Param("langCode") String langCode, Pageable pageable);
@@ -519,8 +483,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
     Slice<Recipe> findByHashtagWithCursorInitial(
@@ -535,8 +497,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         AND (r.created_at < :cursorTime OR (r.created_at = :cursorTime AND r.id < :cursorId))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
@@ -554,16 +514,12 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         countQuery = """
         SELECT COUNT(r.id) FROM recipes r
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
-        AND (SUBSTRING(r.cooking_style FROM 1 FOR 2) = SUBSTRING(:langCode FROM 1 FOR 2)
-             OR jsonb_exists(r.title_translations, :langCode))
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findByHashtagPage(
