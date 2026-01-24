@@ -299,7 +299,7 @@ public class RecipeService {
         // typeFilter takes precedence over onlyRoot for clarity
         // "original" = only root recipes, "variant" = only variant recipes
         boolean isOriginalFilter = "original".equalsIgnoreCase(typeFilter) || onlyRoot;
-        boolean isVariantFilter = "variant".equalsIgnoreCase(typeFilter);
+        boolean isVariantFilter = "variants".equalsIgnoreCase(typeFilter);
 
         if (cookingStyle == null || cookingStyle.isBlank()) {
             // No cooking style filter - show all recipes
@@ -985,7 +985,7 @@ public class RecipeService {
         CursorUtil.CursorData cursorData = CursorUtil.decode(cursor);
 
         boolean isOriginalFilter = "original".equalsIgnoreCase(typeFilter) || onlyRoot;
-        boolean isVariantFilter = "variant".equalsIgnoreCase(typeFilter);
+        boolean isVariantFilter = "variants".equalsIgnoreCase(typeFilter);
 
         Slice<Recipe> recipes;
 
@@ -1216,7 +1216,7 @@ public class RecipeService {
         Pageable pageable = PageRequest.of(page, size);
 
         boolean isOriginalFilter = "original".equalsIgnoreCase(typeFilter);
-        boolean isVariantFilter = "variant".equalsIgnoreCase(typeFilter);
+        boolean isVariantFilter = "variants".equalsIgnoreCase(typeFilter);
 
         // Get the user's language code pattern for filtering recipes by translation availability
         // Pattern "ko%" matches both "ko" and "ko-KR" for backward compatibility

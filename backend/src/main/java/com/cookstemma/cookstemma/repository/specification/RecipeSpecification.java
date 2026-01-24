@@ -65,7 +65,7 @@ public class RecipeSpecification {
             }
             if ("original".equalsIgnoreCase(typeFilter)) {
                 return cb.isNull(root.get("rootRecipe"));
-            } else if ("variant".equalsIgnoreCase(typeFilter)) {
+            } else if ("variants".equalsIgnoreCase(typeFilter)) {
                 return cb.isNotNull(root.get("rootRecipe"));
             }
             return null;
