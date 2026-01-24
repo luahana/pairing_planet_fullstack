@@ -46,9 +46,11 @@ public class FoodMasterAdminController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder
     ) {
+        // Map camelCase property names to snake_case column names for native queries
+        String dbSortColumn = mapToColumnName(sortBy);
         Sort sort = "asc".equalsIgnoreCase(sortOrder)
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+                ? Sort.by(dbSortColumn).ascending()
+                : Sort.by(dbSortColumn).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<FoodMaster> foodsPage;
@@ -63,9 +65,13 @@ public class FoodMasterAdminController {
                 foodsPage = foodMasterRepository.searchByNameContaining(namePattern, pageable);
             }
         } else {
-            // No name filter - use Specification for isVerified filter
+            // No name filter - use Specification with JPA property names
+            Sort jpaSort = "asc".equalsIgnoreCase(sortOrder)
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+            Pageable jpaPageable = PageRequest.of(page, size, jpaSort);
             Specification<FoodMaster> spec = buildSpecification(isVerified);
-            foodsPage = foodMasterRepository.findAll(spec, pageable);
+            foodsPage = foodMasterRepository.findAll(spec, jpaPageable);
         }
 
         Page<FoodMasterAdminDto> dtoPage = foodsPage.map(FoodMasterAdminDto::from);
@@ -86,6 +92,22 @@ public class FoodMasterAdminController {
             }
 
             return predicates.isEmpty() ? null : cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    /**
+     * Map JPA camelCase property names to snake_case database column names for native queries.
+     */
+    private String mapToColumnName(String propertyName) {
+        return switch (propertyName) {
+            case "createdAt" -> "created_at";
+            case "updatedAt" -> "updated_at";
+            case "foodScore" -> "food_score";
+            case "isVerified" -> "is_verified";
+            case "searchKeywords" -> "search_keywords";
+            case "publicId" -> "public_id";
+            case "categoryId" -> "category_id";
+            default -> propertyName;
         };
     }
 }
