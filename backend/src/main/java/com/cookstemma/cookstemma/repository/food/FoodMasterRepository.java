@@ -53,18 +53,20 @@ public interface FoodMasterRepository extends JpaRepository<FoodMaster, Long>, J
     /**
      * Search FoodMaster by name (searches in JSONB text) for admin panel.
      * Uses PostgreSQL's text cast to search across all locales in the JSONB name field.
+     * Note: The name parameter should already include % wildcards.
      */
-    @Query(value = "SELECT * FROM foods_master WHERE name::text ILIKE %:name%",
-            countQuery = "SELECT count(*) FROM foods_master WHERE name::text ILIKE %:name%",
+    @Query(value = "SELECT * FROM foods_master WHERE name::text ILIKE :namePattern",
+            countQuery = "SELECT count(*) FROM foods_master WHERE name::text ILIKE :namePattern",
             nativeQuery = true)
-    org.springframework.data.domain.Page<FoodMaster> searchByNameContaining(@Param("name") String name, Pageable pageable);
+    org.springframework.data.domain.Page<FoodMaster> searchByNameContaining(@Param("namePattern") String namePattern, Pageable pageable);
 
     /**
      * Search FoodMaster by name and isVerified filter for admin panel.
+     * Note: The name parameter should already include % wildcards.
      */
-    @Query(value = "SELECT * FROM foods_master WHERE name::text ILIKE %:name% AND is_verified = :isVerified",
-            countQuery = "SELECT count(*) FROM foods_master WHERE name::text ILIKE %:name% AND is_verified = :isVerified",
+    @Query(value = "SELECT * FROM foods_master WHERE name::text ILIKE :namePattern AND is_verified = :isVerified",
+            countQuery = "SELECT count(*) FROM foods_master WHERE name::text ILIKE :namePattern AND is_verified = :isVerified",
             nativeQuery = true)
     org.springframework.data.domain.Page<FoodMaster> searchByNameContainingAndIsVerified(
-            @Param("name") String name, @Param("isVerified") Boolean isVerified, Pageable pageable);
+            @Param("namePattern") String namePattern, @Param("isVerified") Boolean isVerified, Pageable pageable);
 }
