@@ -327,6 +327,7 @@ def run_migrations(conn):
         -- RECIPES
         ALTER TABLE recipes ADD COLUMN IF NOT EXISTS title_translations JSONB DEFAULT '{}';
         ALTER TABLE recipes ADD COLUMN IF NOT EXISTS description_translations JSONB DEFAULT '{}';
+        ALTER TABLE recipes ADD COLUMN IF NOT EXISTS change_reason_translations JSONB DEFAULT '{}';
 
         -- RECIPE STEPS
         ALTER TABLE recipe_steps ADD COLUMN IF NOT EXISTS description_translations JSONB DEFAULT '{}';
@@ -519,10 +520,11 @@ def fetch_full_recipe(conn, recipe_id: int, source_locale: str) -> dict | None:
     source_bcp47 = LOCALE_MAP.get(source_locale, f"{source_locale}-{source_locale.upper()}")
 
     with conn.cursor() as cur:
-        # Fetch recipe with FoodMaster
+        # Fetch recipe with FoodMaster and variant info
         cur.execute("""
             SELECT r.id, r.title, r.description, r.title_translations, r.description_translations,
-                   r.food_master_id,
+                   r.food_master_id, r.change_reason, r.change_reason_translations,
+                   r.parent_recipe_id, r.root_recipe_id,
                    fm.id as fm_id, fm.name as fm_name
             FROM recipes r
             LEFT JOIN foods_master fm ON r.food_master_id = fm.id
@@ -567,7 +569,9 @@ def fetch_full_recipe(conn, recipe_id: int, source_locale: str) -> dict | None:
         },
         'steps': steps,
         'ingredients': ingredients,  # Now includes 'type' field
-        'source_locale': source_locale  # Pass original locale, will be converted to 2-letter in save function
+        'source_locale': source_locale,  # Pass original locale, will be converted to 2-letter in save function
+        'change_reason': recipe.get('change_reason') or '',  # Variant recipe change explanation
+        'is_variant': recipe.get('parent_recipe_id') is not None  # True if this is a variant recipe
     }
 
 
@@ -595,23 +599,46 @@ def save_full_recipe_translations(conn, recipe_id: int, full_recipe: dict,
         # This ensures the original content is always preserved in the translations map
         source_title = full_recipe['recipe'].get('title', '')
         source_description = full_recipe['recipe'].get('description', '')
+        source_change_reason = full_recipe.get('change_reason', '')
 
         title_updates = {source_lang: source_title, target_lang: translated['title']}
         description_updates = {source_lang: source_description, target_lang: translated['description']}
 
+        # Build change_reason updates only if this is a variant recipe with change_reason
+        change_reason_updates = None
+        if source_change_reason and translated.get('change_reason'):
+            change_reason_updates = {source_lang: source_change_reason, target_lang: translated['change_reason']}
+
         # CRITICAL: Use atomic UPDATE with JSONB merge to avoid race conditions
         # PostgreSQL || operator merges JSONB objects, appending new keys
-        cur.execute("""
-            UPDATE recipes
-            SET title_translations = COALESCE(title_translations, '{}'::jsonb) || %s::jsonb,
-                description_translations = COALESCE(description_translations, '{}'::jsonb) || %s::jsonb
-            WHERE id = %s
-            RETURNING id
-        """, (
-            json.dumps(title_updates),
-            json.dumps(description_updates),
-            recipe_id
-        ))
+        if change_reason_updates:
+            # Variant recipe: update title, description, AND change_reason translations
+            cur.execute("""
+                UPDATE recipes
+                SET title_translations = COALESCE(title_translations, '{}'::jsonb) || %s::jsonb,
+                    description_translations = COALESCE(description_translations, '{}'::jsonb) || %s::jsonb,
+                    change_reason_translations = COALESCE(change_reason_translations, '{}'::jsonb) || %s::jsonb
+                WHERE id = %s
+                RETURNING id
+            """, (
+                json.dumps(title_updates),
+                json.dumps(description_updates),
+                json.dumps(change_reason_updates),
+                recipe_id
+            ))
+        else:
+            # Original recipe or no change_reason: update only title and description
+            cur.execute("""
+                UPDATE recipes
+                SET title_translations = COALESCE(title_translations, '{}'::jsonb) || %s::jsonb,
+                    description_translations = COALESCE(description_translations, '{}'::jsonb) || %s::jsonb
+                WHERE id = %s
+                RETURNING id
+            """, (
+                json.dumps(title_updates),
+                json.dumps(description_updates),
+                recipe_id
+            ))
 
         if not cur.fetchone():
             raise ValueError(f"Recipe {recipe_id} not found in database")
@@ -869,12 +896,14 @@ def process_full_recipe_event(conn, translator: GeminiTranslator, event: dict,
                 f"cookingStyle from DB: {recipe.get('cooking_style', 'N/A')}")
 
     # Build content for batch translation (includes food_name for FoodMaster propagation)
+    # For variant recipes, also include change_reason for translation
     content_to_translate = {
         'title': recipe['title'],
         'description': recipe['description'] or '',
         'food_name': food_master.get('name', ''),
         'steps': [s['description'] for s in steps],
-        'ingredients': [i['name'] for i in ingredients]
+        'ingredients': [i['name'] for i in ingredients],
+        'change_reason': full_recipe.get('change_reason', '')  # Only non-empty for variants
     }
 
     # =============================================================================

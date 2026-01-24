@@ -462,16 +462,18 @@ Return ONLY the JSON object with translated values, no explanation."""
         target_locale: str
     ) -> dict:
         """
-        Translate entire recipe (title, description, food_name, steps, ingredients) at once.
+        Translate entire recipe (title, description, food_name, steps, ingredients, change_reason) at once.
         Provides context-aware translation for better quality and consistency.
 
         Args:
-            content: Dict with 'title', 'description', 'food_name', 'steps' (list), 'ingredients' (list)
+            content: Dict with 'title', 'description', 'food_name', 'steps' (list), 'ingredients' (list),
+                     and optionally 'change_reason' (for variant recipes)
             source_locale: Source language code (e.g., 'ko', 'en')
             target_locale: Target language code
 
         Returns:
-            Dict with translated 'title', 'description', 'food_name', 'steps' (list), 'ingredients' (list)
+            Dict with translated 'title', 'description', 'food_name', 'steps' (list), 'ingredients' (list),
+            and 'change_reason' (if provided in input)
         """
         source_lang = LANGUAGE_NAMES.get(source_locale, source_locale)
         target_lang = LANGUAGE_NAMES.get(target_locale, target_locale)
@@ -480,6 +482,16 @@ Return ONLY the JSON object with translated values, no explanation."""
         steps_json = json.dumps(content.get('steps', []), ensure_ascii=False)
         ingredients_json = json.dumps(content.get('ingredients', []), ensure_ascii=False)
         food_name = content.get('food_name', '')
+        change_reason = content.get('change_reason', '')
+
+        # Build change_reason section for prompt if present (variant recipes only)
+        change_reason_section = ""
+        change_reason_note = ""
+        change_reason_json_field = ""
+        if change_reason:
+            change_reason_section = f"\n- Change Reason: {change_reason}"
+            change_reason_note = '\n- "Change Reason" explains why this variant differs from the original recipe - translate naturally while preserving the meaning'
+            change_reason_json_field = ', "change_reason": "..."'
 
         prompt = f"""You are a professional culinary translator specializing in cooking recipes.
 Translate this complete cooking recipe from {source_lang} to {target_lang}.
@@ -489,14 +501,14 @@ RECIPE TO TRANSLATE:
 - Description: {content.get('description', '')}
 - Food Name: {food_name}
 - Steps: {steps_json}
-- Ingredients: {ingredients_json}
+- Ingredients: {ingredients_json}{change_reason_section}
 
 NOTES:
 - "Title" is the creative recipe name (e.g., "Grandma's Special Bibimbap")
-- "Food Name" is the standard dish name (e.g., "Bibimbap") - translate this appropriately for the target language
+- "Food Name" is the standard dish name (e.g., "Bibimbap") - translate this appropriately for the target language{change_reason_note}
 
 RULES:
-1. Return valid JSON with exact structure: {{"title": "...", "description": "...", "food_name": "...", "steps": [...], "ingredients": [...]}}
+1. Return valid JSON with exact structure: {{"title": "...", "description": "...", "food_name": "...", "steps": [...], "ingredients": [...]{change_reason_json_field}}}
 2. Keep ingredient names that are internationally known (kimchi, tofu, parmesan, miso)
 3. Use natural cooking terminology for the target language
 4. CRITICAL: Maintain consistency - if you translate an ingredient name, use the same translation in all steps
@@ -589,6 +601,10 @@ Return ONLY the JSON object, no explanation or markdown formatting."""
                 'steps': translated['steps'],
                 'ingredients': translated['ingredients']
             }
+
+            # Include change_reason translation if it was in the input
+            if change_reason:
+                result['change_reason'] = translated.get('change_reason', '')
 
             logger.info(f"Successfully translated full recipe to {target_lang}")
             return result
