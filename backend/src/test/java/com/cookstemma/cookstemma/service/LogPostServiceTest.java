@@ -5,7 +5,9 @@ import com.cookstemma.cookstemma.domain.entity.log_post.LogPost;
 import com.cookstemma.cookstemma.domain.entity.recipe.Recipe;
 import com.cookstemma.cookstemma.domain.entity.recipe.RecipeLog;
 import com.cookstemma.cookstemma.domain.entity.user.User;
+import com.cookstemma.cookstemma.dto.common.UnifiedPageResponse;
 import com.cookstemma.cookstemma.dto.log_post.LogPostDetailResponseDto;
+import com.cookstemma.cookstemma.dto.log_post.LogPostSummaryDto;
 import com.cookstemma.cookstemma.dto.log_post.UpdateLogRequestDto;
 import com.cookstemma.cookstemma.repository.food.FoodMasterRepository;
 import com.cookstemma.cookstemma.repository.log_post.LogPostRepository;
@@ -21,6 +23,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -362,6 +365,172 @@ class LogPostServiceTest extends BaseIntegrationTest {
             assertThat(result.getContent()).hasSize(2);
             // Newer log should come first
             assertThat(result.getContent().get(0).title()).isEqualTo("Newer Log");
+        }
+    }
+
+    @Nested
+    @DisplayName("Get All Logs Unified - Locale Filtering")
+    class GetAllLogsUnifiedLocaleTests {
+
+        private LogPost createLogPostWithRecipeLog(String title, String content, String locale,
+                                                    String originalLanguage, Map<String, String> titleTranslations) {
+            LogPost log = LogPost.builder()
+                    .title(title)
+                    .content(content)
+                    .locale(locale)
+                    .originalLanguage(originalLanguage)
+                    .titleTranslations(titleTranslations)
+                    .creatorId(testUser.getId())
+                    .build();
+
+            RecipeLog recipeLog = RecipeLog.builder()
+                    .logPost(log)
+                    .recipe(testRecipe)
+                    .rating(5)
+                    .build();
+            log.setRecipeLog(recipeLog);
+
+            return logPostRepository.save(log);
+        }
+
+        @Test
+        @DisplayName("Should return log posts with matching original_language")
+        void getAllLogsUnified_OriginalLanguageMatches_ReturnsLogPost() {
+            // Create Korean log post (original_language = ko-KR)
+            LogPost koreanLog = createLogPostWithRecipeLog(
+                    "한국어 로그", "한국어 내용", "ko-KR", "ko-KR", null);
+
+            // Get logs for Korean locale
+            UnifiedPageResponse<LogPostSummaryDto> result = logPostService.getAllLogsUnified(
+                    null, null, "recent", null, null, 20, "ko-KR");
+
+            // Should include the Korean log post
+            assertThat(result.content()).anyMatch(log ->
+                    log.publicId().equals(koreanLog.getPublicId()));
+        }
+
+        @Test
+        @DisplayName("Should return log posts with translations for requested locale")
+        void getAllLogsUnified_HasTranslation_ReturnsLogPost() {
+            // Create English log post with Korean translation
+            Map<String, String> titleTranslations = new HashMap<>();
+            titleTranslations.put("ko-KR", "번역된 제목");
+
+            LogPost englishLogWithKoreanTranslation = createLogPostWithRecipeLog(
+                    "English Title", "English content", "en-US", "en-US", titleTranslations);
+
+            // Get logs for Korean locale
+            UnifiedPageResponse<LogPostSummaryDto> result = logPostService.getAllLogsUnified(
+                    null, null, "recent", null, null, 20, "ko-KR");
+
+            // Should include the English log post because it has Korean translation
+            assertThat(result.content()).anyMatch(log ->
+                    log.publicId().equals(englishLogWithKoreanTranslation.getPublicId()));
+        }
+
+        @Test
+        @DisplayName("Should return both original and translated log posts")
+        void getAllLogsUnified_BothOriginalAndTranslated_ReturnsBoth() {
+            // Create Korean original log post
+            LogPost koreanOriginal = createLogPostWithRecipeLog(
+                    "한국어 원본", "한국어 내용", "ko-KR", "ko-KR", null);
+
+            // Create English log post with Korean translation
+            Map<String, String> titleTranslations = new HashMap<>();
+            titleTranslations.put("ko-KR", "번역된 제목");
+
+            LogPost englishWithTranslation = createLogPostWithRecipeLog(
+                    "English Original", "English content", "en-US", "en-US", titleTranslations);
+
+            // Get logs for Korean locale
+            UnifiedPageResponse<LogPostSummaryDto> result = logPostService.getAllLogsUnified(
+                    null, null, "recent", null, null, 20, "ko-KR");
+
+            // Should include both log posts
+            assertThat(result.content()).anyMatch(log ->
+                    log.publicId().equals(koreanOriginal.getPublicId()));
+            assertThat(result.content()).anyMatch(log ->
+                    log.publicId().equals(englishWithTranslation.getPublicId()));
+        }
+
+        @Test
+        @DisplayName("Should not return log posts without matching locale")
+        void getAllLogsUnified_NoMatchingLocale_ExcludesLogPost() {
+            // Create Japanese log post (no Korean)
+            LogPost japaneseLog = createLogPostWithRecipeLog(
+                    "日本語ログ", "日本語の内容", "ja-JP", "ja-JP", null);
+
+            // Get logs for Korean locale
+            UnifiedPageResponse<LogPostSummaryDto> result = logPostService.getAllLogsUnified(
+                    null, null, "recent", null, null, 20, "ko-KR");
+
+            // Should not include the Japanese log post
+            assertThat(result.content()).noneMatch(log ->
+                    log.publicId().equals(japaneseLog.getPublicId()));
+        }
+
+        @Test
+        @DisplayName("Should work with short locale codes")
+        void getAllLogsUnified_ShortLocaleCode_Works() {
+            // Create Korean log post with full locale
+            LogPost koreanLog = createLogPostWithRecipeLog(
+                    "한국어 로그", "한국어 내용", "ko-KR", "ko-KR", null);
+
+            // Get logs using short locale code "ko"
+            UnifiedPageResponse<LogPostSummaryDto> result = logPostService.getAllLogsUnified(
+                    null, null, "recent", null, null, 20, "ko");
+
+            // Should include the Korean log post
+            assertThat(result.content()).anyMatch(log ->
+                    log.publicId().equals(koreanLog.getPublicId()));
+        }
+
+        @Test
+        @DisplayName("Should exclude deleted log posts")
+        void getAllLogsUnified_ExcludesDeleted() {
+            // Create and delete a Korean log post
+            LogPost deletedLog = createLogPostWithRecipeLog(
+                    "삭제된 로그", "삭제된 내용", "ko-KR", "ko-KR", null);
+            deletedLog.softDelete();
+            logPostRepository.save(deletedLog);
+
+            // Get logs for Korean locale
+            UnifiedPageResponse<LogPostSummaryDto> result = logPostService.getAllLogsUnified(
+                    null, null, "recent", null, null, 20, "ko-KR");
+
+            // Should not include the deleted log post
+            assertThat(result.content()).noneMatch(log ->
+                    log.publicId().equals(deletedLog.getPublicId()));
+        }
+
+        @Test
+        @DisplayName("Should exclude private log posts")
+        void getAllLogsUnified_ExcludesPrivate() {
+            // Create a private Korean log post
+            LogPost privateLog = LogPost.builder()
+                    .title("비공개 로그")
+                    .content("비공개 내용")
+                    .locale("ko-KR")
+                    .originalLanguage("ko-KR")
+                    .creatorId(testUser.getId())
+                    .isPrivate(true)
+                    .build();
+
+            RecipeLog recipeLog = RecipeLog.builder()
+                    .logPost(privateLog)
+                    .recipe(testRecipe)
+                    .rating(5)
+                    .build();
+            privateLog.setRecipeLog(recipeLog);
+            logPostRepository.save(privateLog);
+
+            // Get logs for Korean locale
+            UnifiedPageResponse<LogPostSummaryDto> result = logPostService.getAllLogsUnified(
+                    null, null, "recent", null, null, 20, "ko-KR");
+
+            // Should not include the private log post
+            assertThat(result.content()).noneMatch(log ->
+                    log.publicId().equals(privateLog.getPublicId()));
         }
     }
 }
