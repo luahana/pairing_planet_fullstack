@@ -114,6 +114,7 @@ class LogPipeline:
             image_public_ids=image_public_ids,
             hashtags=log_data.get("hashtags", [])[:5],
             is_private=is_private,
+            original_language=persona.locale,
         )
 
         # 4. Create log via API

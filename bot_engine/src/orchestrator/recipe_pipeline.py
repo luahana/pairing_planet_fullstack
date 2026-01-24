@@ -144,6 +144,7 @@ class RecipePipeline:
             description=recipe_data["description"][:500] if recipe_data.get("description") else None,
             locale=persona.locale,
             cooking_style=persona.cooking_style,
+            original_language=persona.locale,
             new_food_name=food_name,
             ingredients=ingredients,
             steps=steps,
@@ -361,14 +362,15 @@ class RecipePipeline:
         ingredients = self._parse_ingredients(variant_data.get("ingredients", []))
         steps = self._parse_steps(variant_data.get("steps", []))
 
-        # Handle changeDiff - convert string to dict if needed (AI sometimes returns string)
+        # Handle changeDiff - ensure it's a string (API expects string, not dict)
         raw_change_diff = variant_data.get("changeDiff")
         if isinstance(raw_change_diff, str):
-            change_diff = {"description": raw_change_diff} if raw_change_diff else {}
-        elif isinstance(raw_change_diff, dict):
             change_diff = raw_change_diff
+        elif isinstance(raw_change_diff, dict):
+            # If AI returns a dict, extract description or convert to string
+            change_diff = raw_change_diff.get("description", str(raw_change_diff))
         else:
-            change_diff = {}
+            change_diff = None
 
         request = CreateRecipeRequest(
             title=variant_data["title"][:100],
@@ -376,6 +378,7 @@ class RecipePipeline:
             description=parent_recipe.description[:500] if parent_recipe.description else None,
             locale=persona.locale,
             cooking_style=persona.cooking_style,
+            original_language=persona.locale,
             ingredients=ingredients,
             steps=steps,
             image_public_ids=image_public_ids,
