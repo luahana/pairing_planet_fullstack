@@ -159,12 +159,13 @@ public class RecipeService {
                 .descriptionTranslations(descriptionTranslations)
                 .build();
 
-        recipeRepository.save(recipe);
+        recipe = recipeRepository.save(recipe);
 
         // Process hashtags
         if (req.hashtags() != null && !req.hashtags().isEmpty()) {
             Set<Hashtag> hashtags = hashtagService.getOrCreateHashtags(req.hashtags());
             recipe.setHashtags(hashtags);
+            recipeRepository.save(recipe);  // Ensure hashtag relationship is persisted
         }
         saveIngredientsAndSteps(recipe, req, creatorId, finalLocale);
         imageService.activateImages(req.imagePublicIds(), recipe);
