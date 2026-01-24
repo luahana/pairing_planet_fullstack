@@ -143,18 +143,18 @@ public class HashtagService {
         }
 
         String normalizedLocale = LocaleUtils.normalizeLocale(locale);
-        // Use BCP47 format for translation filtering (matches how Lambda translator stores keys)
-        String langCode = LocaleUtils.toBcp47(normalizedLocale);
+        // Use language key pattern for translation filtering (e.g., "en%" matches both "en" and "en-US")
+        String langCodePattern = LocaleUtils.toLanguageKey(normalizedLocale) + "%";
 
         Pageable pageable = PageRequest.of(0, size);
         CursorUtil.CursorData cursorData = CursorUtil.decode(cursor);
 
         Slice<Recipe> recipes;
         if (cursorData == null) {
-            recipes = recipeRepository.findByHashtagWithCursorInitial(normalizedName, langCode, pageable);
+            recipes = recipeRepository.findByHashtagWithCursorInitial(normalizedName, langCodePattern, pageable);
         } else {
             recipes = recipeRepository.findByHashtagWithCursor(
-                    normalizedName, langCode, cursorData.createdAt(), cursorData.id(), pageable);
+                    normalizedName, langCodePattern, cursorData.createdAt(), cursorData.id(), pageable);
         }
 
         List<RecipeSummaryDto> content = recipes.getContent().stream()
@@ -188,18 +188,18 @@ public class HashtagService {
         }
 
         String normalizedLocale = LocaleUtils.normalizeLocale(locale);
-        // Use BCP47 format for translation filtering (matches how Lambda translator stores keys)
-        String langCode = LocaleUtils.toBcp47(normalizedLocale);
+        // Use language key pattern for translation filtering (e.g., "en%" matches both "en" and "en-US")
+        String langCodePattern = LocaleUtils.toLanguageKey(normalizedLocale) + "%";
 
         Pageable pageable = PageRequest.of(0, size);
         CursorUtil.CursorData cursorData = CursorUtil.decode(cursor);
 
         Slice<LogPost> logPosts;
         if (cursorData == null) {
-            logPosts = logPostRepository.findByHashtagWithCursorInitial(normalizedName, langCode, pageable);
+            logPosts = logPostRepository.findByHashtagWithCursorInitial(normalizedName, langCodePattern, pageable);
         } else {
             logPosts = logPostRepository.findByHashtagWithCursor(
-                    normalizedName, langCode, cursorData.createdAt(), cursorData.id(), pageable);
+                    normalizedName, langCodePattern, cursorData.createdAt(), cursorData.id(), pageable);
         }
 
         List<LogPostSummaryDto> content = logPosts.getContent().stream()

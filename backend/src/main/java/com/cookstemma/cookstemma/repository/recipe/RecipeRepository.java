@@ -564,54 +564,58 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecif
     // ==================== HASHTAG-BASED QUERIES ====================
 
     // [Cursor] Recipes by hashtag - initial page
-    // Filters by translation availability: source locale matches OR translation exists
+    // Filters by translation availability using pattern matching (supports "ko" and "ko-KR")
     @Query(value = """
         SELECT r.* FROM recipes r
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
+        AND EXISTS (SELECT 1 FROM jsonb_object_keys(COALESCE(r.title_translations, '{}'::jsonb)) k WHERE k LIKE :langCodePattern)
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
     Slice<Recipe> findByHashtagWithCursorInitial(
             @Param("hashtagName") String hashtagName,
-            @Param("langCodePattern") String langCode,
+            @Param("langCodePattern") String langCodePattern,
             Pageable pageable);
 
     // [Cursor] Recipes by hashtag - with cursor
-    // Filters by translation availability: source locale matches OR translation exists
+    // Filters by translation availability using pattern matching (supports "ko" and "ko-KR")
     @Query(value = """
         SELECT r.* FROM recipes r
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
+        AND EXISTS (SELECT 1 FROM jsonb_object_keys(COALESCE(r.title_translations, '{}'::jsonb)) k WHERE k LIKE :langCodePattern)
         AND (r.created_at < :cursorTime OR (r.created_at = :cursorTime AND r.id < :cursorId))
         ORDER BY r.created_at DESC, r.id DESC
         """, nativeQuery = true)
     Slice<Recipe> findByHashtagWithCursor(
             @Param("hashtagName") String hashtagName,
-            @Param("langCodePattern") String langCode,
+            @Param("langCodePattern") String langCodePattern,
             @Param("cursorTime") Instant cursorTime,
             @Param("cursorId") Long cursorId,
             Pageable pageable);
 
     // [Offset] Recipes by hashtag - page
-    // Filters by translation availability: source locale matches OR translation exists
+    // Filters by translation availability using pattern matching (supports "ko" and "ko-KR")
     @Query(value = """
         SELECT r.* FROM recipes r
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
+        AND EXISTS (SELECT 1 FROM jsonb_object_keys(COALESCE(r.title_translations, '{}'::jsonb)) k WHERE k LIKE :langCodePattern)
         """,
         countQuery = """
         SELECT COUNT(r.id) FROM recipes r
         JOIN recipe_hashtag_map rh ON rh.recipe_id = r.id
         JOIN hashtags h ON h.id = rh.hashtag_id
         WHERE h.name = :hashtagName AND r.deleted_at IS NULL AND (r.is_private IS NULL OR r.is_private = false)
+        AND EXISTS (SELECT 1 FROM jsonb_object_keys(COALESCE(r.title_translations, '{}'::jsonb)) k WHERE k LIKE :langCodePattern)
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Recipe> findByHashtagPage(
             @Param("hashtagName") String hashtagName,
-            @Param("langCodePattern") String langCode,
+            @Param("langCodePattern") String langCodePattern,
             Pageable pageable);
 
     // Count recipes by hashtag (unfiltered - for hashtag display purposes)
