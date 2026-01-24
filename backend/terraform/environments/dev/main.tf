@@ -58,6 +58,11 @@ data "aws_ecr_repository" "suggestion_verifier" {
   name = "${var.ecr_repository_name}-suggestion-verifier"
 }
 
+# Data source to get Keyword Generator ECR repository (created by shared terraform)
+data "aws_ecr_repository" "keyword_generator" {
+  name = "${var.ecr_repository_name}-keyword-generator"
+}
+
 # Data source for S3 bucket (images)
 data "aws_s3_bucket" "images" {
   bucket = var.s3_bucket
@@ -111,6 +116,28 @@ resource "aws_security_group" "lambda_suggestion_verifier" {
   }
 }
 
+resource "aws_security_group" "lambda_keyword_generator" {
+  name        = "${var.project_name}-${var.environment}-keyword-generator-lambda-sg"
+  description = "Security group for keyword generator Lambda"
+  vpc_id      = module.vpc.vpc_id
+
+  # Outbound: Allow all (needed for RDS, Secrets Manager, Gemini API)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-keyword-generator-lambda-sg"
+    Project     = var.project_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
 # VPC Module - With private subnets for RDS, NAT gateway for Lambda
 module "vpc" {
   source = "../../modules/vpc"
@@ -132,7 +159,7 @@ module "rds" {
   environment             = var.environment
   vpc_id                  = module.vpc.vpc_id
   subnet_ids              = module.vpc.private_subnet_ids
-  allowed_security_groups = [module.ecs.security_group_id, aws_security_group.lambda_translation.id, aws_security_group.lambda_suggestion_verifier.id]
+  allowed_security_groups = [module.ecs.security_group_id, aws_security_group.lambda_translation.id, aws_security_group.lambda_suggestion_verifier.id, aws_security_group.lambda_keyword_generator.id]
 
   instance_class          = "db.t3.micro"
   allocated_storage       = 20
@@ -353,6 +380,37 @@ module "lambda_suggestion_verifier" {
   memory_size                    = 512
   timeout                        = 300
   reserved_concurrent_executions = -1 # No reserved concurrency (account quota limit)
+
+  # CloudWatch Alarms
+  sns_alarm_topic_arn = aws_sns_topic.alerts.arn
+}
+
+# Lambda Keyword Generator Module - AI-powered multilingual keyword generation
+# Uses private subnets with NAT gateway to reach both RDS and Gemini API
+module "lambda_keyword_generator" {
+  source = "../../modules/lambda-keyword-generator"
+
+  project_name = var.project_name
+  environment  = var.environment
+  vpc_id       = module.vpc.vpc_id
+  subnet_ids   = module.vpc.private_subnet_ids # Private subnets (uses NAT for internet)
+
+  # ECR repository (created by shared terraform)
+  ecr_repository_url = data.aws_ecr_repository.keyword_generator.repository_url
+
+  # Secrets (reuse Gemini secret from translation module)
+  database_secret_arn = module.secrets.database_secret_arn
+  gemini_secret_arn   = module.lambda_translation.gemini_secret_arn
+
+  # Use pre-created security group to break circular dependency
+  use_existing_security_group = true
+  existing_security_group_id  = aws_security_group.lambda_keyword_generator.id
+
+  # Lambda configuration
+  schedule_expression            = "rate(6 hours)"
+  memory_size                    = 512
+  timeout                        = 600 # 10 minutes
+  reserved_concurrent_executions = -1  # No reserved concurrency (account quota limit)
 
   # CloudWatch Alarms
   sns_alarm_topic_arn = aws_sns_topic.alerts.arn
