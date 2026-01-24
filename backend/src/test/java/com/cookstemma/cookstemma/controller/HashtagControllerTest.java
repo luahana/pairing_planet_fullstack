@@ -70,8 +70,8 @@ class HashtagControllerTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should return popular hashtags filtered by English locale via query param")
-        void getPopularHashtags_EnglishLocaleParam_ReturnsEnglishHashtags() throws Exception {
+        @DisplayName("Should return popular hashtags filtered by English locale")
+        void getPopularHashtags_EnglishLocale_ReturnsEnglishHashtags() throws Exception {
             // Create hashtag and English recipe
             Hashtag veganTag = Hashtag.builder().name("vegan").build();
             hashtagRepository.save(veganTag);
@@ -90,9 +90,8 @@ class HashtagControllerTest extends BaseIntegrationTest {
                     .build();
             recipeRepository.save(recipe);
 
-            // Use locale query parameter instead of header for cache differentiation
             mockMvc.perform(get("/api/v1/hashtags/popular")
-                            .param("locale", "en-US"))
+                            .header("Accept-Language", "en-US"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())
                     .andExpect(jsonPath("$[0].name").value("vegan"))
@@ -101,8 +100,8 @@ class HashtagControllerTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should return popular hashtags filtered by Korean locale via query param")
-        void getPopularHashtags_KoreanLocaleParam_ReturnsKoreanHashtags() throws Exception {
+        @DisplayName("Should return popular hashtags filtered by Korean locale")
+        void getPopularHashtags_KoreanLocale_ReturnsKoreanHashtags() throws Exception {
             // Create hashtag with Korean recipe
             Hashtag koreanTag = Hashtag.builder().name("한식").build();
             hashtagRepository.save(koreanTag);
@@ -121,9 +120,8 @@ class HashtagControllerTest extends BaseIntegrationTest {
                     .build();
             recipeRepository.save(recipe);
 
-            // Use locale query parameter instead of header for cache differentiation
             mockMvc.perform(get("/api/v1/hashtags/popular")
-                            .param("locale", "ko-KR"))
+                            .header("Accept-Language", "ko-KR"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())
                     .andExpect(jsonPath("$[0].name").value("한식"));
