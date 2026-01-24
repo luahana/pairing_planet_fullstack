@@ -54,10 +54,11 @@ public class FoodMasterAdminController {
         // Use native queries for name search (JSONB text search)
         // Use Specification for other filters
         if (name != null && !name.isBlank()) {
+            String namePattern = "%" + name + "%";
             if (isVerified != null) {
-                foodsPage = foodMasterRepository.searchByNameContainingAndIsVerified(name, isVerified, pageable);
+                foodsPage = foodMasterRepository.searchByNameContainingAndIsVerified(namePattern, isVerified, pageable);
             } else {
-                foodsPage = foodMasterRepository.searchByNameContaining(name, pageable);
+                foodsPage = foodMasterRepository.searchByNameContaining(namePattern, pageable);
             }
         } else {
             // No name filter - use Specification for isVerified filter
