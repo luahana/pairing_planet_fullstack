@@ -33,17 +33,13 @@ public class HashtagController {
     /**
      * Get popular hashtags filtered by user's language.
      * Returns hashtags with content available in the user's locale.
-     * GET /api/v1/hashtags/popular?limit=10&minCount=1&locale=ko
+     * GET /api/v1/hashtags/popular?limit=10&minCount=1
      */
     @GetMapping("/popular")
     public ResponseEntity<List<HashtagWithCountDto>> getPopularHashtags(
             @RequestParam(name = "limit", defaultValue = "10") int limit,
-            @RequestParam(name = "minCount", defaultValue = "1") int minCount,
-            @RequestParam(name = "locale", required = false) String localeParam) {
-        // Use explicit locale param if provided, otherwise fall back to Accept-Language header
-        String locale = (localeParam != null && !localeParam.isBlank())
-                ? localeParam
-                : LocaleUtils.toLocaleCode(LocaleContextHolder.getLocale());
+            @RequestParam(name = "minCount", defaultValue = "1") int minCount) {
+        String locale = LocaleUtils.toLocaleCode(LocaleContextHolder.getLocale());
         return ResponseEntity.ok(hashtagService.getPopularHashtagsByLocale(locale, limit, minCount));
     }
 
