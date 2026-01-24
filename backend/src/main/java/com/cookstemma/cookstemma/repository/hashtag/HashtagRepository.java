@@ -181,9 +181,8 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
     // ==================== POPULAR HASHTAGS BY LANGUAGE ====================
 
     /**
-     * Get popular hashtags based on recipe counts filtered by original language (cooking_style).
-     * Only counts recipes that were originally created in the specified language.
-     * This ensures hashtags are shown in the script/language users can read.
+     * Get popular hashtags based on recipe counts filtered by language.
+     * Only counts recipes that have translations available in the specified language.
      * Returns List of [hashtag_id, recipe_count] pairs.
      */
     @Query(value = """
@@ -193,7 +192,10 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
         JOIN recipes r ON rhm.recipe_id = r.id
         WHERE r.deleted_at IS NULL
         AND (r.is_private IS NULL OR r.is_private = false)
-        AND r.cooking_style LIKE :langPattern
+        AND EXISTS (
+            SELECT 1 FROM jsonb_object_keys(COALESCE(r.title_translations, '{}'::jsonb)) k 
+            WHERE k LIKE :langPattern
+        )
         GROUP BY h.id
         HAVING COUNT(DISTINCT r.id) >= :minCount
         ORDER BY COUNT(DISTINCT r.id) DESC
@@ -205,8 +207,8 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
             @Param("limit") int limit);
 
     /**
-     * Get popular hashtags based on log post counts filtered by original language (locale).
-     * Only counts log posts that were originally created in the specified language.
+     * Get popular hashtags based on log post counts filtered by language.
+     * Only counts log posts that have translations available in the specified language.
      * Returns List of [hashtag_id, log_count] pairs.
      */
     @Query(value = """
@@ -216,14 +218,17 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
         JOIN log_posts lp ON lphm.log_post_id = lp.id
         WHERE lp.deleted_at IS NULL
         AND (lp.is_private IS NULL OR lp.is_private = false)
-        AND lp.locale LIKE :langPattern
+        AND EXISTS (
+            SELECT 1 FROM jsonb_object_keys(COALESCE(lp.title_translations, '{}'::jsonb)) k 
+            WHERE k LIKE :langPattern
+        )
         GROUP BY h.id
         HAVING COUNT(DISTINCT lp.id) >= 1
         """, nativeQuery = true)
     List<Object[]> findPopularHashtagsByLogLanguage(@Param("langPattern") String langPattern);
 
     /**
-     * Get recipe counts for specific hashtag IDs filtered by original language (cooking_style).
+     * Get recipe counts for specific hashtag IDs filtered by language.
      * Returns List of [hashtag_id, count] pairs.
      */
     @Query(value = """
@@ -234,7 +239,10 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
         WHERE h.id IN :hashtagIds
         AND r.deleted_at IS NULL
         AND (r.is_private IS NULL OR r.is_private = false)
-        AND r.cooking_style LIKE :langPattern
+        AND EXISTS (
+            SELECT 1 FROM jsonb_object_keys(COALESCE(r.title_translations, '{}'::jsonb)) k 
+            WHERE k LIKE :langPattern
+        )
         GROUP BY h.id
         """, nativeQuery = true)
     List<Object[]> countRecipesByHashtagIdsAndLanguage(
@@ -242,7 +250,7 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
             @Param("langPattern") String langPattern);
 
     /**
-     * Get log counts for specific hashtag IDs filtered by original language (locale).
+     * Get log counts for specific hashtag IDs filtered by language.
      * Returns List of [hashtag_id, count] pairs.
      */
     @Query(value = """
@@ -253,7 +261,10 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
         WHERE h.id IN :hashtagIds
         AND lp.deleted_at IS NULL
         AND (lp.is_private IS NULL OR lp.is_private = false)
-        AND lp.locale LIKE :langPattern
+        AND EXISTS (
+            SELECT 1 FROM jsonb_object_keys(COALESCE(lp.title_translations, '{}'::jsonb)) k 
+            WHERE k LIKE :langPattern
+        )
         GROUP BY h.id
         """, nativeQuery = true)
     List<Object[]> countLogsByHashtagIdsAndLanguage(
