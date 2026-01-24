@@ -40,20 +40,6 @@ public class HashtagController {
 
 
     /**
-     * Get unified feed of all content (recipes and logs) with hashtags
-     * GET /api/v1/hashtags/feed?cursor=xxx&page=0&size=20
-     */
-    @GetMapping("/feed")
-    public ResponseEntity<UnifiedPageResponse<HashtaggedContentDto>> getHashtaggedFeed(
-            @RequestParam(name = "cursor", required = false) String cursor,
-            @RequestParam(name = "page", required = false) Integer page,
-            @RequestParam(name = "size", defaultValue = "20") int size) {
-        String locale = LocaleUtils.toLocaleCode(LocaleContextHolder.getLocale());
-        return ResponseEntity.ok(hashtagService.getHashtaggedFeed(cursor, page, size, locale));
-    }
-
-
-    /**
      * Get unified content (recipes and logs) for a specific hashtag
      * GET /api/v1/hashtags/{name}/content?cursor=xxx&page=0&size=20
      */
