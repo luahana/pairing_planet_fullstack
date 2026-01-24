@@ -109,7 +109,8 @@ export async function getPopularHashtags(
   limit: number = 10,
   locale?: string,
 ): Promise<HashtagWithCount[]> {
-  const queryString = buildQueryString({ limit });
+  // Pass locale in URL for proper cache differentiation (Next.js caches by URL, not headers)
+  const queryString = buildQueryString({ limit, locale });
   return apiFetch<HashtagWithCount[]>(`/hashtags/popular${queryString}`, {
     next: { revalidate: 300 }, // Cache for 5 minutes
     locale,
