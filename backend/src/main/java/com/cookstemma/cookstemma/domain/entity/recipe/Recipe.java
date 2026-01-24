@@ -83,6 +83,11 @@ public class Recipe extends BaseEntity {
     private String changeReason;
 
     @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "change_reason_translations", columnDefinition = "jsonb")
+    @Builder.Default
+    private Map<String, String> changeReasonTranslations = new HashMap<>();
+
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "change_categories", columnDefinition = "jsonb")
     @Builder.Default
     private List<String> changeCategories = new ArrayList<>();

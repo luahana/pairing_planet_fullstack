@@ -185,7 +185,8 @@ public record RecipeDetailResponseDto(
                 .isSavedByCurrentUser(isSavedByCurrentUser)
                 .changeDiff(recipe.getChangeDiff())
                 .changeCategories(recipe.getChangeCategories())
-                .changeReason(recipe.getChangeReason())
+                .changeReason(com.cookstemma.cookstemma.util.LocaleUtils.getLocalizedValue(
+                        recipe.getChangeReasonTranslations(), locale, recipe.getChangeReason()))
                 .servings(recipe.getServings() != null ? recipe.getServings() : 2)
                 .cookingTimeRange(recipe.getCookingTimeRange() != null ? recipe.getCookingTimeRange().name() : "MIN_30_TO_60")
                 .isPrivate(recipe.getIsPrivate() != null ? recipe.getIsPrivate() : false)
