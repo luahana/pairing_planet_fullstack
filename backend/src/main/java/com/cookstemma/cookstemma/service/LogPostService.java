@@ -82,7 +82,7 @@ public class LogPostService {
                 .build();
 
         logPost.setRecipeLog(recipeLog);
-        logPostRepository.save(logPost);
+        logPost = logPostRepository.save(logPost);
 
         // 이미지 활성화 (LOG 타입)
         imageService.activateImages(req.imagePublicIds(), logPost);
@@ -91,6 +91,7 @@ public class LogPostService {
         if (req.hashtags() != null && !req.hashtags().isEmpty()) {
             Set<Hashtag> hashtags = hashtagService.getOrCreateHashtags(req.hashtags());
             logPost.setHashtags(hashtags);
+            logPostRepository.save(logPost);  // Ensure hashtag relationship is persisted
         }
 
         // Notify recipe owner that someone cooked their recipe
