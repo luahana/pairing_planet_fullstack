@@ -614,16 +614,6 @@
     "noContent": "Pas encore de contenu avec ce hashtag",
     "topContributors": "Principaux contributeurs :"
   },
-  "hashtagsPage": {
-    "title": "Hashtags",
-    "subtitle": "Explorez les recettes et journaux de cuisine par hashtag",
-    "metaTitle": "Hashtags | Cookstemma",
-    "metaDescription": "Parcourez tous les hashtags sur Cookstemma",
-    "allTab": "Tout",
-    "popularTab": "Populaire",
-    "noContent": "Pas encore de contenu avec des hashtags",
-    "noHashtags": "Pas encore de hashtags populaires"
-  },
   "admin": {
     "title": "Tableau de bord admin",
     "suggestedFoods": "Plats suggérés",
