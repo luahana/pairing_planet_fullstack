@@ -133,3 +133,19 @@ output "sns_topic_name" {
   description = "Name of the SNS topic for CloudWatch alarms"
   value       = aws_sns_topic.alerts.name
 }
+
+# Keyword Generator Lambda outputs
+output "keyword_generator_lambda_arn" {
+  description = "ARN of the keyword generator Lambda function"
+  value       = module.lambda_keyword_generator.lambda_function_arn
+}
+
+output "keyword_generator_lambda_name" {
+  description = "Name of the keyword generator Lambda function"
+  value       = module.lambda_keyword_generator.lambda_function_name
+}
+
+output "keyword_generator_eventbridge_rule_arn" {
+  description = "ARN of the keyword generator EventBridge schedule rule"
+  value       = module.lambda_keyword_generator.eventbridge_rule_arn
+}
