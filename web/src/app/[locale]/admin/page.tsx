@@ -1877,8 +1877,8 @@ function FoodsMasterTab() {
       sortable: false,
       width: '120px',
       render: (item) => item.searchKeywords ? (
-        <span title={item.searchKeywords} className="text-sm">
-          {item.searchKeywords.length > 20 ? item.searchKeywords.slice(0, 20) + '...' : item.searchKeywords}
+        <span title={formatJsonbField(item.searchKeywords, 200)} className="text-sm">
+          {formatJsonbField(item.searchKeywords, 20)}
         </span>
       ) : '-',
     },
