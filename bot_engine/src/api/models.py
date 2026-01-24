@@ -104,6 +104,7 @@ class CreateRecipeRequest(BaseModel):
     description: str = Field(max_length=1000)
     locale: str = Field(default="ko-KR")
     cooking_style: str = Field(default="KR", alias="cookingStyle")
+    original_language: Optional[str] = Field(default=None, alias="originalLanguage")
     new_food_name: Optional[str] = Field(default=None, alias="newFoodName")
     food_public_id: Optional[str] = Field(default=None, alias="foodPublicId")
     ingredients: List[RecipeIngredient] = Field(default_factory=list)
@@ -190,6 +191,9 @@ class CreateLogRequest(BaseModel):
     )
     hashtags: List[str] = Field(default_factory=list)
     is_private: bool = Field(default=False, description="Private visibility")
+    original_language: Optional[str] = Field(default=None, alias="originalLanguage")
+
+    model_config = {"populate_by_name": True}
 
 
 class LogPostImage(BaseModel):
