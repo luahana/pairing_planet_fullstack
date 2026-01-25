@@ -106,9 +106,9 @@ const sentryWebpackPluginOptions = {
   // Route Sentry events through app to bypass ad blockers
   tunnelRoute: "/monitoring",
 
-  // Disable Sentry in development (no DSN)
-  disableServerWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
-  disableClientWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+  // Always enable webpack plugins - sentry.*.config.ts handles missing DSN gracefully
+  disableServerWebpackPlugin: false,
+  disableClientWebpackPlugin: false,
 };
 
 // Wrap config with next-intl and optionally Sentry
