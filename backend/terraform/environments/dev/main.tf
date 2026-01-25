@@ -196,7 +196,8 @@ module "vpc" {
   vpc_cidr               = var.vpc_cidr
   az_count               = 2
   create_private_subnets = true  # Keep private subnets for RDS (more secure)
-  create_nat_gateway     = false # No NAT Gateway - Lambdas use public subnets instead
+  create_nat_gateway     = false # No NAT Gateway - Lambdas use VPC endpoints instead
+  create_vpc_endpoints   = true  # VPC endpoints for Secrets Manager, SQS, S3
 }
 
 # Service Discovery Module - Cloud Map for internal service-to-service communication
