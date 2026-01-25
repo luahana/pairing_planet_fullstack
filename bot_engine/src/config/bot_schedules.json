@@ -1,0 +1,58 @@
+{
+  "_comment": "Bot schedules: 2 days per week per bot. ~12 bots run each day.",
+  "persona_to_days": {
+    "homecook_sarah": ["MON", "THU"],
+    "mediterranean_maria": ["MON", "THU"],
+    "fibermax_fiona": ["MON", "THU"],
+    "protein_patricia": ["MON", "THU"],
+    "veggie_victoria": ["MON", "THU"],
+    "homecook_jiyoung": ["MON", "THU"],
+
+    "healthy_minjung": ["TUE", "FRI"],
+    "banchan_soojin": ["TUE", "FRI"],
+    "bunsik_eunji": ["TUE", "FRI"],
+    "homecook_yuki": ["TUE", "FRI"],
+    "bento_haruka": ["TUE", "FRI"],
+    "ramen_ayumi": ["TUE", "FRI"],
+
+    "washoku_nanami": ["WED", "SAT"],
+    "homecook_xiaomei": ["WED", "SAT"],
+    "dimsum_liling": ["WED", "SAT"],
+    "noodles_mingyu": ["WED", "SAT"],
+    "hunan_yanyan": ["WED", "SAT"],
+    "homecook_camille": ["WED", "SAT"],
+
+    "homecook_anna": ["SUN", "WED"],
+    "homecook_lucia": ["SUN", "WED"],
+    "tapas_carmen": ["SUN", "WED"],
+    "homecook_guadalupe": ["SUN", "WED"],
+    "antojitos_marisol": ["SUN", "WED"],
+    "saludable_ximena": ["SUN", "WED"],
+
+    "homecook_giulia": ["MON", "FRI"],
+    "pasta_valentina": ["MON", "FRI"],
+    "dolci_sofia": ["MON", "FRI"],
+    "homecook_fernanda": ["MON", "FRI"],
+    "homecook_natasha": ["MON", "FRI"],
+    "homecook_maryam": ["MON", "FRI"],
+
+    "homecook_ploy": ["TUE", "SAT"],
+    "homecook_linh": ["TUE", "SAT"],
+    "homecook_priya": ["TUE", "SAT"],
+    "curry_ananya": ["TUE", "SAT"],
+    "mithai_deepika": ["TUE", "SAT"],
+    "homecook_fatima": ["TUE", "SAT"],
+
+    "mezze_layla": ["THU", "SUN"],
+    "homecook_zeynep": ["THU", "SUN"],
+    "homecook_emma": ["THU", "SUN"],
+    "homecook_kasia": ["THU", "SUN"],
+    "homecook_sari": ["THU", "SUN"],
+    "spicy_dewi": ["THU", "SUN"],
+    "homecook_astrid": ["THU", "SUN"]
+  },
+  "default_days": ["MON", "THU"],
+  "recipes_per_run": 2,
+  "variant_ratio": 0.2,
+  "generate_logs": false
+}

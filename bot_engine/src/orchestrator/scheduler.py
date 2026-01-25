@@ -12,7 +12,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from ..api import CookstemmaClient
 from ..api.models import Recipe
-from ..config import get_settings
+from ..config import get_schedule_service, get_settings
 from ..generators import ImageGenerator, TextGenerator
 from ..personas import BotPersona, get_persona_registry
 from .log_pipeline import LogPipeline
@@ -26,20 +26,21 @@ class ContentScheduler:
 
     def __init__(
         self,
-        persona_api_keys: Dict[str, str],
         generate_images: bool = True,
+        run_all: bool = False,
     ) -> None:
         """Initialize scheduler.
 
         Args:
-            persona_api_keys: Dict mapping persona name to API key
             generate_images: Whether to generate AI images
+            run_all: If True, bypass schedule and run all bots
         """
         self._settings = get_settings()
-        self._persona_api_keys = persona_api_keys
         self._generate_images = generate_images
+        self._run_all = run_all
         self._scheduler: Optional[AsyncIOScheduler] = None
         self._registry = get_persona_registry()
+        self._schedule_service = get_schedule_service()
         self._created_recipes: List[Recipe] = []
         self._used_food_names: Set[str] = set()
 
@@ -57,34 +58,56 @@ class ContentScheduler:
                     persona_count=len(self._registry.get_all()),
                 )
 
-    async def _get_configured_personas(self) -> List[BotPersona]:
-        """Get personas that have API keys configured.
-        
+    async def _get_scheduled_personas(self) -> List[BotPersona]:
+        """Get all active personas, filtered by today's schedule.
+
         Ensures registry is initialized before accessing personas.
+        Filters by schedule unless run_all is True.
         """
         await self._ensure_registry_initialized()
-        
-        personas = []
-        for name, api_key in self._persona_api_keys.items():
-            persona = self._registry.get(name)
-            if persona:
-                persona.api_key = api_key
-                personas.append(persona)
-            else:
-                logger.warning(
-                    "persona_not_found_in_registry",
-                    persona_name=name,
-                    hint="Check that persona exists in database and is active",
-                )
-        return personas
+
+        # Get all personas from registry
+        all_personas = self._registry.get_all()
+
+        if not all_personas:
+            logger.warning("no_personas_in_registry")
+            return []
+
+        # Return all personas if run_all is True (bypass schedule)
+        if self._run_all:
+            logger.info(
+                "schedule_bypassed",
+                reason="--all flag",
+                total_personas=len(all_personas),
+            )
+            return all_personas
+
+        # Filter by schedule
+        all_names = [p.name for p in all_personas]
+        scheduled_names = set(
+            self._schedule_service.get_scheduled_personas(all_names)
+        )
+        scheduled_personas = [p for p in all_personas if p.name in scheduled_names]
+
+        logger.info(
+            "personas_filtered_by_schedule",
+            day=self._schedule_service.get_today_day(),
+            total_available=len(all_personas),
+            scheduled_count=len(scheduled_personas),
+        )
+
+        return scheduled_personas
 
     async def _create_clients(
         self,
         persona: BotPersona,
     ) -> tuple:
-        """Create authenticated clients for a persona."""
+        """Create authenticated clients for a persona.
+
+        Uses login_by_persona which authenticates via BOT_INTERNAL_SECRET.
+        """
         api_client = CookstemmaClient()
-        await api_client.login_persona(persona)
+        await api_client.login_by_persona(persona.name)
 
         text_gen = TextGenerator()
         image_gen = ImageGenerator()
@@ -92,23 +115,24 @@ class ContentScheduler:
         return api_client, text_gen, image_gen
 
     async def generate_daily_content(self) -> None:
-        """Generate daily content quota (recipes and logs)."""
-        personas = await self._get_configured_personas()
+        """Generate daily content (recipes only, no logs by default)."""
+        personas = await self._get_scheduled_personas()
         if not personas:
-            logger.warning("no_configured_personas")
+            logger.warning("no_scheduled_personas_today")
             return
+
+        # Get config values from schedule service
+        recipes_per_persona = self._schedule_service.get_recipes_per_run()
+        variant_ratio = self._schedule_service.get_variant_ratio()
+        generate_logs = self._schedule_service.should_generate_logs()
 
         logger.info(
             "daily_content_start",
-            recipes_target=self._settings.recipes_per_day,
-            logs_target=self._settings.logs_per_day,
-            personas=len(personas),
-        )
-
-        # Split work across personas
-        recipes_per_persona = max(
-            1,
-            self._settings.recipes_per_day // len(personas),
+            recipes_per_persona=recipes_per_persona,
+            variant_ratio=variant_ratio,
+            generate_logs=generate_logs,
+            scheduled_personas=len(personas),
+            persona_names=[p.name for p in personas],
         )
 
         all_new_recipes: List[Recipe] = []
@@ -120,11 +144,11 @@ class ContentScheduler:
                 async with api_client:
                     recipe_pipeline = RecipePipeline(api_client, text_gen, image_gen)
 
-                    # Generate recipes
+                    # Generate recipes with 80% original, 20% variants (from config)
                     recipes = await recipe_pipeline.generate_batch_recipes(
                         persona=persona,
                         count=recipes_per_persona,
-                        variant_ratio=self._settings.variant_ratio,
+                        variant_ratio=variant_ratio,
                         generate_images=self._generate_images,
                     )
                     all_new_recipes.extend(recipes)
@@ -139,8 +163,8 @@ class ContentScheduler:
                     error=str(e),
                 )
 
-        # Generate logs distributed across all new and existing recipes
-        if all_new_recipes or self._created_recipes:
+        # Generate logs only if enabled in config (disabled by default)
+        if generate_logs and (all_new_recipes or self._created_recipes):
             await self._generate_daily_logs(personas, all_new_recipes)
 
         logger.info(
@@ -215,9 +239,9 @@ class ContentScheduler:
             total_recipes: Target number of recipes (50% originals, 50% variants)
             total_logs: Target number of cooking logs
         """
-        personas = await self._get_configured_personas()
+        personas = await self._get_scheduled_personas()
         if not personas:
-            raise RuntimeError("No personas configured with API keys")
+            raise RuntimeError("No personas found in registry")
 
         logger.info(
             "initial_seed_start",
