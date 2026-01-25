@@ -192,6 +192,12 @@ resource "aws_ecs_task_definition" "main" {
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
 
+  # Use Graviton (ARM64) for 20% cost savings
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   container_definitions = jsonencode([
     {
       name  = "${var.project_name}-${var.environment}"
