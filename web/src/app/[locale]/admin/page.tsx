@@ -129,10 +129,23 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Admin Dashboard</h1>
-          <p className="text-[var(--text-secondary)] mt-1">
-            Manage users and suggested foods
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Admin Dashboard</h1>
+              <p className="text-[var(--text-secondary)] mt-1">
+                Manage users and suggested foods
+              </p>
+            </div>
+            {/* Sentry Test Button */}
+            <button
+              onClick={() => {
+                throw new Error("Sentry test error from admin dashboard");
+              }}
+              className="px-3 py-1.5 text-xs bg-red-500/10 text-red-500 rounded hover:bg-red-500/20 transition-colors"
+            >
+              Test Sentry
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
