@@ -71,13 +71,14 @@ export const config = {
     /*
      * Match all request paths except:
      * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files with extensions
+     * - _next/static, _next/image (Next.js static files)
+     * - _vercel (Vercel internal routes)
+     * - favicon.ico, icon.svg (icon files - explicit for reliability)
+     * - sitemap.xml, robots.txt (SEO files)
      * - monitoring (Sentry tunnel route)
      * - __/auth (Firebase auth handler)
+     * - files with extensions (.*\\..*) as fallback
      */
-    '/((?!api|_next|_vercel|monitoring|__/auth|.*\\..*).*)',
+    '/((?!api|_next/static|_next/image|_vercel|favicon\\.ico|icon\\.svg|sitemap\\.xml|robots\\.txt|monitoring|__/auth|.*\\..*).*)',
   ],
 };
