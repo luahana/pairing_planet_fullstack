@@ -1,0 +1,110 @@
+name: Auto PR - Dev to Master
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (show what would be done)'
+        required: false
+        default: 'false'
+        type: boolean
+
+  schedule:
+    - cron: '0 9 * * 1'  # Weekly Monday 9 AM UTC
+
+  # Uncomment to trigger on push to dev
+  # push:
+  #   branches: [dev]
+
+env:
+  BASE_BRANCH: master
+  HEAD_BRANCH: dev
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          git fetch origin ${{ env.BASE_BRANCH }} ${{ env.HEAD_BRANCH }}
+          COMMITS_AHEAD=$(git rev-list --count origin/${{ env.BASE_BRANCH }}..origin/${{ env.HEAD_BRANCH }})
+          echo "commits_ahead=$COMMITS_AHEAD" >> $GITHUB_OUTPUT
+          if [ "$COMMITS_AHEAD" -eq 0 ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check existing PR
+        id: check-pr
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING_PR=$(gh pr list --base ${{ env.BASE_BRANCH }} --head ${{ env.HEAD_BRANCH }} --state open --json number,url --jq '.[0]')
+          if [ -n "$EXISTING_PR" ] && [ "$EXISTING_PR" != "null" ]; then
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+            echo "pr_number=$(echo $EXISTING_PR | jq -r '.number')" >> $GITHUB_OUTPUT
+            echo "pr_url=$(echo $EXISTING_PR | jq -r '.url')" >> $GITHUB_OUTPUT
+          else
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate PR description
+        id: generate-description
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          cat > pr_body.md << 'EOF'
+          ## Release PR: Dev to Master
+
+          This PR contains all changes from `dev` ready for production.
+
+          ### Changes
+
+          #### Features
+          EOF
+          git log origin/${{ env.BASE_BRANCH }}..origin/${{ env.HEAD_BRANCH }} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --grep="^feat" >> pr_body.md || true
+          echo -e "\n\n#### Bug Fixes" >> pr_body.md
+          git log origin/${{ env.BASE_BRANCH }}..origin/${{ env.HEAD_BRANCH }} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --grep="^fix" >> pr_body.md || true
+          echo -e "\n\n#### Other" >> pr_body.md
+          git log origin/${{ env.BASE_BRANCH }}..origin/${{ env.HEAD_BRANCH }} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --invert-grep --grep="^feat" --grep="^fix" >> pr_body.md || true
+          cat >> pr_body.md << 'EOF'
+
+          ---
+          ### Checklist
+          - [ ] CI checks pass
+          - [ ] Tested on staging
+
+          _Auto-created by GitHub Actions_
+          EOF
+
+      - name: Create or update PR
+        if: steps.check-changes.outputs.has_changes == 'true' && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ steps.check-pr.outputs.pr_exists }}" == "true" ]; then
+            gh pr edit ${{ steps.check-pr.outputs.pr_number }} --title "Release: Merge dev into master" --body-file pr_body.md
+          else
+            gh pr create --base ${{ env.BASE_BRANCH }} --head ${{ env.HEAD_BRANCH }} --title "Release: Merge dev into master" --body-file pr_body.md --label "release"
+          fi
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.check-changes.outputs.has_changes }}" == "false" ]; then
+            echo "No changes detected. No PR created." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ inputs.dry_run }}" == "true" ]; then
+            echo "Dry run - PR would be created with ${{ steps.check-changes.outputs.commits_ahead }} commits" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "PR created/updated successfully" >> $GITHUB_STEP_SUMMARY
+          fi
