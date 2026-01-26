@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -184,6 +185,17 @@ class WebAuthControllerTest extends BaseIntegrationTest {
         void logout_WithoutCookies_ReturnsOk() throws Exception {
             mockMvc.perform(post("/api/v1/auth/web/logout"))
                     .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("HEAD request should return 200 without clearing cookies")
+        void logout_HeadRequest_ReturnsOkWithoutSideEffects() throws Exception {
+            MvcResult result = mockMvc.perform(head("/api/v1/auth/web/logout"))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            // HEAD request should not set any cookies (no side effects)
+            assertThat(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE)).isEmpty();
         }
     }
 
