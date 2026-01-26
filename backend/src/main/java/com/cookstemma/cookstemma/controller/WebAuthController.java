@@ -93,6 +93,15 @@ public class WebAuthController {
     }
 
     /**
+     * HEAD request handler for logout.
+     * Returns 200 OK for bot/crawler probes without side effects.
+     */
+    @RequestMapping(value = "/logout", method = RequestMethod.HEAD)
+    public ResponseEntity<Void> logoutHead() {
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * Get CSRF token.
      * Sets a non-HttpOnly CSRF cookie that JavaScript can read.
      * The frontend must include this token in X-CSRF-Token header for POST/PUT/DELETE requests.
