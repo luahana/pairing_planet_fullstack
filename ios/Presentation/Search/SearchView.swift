@@ -18,23 +18,68 @@ enum SearchTab: CaseIterable {
     }
 }
 
+// MARK: - Navigation Destinations
+enum SearchNavDestination: Hashable {
+    case recipe(id: String)
+    case log(id: String)
+    case user(id: String)
+    case hashtag(name: String)
+}
+
 struct SearchView: View {
     @StateObject private var viewModel = SearchViewModel()
+    @EnvironmentObject private var appState: AppState
     @State private var selectedTab: SearchTab = .all
+    @State private var navigationPath = NavigationPath()
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             VStack(spacing: 0) {
                 searchBar
                 contentView
             }
             .navigationBarHidden(true)
+            .navigationDestination(for: SearchNavDestination.self) { destination in
+                switch destination {
+                case .recipe(let id):
+                    RecipeDetailView(recipeId: id)
+                case .log(let id):
+                    LogDetailView(logId: id)
+                case .user(let id):
+                    ProfileView(userId: id)
+                case .hashtag(let name):
+                    HashtagView(hashtag: name)
+                }
+            }
         }
         .onAppear {
             viewModel.loadRecentSearches()
             viewModel.loadHomeFeed()
         }
+        .onReceive(appState.$searchScrollToTopTrigger.dropFirst()) { _ in
+            handleScrollToTop()
+        }
+    }
+
+    private func handleScrollToTop() {
+        // Pop to root if navigated
+        if !navigationPath.isEmpty {
+            navigationPath = NavigationPath()
+            return
+        }
+
+        // Reset "see all" views if active
+        if viewModel.showAllRecipes || viewModel.showAllLogs {
+            viewModel.resetSeeAllState()
+            return
+        }
+
+        // Clear search and refresh home feed
+        if !viewModel.query.isEmpty {
+            viewModel.clearSearch()
+        }
+        viewModel.loadHomeFeed()
     }
 
     // MARK: - Search Bar
@@ -150,7 +195,7 @@ struct SearchView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.Spacing.sm) {
                         ForEach(viewModel.trendingRecipes) { recipe in
-                            NavigationLink(destination: RecipeDetailView(recipeId: recipe.id)) {
+                            NavigationLink(value: SearchNavDestination.recipe(id: recipe.id)) {
                                 HorizontalRecipeCard(recipe: recipe)
                             }
                             .buttonStyle(.plain)
@@ -182,7 +227,7 @@ struct SearchView: View {
             } else {
                 FlowLayout(spacing: DesignSystem.Spacing.sm) {
                     ForEach(viewModel.trendingHashtags, id: \.name) { hashtag in
-                        NavigationLink(destination: HashtagView(hashtag: hashtag.name)) {
+                        NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
                             Text("#\(hashtag.name)")
                                 .font(DesignSystem.Typography.subheadline)
                                 .foregroundColor(DesignSystem.Colors.primary)
@@ -239,7 +284,7 @@ struct SearchView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.Spacing.sm) {
                         ForEach(viewModel.recentLogs) { log in
-                            NavigationLink(destination: LogDetailView(logId: log.id)) {
+                            NavigationLink(value: SearchNavDestination.log(id: log.id)) {
                                 HorizontalLogCard(log: log)
                             }
                             .buttonStyle(.plain)
@@ -362,7 +407,7 @@ struct SearchView: View {
 
             List {
                 ForEach(viewModel.trendingRecipes) { recipe in
-                    NavigationLink(destination: RecipeDetailView(recipeId: recipe.id)) {
+                    NavigationLink(value: SearchNavDestination.recipe(id: recipe.id)) {
                         RecipeCardCompactFromHome(recipe: recipe)
                     }
                 }
@@ -397,7 +442,7 @@ struct SearchView: View {
 
             List {
                 ForEach(viewModel.recentLogs) { log in
-                    NavigationLink(destination: LogDetailView(logId: log.id)) {
+                    NavigationLink(value: SearchNavDestination.log(id: log.id)) {
                         LogCardCompactFromHome(log: log)
                     }
                 }
@@ -468,7 +513,7 @@ struct SearchView: View {
         if !viewModel.results.recipes.isEmpty {
             Section("Recipes (\(viewModel.results.recipes.count))") {
                 ForEach(viewModel.results.recipes.prefix(3)) { recipe in
-                    NavigationLink(destination: RecipeDetailView(recipeId: recipe.id)) {
+                    NavigationLink(value: SearchNavDestination.recipe(id: recipe.id)) {
                         RecipeCardCompact(recipe: recipe)
                     }
                 }
@@ -478,7 +523,7 @@ struct SearchView: View {
         if !viewModel.results.logs.isEmpty {
             Section("Cooking Logs (\(viewModel.results.logs.count))") {
                 ForEach(viewModel.results.logs.prefix(3)) { log in
-                    NavigationLink(destination: LogDetailView(logId: log.id)) {
+                    NavigationLink(value: SearchNavDestination.log(id: log.id)) {
                         LogCardCompact(log: log)
                     }
                 }
@@ -488,7 +533,7 @@ struct SearchView: View {
         if !viewModel.results.users.isEmpty {
             Section("Users (\(viewModel.results.users.count))") {
                 ForEach(viewModel.results.users.prefix(3)) { user in
-                    NavigationLink(destination: ProfileView(userId: user.id)) {
+                    NavigationLink(value: SearchNavDestination.user(id: user.id)) {
                         UserRow(user: user)
                     }
                 }
@@ -498,7 +543,7 @@ struct SearchView: View {
         if !viewModel.results.hashtags.isEmpty {
             Section("Hashtags") {
                 ForEach(viewModel.results.hashtags.prefix(3).map { $0 }, id: \.id) { (hashtag: HashtagCount) in
-                    NavigationLink(destination: HashtagView(hashtag: hashtag.name)) {
+                    NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
                         HStack {
                             Text("#\(hashtag.name)").fontWeight(.medium)
                             Spacer()
@@ -513,7 +558,7 @@ struct SearchView: View {
 
     private var recipesResultsSection: some View {
         ForEach(viewModel.results.recipes) { recipe in
-            NavigationLink(destination: RecipeDetailView(recipeId: recipe.id)) {
+            NavigationLink(value: SearchNavDestination.recipe(id: recipe.id)) {
                 RecipeCardCompact(recipe: recipe)
             }
         }
@@ -521,7 +566,7 @@ struct SearchView: View {
 
     private var logsResultsSection: some View {
         ForEach(viewModel.results.logs) { log in
-            NavigationLink(destination: LogDetailView(logId: log.id)) {
+            NavigationLink(value: SearchNavDestination.log(id: log.id)) {
                 LogCardCompact(log: log)
             }
         }
@@ -529,7 +574,7 @@ struct SearchView: View {
 
     private var usersResultsSection: some View {
         ForEach(viewModel.results.users) { user in
-            NavigationLink(destination: ProfileView(userId: user.id)) {
+            NavigationLink(value: SearchNavDestination.user(id: user.id)) {
                 UserRow(user: user)
             }
         }
@@ -537,7 +582,7 @@ struct SearchView: View {
 
     private var hashtagsResultsSection: some View {
         ForEach(viewModel.results.hashtags) { hashtag in
-            NavigationLink(destination: HashtagView(hashtag: hashtag.name)) {
+            NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
                 HStack {
                     Text("#\(hashtag.name)").fontWeight(.medium)
                     Spacer()
@@ -552,19 +597,19 @@ struct SearchView: View {
     private func searchResultRow(_ result: SearchResult) -> some View {
         switch result {
         case .recipe(let recipe):
-            NavigationLink(destination: RecipeDetailView(recipeId: recipe.id)) {
+            NavigationLink(value: SearchNavDestination.recipe(id: recipe.id)) {
                 RecipeCardCompact(recipe: recipe)
             }
         case .log(let log):
-            NavigationLink(destination: LogDetailView(logId: log.id)) {
+            NavigationLink(value: SearchNavDestination.log(id: log.id)) {
                 LogCardCompact(log: log)
             }
         case .user(let user):
-            NavigationLink(destination: ProfileView(userId: user.id)) {
+            NavigationLink(value: SearchNavDestination.user(id: user.id)) {
                 UserRow(user: user)
             }
         case .hashtag(let hashtag):
-            NavigationLink(destination: HashtagView(hashtag: hashtag.name)) {
+            NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
                 HStack {
                     Text("#\(hashtag.name)").fontWeight(.medium)
                     Spacer()
@@ -913,4 +958,4 @@ struct FlowLayout: Layout {
     }
 }
 
-#Preview { SearchView() }
+#Preview { SearchView().environmentObject(AppState()) }
