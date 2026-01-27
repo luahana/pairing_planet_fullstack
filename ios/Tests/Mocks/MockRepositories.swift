@@ -183,6 +183,10 @@ final class MockUserRepository: UserRepositoryProtocol {
 final class MockCommentRepository: CommentRepositoryProtocol {
     var getCommentsResult: RepositoryResult<PaginatedResponse<Comment>> = .success(PaginatedResponse(content: [], nextCursor: nil, hasNext: false))
     var createCommentResult: RepositoryResult<Comment>?
+    var updateCommentResult: RepositoryResult<Comment>?
+    var deleteCommentResult: RepositoryResult<Void> = .success(())
+    var likeCommentResult: RepositoryResult<Void> = .success(())
+    var unlikeCommentResult: RepositoryResult<Void> = .success(())
     var likeCommentCalled = false
     var unlikeCommentCalled = false
 
@@ -191,25 +195,25 @@ final class MockCommentRepository: CommentRepositoryProtocol {
     }
 
     func createComment(logId: String, content: String, parentId: String?) async -> RepositoryResult<Comment> {
-        return createCommentResult ?? .failure(.unknown(NSError(domain: "", code: 0)))
+        return createCommentResult ?? .failure(.unknown)
     }
 
     func updateComment(id: String, content: String) async -> RepositoryResult<Comment> {
-        return .failure(.notFound)
+        return updateCommentResult ?? .failure(.notFound)
     }
 
     func deleteComment(id: String) async -> RepositoryResult<Void> {
-        return .success(())
+        return deleteCommentResult
     }
 
     func likeComment(id: String) async -> RepositoryResult<Void> {
         likeCommentCalled = true
-        return .success(())
+        return likeCommentResult
     }
 
     func unlikeComment(id: String) async -> RepositoryResult<Void> {
         unlikeCommentCalled = true
-        return .success(())
+        return unlikeCommentResult
     }
 }
 

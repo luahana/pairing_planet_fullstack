@@ -269,8 +269,8 @@ enum CommentEndpoint: APIEndpoint {
 
     var path: String {
         switch self {
-        case .list(let logId, _): return "logs/\(logId)/comments"
-        case .create(let logId, _, _): return "logs/\(logId)/comments"
+        case .list(let logId, _): return "log_posts/\(logId)/comments"
+        case .create(let logId, _, _): return "log_posts/\(logId)/comments"
         case .update(let id, _), .delete(let id): return "comments/\(id)"
         case .like(let id), .unlike(let id): return "comments/\(id)/like"
         }
@@ -287,7 +287,10 @@ enum CommentEndpoint: APIEndpoint {
 
     var queryItems: [URLQueryItem]? {
         if case .list(_, let cursor) = self {
-            return cursor.map { [URLQueryItem(name: "cursor", value: $0)] }
+            // Backend uses page-based pagination (Spring Page)
+            var items = [URLQueryItem(name: "size", value: "20")]
+            if let page = cursor { items.append(URLQueryItem(name: "page", value: page)) }
+            return items
         }
         return nil
     }
