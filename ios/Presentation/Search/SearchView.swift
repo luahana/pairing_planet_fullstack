@@ -343,6 +343,7 @@ struct UserRow: View {
             }
             Spacer()
         }
+        .contentShape(Rectangle())
     }
 }
 
@@ -366,6 +367,7 @@ struct LogCardCompact: View {
             }
             Spacer()
         }
+        .contentShape(Rectangle())
     }
 }
 

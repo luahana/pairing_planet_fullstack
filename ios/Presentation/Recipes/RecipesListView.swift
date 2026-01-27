@@ -228,6 +228,7 @@ struct RecipeCard: View {
         .padding(DesignSystem.Spacing.md)
         .background(DesignSystem.Colors.background)
         .cornerRadius(DesignSystem.CornerRadius.md)
+        .contentShape(Rectangle())
     }
 }
 

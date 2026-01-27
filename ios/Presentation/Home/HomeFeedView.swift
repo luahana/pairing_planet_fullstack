@@ -247,6 +247,7 @@ struct FeedLogCard: View {
         }
         .background(DesignSystem.Colors.background)
         .cornerRadius(DesignSystem.CornerRadius.md)
+        .contentShape(Rectangle())
     }
 }
 
@@ -338,6 +339,7 @@ struct RecipeCardCompact: View {
         .padding(DesignSystem.Spacing.sm)
         .background(DesignSystem.Colors.background)
         .cornerRadius(DesignSystem.CornerRadius.md)
+        .contentShape(Rectangle())
     }
 }
 
