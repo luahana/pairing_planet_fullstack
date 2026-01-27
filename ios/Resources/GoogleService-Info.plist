@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>101876506778-4s3pi7kuo1pkg3q281dnim57vtjdbp5a.apps.googleusercontent.com</string>
+	<string>946572066572-bng1tcf3i8r0g06orikdpnoh0ar5k1u9.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.101876506778-4s3pi7kuo1pkg3q281dnim57vtjdbp5a</string>
+	<string>com.googleusercontent.apps.946572066572-bng1tcf3i8r0g06orikdpnoh0ar5k1u9</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDz771QXGa75FfAh7iA_OxIAB82RtDckbs</string>
+	<string>AIzaSyDG4aL7jUWQCh0d7_pEF4iXsAVgGEw6n9k</string>
 	<key>GCM_SENDER_ID</key>
-	<string>101876506778</string>
+	<string>946572066572</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.cookstemma.app</string>
 	<key>PROJECT_ID</key>
-	<string>cookstemma-prod</string>
+	<string>cookstemma-dev</string>
 	<key>STORAGE_BUCKET</key>
-	<string>cookstemma-prod.firebasestorage.app</string>
+	<string>cookstemma-dev.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:101876506778:ios:5fba7ef87f1aa874b33f23</string>
+	<string>1:946572066572:ios:681c8b839946e2fe4e9329</string>
 </dict>
 </plist>
