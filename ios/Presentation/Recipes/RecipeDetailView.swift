@@ -5,6 +5,7 @@ struct RecipeDetailView: View {
     @StateObject private var viewModel: RecipeDetailViewModel
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var appState: AppState
+    @State private var showCreateLog = false
 
     init(recipeId: String) {
         self.recipeId = recipeId
@@ -18,6 +19,29 @@ struct RecipeDetailView: View {
             case .loaded(let recipe): recipeContent(recipe)
             case .error(let msg): ErrorStateView(message: msg) { viewModel.loadRecipe() }
             }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            // FAB for creating cooking log
+            if case .loaded = viewModel.state {
+                Button {
+                    appState.requireAuth {
+                        showCreateLog = true
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 56, height: 56)
+                        .background(DesignSystem.Colors.primary)
+                        .clipShape(Circle())
+                        .shadow(radius: 4, y: 2)
+                }
+                .padding(.trailing, DesignSystem.Spacing.md)
+                .padding(.bottom, 100)
+            }
+        }
+        .sheet(isPresented: $showCreateLog) {
+            CreateLogView(recipe: viewModel.recipeSummary)
         }
         .background(DesignSystem.Colors.secondaryBackground)
         .navigationBarTitleDisplayMode(.inline)
@@ -311,7 +335,11 @@ struct RecipeDetailView: View {
                         }
 
                         // Add log button
-                        NavigationLink(destination: CreateLogView()) {
+                        Button {
+                            appState.requireAuth {
+                                showCreateLog = true
+                            }
+                        } label: {
                             VStack {
                                 Image(systemName: "plus")
                                     .font(.system(size: DesignSystem.IconSize.lg))

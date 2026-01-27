@@ -88,4 +88,23 @@ final class RecipeDetailViewModel: ObservableObject {
         guard recipe != nil else { return nil }
         return URL(string: "https://cookstemma.com/recipes/\(recipeId)")
     }
+
+    var recipeSummary: RecipeSummary? {
+        guard let recipe = recipe else { return nil }
+        return RecipeSummary(
+            id: recipe.id,
+            title: recipe.title,
+            description: recipe.description,
+            foodName: recipe.foodName,
+            cookingStyle: recipe.cookingStyle,
+            userName: recipe.userName,
+            thumbnail: recipe.thumbnail,
+            variantCount: 0,
+            logCount: recipe.cookCount,
+            servings: recipe.servings,
+            cookingTimeRange: recipe.cookingTimeRange,
+            hashtags: recipe.hashtags ?? [],
+            isPrivate: false
+        )
+    }
 }
