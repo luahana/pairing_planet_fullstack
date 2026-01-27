@@ -198,6 +198,7 @@ struct SavedGridItem: View {
         .frame(height: 120)
         .cornerRadius(DesignSystem.CornerRadius.sm)
         .clipped()
+        .contentShape(Rectangle())
     }
 }
 
