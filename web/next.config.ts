@@ -34,6 +34,21 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Proxy Firebase auth handler to use custom domain instead of firebaseapp.com
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: 'https://cookstemma-prod.firebaseapp.com/__/auth/:path*',
+      },
+      {
+        // Handle locale-prefixed auth paths (e.g., /ko/__/auth/handler)
+        source: '/:locale/__/auth/:path*',
+        destination: 'https://cookstemma-prod.firebaseapp.com/__/auth/:path*',
+      },
+    ];
+  },
+
   images: {
     // Prefer WebP/AVIF for modern browsers, Next.js handles fallback
     formats: ['image/webp', 'image/avif'],

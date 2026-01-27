@@ -111,6 +111,112 @@ jobs:
           wait-for-service-stability: true
           wait-for-minutes: 20
 
+      # Deploy Translation Lambda
+      - name: Build and push Lambda Translator image
+        working-directory: ./backend/lambda/translator
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-translator
+        run: |
+          docker build -t $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest . && docker push $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest
+
+      - name: Update Lambda Translator function
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-translator
+          LAMBDA_NAME: cookstemma-prod-translator
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_NAME \
+            --image-uri $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest \
+            --region ${{ env.AWS_REGION }}
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_NAME \
+            --region ${{ env.AWS_REGION }}
+
+      # Deploy Image Processor Lambda (processor + orchestrator)
+      - name: Build and push Lambda Image Processor image
+        working-directory: ./backend/lambda/image-processor
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-image-processor
+        run: |
+          docker build -t $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest . && docker push $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest
+
+      - name: Update Lambda Image Processor function
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-image-processor
+          LAMBDA_NAME: cookstemma-prod-image-processor
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_NAME \
+            --image-uri $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest \
+            --region ${{ env.AWS_REGION }}
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_NAME \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Update Lambda Image Orchestrator function
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-image-processor
+          LAMBDA_NAME: cookstemma-prod-image-orchestrator
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_NAME \
+            --image-uri $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest \
+            --region ${{ env.AWS_REGION }}
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_NAME \
+            --region ${{ env.AWS_REGION }}
+
+      # Deploy Suggestion Verifier Lambda
+      - name: Build and push Lambda Suggestion Verifier image
+        working-directory: ./backend/lambda/suggestion-verifier
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-suggestion-verifier
+        run: |
+          docker build -t $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest . && docker push $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest
+
+      - name: Update Lambda Suggestion Verifier function
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-suggestion-verifier
+          LAMBDA_NAME: cookstemma-prod-suggestion-verifier
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_NAME \
+            --image-uri $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest \
+            --region ${{ env.AWS_REGION }}
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_NAME \
+            --region ${{ env.AWS_REGION }}
+
+      # Deploy Keyword Generator Lambda
+      - name: Build and push Lambda Keyword Generator image
+        working-directory: ./backend/lambda/keyword-generator
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-keyword-generator
+        run: |
+          docker build -t $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest . && docker push $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest
+
+      - name: Update Lambda Keyword Generator function
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          LAMBDA_ECR_REPO: cookstemma-keyword-generator
+          LAMBDA_NAME: cookstemma-prod-keyword-generator
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_NAME \
+            --image-uri $ECR_REGISTRY/$LAMBDA_ECR_REPO:prod-latest \
+            --region ${{ env.AWS_REGION }}
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_NAME \
+            --region ${{ env.AWS_REGION }}
+
       - name: Get latest version tag
         working-directory: .
         id: get-version
@@ -162,3 +268,8 @@ jobs:
           echo "- **Version:** ${{ steps.get-version.outputs.new-version }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Image:** ${{ steps.build-image.outputs.image }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Deployment Type:** Rolling Update" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lambda Translator:** Updated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lambda Image Processor:** Updated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lambda Image Orchestrator:** Updated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lambda Suggestion Verifier:** Updated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lambda Keyword Generator:** Updated" >> $GITHUB_STEP_SUMMARY

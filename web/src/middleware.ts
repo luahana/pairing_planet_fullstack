@@ -40,6 +40,13 @@ function getLocaleFromPath(pathname: string): string | null {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Block common exploit probes (PHP, ASP, JSP, CGI, etc.)
+  // These are never valid Next.js routes and are typically bot/scanner traffic
+  const blockedExtensions = ['.php', '.asp', '.aspx', '.jsp', '.cgi', '.env'];
+  if (blockedExtensions.some((ext) => pathname.toLowerCase().endsWith(ext))) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   // First, run the intl middleware to handle locale routing
   const response = intlMiddleware(request);
 
@@ -71,12 +78,17 @@ export const config = {
     /*
      * Match all request paths except:
      * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files with extensions
+     * - _next/static, _next/image (Next.js static files)
+     * - _vercel (Vercel internal routes)
+     * - favicon.ico, icon.svg (icon files - explicit for reliability)
+     * - sitemap.xml, robots.txt (SEO files)
      * - monitoring (Sentry tunnel route)
+     * - __/auth (Firebase auth handler)
+     * - legitimate static file extensions (js, css, images, fonts, etc.)
+     *
+     * Note: Exploit probe extensions (.php, .asp, .env, etc.) are NOT excluded
+     * so they reach middleware and get blocked with 404
      */
-    '/((?!api|_next|_vercel|monitoring|.*\\..*).*)',
+    '/((?!api|_next/static|_next/image|_vercel|favicon\\.ico|icon\\.svg|sitemap\\.xml|robots\\.txt|monitoring|__/auth|.*\\.(?:js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|avif|map|json)).*)',
   ],
 };

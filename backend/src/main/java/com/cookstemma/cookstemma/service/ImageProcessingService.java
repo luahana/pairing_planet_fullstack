@@ -16,16 +16,21 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import dev.matrixlab.webp4j.WebPCodec;
+
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 
 @Slf4j
 @Service
@@ -40,6 +45,14 @@ public class ImageProcessingService {
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
+
+    // Track if WebP fallback warning has been logged (to avoid log spam)
+    private volatile boolean webpFallbackWarningLogged = false;
+
+    /**
+     * Result of image encoding, containing the bytes and format used.
+     */
+    private record EncodingResult(byte[] data, String format, String contentType, String extension) {}
 
     @Async("imageProcessingExecutor")
     @Transactional
@@ -164,17 +177,17 @@ public class ImageProcessingService {
                 .size(newWidth, newHeight)
                 .asBufferedImage();
 
-        // Encode to WebP format
-        byte[] resizedBytes = encodeToWebP(resizedImage, variant.getQuality());
+        // Encode to WebP format (with JPEG fallback if native library unavailable)
+        EncodingResult encoded = encodeToWebP(resizedImage, variant.getQuality());
 
-        // Generate new filename with .webp extension
+        // Generate new filename with appropriate extension
         String originalKey = original.getStoredFilename();
         String baseName = originalKey.substring(originalKey.lastIndexOf('/') + 1);
         String nameWithoutExt = baseName.contains(".") ? baseName.substring(0, baseName.lastIndexOf('.')) : baseName;
-        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + ".webp";
+        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + encoded.extension();
 
-        // Upload to S3 with WebP content type
-        uploadToS3(newKey, resizedBytes, "image/webp");
+        // Upload to S3 with appropriate content type
+        uploadToS3(newKey, encoded.data(), encoded.contentType());
 
         // Save variant record
         Image variantImage = Image.builder()
@@ -188,13 +201,13 @@ public class ImageProcessingService {
                 .originalImage(original)
                 .width(newWidth)
                 .height(newHeight)
-                .fileSize((long) resizedBytes.length)
-                .format("webp")
+                .fileSize((long) encoded.data().length)
+                .format(encoded.format())
                 .build();
 
         original.getVariants().add(variantImage);
         result.append("  ").append(variant).append(": CREATED ").append(newWidth).append("x").append(newHeight)
-              .append(" (").append(resizedBytes.length).append(" bytes) -> ").append(newKey).append("\n");
+              .append(" (").append(encoded.data().length).append(" bytes) -> ").append(newKey).append("\n");
         return true;
     }
 
@@ -219,17 +232,17 @@ public class ImageProcessingService {
                 .size(newWidth, newHeight)
                 .asBufferedImage();
 
-        // Encode to WebP format
-        byte[] resizedBytes = encodeToWebP(resizedImage, variant.getQuality());
+        // Encode to WebP format (with JPEG fallback if native library unavailable)
+        EncodingResult encoded = encodeToWebP(resizedImage, variant.getQuality());
 
-        // Generate new filename with .webp extension
+        // Generate new filename with appropriate extension
         String originalKey = original.getStoredFilename();
         String baseName = originalKey.substring(originalKey.lastIndexOf('/') + 1);
         String nameWithoutExt = baseName.contains(".") ? baseName.substring(0, baseName.lastIndexOf('.')) : baseName;
-        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + ".webp";
+        String newKey = variant.getPathPrefix() + "/" + nameWithoutExt + "_" + variant.name().toLowerCase() + encoded.extension();
 
-        // Upload to S3 with WebP content type
-        uploadToS3(newKey, resizedBytes, "image/webp");
+        // Upload to S3 with appropriate content type
+        uploadToS3(newKey, encoded.data(), encoded.contentType());
 
         // Save variant record
         Image variantImage = Image.builder()
@@ -243,32 +256,64 @@ public class ImageProcessingService {
                 .originalImage(original)
                 .width(newWidth)
                 .height(newHeight)
-                .fileSize((long) resizedBytes.length)
-                .format("webp")
+                .fileSize((long) encoded.data().length)
+                .format(encoded.format())
                 .build();
 
         original.getVariants().add(variantImage);
-        log.debug("Generated {} variant: {}x{}, {} bytes", variant, newWidth, newHeight, resizedBytes.length);
+        log.debug("Generated {} variant: {}x{}, {} bytes", variant, newWidth, newHeight, encoded.data().length);
     }
 
-    private byte[] encodeToWebP(BufferedImage image, int quality) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
-        ImageWriteParam writeParam = writer.getDefaultWriteParam();
+    private EncodingResult encodeToWebP(BufferedImage image, int quality) throws IOException {
+        try {
+            byte[] data = WebPCodec.encodeImage(image, (float) quality);
+            return new EncodingResult(data, "webp", "image/webp", ".webp");
+        } catch (UnsatisfiedLinkError e) {
+            if (!webpFallbackWarningLogged) {
+                log.warn("WebP native library unavailable, falling back to JPEG: {}", e.getMessage());
+                webpFallbackWarningLogged = true;
+            }
+            return encodeToJpeg(image, quality);
+        }
+    }
 
-        if (writeParam.canWriteCompressed()) {
-            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            writeParam.setCompressionQuality(quality / 100.0f);
+
+    /**
+     * Fallback encoding to JPEG when WebP native library is unavailable.
+     */
+    private EncodingResult encodeToJpeg(BufferedImage image, int quality) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
+        if (!writers.hasNext()) {
+            throw new IOException("No JPEG writer available");
         }
 
+        ImageWriter writer = writers.next();
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
             writer.setOutput(ios);
-            writer.write(null, new IIOImage(image, null, null), writeParam);
+
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality / 100.0f);
+
+            // Handle transparency - convert to RGB if needed
+            BufferedImage rgbImage = image;
+            if (image.getColorModel().hasAlpha()) {
+                rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = rgbImage.createGraphics();
+                g.setColor(Color.WHITE);
+                g.fillRect(0, 0, image.getWidth(), image.getHeight());
+                g.drawImage(image, 0, 0, null);
+                g.dispose();
+            }
+
+            writer.write(null, new IIOImage(rgbImage, null, null), param);
         } finally {
             writer.dispose();
         }
 
-        return baos.toByteArray();
+        return new EncodingResult(baos.toByteArray(), "jpeg", "image/jpeg", ".jpg");
     }
 
     private byte[] downloadFromS3(String key) throws IOException {
