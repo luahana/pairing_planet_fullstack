@@ -1,4 +1,5 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
+# Builder stage - use standard JDK (not Alpine)
+FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /app
 
@@ -14,10 +15,12 @@ COPY src ./src
 
 RUN ./gradlew clean build -x test --no-daemon
 
-FROM eclipse-temurin:21-jre-alpine AS runner
+# Runner stage - use standard Debian-based JRE (not Alpine)
+# webp4j bundles native libraries compiled against glibc, which Alpine's musl doesn't support
+FROM eclipse-temurin:21-jre AS runner
 
-# Install curl for health checks (webp4j bundles native libraries)
-RUN apk add --no-cache curl
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
