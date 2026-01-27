@@ -194,6 +194,7 @@ enum UserEndpoint: APIEndpoint {
     case myProfile
     case profile(id: String)
     case updateProfile(UpdateProfileRequest)
+    case checkUsername(String)
     case userRecipes(userId: String, cursor: String?)
     case follow(userId: String)
     case unfollow(userId: String)
@@ -208,6 +209,7 @@ enum UserEndpoint: APIEndpoint {
         case .myProfile: return "users/me"
         case .profile(let id): return "users/\(id)"
         case .updateProfile: return "users/me"
+        case .checkUsername: return "users/check-username"
         case .userRecipes(let id, _): return "users/\(id)/recipes"
         case .follow(let id), .unfollow(let id): return "users/\(id)/follow"
         case .followers(let id, _): return "users/\(id)/followers"
@@ -219,7 +221,7 @@ enum UserEndpoint: APIEndpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .myProfile, .profile, .userRecipes, .followers, .following: return .get
+        case .myProfile, .profile, .checkUsername, .userRecipes, .followers, .following: return .get
         case .updateProfile: return .patch
         case .follow, .block, .report: return .post
         case .unfollow, .unblock: return .delete
@@ -228,6 +230,8 @@ enum UserEndpoint: APIEndpoint {
 
     var queryItems: [URLQueryItem]? {
         switch self {
+        case .checkUsername(let username):
+            return [URLQueryItem(name: "username", value: username)]
         case .userRecipes(_, let cursor), .followers(_, let cursor), .following(_, let cursor):
             return cursor.map { [URLQueryItem(name: "cursor", value: $0)] }
         default: return nil
@@ -239,6 +243,13 @@ enum UserEndpoint: APIEndpoint {
         case .updateProfile(let req): return req
         case .report(_, let reason): return ["reason": reason.rawValue]
         default: return nil
+        }
+    }
+
+    var requiresAuth: Bool {
+        switch self {
+        case .checkUsername: return false
+        default: return true
         }
     }
 }

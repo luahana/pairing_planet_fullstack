@@ -69,6 +69,7 @@ protocol UserRepositoryProtocol {
     func getMyProfile() async -> RepositoryResult<MyProfile>
     func getUserProfile(id: String) async -> RepositoryResult<UserProfile>
     func updateProfile(_ request: UpdateProfileRequest) async -> RepositoryResult<MyProfile>
+    func checkUsernameAvailability(_ username: String) async -> RepositoryResult<Bool>
     func getUserRecipes(userId: String, cursor: String?) async -> RepositoryResult<PaginatedResponse<RecipeSummary>>
     func follow(userId: String) async -> RepositoryResult<Void>
     func unfollow(userId: String) async -> RepositoryResult<Void>
