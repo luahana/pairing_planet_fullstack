@@ -25,7 +25,7 @@ struct LoginView: View {
                     .font(.system(size: 36, weight: .bold))
                     .foregroundColor(.brandOrange)
 
-                Text("Share your cooking journey")
+                Text(String(localized: "auth.tagline"))
                     .font(.body)
                     .foregroundColor(.secondary)
             }
@@ -36,7 +36,7 @@ struct LoginView: View {
             VStack(spacing: 16) {
                 // Sign in with Google
                 SignInButton(
-                    title: "Continue with Google",
+                    title: String(localized: "auth.continueGoogle"),
                     icon: Image(systemName: "g.circle.fill"),
                     backgroundColor: .white,
                     foregroundColor: .black,
@@ -49,7 +49,7 @@ struct LoginView: View {
 
                 // Sign in with Apple
                 SignInButton(
-                    title: "Continue with Apple",
+                    title: String(localized: "auth.continueApple"),
                     icon: Image(systemName: "apple.logo"),
                     backgroundColor: .black,
                     foregroundColor: .white,
@@ -70,7 +70,7 @@ struct LoginView: View {
                         .font(.footnote)
                         .foregroundColor(.red)
                     Spacer()
-                    Button("Dismiss") {
+                    Button(String(localized: "common.dismiss")) {
                         viewModel.clearError()
                     }
                     .font(.footnote)
@@ -85,7 +85,7 @@ struct LoginView: View {
             Spacer()
 
             // Terms and privacy
-            Text("By continuing, you agree to our Terms of Service and Privacy Policy")
+            Text(String(localized: "auth.termsNotice"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -162,19 +162,29 @@ final class LoginViewModel: ObservableObject {
 
         do {
             // 1. Sign in with Google and get Firebase ID token
+            #if DEBUG
             print("[Login] Starting Google Sign-In...")
+            #endif
             let firebaseToken = try await firebaseService.signInWithGoogle()
+            #if DEBUG
             print("[Login] Got Firebase token, calling backend...")
+            #endif
 
             // 2. Exchange Firebase token with backend for app tokens
             try await authManager.loginWithFirebase(token: firebaseToken)
+            #if DEBUG
             print("[Login] Success!")
+            #endif
             isAuthenticated = true
         } catch let apiError as APIError {
+            #if DEBUG
             print("[Login] APIError: \(apiError)")
+            #endif
             self.error = apiError.errorDescription ?? "Unknown API error"
         } catch {
+            #if DEBUG
             print("[Login] Other error: \(type(of: error)) - \(error)")
+            #endif
             self.error = Self.userFriendlyError(from: error)
         }
 

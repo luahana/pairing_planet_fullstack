@@ -69,13 +69,13 @@ struct LogDetailView: View {
                                     .contentShape(Rectangle())
                             }
                             .confirmationDialog("", isPresented: $showActionSheet, titleVisibility: .hidden) {
-                                Button("Edit") {
+                                Button(String(localized: "common.edit")) {
                                     showEditSheet = true
                                 }
-                                Button("Delete", role: .destructive) {
+                                Button(String(localized: "common.delete"), role: .destructive) {
                                     showDeleteConfirmation = true
                                 }
-                                Button("Cancel", role: .cancel) { }
+                                Button(String(localized: "common.cancel"), role: .cancel) { }
                             }
                         } else {
                             // Other user's log - show block/report
@@ -93,25 +93,34 @@ struct LogDetailView: View {
             .padding(.vertical, DesignSystem.Spacing.sm)
             .background(DesignSystem.Colors.background)
 
-            ScrollView {
-                switch viewModel.state {
-                case .idle, .loading:
-                    LoadingView()
-                case .loaded:
-                    if let log = viewModel.log {
-                        logContent(log)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    switch viewModel.state {
+                    case .idle, .loading:
+                        LoadingView()
+                    case .loaded:
+                        if let log = viewModel.log {
+                            logContent(log, scrollProxy: proxy)
+                        }
+                    case .error(let message):
+                        ErrorStateView(message: message) { viewModel.loadLog() }
                     }
-                case .error(let message):
-                    ErrorStateView(message: message) { viewModel.loadLog() }
                 }
+                .scrollDismissesKeyboard(.immediately)
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        // Dismiss keyboard when tapping anywhere
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                )
             }
         }
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
         .onAppear { if case .idle = viewModel.state { viewModel.loadLog() } }
-        .alert("Delete Cooking Log", isPresented: $showDeleteConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert(String(localized: "menu.deleteCookingLog"), isPresented: $showDeleteConfirmation) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+            Button(String(localized: "common.delete"), role: .destructive) {
                 Task {
                     if await viewModel.deleteLog() {
                         dismiss()
@@ -119,7 +128,7 @@ struct LogDetailView: View {
                 }
             }
         } message: {
-            Text("Are you sure you want to delete this cooking log? This action cannot be undone.")
+            Text(String(localized: "menu.deleteCookingLogConfirm"))
         }
         .sheet(isPresented: $showEditSheet) {
             if let log = viewModel.log {
@@ -131,7 +140,7 @@ struct LogDetailView: View {
     }
 
     @ViewBuilder
-    private func logContent(_ log: CookingLogDetail) -> some View {
+    private func logContent(_ log: CookingLogDetail, scrollProxy: ScrollViewProxy) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
             // Author header
             HStack {
@@ -232,23 +241,26 @@ struct LogDetailView: View {
             Divider()
 
             // Comments section
-            CommentsSection(logId: logId)
+            CommentsSection(logId: logId, scrollProxy: scrollProxy)
         }
         .padding(.bottom, DesignSystem.Spacing.xl)
-        .safeAreaPadding(.bottom)
     }
 }
 
 // MARK: - Comments Section
 struct CommentsSection: View {
     let logId: String
+    let scrollProxy: ScrollViewProxy
     @StateObject private var viewModel: CommentsViewModel
     @EnvironmentObject private var authManager: AuthManager
     @State private var showBlockConfirmation = false
     @State private var userToBlock: UserSummary?
+    @State private var replyingToComment: Comment?
+    @FocusState private var isCommentInputFocused: Bool
 
-    init(logId: String) {
+    init(logId: String, scrollProxy: ScrollViewProxy) {
         self.logId = logId
+        self.scrollProxy = scrollProxy
         self._viewModel = StateObject(wrappedValue: CommentsViewModel(logId: logId))
     }
 
@@ -268,6 +280,14 @@ struct CommentsSection: View {
                     comment: comment,
                     isOwnComment: comment.author.id == authManager.currentUser?.id,
                     onLike: { Task { await viewModel.likeComment(comment) } },
+                    onReply: {
+                        #if DEBUG
+                        print("[Comments] Reply tapped - comment.id: \(comment.id), author: \(comment.author.username)")
+                        #endif
+                        replyingToComment = comment
+                        viewModel.newCommentText = "@\(comment.author.username) "
+                        isCommentInputFocused = true
+                    },
                     onBlock: {
                         userToBlock = comment.author
                         showBlockConfirmation = true
@@ -279,16 +299,44 @@ struct CommentsSection: View {
             }
 
             if viewModel.hasMore {
-                Button("Load more comments...") { viewModel.loadMore() }
+                Button(String(localized: "comments.loadMore")) { viewModel.loadMore() }
                     .font(DesignSystem.Typography.subheadline)
                     .padding(.horizontal)
             }
 
+            // Reply indicator
+            if let replyingTo = replyingToComment {
+                HStack {
+                    Text("comments.replyingTo \(replyingTo.author.username)")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundColor(DesignSystem.Colors.secondaryText)
+                    Spacer()
+                    Button {
+                        replyingToComment = nil
+                        viewModel.newCommentText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
+                }
+                .padding(.horizontal)
+            }
+
             // Comment input
             HStack {
-                TextField("Write a comment...", text: $viewModel.newCommentText)
+                TextField(String(localized: "comments.placeholder"), text: $viewModel.newCommentText)
                     .textFieldStyle(.roundedBorder)
-                Button { Task { await viewModel.postComment() } } label: {
+                    .focused($isCommentInputFocused)
+                Button {
+                    let parentId = replyingToComment?.id  // Capture before Task
+                    #if DEBUG
+                    print("[Comments] Send tapped - parentId: \(parentId ?? "nil"), replyingToComment: \(replyingToComment?.id ?? "nil")")
+                    #endif
+                    replyingToComment = nil
+                    Task {
+                        await viewModel.postComment(parentId: parentId)
+                    }
+                } label: {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.title2)
                         .foregroundColor(viewModel.newCommentText.isEmpty ? DesignSystem.Colors.secondaryText : DesignSystem.Colors.primary)
@@ -296,17 +344,33 @@ struct CommentsSection: View {
                 .disabled(viewModel.newCommentText.isEmpty)
             }
             .padding()
+            .id("commentInput")
         }
         .onAppear { viewModel.loadComments() }
-        .alert("Block User", isPresented: $showBlockConfirmation) {
-            Button("Block", role: .destructive) {
+        .onChange(of: isCommentInputFocused) { _, focused in
+            if focused {
+                // Wait for keyboard to fully appear before scrolling
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        scrollProxy.scrollTo("commentInput", anchor: .top)
+                    }
+                }
+            } else {
+                // Clear reply state when keyboard dismissed
+                if replyingToComment != nil && viewModel.newCommentText.isEmpty {
+                    replyingToComment = nil
+                }
+            }
+        }
+        .alert(String(localized: "menu.blockUser"), isPresented: $showBlockConfirmation) {
+            Button(String(localized: "menu.block"), role: .destructive) {
                 guard let user = userToBlock else { return }
                 Task { await viewModel.blockUser(user.id) }
             }
-            Button("Cancel", role: .cancel) { userToBlock = nil }
+            Button(String(localized: "common.cancel"), role: .cancel) { userToBlock = nil }
         } message: {
             if let user = userToBlock {
-                Text("Are you sure you want to block @\(user.username)? You won't see their content anymore.")
+                Text(String(localized: "menu.blockConfirmMessage \(user.username)"))
             }
         }
     }
@@ -316,6 +380,7 @@ struct CommentRow: View {
     let comment: Comment
     let isOwnComment: Bool
     let onLike: () -> Void
+    let onReply: () -> Void
     let onBlock: () -> Void
     let onReport: (ReportReason) -> Void
 
@@ -337,7 +402,9 @@ struct CommentRow: View {
                             }
                             .foregroundColor(comment.isLiked ? .red : DesignSystem.Colors.secondaryText)
                         }
-                        Button("Reply") { }.font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
+                        Button(String(localized: "comments.reply")) { onReply() }
+                            .font(DesignSystem.Typography.caption)
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
                 Spacer()

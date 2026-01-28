@@ -130,6 +130,7 @@ final class LogDetailViewModel: ObservableObject {
 final class CommentsViewModel: ObservableObject {
     @Published private(set) var comments: [Comment] = []
     @Published private(set) var isLoading = false
+    @Published private(set) var isPosting = false
     @Published private(set) var hasMore = true
     @Published var newCommentText = ""
 
@@ -150,26 +151,30 @@ final class CommentsViewModel: ObservableObject {
 
     func loadComments() {
         guard !isLoading else { return }
-        isLoading = true
         Task {
+            await reloadComments()
+        }
+    }
+
+    private func reloadComments() async {
+        isLoading = true
+        #if DEBUG
+        print("[Comments] Loading comments for log: \(logId)")
+        #endif
+        let result = await commentRepository.getComments(logId: logId, cursor: nil)
+        isLoading = false
+        switch result {
+        case .success(let response):
             #if DEBUG
-            print("[Comments] Loading comments for log: \(logId)")
+            print("[Comments] Loaded \(response.content.count) comments, hasMore: \(response.hasMore)")
             #endif
-            let result = await commentRepository.getComments(logId: logId, cursor: nil)
-            isLoading = false
-            switch result {
-            case .success(let response):
-                #if DEBUG
-                print("[Comments] Loaded \(response.content.count) comments, hasMore: \(response.hasMore)")
-                #endif
-                comments = response.content
-                nextCursor = response.nextCursor
-                hasMore = response.hasMore
-            case .failure(let error):
-                #if DEBUG
-                print("[Comments] Failed to load: \(error)")
-                #endif
-            }
+            comments = response.content
+            nextCursor = response.nextCursor
+            hasMore = response.hasMore
+        case .failure(let error):
+            #if DEBUG
+            print("[Comments] Failed to load: \(error)")
+            #endif
         }
     }
 
@@ -198,14 +203,26 @@ final class CommentsViewModel: ObservableObject {
         }
     }
 
-    func postComment() async {
+    func postComment(parentId: String? = nil) async {
         guard !newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         let content = newCommentText
         newCommentText = ""
+        isPosting = true
 
-        let result = await commentRepository.createComment(logId: logId, content: content, parentId: nil)
+        #if DEBUG
+        print("[Comments] Posting comment - parentId: \(parentId ?? "nil"), content: \(content)")
+        #endif
+
+        let result = await commentRepository.createComment(logId: logId, content: content, parentId: parentId)
+        isPosting = false
         if case .success(let comment) = result {
-            comments.insert(comment, at: 0)
+            if parentId != nil {
+                // Reply - reload comments to show the reply nested under parent
+                await reloadComments()
+            } else {
+                // Top-level comment - insert at top
+                comments.insert(comment, at: 0)
+            }
         }
     }
 

@@ -92,13 +92,13 @@ struct SearchView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(DesignSystem.Colors.secondaryText)
 
-            TextField("Search recipes, logs, users", text: $viewModel.query)
+            TextField(String(localized: "search.placeholder"), text: $viewModel.query)
                 .focused($isSearchFocused)
                 .submitLabel(.search)
                 .onSubmit { viewModel.search() }
 
             if isSearchFocused && viewModel.query.isEmpty {
-                Button("Cancel") {
+                Button(String(localized: "common.cancel")) {
                     isSearchFocused = false
                     viewModel.resetSeeAllState()
                 }
@@ -168,7 +168,7 @@ struct SearchView: View {
                     Image(systemName: AppIcon.trending)
                         .font(.system(size: DesignSystem.IconSize.md))
                         .foregroundColor(DesignSystem.Colors.primary)
-                    Text("Trending Recipes")
+                    Text(String(localized: "search.trendingRecipes"))
                         .font(DesignSystem.Typography.headline)
                         .foregroundColor(DesignSystem.Colors.text)
                 }
@@ -177,7 +177,7 @@ struct SearchView: View {
                     viewModel.showAllRecipes = true
                 } label: {
                     HStack(spacing: DesignSystem.Spacing.xxs) {
-                        Text("See All")
+                        Text(String(localized: "common.seeAll"))
                             .font(DesignSystem.Typography.subheadline)
                         Image(systemName: "chevron.right")
                             .font(.system(size: DesignSystem.IconSize.xs))
@@ -196,7 +196,7 @@ struct SearchView: View {
                 }
                 .frame(height: 180)
             } else if viewModel.trendingRecipes.isEmpty {
-                emptyStateCard(icon: AppIcon.recipe, message: "No recipes yet")
+                emptyStateCard(icon: AppIcon.recipe, message: String(localized: "search.noRecipes"))
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.Spacing.sm) {
@@ -220,7 +220,7 @@ struct SearchView: View {
                 Image(systemName: "number")
                     .font(.system(size: DesignSystem.IconSize.md))
                     .foregroundColor(DesignSystem.Colors.primary)
-                Text("Popular Hashtags")
+                Text(String(localized: "search.popularHashtags"))
                     .font(DesignSystem.Typography.headline)
                     .foregroundColor(DesignSystem.Colors.text)
             }
@@ -228,7 +228,7 @@ struct SearchView: View {
 
             // Wrapping hashtag chips
             if viewModel.trendingHashtags.isEmpty {
-                emptyStateCard(icon: "number", message: "No hashtags yet")
+                emptyStateCard(icon: "number", message: String(localized: "search.noHashtags"))
                     .padding(.horizontal, DesignSystem.Spacing.md)
             } else {
                 FlowLayout(spacing: DesignSystem.Spacing.sm) {
@@ -256,7 +256,7 @@ struct SearchView: View {
             HStack {
                 HStack(spacing: DesignSystem.Spacing.xs) {
                     LogoIconView(size: DesignSystem.IconSize.lg)
-                    Text("Recent Cooking Logs")
+                    Text(String(localized: "search.recentLogs"))
                         .font(DesignSystem.Typography.headline)
                         .foregroundColor(DesignSystem.Colors.text)
                 }
@@ -265,7 +265,7 @@ struct SearchView: View {
                     viewModel.showAllLogs = true
                 } label: {
                     HStack(spacing: DesignSystem.Spacing.xxs) {
-                        Text("See All")
+                        Text(String(localized: "common.seeAll"))
                             .font(DesignSystem.Typography.subheadline)
                         Image(systemName: "chevron.right")
                             .font(.system(size: DesignSystem.IconSize.xs))
@@ -284,7 +284,7 @@ struct SearchView: View {
                 }
                 .frame(height: 180)
             } else if viewModel.recentLogs.isEmpty {
-                emptyStateCardWithLogo(message: "No cooking logs yet")
+                emptyStateCardWithLogo(message: String(localized: "search.noLogs"))
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.Spacing.sm) {
@@ -356,7 +356,7 @@ struct SearchView: View {
                         Image(systemName: AppIcon.history)
                             .font(.system(size: DesignSystem.IconSize.xxl))
                             .foregroundColor(DesignSystem.Colors.tertiaryText)
-                        Text("No recent searches")
+                        Text(String(localized: "search.noRecentSearches"))
                             .font(DesignSystem.Typography.subheadline)
                             .foregroundColor(DesignSystem.Colors.tertiaryText)
                     }
@@ -365,11 +365,11 @@ struct SearchView: View {
                 } else {
                     VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                         HStack {
-                            Text("Recent Searches")
+                            Text(String(localized: "search.recentSearches"))
                                 .font(DesignSystem.Typography.headline)
                                 .foregroundColor(DesignSystem.Colors.text)
                             Spacer()
-                            Button("Clear") {
+                            Button(String(localized: "common.clear")) {
                                 viewModel.clearRecentSearches()
                             }
                             .font(DesignSystem.Typography.subheadline)
@@ -428,7 +428,7 @@ struct SearchView: View {
                 .buttonStyle(.borderless)
                 .padding(.leading, DesignSystem.Spacing.sm)
                 Spacer()
-                Text("Trending Recipes")
+                Text(String(localized: "search.trendingRecipes"))
                     .font(DesignSystem.Typography.headline)
                 Spacer()
                 // Spacer for balance
@@ -465,7 +465,7 @@ struct SearchView: View {
                 .buttonStyle(.borderless)
                 .padding(.leading, DesignSystem.Spacing.sm)
                 Spacer()
-                Text("Recent Cooking Logs")
+                Text(String(localized: "search.recentLogs"))
                     .font(DesignSystem.Typography.headline)
                 Spacer()
                 // Spacer for balance
@@ -542,13 +542,13 @@ struct SearchView: View {
     @ViewBuilder
     private var allResultsSection: some View {
         if let topResult = viewModel.results.topResult {
-            Section("Top Result") {
+            Section(String(localized: "search.topResult")) {
                 searchResultRow(topResult)
             }
         }
 
         if !viewModel.results.recipes.isEmpty {
-            Section("Recipes (\(viewModel.results.recipes.count))") {
+            Section("\(String(localized: "profile.recipes")) (\(viewModel.results.recipes.count))") {
                 ForEach(viewModel.results.recipes.prefix(3)) { recipe in
                     NavigationLink(value: SearchNavDestination.recipe(id: recipe.id)) {
                         RecipeCardCompact(recipe: recipe)
@@ -558,7 +558,7 @@ struct SearchView: View {
         }
 
         if !viewModel.results.logs.isEmpty {
-            Section("Cooking Logs (\(viewModel.results.logs.count))") {
+            Section("\(String(localized: "search.cookingLogs")) (\(viewModel.results.logs.count))") {
                 ForEach(viewModel.results.logs.prefix(3)) { log in
                     NavigationLink(value: SearchNavDestination.log(id: log.id)) {
                         LogCardCompact(log: log)
@@ -568,7 +568,7 @@ struct SearchView: View {
         }
 
         if !viewModel.results.users.isEmpty {
-            Section("Users (\(viewModel.results.users.count))") {
+            Section("\(String(localized: "search.users")) (\(viewModel.results.users.count))") {
                 ForEach(viewModel.results.users.prefix(3)) { user in
                     NavigationLink(value: SearchNavDestination.user(id: user.id)) {
                         UserRow(user: user)
@@ -578,13 +578,13 @@ struct SearchView: View {
         }
 
         if !viewModel.results.hashtags.isEmpty {
-            Section("Hashtags") {
+            Section(String(localized: "search.hashtags")) {
                 ForEach(viewModel.results.hashtags.prefix(3).map { $0 }, id: \.id) { (hashtag: HashtagCount) in
                     NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
                         HStack {
                             Text("#\(hashtag.name)").fontWeight(.medium)
                             Spacer()
-                            Text("\(hashtag.postCount) posts")
+                            Text("\(hashtag.postCount) \(String(localized: "search.posts"))")
                                 .foregroundColor(DesignSystem.Colors.secondaryText)
                         }
                     }
@@ -623,7 +623,7 @@ struct SearchView: View {
                 HStack {
                     Text("#\(hashtag.name)").fontWeight(.medium)
                     Spacer()
-                    Text("\(hashtag.postCount) posts")
+                    Text("\(hashtag.postCount) \(String(localized: "search.posts"))")
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
             }
@@ -650,7 +650,7 @@ struct SearchView: View {
                 HStack {
                     Text("#\(hashtag.name)").fontWeight(.medium)
                     Spacer()
-                    Text("\(hashtag.postCount) posts")
+                    Text("\(hashtag.postCount) \(String(localized: "search.posts"))")
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
             }
@@ -873,7 +873,7 @@ struct LogCardCompact: View {
 
             // Info section
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xxs) {
-                Text(log.recipe?.title ?? "Cooking Log")
+                Text(log.recipe?.title ?? String(localized: "search.cookingLog"))
                     .font(DesignSystem.Typography.subheadline)
                     .fontWeight(.medium)
                     .lineLimit(1)
@@ -901,9 +901,9 @@ enum HashtagContentFilter: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .all: return "All"
-        case .recipes: return "Recipes"
-        case .logs: return "Logs"
+        case .all: return String(localized: "filter.all")
+        case .recipes: return String(localized: "profile.recipes")
+        case .logs: return String(localized: "profile.logs")
         }
     }
 }
@@ -998,7 +998,7 @@ struct HashtagView: View {
             .padding(.vertical, DesignSystem.Spacing.sm)
 
             // Segmented filter picker
-            Picker("Filter", selection: $viewModel.contentFilter) {
+            Picker(String(localized: "search.filter"), selection: $viewModel.contentFilter) {
                 ForEach(HashtagContentFilter.allCases, id: \.self) { filter in
                     Text(filter.title).tag(filter)
                 }
@@ -1077,11 +1077,11 @@ struct HashtagView: View {
     private func emptyStateForFilter(_ filter: HashtagContentFilter) -> some View {
         switch filter {
         case .all:
-            emptyState(icon: "number", message: "No content with this hashtag")
+            emptyState(icon: "number", message: String(localized: "search.noHashtagContent"))
         case .recipes:
-            emptyState(icon: AppIcon.recipe, message: "No recipes with this hashtag")
+            emptyState(icon: AppIcon.recipe, message: String(localized: "search.noHashtagRecipes"))
         case .logs:
-            emptyStateWithLogo(message: "No cooking logs with this hashtag")
+            emptyStateWithLogo(message: String(localized: "search.noHashtagLogs"))
         }
     }
 

@@ -78,7 +78,7 @@ struct LoadingView: View {
     var body: some View {
         VStack(spacing: DesignSystem.Spacing.md) {
             ProgressView()
-            Text("Loading...")
+            Text(String(localized: "common.loading"))
                 .font(DesignSystem.Typography.subheadline)
                 .foregroundColor(DesignSystem.Colors.secondaryText)
         }
@@ -124,12 +124,12 @@ struct ErrorStateView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: DesignSystem.IconSize.xxl))
                 .foregroundColor(DesignSystem.Colors.error)
-            Text("Something went wrong").font(DesignSystem.Typography.title3)
+            Text(String(localized: "common.somethingWentWrong")).font(DesignSystem.Typography.title3)
             Text(message)
                 .font(DesignSystem.Typography.body)
                 .foregroundColor(DesignSystem.Colors.secondaryText)
                 .multilineTextAlignment(.center)
-            Button(action: retry) { Text("Try Again").primaryButtonStyle() }
+            Button(action: retry) { Text(String(localized: "common.tryAgain")).primaryButtonStyle() }
                 .padding(.top, DesignSystem.Spacing.sm)
         }
         .padding(DesignSystem.Spacing.xl)
@@ -285,7 +285,7 @@ struct FollowButton: View {
             if isLoading {
                 ProgressView().frame(width: 80, height: 32)
             } else {
-                Text(isFollowing ? "Following" : "Follow")
+                Text(isFollowing ? String(localized: "profile.following_button") : String(localized: "profile.follow"))
                     .font(DesignSystem.Typography.subheadline).fontWeight(.medium)
                     .foregroundColor(isFollowing ? DesignSystem.Colors.text : .white)
                     .padding(.horizontal, DesignSystem.Spacing.md)

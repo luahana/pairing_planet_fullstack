@@ -84,7 +84,7 @@ struct HomeFeedView: View {
             }
         case .empty:
             Spacer()
-            IconEmptyState(useLogoIcon: true, subtitle: "No cooking logs yet")
+            IconEmptyState(useLogoIcon: true, subtitle: String(localized: "home.noLogs"))
             Spacer()
         case .error(let msg):
             Spacer()

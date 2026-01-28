@@ -7,41 +7,46 @@ struct SettingsView: View {
     @State private var showLogoutConfirmation = false
     @State private var showDeleteAccountConfirmation = false
     @State private var showEmailCopiedAlert = false
+    @State private var showDeleteError = false
+    @State private var deleteErrorMessage = ""
+    @State private var isDeletingAccount = false
+
+    private let userRepository: UserRepositoryProtocol = UserRepository()
 
     var body: some View {
         List {
             // Account section
-            Section("Account") {
+            Section(String(localized: "settings.account")) {
                 NavigationLink(destination: EditProfileView()) {
-                    Label("Edit Profile", systemImage: "person.circle")
+                    Label(String(localized: "settings.editProfile"), systemImage: "person.circle")
                 }
                 NavigationLink(destination: NotificationSettingsView()) {
-                    Label("Notifications", systemImage: "bell")
+                    Label(String(localized: "settings.notifications"), systemImage: "bell")
                 }
                 NavigationLink(destination: PrivacySettingsView()) {
-                    Label("Privacy", systemImage: "lock")
+                    Label(String(localized: "settings.privacy"), systemImage: "lock")
                 }
             }
 
             // Preferences section
-            Section("Preferences") {
+            Section(String(localized: "settings.preferences")) {
                 NavigationLink(destination: ThemeSettingsView()) {
                     HStack {
-                        Label("Theme", systemImage: "circle.lefthalf.filled")
+                        Label(String(localized: "settings.theme"), systemImage: "circle.lefthalf.filled")
                         Spacer()
                         Text(appTheme.displayName).foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
                 NavigationLink(destination: LanguageSettingsView()) {
                     HStack {
-                        Label("Language", systemImage: "globe")
+                        Label(String(localized: "settings.language"), systemImage: "globe")
                         Spacer()
-                        Text("English").foregroundColor(DesignSystem.Colors.secondaryText)
+                        Text(LanguageManager.shared.currentLanguage.displayName).foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
                 NavigationLink(destination: UnitsSettingsView()) {
                     HStack {
-                        Label("Units", systemImage: "ruler")
+                        Label(String(localized: "settings.units"), systemImage: "ruler")
                         Spacer()
                         Text(measurementPreference.displayName).foregroundColor(DesignSystem.Colors.secondaryText)
                     }
@@ -49,24 +54,24 @@ struct SettingsView: View {
             }
 
             // Support section
-            Section("Support") {
+            Section(String(localized: "settings.support")) {
                 Button {
                     sendFeedbackEmail()
                 } label: {
-                    Label("Send Feedback", systemImage: "envelope")
+                    Label(String(localized: "settings.sendFeedback"), systemImage: "envelope")
                 }
                 NavigationLink(destination: AboutView()) {
-                    Label("About", systemImage: "info.circle")
+                    Label(String(localized: "settings.about"), systemImage: "info.circle")
                 }
             }
 
             // Legal section
-            Section("Legal") {
+            Section(String(localized: "settings.legal")) {
                 Link(destination: URL(string: "https://cookstemma.com/terms")!) {
-                    Label("Terms of Service", systemImage: "doc.text")
+                    Label(String(localized: "settings.termsOfService"), systemImage: "doc.text")
                 }
                 Link(destination: URL(string: "https://cookstemma.com/privacy")!) {
-                    Label("Privacy Policy", systemImage: "hand.raised")
+                    Label(String(localized: "settings.privacyPolicy"), systemImage: "hand.raised")
                 }
             }
 
@@ -75,20 +80,27 @@ struct SettingsView: View {
                 Button(role: .destructive) {
                     showLogoutConfirmation = true
                 } label: {
-                    Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
+                    Label(String(localized: "settings.logout"), systemImage: "rectangle.portrait.and.arrow.right")
                 }
 
                 Button(role: .destructive) {
                     showDeleteAccountConfirmation = true
                 } label: {
-                    Label("Delete Account", systemImage: "trash")
+                    HStack {
+                        Label(String(localized: "settings.deleteAccount"), systemImage: "trash")
+                        if isDeletingAccount {
+                            Spacer()
+                            ProgressView()
+                        }
+                    }
                 }
+                .disabled(isDeletingAccount)
             }
 
             // Version info
             Section {
                 HStack {
-                    Text("Version")
+                    Text(String(localized: "settings.version"))
                     Spacer()
                     Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
                         .foregroundColor(DesignSystem.Colors.secondaryText)
@@ -99,27 +111,32 @@ struct SettingsView: View {
         }
         .listStyle(.insetGrouped)
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("Settings")
-        .alert("Log Out", isPresented: $showLogoutConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Log Out", role: .destructive) {
+        .navigationTitle(String(localized: "settings.title"))
+        .alert(String(localized: "settings.logout"), isPresented: $showLogoutConfirmation) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+            Button(String(localized: "settings.logout"), role: .destructive) {
                 Task { await authManager.logout() }
             }
         } message: {
-            Text("Are you sure you want to log out?")
+            Text(String(localized: "settings.logoutConfirm"))
         }
-        .alert("Delete Account", isPresented: $showDeleteAccountConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                // Delete account flow
+        .alert(String(localized: "settings.deleteAccount"), isPresented: $showDeleteAccountConfirmation) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+            Button(String(localized: "common.delete"), role: .destructive) {
+                Task { await deleteAccount() }
             }
         } message: {
-            Text("This action cannot be undone. All your data will be permanently deleted.")
+            Text(String(localized: "settings.deleteAccountConfirm"))
         }
-        .alert("Email Copied", isPresented: $showEmailCopiedAlert) {
-            Button("OK", role: .cancel) { }
+        .alert(String(localized: "common.error"), isPresented: $showDeleteError) {
+            Button(String(localized: "common.ok"), role: .cancel) { }
         } message: {
-            Text("contact@cookstemma.com has been copied to your clipboard.")
+            Text(deleteErrorMessage)
+        }
+        .alert(String(localized: "settings.emailCopied"), isPresented: $showEmailCopiedAlert) {
+            Button(String(localized: "common.ok"), role: .cancel) { }
+        } message: {
+            Text(String(localized: "settings.emailCopiedMessage"))
         }
     }
 
@@ -135,6 +152,20 @@ struct SettingsView: View {
             showEmailCopiedAlert = true
         }
     }
+
+    private func deleteAccount() async {
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+
+        let result = await userRepository.deleteAccount()
+        switch result {
+        case .success:
+            await authManager.logout()
+        case .failure(let error):
+            deleteErrorMessage = error.localizedDescription
+            showDeleteError = true
+        }
+    }
 }
 
 // MARK: - App Theme
@@ -145,9 +176,9 @@ enum AppTheme: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .system: return "System"
-        case .light: return "Light"
-        case .dark: return "Dark"
+        case .system: return String(localized: "theme.system")
+        case .light: return String(localized: "theme.light")
+        case .dark: return String(localized: "theme.dark")
         }
     }
 
@@ -186,7 +217,7 @@ struct ThemeSettingsView: View {
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("Theme")
+        .navigationTitle(String(localized: "settings.theme"))
     }
 
     private func iconName(for theme: AppTheme) -> String {
@@ -210,7 +241,7 @@ struct EditProfileView: View {
             socialLinksSection
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("Edit Profile")
+        .navigationTitle(String(localized: "editProfile.title"))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 saveButton
@@ -219,8 +250,8 @@ struct EditProfileView: View {
         .task {
             await viewModel.loadProfile()
         }
-        .alert("Error", isPresented: .constant(viewModel.error != nil)) {
-            Button("OK") { viewModel.resetError() }
+        .alert(String(localized: "common.error"), isPresented: .constant(viewModel.error != nil)) {
+            Button(String(localized: "common.ok")) { viewModel.resetError() }
         } message: {
             Text(viewModel.error ?? "")
         }
@@ -232,7 +263,7 @@ struct EditProfileView: View {
     // MARK: - Profile Photo Section
 
     private var profilePhotoSection: some View {
-        Section("Profile Photo") {
+        Section(String(localized: "editProfile.profilePhoto")) {
             HStack {
                 Spacer()
                 VStack {
@@ -240,7 +271,7 @@ struct EditProfileView: View {
                         .fill(DesignSystem.Colors.secondaryBackground)
                         .frame(width: 100, height: 100)
                         .overlay(Image(systemName: "camera").font(.title))
-                    Button("Change Photo") { }
+                    Button(String(localized: "editProfile.changePhoto")) { }
                 }
                 Spacer()
             }
@@ -252,7 +283,7 @@ struct EditProfileView: View {
     private var informationSection: some View {
         Section {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
-                Text("Username")
+                Text(String(localized: "editProfile.username"))
                     .font(DesignSystem.Typography.caption)
                     .foregroundColor(DesignSystem.Colors.secondaryText)
 
@@ -276,7 +307,7 @@ struct EditProfileView: View {
                             ProgressView()
                                 .frame(width: 60)
                         } else {
-                            Text("Check")
+                            Text(String(localized: "editProfile.check"))
                                 .frame(width: 60)
                         }
                     }
@@ -295,11 +326,11 @@ struct EditProfileView: View {
             }
 
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
-                Text("Bio")
+                Text(String(localized: "editProfile.bio"))
                     .font(DesignSystem.Typography.caption)
                     .foregroundColor(DesignSystem.Colors.secondaryText)
 
-                TextField("Tell us about yourself", text: $viewModel.bio, axis: .vertical)
+                TextField(String(localized: "editProfile.bioPlaceholder"), text: $viewModel.bio, axis: .vertical)
                     .lineLimit(3...6)
                     .onChange(of: viewModel.bio) { _, newValue in
                         // Limit bio to max length
@@ -320,9 +351,9 @@ struct EditProfileView: View {
                 }
             }
         } header: {
-            Text("Information")
+            Text(String(localized: "editProfile.information"))
         } footer: {
-            Text("Username: 5-30 characters, starts with letter. Allowed: a-z, 0-9, . _ -")
+            Text(String(localized: "editProfile.usernameRules"))
                 .font(DesignSystem.Typography.caption)
         }
     }
@@ -336,11 +367,11 @@ struct EditProfileView: View {
                 .font(DesignSystem.Typography.caption)
                 .foregroundColor(.orange)
         } else if viewModel.usernameAvailable == true {
-            Label("Username available", systemImage: "checkmark.circle.fill")
+            Label(String(localized: "editProfile.usernameAvailable"), systemImage: "checkmark.circle.fill")
                 .font(DesignSystem.Typography.caption)
                 .foregroundColor(.green)
         } else if viewModel.usernameAvailable == false {
-            Label("Username already taken", systemImage: "xmark.circle.fill")
+            Label(String(localized: "editProfile.usernameTaken"), systemImage: "xmark.circle.fill")
                 .font(DesignSystem.Typography.caption)
                 .foregroundColor(.red)
         }
@@ -349,9 +380,9 @@ struct EditProfileView: View {
     // MARK: - Social Links Section
 
     private var socialLinksSection: some View {
-        Section("Social Links") {
+        Section(String(localized: "editProfile.socialLinks")) {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
-                Text("YouTube URL")
+                Text(String(localized: "editProfile.youtubeUrl"))
                     .font(DesignSystem.Typography.caption)
                     .foregroundColor(DesignSystem.Colors.secondaryText)
                 TextField("https://youtube.com/@channel", text: $viewModel.youtubeUrl)
@@ -361,7 +392,7 @@ struct EditProfileView: View {
             }
 
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
-                Text("Instagram Handle")
+                Text(String(localized: "editProfile.instagramHandle"))
                     .font(DesignSystem.Typography.caption)
                     .foregroundColor(DesignSystem.Colors.secondaryText)
                 TextField("@username", text: $viewModel.instagramHandle)
@@ -378,7 +409,7 @@ struct EditProfileView: View {
             if viewModel.isSubmitting {
                 ProgressView()
             } else {
-                Button("Save") {
+                Button(String(localized: "common.save")) {
                     Task { await viewModel.saveProfile() }
                 }
                 .disabled(!viewModel.canSave)
@@ -396,30 +427,30 @@ struct NotificationSettingsView: View {
 
     var body: some View {
         Form {
-            Section("Push Notifications") {
-                Toggle("Comments & Replies", isOn: $commentsEnabled)
-                Toggle("New Followers", isOn: $followersEnabled)
-                Toggle("New Saved", isOn: $newSavedEnabled)
-                Toggle("New Cooking Logs", isOn: $newCookingLogsEnabled)
-                Toggle("New Variant Recipes", isOn: $newVariantRecipesEnabled)
+            Section(String(localized: "settings.pushNotifications")) {
+                Toggle(String(localized: "settings.commentsReplies"), isOn: $commentsEnabled)
+                Toggle(String(localized: "settings.newFollowers"), isOn: $followersEnabled)
+                Toggle(String(localized: "settings.newSaved"), isOn: $newSavedEnabled)
+                Toggle(String(localized: "settings.newCookingLogs"), isOn: $newCookingLogsEnabled)
+                Toggle(String(localized: "settings.newVariantRecipes"), isOn: $newVariantRecipesEnabled)
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("Notifications")
+        .navigationTitle(String(localized: "settings.notifications"))
     }
 }
 
 struct PrivacySettingsView: View {
     var body: some View {
         Form {
-            Section("Blocked Users") {
-                NavigationLink("Manage Blocked Users") {
+            Section(String(localized: "settings.blockedUsers")) {
+                NavigationLink(String(localized: "settings.manageBlockedUsers")) {
                     BlockedUsersView()
                 }
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("Privacy")
+        .navigationTitle(String(localized: "settings.privacy"))
     }
 }
 
@@ -433,7 +464,7 @@ struct BlockedUsersView: View {
                 LoadingView()
             case .loaded:
                 if viewModel.blockedUsers.isEmpty {
-                    EmptyStateView(icon: "hand.raised", title: "No blocked users", message: "Users you block will appear here")
+                    EmptyStateView(icon: "hand.raised", title: String(localized: "settings.noBlockedUsers"), message: String(localized: "settings.blockedUsersMessage"))
                 } else {
                     List {
                         ForEach(viewModel.blockedUsers) { user in
@@ -442,7 +473,7 @@ struct BlockedUsersView: View {
                                 Text("@\(user.username)")
                                     .font(DesignSystem.Typography.subheadline)
                                 Spacer()
-                                Button("Unblock") {
+                                Button(String(localized: "settings.unblock")) {
                                     Task { await viewModel.unblockUser(user) }
                                 }
                                 .font(DesignSystem.Typography.subheadline)
@@ -450,7 +481,7 @@ struct BlockedUsersView: View {
                             }
                         }
                         if viewModel.hasMore && !viewModel.isLoadingMore {
-                            Button("Load more") {
+                            Button(String(localized: "settings.loadMore")) {
                                 Task { await viewModel.loadMore() }
                             }
                             .frame(maxWidth: .infinity)
@@ -467,7 +498,7 @@ struct BlockedUsersView: View {
                 }
             }
         }
-        .navigationTitle("Blocked Users")
+        .navigationTitle(String(localized: "settings.blockedUsers"))
         .onAppear {
             if case .idle = viewModel.state {
                 Task { await viewModel.loadBlockedUsers() }
@@ -531,26 +562,24 @@ final class BlockedUsersViewModel: ObservableObject {
 }
 
 struct LanguageSettingsView: View {
-    @State private var selectedLanguage = "en"
-
-    let languages = [
-        ("en", "English"),
-        ("ko", "한국어"),
-        ("ja", "日本語"),
-        ("zh", "中文")
-    ]
+    @StateObject private var languageManager = LanguageManager.shared
+    @State private var showRestartAlert = false
 
     var body: some View {
         List {
-            ForEach(languages, id: \.0) { code, name in
+            ForEach(AppLanguage.allCases) { language in
                 Button {
-                    selectedLanguage = code
+                    if languageManager.currentLanguage != language {
+                        languageManager.setLanguage(language)
+                        showRestartAlert = true
+                    }
                 } label: {
                     HStack {
-                        Text(name)
+                        Text(language.displayName)
                         Spacer()
-                        if selectedLanguage == code {
-                            Image(systemName: "checkmark").foregroundColor(DesignSystem.Colors.primary)
+                        if languageManager.currentLanguage == language {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(DesignSystem.Colors.primary)
                         }
                     }
                 }
@@ -558,7 +587,12 @@ struct LanguageSettingsView: View {
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("Language")
+        .navigationTitle(String(localized: "settings.language"))
+        .alert(String(localized: "settings.restartRequired"), isPresented: $showRestartAlert) {
+            Button(String(localized: "common.ok")) { }
+        } message: {
+            Text(String(localized: "settings.restartMessage"))
+        }
     }
 }
 
@@ -589,7 +623,7 @@ struct UnitsSettingsView: View {
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("Units")
+        .navigationTitle(String(localized: "settings.units"))
     }
 }
 
@@ -604,7 +638,7 @@ struct AboutView: View {
                     Text("Cookstemma")
                         .font(.title2)
                         .fontWeight(.bold)
-                    Text("Share your cooking journey")
+                    Text(String(localized: "settings.shareYourCookingJourney"))
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
                 .frame(maxWidth: .infinity)
@@ -613,19 +647,19 @@ struct AboutView: View {
 
             Section {
                 Link(destination: URL(string: "https://cookstemma.com")!) {
-                    Label("Website", systemImage: "globe")
+                    Label(String(localized: "settings.website"), systemImage: "globe")
                 }
             }
 
             Section {
                 HStack {
-                    Text("Version")
+                    Text(String(localized: "settings.version"))
                     Spacer()
                     Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
                 HStack {
-                    Text("Build")
+                    Text(String(localized: "settings.build"))
                     Spacer()
                     Text(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1")
                         .foregroundColor(DesignSystem.Colors.secondaryText)
@@ -633,7 +667,7 @@ struct AboutView: View {
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
-        .navigationTitle("About")
+        .navigationTitle(String(localized: "settings.about"))
     }
 }
 

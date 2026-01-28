@@ -304,10 +304,10 @@ enum ServingsOption: CaseIterable {
 
     var displayText: String {
         switch self {
-        case .oneToTwo: return "1-2 servings"
-        case .threeToFour: return "3-4 servings"
-        case .fiveToSix: return "5-6 servings"
-        case .sevenPlus: return "7+ servings"
+        case .oneToTwo: return String(localized: "filter.servings1to2")
+        case .threeToFour: return String(localized: "filter.servings3to4")
+        case .fiveToSix: return String(localized: "filter.servings5to6")
+        case .sevenPlus: return String(localized: "filter.servings7plus")
         }
     }
 

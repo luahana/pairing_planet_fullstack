@@ -3,10 +3,10 @@ import Foundation
 // MARK: - API Configuration
 
 enum APIConfiguration {
-    // For local development, use your Mac's IP (e.g., "http://192.168.x.x:4000/api/v1")
-    // Or use "http://localhost:4000/api/v1" if testing on a physical device with proxy
-    #if DEBUG
-    // TODO: Change to your local IP if testing against local backend
+    // API URLs per environment (configured via build configurations in project.yml)
+    // DEV builds use dev server, PROD builds use production server
+    #if DEV
+    // For local development, uncomment and use your Mac's IP:
     // static let baseURL = URL(string: "http://192.168.1.100:4000/api/v1")!
     static let baseURL = URL(string: "https://dev.cookstemma.com/api/v1")!
     #else

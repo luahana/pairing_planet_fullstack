@@ -31,7 +31,7 @@ struct CreateLogView: View {
 
                     Spacer()
 
-                    Text("New Cooking Log")
+                    Text(String(localized: "createLog.title"))
                         .font(DesignSystem.Typography.headline)
                         .foregroundColor(DesignSystem.Colors.text)
 
@@ -109,12 +109,12 @@ struct CreateLogView: View {
         } message: {
             if case .error(let msg) = viewModel.state { Text(msg) }
         }
-        .alert("Add Photo", isPresented: $showingPhotoSourceSheet) {
-            Button("Cancel", role: .cancel) { }
-            Button("Take Photo") {
+        .alert(String(localized: "createLog.addPhoto"), isPresented: $showingPhotoSourceSheet) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+            Button(String(localized: "createLog.takePhoto")) {
                 showingCamera = true
             }
-            Button("Choose from Library") {
+            Button(String(localized: "createLog.chooseFromLibrary")) {
                 showingGallery = true
             }
         }
@@ -207,7 +207,7 @@ struct CreateLogView: View {
                     Image(systemName: "camera.fill")
                         .font(.system(size: DesignSystem.IconSize.lg))
                         .foregroundColor(DesignSystem.Colors.tertiaryText)
-                    Text("tap to add")
+                    Text(String(localized: "createLog.tapToAdd"))
                         .font(DesignSystem.Typography.caption2)
                         .foregroundColor(DesignSystem.Colors.tertiaryText)
                 }
@@ -257,7 +257,7 @@ struct CreateLogView: View {
                     Button {
                         viewModel.retryUpload(at: index)
                     } label: {
-                        Text("Retry")
+                        Text(String(localized: "common.retry"))
                             .font(DesignSystem.Typography.caption)
                             .foregroundColor(.white)
                             .padding(.horizontal, DesignSystem.Spacing.sm)
@@ -289,23 +289,29 @@ struct CreateLogView: View {
                     .foregroundColor(DesignSystem.Colors.primary)
 
                 if let recipe = viewModel.selectedRecipe {
-                    AsyncImage(url: URL(string: recipe.coverImageUrl ?? "")) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image.resizable().scaledToFill()
-                        case .failure:
-                            Image(systemName: "photo")
-                                .foregroundColor(DesignSystem.Colors.tertiaryText)
-                        case .empty:
-                            ProgressView()
-                        @unknown default:
-                            Rectangle().fill(DesignSystem.Colors.secondaryBackground)
+                    if let thumbnailUrl = recipe.coverImageUrl, let url = URL(string: thumbnailUrl) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().scaledToFill()
+                            case .failure, .empty:
+                                Image(systemName: "photo")
+                                    .foregroundColor(DesignSystem.Colors.tertiaryText)
+                            @unknown default:
+                                Rectangle().fill(DesignSystem.Colors.secondaryBackground)
+                            }
                         }
+                        .frame(width: 40, height: 40)
+                        .background(DesignSystem.Colors.secondaryBackground)
+                        .cornerRadius(DesignSystem.CornerRadius.xs)
+                        .clipped()
+                    } else {
+                        Image(systemName: "photo")
+                            .foregroundColor(DesignSystem.Colors.tertiaryText)
+                            .frame(width: 40, height: 40)
+                            .background(DesignSystem.Colors.secondaryBackground)
+                            .cornerRadius(DesignSystem.CornerRadius.xs)
                     }
-                    .frame(width: 40, height: 40)
-                    .background(DesignSystem.Colors.secondaryBackground)
-                    .cornerRadius(DesignSystem.CornerRadius.xs)
-                    .clipped()
 
                     Text(recipe.title)
                         .font(DesignSystem.Typography.subheadline)
@@ -323,7 +329,7 @@ struct CreateLogView: View {
                             .clipShape(Circle())
                     }
                 } else {
-                    Text("Link a recipe")
+                    Text(String(localized: "createLog.linkRecipe"))
                         .font(DesignSystem.Typography.body)
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                     Spacer()
@@ -349,7 +355,7 @@ struct CreateLogView: View {
                 }
                 .overlay(alignment: .topLeading) {
                     if viewModel.content.isEmpty {
-                        Text("Write about your cooking...")
+                        Text(String(localized: "createLog.descriptionPlaceholder"))
                             .font(DesignSystem.Typography.body)
                             .foregroundColor(DesignSystem.Colors.tertiaryText)
                             .padding(.top, 8)
@@ -375,7 +381,7 @@ struct CreateLogView: View {
                 Image(systemName: "number")
                     .foregroundColor(DesignSystem.Colors.primary)
 
-                TextField("Add hashtag", text: $hashtagInput)
+                TextField(String(localized: "createLog.addHashtag"), text: $hashtagInput)
                     .textFieldStyle(.plain)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
@@ -436,7 +442,7 @@ struct CreateLogView: View {
         HStack {
             Image(systemName: viewModel.isPrivate ? "lock.fill" : "lock.open")
                 .foregroundColor(DesignSystem.Colors.primary)
-            Text(viewModel.isPrivate ? "Private" : "Public")
+            Text(viewModel.isPrivate ? String(localized: "filter.private") : String(localized: "filter.public"))
                 .font(DesignSystem.Typography.body)
                 .foregroundColor(DesignSystem.Colors.text)
             Spacer()
@@ -546,7 +552,7 @@ struct RecipeSearchView: View {
             HStack(spacing: DesignSystem.Spacing.sm) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(DesignSystem.Colors.secondaryText)
-                TextField("Search recipes...", text: $viewModel.query)
+                TextField(String(localized: "createLog.searchRecipes"), text: $viewModel.query)
                     .textFieldStyle(.plain)
                     .focused($isSearchFocused)
                     .submitLabel(.search)
@@ -586,15 +592,15 @@ struct RecipeSearchView: View {
                                 recipeRow(recipe)
                             }
                         } header: {
-                            Text("Recently Viewed")
+                            Text(String(localized: "createLog.recentlyViewed"))
                                 .font(DesignSystem.Typography.subheadline)
                                 .foregroundColor(DesignSystem.Colors.secondaryText)
                         }
                     } else {
                         ContentUnavailableView(
-                            "No Recent Recipes",
+                            String(localized: "createLog.noRecentRecipes"),
                             systemImage: "clock",
-                            description: Text("Recipes you've viewed will appear here")
+                            description: Text(String(localized: "createLog.noRecentRecipesDescription"))
                         )
                     }
                 } else {
@@ -617,7 +623,7 @@ struct RecipeSearchView: View {
             }
             .listStyle(.plain)
         }
-        .navigationTitle("Search Recipes")
+        .navigationTitle(String(localized: "createLog.searchRecipesTitle"))
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: viewModel.query) { _, newValue in
             if !newValue.isEmpty {

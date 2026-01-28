@@ -23,25 +23,25 @@ struct BlockReportMenu: View {
                 .contentShape(Rectangle())
         }
         .confirmationDialog("", isPresented: $showActionSheet, titleVisibility: .hidden) {
-            Button("Block @\(targetUsername)", role: .destructive) {
+            Button("\(String(localized: "menu.block")) @\(targetUsername)", role: .destructive) {
                 showBlockConfirmation = true
             }
-            Button("Report", role: .destructive) {
+            Button(String(localized: "menu.report"), role: .destructive) {
                 showReportSheet = true
             }
-            Button("Cancel", role: .cancel) { }
+            Button(String(localized: "common.cancel"), role: .cancel) { }
         }
-        .alert("Block @\(targetUsername)?", isPresented: $showBlockConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Block", role: .destructive) { onBlock() }
+        .alert("\(String(localized: "menu.block")) @\(targetUsername)?", isPresented: $showBlockConfirmation) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+            Button(String(localized: "menu.block"), role: .destructive) { onBlock() }
         } message: {
-            Text("You won't see their content anymore. They won't be notified.")
+            Text(String(localized: "menu.blockMessage"))
         }
-        .confirmationDialog("Report", isPresented: $showReportSheet, titleVisibility: .visible) {
+        .confirmationDialog(String(localized: "menu.report"), isPresented: $showReportSheet, titleVisibility: .visible) {
             ForEach(ReportReason.allCases, id: \.self) { reason in
                 Button(reason.displayText) { onReport(reason) }
             }
-            Button("Cancel", role: .cancel) { }
+            Button(String(localized: "common.cancel"), role: .cancel) { }
         }
     }
 }
@@ -70,28 +70,28 @@ struct BlockReportShareMenu: View {
                 .contentShape(Rectangle())
         }
         .confirmationDialog("", isPresented: $showActionSheet, titleVisibility: .hidden) {
-            Button("Share") {
+            Button(String(localized: "menu.share")) {
                 showShareSheet = true
             }
-            Button("Block @\(targetUsername)", role: .destructive) {
+            Button("\(String(localized: "menu.block")) @\(targetUsername)", role: .destructive) {
                 showBlockConfirmation = true
             }
-            Button("Report", role: .destructive) {
+            Button(String(localized: "menu.report"), role: .destructive) {
                 showReportSheet = true
             }
-            Button("Cancel", role: .cancel) { }
+            Button(String(localized: "common.cancel"), role: .cancel) { }
         }
-        .alert("Block @\(targetUsername)?", isPresented: $showBlockConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Block", role: .destructive) { onBlock() }
+        .alert("\(String(localized: "menu.block")) @\(targetUsername)?", isPresented: $showBlockConfirmation) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+            Button(String(localized: "menu.block"), role: .destructive) { onBlock() }
         } message: {
-            Text("You won't see their content anymore. They won't be notified.")
+            Text(String(localized: "menu.blockMessage"))
         }
-        .confirmationDialog("Report", isPresented: $showReportSheet, titleVisibility: .visible) {
+        .confirmationDialog(String(localized: "menu.report"), isPresented: $showReportSheet, titleVisibility: .visible) {
             ForEach(ReportReason.allCases, id: \.self) { reason in
                 Button(reason.displayText) { onReport(reason) }
             }
-            Button("Cancel", role: .cancel) { }
+            Button(String(localized: "common.cancel"), role: .cancel) { }
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [shareURL])

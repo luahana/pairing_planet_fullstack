@@ -277,17 +277,17 @@ enum MeasurementPreference: String, Codable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .original: return "Original"
-        case .metric: return "Metric"
-        case .us: return "US"
+        case .original: return String(localized: "units.original")
+        case .metric: return String(localized: "units.metric")
+        case .us: return String(localized: "units.us")
         }
     }
 
     var description: String {
         switch self {
-        case .original: return "As written in recipe"
-        case .metric: return "grams, milliliters"
-        case .us: return "cups, ounces"
+        case .original: return String(localized: "units.originalDescription")
+        case .metric: return String(localized: "units.metricDescription")
+        case .us: return String(localized: "units.usDescription")
         }
     }
 
@@ -340,11 +340,11 @@ enum ReportReason: String, Codable, CaseIterable {
 
     var displayText: String {
         switch self {
-        case .spam: return "Spam"
-        case .harassment: return "Harassment or bullying"
-        case .inappropriateContent: return "Inappropriate content"
-        case .impersonation: return "Impersonation"
-        case .other: return "Other"
+        case .spam: return String(localized: "report.spam")
+        case .harassment: return String(localized: "report.harassment")
+        case .inappropriateContent: return String(localized: "report.inappropriateContent")
+        case .impersonation: return String(localized: "report.impersonation")
+        case .other: return String(localized: "report.other")
         }
     }
 }

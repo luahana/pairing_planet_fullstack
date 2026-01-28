@@ -99,13 +99,13 @@ struct ProfileView: View {
             Image(systemName: AppIcon.profileOutline)
                 .font(.system(size: DesignSystem.IconSize.xxl))
                 .foregroundColor(DesignSystem.Colors.tertiaryText)
-            Text("Sign in to view your profile")
+            Text(String(localized: "profile.signInPrompt"))
                 .font(DesignSystem.Typography.body)
                 .foregroundColor(DesignSystem.Colors.secondaryText)
             Button {
                 appState.showLoginSheet = true
             } label: {
-                Text("Sign In")
+                Text(String(localized: "profile.signIn"))
                     .font(DesignSystem.Typography.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, DesignSystem.Spacing.xl)
@@ -243,14 +243,14 @@ struct ProfileView: View {
 
     private var statsRow: some View {
         HStack(spacing: 0) {
-            ProfileStatItem(count: recipeCount, label: "Recipes")
-            ProfileStatItem(count: logCount, label: "Logs")
+            ProfileStatItem(count: recipeCount, label: String(localized: "profile.recipes"))
+            ProfileStatItem(count: logCount, label: String(localized: "profile.logs"))
             NavigationLink(value: ProfileNavDestination.followers(userId: userId ?? viewModel.myProfile?.id ?? "")) {
-                ProfileStatItem(count: followerCount, label: "Followers")
+                ProfileStatItem(count: followerCount, label: String(localized: "profile.followers"))
             }
             .buttonStyle(.plain)
             NavigationLink(value: ProfileNavDestination.following(userId: userId ?? viewModel.myProfile?.id ?? "")) {
-                ProfileStatItem(count: followingCount, label: "Following")
+                ProfileStatItem(count: followingCount, label: String(localized: "profile.following"))
             }
             .buttonStyle(.plain)
         }
@@ -280,7 +280,7 @@ struct ProfileView: View {
     private var tabBar: some View {
         HStack(spacing: 0) {
             ProfileTabButton(
-                title: "Recipes",
+                title: String(localized: "profile.recipes"),
                 count: recipeCount,
                 isSelected: viewModel.selectedTab == .recipes
             ) {
@@ -288,7 +288,7 @@ struct ProfileView: View {
             }
 
             ProfileTabButton(
-                title: "Logs",
+                title: String(localized: "profile.logs"),
                 count: logCount,
                 isSelected: viewModel.selectedTab == .logs
             ) {
@@ -297,7 +297,7 @@ struct ProfileView: View {
 
             if viewModel.isOwnProfile {
                 ProfileTabButton(
-                    title: "Saved",
+                    title: String(localized: "profile.saved"),
                     count: viewModel.savedCount,
                     isSelected: viewModel.selectedTab == .saved
                 ) {
@@ -600,13 +600,13 @@ struct ProfileView: View {
 
     private var emptyMessage: String {
         switch viewModel.selectedTab {
-        case .recipes: return "No recipes yet"
-        case .logs: return "No cooking logs yet"
+        case .recipes: return String(localized: "profile.noRecipes")
+        case .logs: return String(localized: "profile.noLogs")
         case .saved:
             switch viewModel.savedContentFilter {
-            case .all: return "No saved items yet"
-            case .recipes: return "No saved recipes yet"
-            case .logs: return "No saved logs yet"
+            case .all: return String(localized: "profile.noSaved")
+            case .recipes: return String(localized: "profile.noSavedRecipes")
+            case .logs: return String(localized: "profile.noSavedLogs")
             }
         }
     }

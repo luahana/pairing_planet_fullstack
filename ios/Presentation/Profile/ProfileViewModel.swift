@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Combine
 
 enum ProfileState: Equatable { case idle, loading, loaded, error(String) }
@@ -8,9 +9,9 @@ enum VisibilityFilter: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .all: return "All"
-        case .publicOnly: return "Public"
-        case .privateOnly: return "Private"
+        case .all: return String(localized: "filter.all")
+        case .publicOnly: return String(localized: "filter.public")
+        case .privateOnly: return String(localized: "filter.private")
         }
     }
 }
@@ -20,9 +21,9 @@ enum SavedContentFilter: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .all: return "All"
-        case .recipes: return "Recipes"
-        case .logs: return "Logs"
+        case .all: return String(localized: "filter.all")
+        case .recipes: return String(localized: "profile.recipes")
+        case .logs: return String(localized: "profile.logs")
         }
     }
 }

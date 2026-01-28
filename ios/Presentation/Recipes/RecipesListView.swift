@@ -226,7 +226,7 @@ struct RecipeFiltersView: View {
                     HStack(spacing: DesignSystem.Spacing.xs) {
                         Image(systemName: AppIcon.timer)
                             .foregroundColor(DesignSystem.Colors.primary)
-                        Text("Cooking Time")
+                        Text(String(localized: "filter.cookingTime"))
                             .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
@@ -258,7 +258,7 @@ struct RecipeFiltersView: View {
                     HStack(spacing: DesignSystem.Spacing.xs) {
                         Image(systemName: AppIcon.servings)
                             .foregroundColor(DesignSystem.Colors.primary)
-                        Text("Servings")
+                        Text(String(localized: "filter.servings"))
                             .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
@@ -270,7 +270,7 @@ struct RecipeFiltersView: View {
                     HStack(spacing: DesignSystem.Spacing.xs) {
                         Image(systemName: AppIcon.chef)
                             .foregroundColor(DesignSystem.Colors.primary)
-                        Text("Cooking Style")
+                        Text(String(localized: "filter.cookingStyle"))
                             .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
