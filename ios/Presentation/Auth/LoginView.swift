@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
     @StateObject private var viewModel: LoginViewModel
@@ -174,7 +175,7 @@ final class LoginViewModel: ObservableObject {
             self.error = apiError.errorDescription ?? "Unknown API error"
         } catch {
             print("[Login] Other error: \(type(of: error)) - \(error)")
-            self.error = String(describing: error)
+            self.error = Self.userFriendlyError(from: error)
         }
 
         isLoading = false
@@ -192,7 +193,7 @@ final class LoginViewModel: ObservableObject {
             try await authManager.loginWithFirebase(token: firebaseToken)
             isAuthenticated = true
         } catch {
-            self.error = error.localizedDescription
+            self.error = Self.userFriendlyError(from: error)
         }
 
         isLoading = false
@@ -200,6 +201,58 @@ final class LoginViewModel: ObservableObject {
 
     func clearError() {
         error = nil
+    }
+
+    // MARK: - Error Handling
+
+    private static func userFriendlyError(from error: Error) -> String? {
+        let nsError = error as NSError
+
+        // Google Sign-In errors (domain: com.google.GIDSignIn)
+        if nsError.domain == "com.google.GIDSignIn" {
+            switch nsError.code {
+            case -5: // User canceled
+                return nil
+            case -4: // No current user / sign-in required
+                return "Please sign in again"
+            case -2: // Keychain error
+                return "Authentication error. Please try again"
+            case -1: // Unknown error
+                return "Sign-in failed. Please try again"
+            default:
+                return "Sign-in failed. Please try again"
+            }
+        }
+
+        // Apple Sign-In errors (domain: com.apple.AuthenticationServices.AuthorizationError)
+        if nsError.domain == "com.apple.AuthenticationServices.AuthorizationError" ||
+           nsError.domain == ASAuthorizationError.errorDomain {
+            switch nsError.code {
+            case 1001: // User canceled
+                return nil
+            case 1000: // Unknown
+                return "Sign-in failed. Please try again"
+            case 1002: // Invalid response
+                return "Invalid response from Apple. Please try again"
+            case 1003: // Not handled
+                return "Sign-in not available"
+            default:
+                return "Sign-in failed. Please try again"
+            }
+        }
+
+        // Firebase errors
+        if nsError.domain.contains("firebase") || nsError.domain.contains("Firebase") {
+            return "Authentication failed. Please try again"
+        }
+
+        // Generic fallback - use localized description if reasonable length
+        let localizedDesc = error.localizedDescription
+        if localizedDesc.count < 100 && !localizedDesc.contains("Domain=") {
+            return localizedDesc
+        }
+
+        return "Something went wrong. Please try again"
     }
 }
 
