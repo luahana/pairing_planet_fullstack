@@ -159,6 +159,17 @@ struct RecipeDetailView: View {
                         .font(DesignSystem.Typography.body)
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
+
+                // Hashtags
+                if let hashtags = recipe.hashtags, !hashtags.isEmpty {
+                    FlowLayout(spacing: DesignSystem.Spacing.xs) {
+                        ForEach(hashtags, id: \.self) { tag in
+                            Text("#\(tag)")
+                                .font(DesignSystem.Typography.subheadline)
+                                .foregroundColor(DesignSystem.Colors.primary)
+                        }
+                    }
+                }
             }
             .padding(DesignSystem.Spacing.md)
             .background(DesignSystem.Colors.background)
@@ -174,19 +185,6 @@ struct RecipeDetailView: View {
 
             // Cooking Logs Section (Icon header)
             cookingLogsSectionCard(recipe)
-
-            // Hashtags
-            if let hashtags = recipe.hashtags, !hashtags.isEmpty {
-                FlowLayout(spacing: DesignSystem.Spacing.xs) {
-                    ForEach(hashtags, id: \.self) { tag in
-                        Text("#\(tag)")
-                            .font(DesignSystem.Typography.subheadline)
-                            .foregroundColor(DesignSystem.Colors.primary)
-                    }
-                }
-                .padding(.horizontal)
-            }
-
         }
         .padding(.bottom, DesignSystem.Spacing.xl)
         .safeAreaPadding(.bottom)
