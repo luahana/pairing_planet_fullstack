@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @State private var showLogoutConfirmation = false
     @State private var showDeleteAccountConfirmation = false
+    @State private var showEmailCopiedAlert = false
 
     var body: some View {
         List {
@@ -114,14 +115,23 @@ struct SettingsView: View {
         } message: {
             Text("This action cannot be undone. All your data will be permanently deleted.")
         }
+        .alert("Email Copied", isPresented: $showEmailCopiedAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("contact@cookstemma.com has been copied to your clipboard.")
+        }
     }
 
     private func sendFeedbackEmail() {
         let email = "contact@cookstemma.com"
         let subject = "Cookstemma Feedback"
         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? subject
-        if let url = URL(string: "mailto:\(email)?subject=\(encodedSubject)") {
+        if let url = URL(string: "mailto:\(email)?subject=\(encodedSubject)"),
+           UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
+        } else {
+            UIPasteboard.general.string = email
+            showEmailCopiedAlert = true
         }
     }
 }
