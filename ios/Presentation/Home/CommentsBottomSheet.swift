@@ -253,7 +253,7 @@ struct CommentRow: View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
             HStack(alignment: .top) {
                 NavigationLink(destination: ProfileView(userId: comment.author.id)) {
-                    AvatarView(url: comment.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
+                    AvatarView(url: comment.author.avatarUrl, name: comment.author.username, size: DesignSystem.AvatarSize.xs)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack {
@@ -346,7 +346,7 @@ struct ReplyRow: View {
     var body: some View {
         HStack(alignment: .top) {
             NavigationLink(destination: ProfileView(userId: reply.author.id)) {
-                AvatarView(url: reply.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
+                AvatarView(url: reply.author.avatarUrl, name: reply.author.username, size: DesignSystem.AvatarSize.xs)
             }
             VStack(alignment: .leading, spacing: 2) {
                 HStack {

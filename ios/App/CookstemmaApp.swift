@@ -30,7 +30,9 @@ struct CookstemmaApp: App {
             Group {
                 switch authManager.authState {
                 case .unknown:
-                    SplashView()
+                    // Empty view matching LaunchScreen.storyboard for seamless transition
+                    Color(.systemBackground)
+                        .ignoresSafeArea()
                 case .authenticated, .unauthenticated:
                     MainTabView()
                         .sheet(isPresented: $appState.showLoginSheet) {

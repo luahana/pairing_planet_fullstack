@@ -255,16 +255,64 @@ struct PhotoGrid: View {
 // MARK: - Avatar View
 struct AvatarView: View {
     let url: String?
+    var name: String? = nil
     var size: CGFloat = DesignSystem.AvatarSize.md
 
+    /// Check if URL is valid (starts with http/https)
+    private var isValidUrl: Bool {
+        guard let url = url, !url.isEmpty else { return false }
+        return url.hasPrefix("http://") || url.hasPrefix("https://")
+    }
+
+    /// Get the initial letter from name
+    private var initial: String {
+        guard let name = name, !name.isEmpty else { return "" }
+        let cleanName = name.hasPrefix("@") ? String(name.dropFirst()) : name
+        return String(cleanName.prefix(1)).uppercased()
+    }
+
     var body: some View {
-        AsyncImage(url: URL(string: url ?? "")) { image in image.resizable().scaledToFill() }
-            placeholder: {
-                Circle().fill(DesignSystem.Colors.secondaryBackground)
-                    .overlay(Image(systemName: "person.fill").foregroundColor(DesignSystem.Colors.tertiaryText))
+        Group {
+            if isValidUrl {
+                AsyncImage(url: URL(string: url!)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure:
+                        fallbackView
+                    case .empty:
+                        ProgressView()
+                    @unknown default:
+                        fallbackView
+                    }
+                }
+            } else {
+                fallbackView
             }
-            .frame(width: size, height: size)
-            .clipShape(Circle())
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+    }
+
+    @ViewBuilder
+    private var fallbackView: some View {
+        if !initial.isEmpty {
+            Circle()
+                .fill(DesignSystem.Colors.primary.opacity(0.15))
+                .overlay(
+                    Text(initial)
+                        .font(.system(size: size * 0.4, weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                )
+        } else {
+            Circle()
+                .fill(DesignSystem.Colors.secondaryBackground)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .font(.system(size: size * 0.4))
+                        .foregroundColor(DesignSystem.Colors.tertiaryText)
+                )
+        }
     }
 }
 

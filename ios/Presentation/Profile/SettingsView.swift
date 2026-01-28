@@ -469,7 +469,7 @@ struct BlockedUsersView: View {
                     List {
                         ForEach(viewModel.blockedUsers) { user in
                             HStack {
-                                AvatarView(url: user.avatarUrl, size: DesignSystem.AvatarSize.sm)
+                                AvatarView(url: user.avatarUrl, name: user.username, size: DesignSystem.AvatarSize.sm)
                                 Text("@\(user.username)")
                                     .font(DesignSystem.Typography.subheadline)
                                 Spacer()

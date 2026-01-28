@@ -136,7 +136,7 @@ struct RecipeDetailView: View {
                 // Author row (icon-focused)
                 NavigationLink(destination: ProfileView(userId: recipe.author.id)) {
                     HStack(spacing: DesignSystem.Spacing.sm) {
-                        AvatarView(url: recipe.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
+                        AvatarView(url: recipe.author.avatarUrl, name: recipe.author.username, size: DesignSystem.AvatarSize.xs)
                         Text("@\(recipe.author.username)")
                             .font(DesignSystem.Typography.caption)
                             .foregroundColor(DesignSystem.Colors.secondaryText)

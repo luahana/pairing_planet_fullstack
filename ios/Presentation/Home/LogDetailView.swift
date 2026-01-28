@@ -144,7 +144,7 @@ struct LogDetailView: View {
             HStack {
                 NavigationLink(destination: ProfileView(userId: log.author.id)) {
                     HStack {
-                        AvatarView(url: log.author.avatarUrl, size: DesignSystem.AvatarSize.sm)
+                        AvatarView(url: log.author.avatarUrl, name: log.author.username, size: DesignSystem.AvatarSize.sm)
                         VStack(alignment: .leading) {
                             Text(log.author.displayNameOrUsername).font(DesignSystem.Typography.subheadline).fontWeight(.medium)
                             Text(log.createdAt.timeAgo()).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)

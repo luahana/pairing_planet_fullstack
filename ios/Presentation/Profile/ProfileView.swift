@@ -169,6 +169,7 @@ struct ProfileView: View {
                 url: viewModel.isOwnProfile
                     ? viewModel.myProfile?.avatarUrl
                     : viewModel.profile?.avatarUrl,
+                name: username,
                 size: DesignSystem.AvatarSize.xl
             )
 

@@ -81,7 +81,7 @@ struct FollowUserRow: View {
 
     var body: some View {
         HStack {
-            AvatarView(url: user.avatarUrl, size: DesignSystem.AvatarSize.sm)
+            AvatarView(url: user.avatarUrl, name: user.username, size: DesignSystem.AvatarSize.sm)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.displayName ?? user.username)
