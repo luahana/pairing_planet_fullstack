@@ -185,6 +185,7 @@ struct ThemeSettingsView: View {
         case .dark: return "moon"
         }
     }
+}
 
 // MARK: - Settings Subviews
 struct EditProfileView: View {
@@ -371,16 +372,8 @@ struct NotificationSettingsView: View {
                 Toggle("Comments & Replies", isOn: $commentsEnabled)
                 Toggle("New Followers", isOn: $followersEnabled)
                 Toggle("New Saved", isOn: $newSavedEnabled)
-            }
-
-            Section {
                 Toggle("New Cooking Logs", isOn: $newCookingLogsEnabled)
                 Toggle("New Variant Recipes", isOn: $newVariantRecipesEnabled)
-            } header: {
-                Text("Recipe Activity")
-            } footer: {
-                Text("Notify when another user adds a cooking log or variant recipe of your recipe")
-                    .font(DesignSystem.Typography.caption)
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
