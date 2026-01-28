@@ -285,60 +285,150 @@ struct ProfileView: View {
         }
     }
 
-    // MARK: - Content Grid
+    // MARK: - Content Grid with Swipe Animation
     @ViewBuilder
     private var contentGrid: some View {
-        VStack(spacing: 0) {
-            LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
-                switch viewModel.selectedTab {
-                case .recipes:
-                    ForEach(viewModel.recipes) { recipe in
-                        NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
-                            RecipeGridCard(recipe: recipe)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                case .logs:
-                    ForEach(viewModel.logs) { log in
-                        NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
-                            LogGridCard(log: log)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                case .saved:
-                    savedContent
+        if viewModel.selectedTab == .saved {
+            // Saved tab with swipeable filter pages
+            TabView(selection: $viewModel.savedContentFilter) {
+                ForEach(SavedContentFilter.allCases, id: \.self) { filter in
+                    savedFilterContent(for: filter)
+                        .tag(filter)
                 }
             }
-            .padding(.horizontal, DesignSystem.Spacing.md)
-
-            if viewModel.isLoadingContent {
-                ProgressView()
-                    .padding()
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(minHeight: 300)
+        } else {
+            // Recipes/Logs tab with swipeable visibility filter pages
+            TabView(selection: $viewModel.visibilityFilter) {
+                ForEach(VisibilityFilter.allCases, id: \.self) { filter in
+                    visibilityFilterContent(for: filter)
+                        .tag(filter)
+                }
             }
-
-            if isEmpty {
-                emptyState
-            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(minHeight: 300)
         }
     }
 
     @ViewBuilder
-    private var savedContent: some View {
-        if viewModel.savedContentFilter != .logs {
-            ForEach(viewModel.savedRecipes) { recipe in
-                NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
-                    RecipeGridCard(recipe: recipe, showSavedBadge: true)
+    private func visibilityFilterContent(for filter: VisibilityFilter) -> some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
+                    switch viewModel.selectedTab {
+                    case .recipes:
+                        ForEach(viewModel.recipes) { recipe in
+                            NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
+                                RecipeGridCard(recipe: recipe)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    case .logs:
+                        ForEach(viewModel.logs) { log in
+                            NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
+                                LogGridCard(log: log)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    case .saved:
+                        EmptyView()
+                    }
                 }
-                .buttonStyle(.plain)
+                .padding(.horizontal, DesignSystem.Spacing.md)
+
+                if viewModel.isLoadingContent {
+                    ProgressView()
+                        .padding()
+                }
+
+                if isEmptyForCurrentTab {
+                    emptyState
+                }
+            }
+            .padding(.bottom, DesignSystem.Spacing.xl)
+        }
+    }
+
+    @ViewBuilder
+    private func savedFilterContent(for filter: SavedContentFilter) -> some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
+                    if filter != .logs {
+                        ForEach(viewModel.savedRecipes) { recipe in
+                            NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
+                                RecipeGridCard(recipe: recipe, showSavedBadge: true)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    if filter != .recipes {
+                        ForEach(viewModel.savedLogs) { log in
+                            NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
+                                LogGridCard(log: log, showSavedBadge: true)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(.horizontal, DesignSystem.Spacing.md)
+
+                if viewModel.isLoadingContent {
+                    ProgressView()
+                        .padding()
+                }
+
+                if isEmptyForSavedFilter(filter) {
+                    savedEmptyState(for: filter)
+                }
+            }
+            .padding(.bottom, DesignSystem.Spacing.xl)
+        }
+    }
+
+    private func isEmptyForSavedFilter(_ filter: SavedContentFilter) -> Bool {
+        switch filter {
+        case .all:
+            return viewModel.savedRecipes.isEmpty && viewModel.savedLogs.isEmpty && !viewModel.isLoadingContent
+        case .recipes:
+            return viewModel.savedRecipes.isEmpty && !viewModel.isLoadingContent
+        case .logs:
+            return viewModel.savedLogs.isEmpty && !viewModel.isLoadingContent
+        }
+    }
+
+    @ViewBuilder
+    private func savedEmptyState(for filter: SavedContentFilter) -> some View {
+        VStack(spacing: DesignSystem.Spacing.xs) {
+            switch filter {
+            case .all:
+                Image(systemName: AppIcon.saveOutline)
+                    .font(.system(size: DesignSystem.IconSize.xxl))
+                    .foregroundColor(DesignSystem.Colors.tertiaryText)
+                Text("No saved items yet")
+            case .recipes:
+                Image(systemName: AppIcon.recipe)
+                    .font(.system(size: DesignSystem.IconSize.xxl))
+                    .foregroundColor(DesignSystem.Colors.tertiaryText)
+                Text("No saved recipes yet")
+            case .logs:
+                LogoIconView(size: 80, color: DesignSystem.Colors.tertiaryText, useOriginalColors: false)
+                    .padding(.vertical, -16)
+                Text("No saved logs yet")
             }
         }
-        if viewModel.savedContentFilter != .recipes {
-            ForEach(viewModel.savedLogs) { log in
-                NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
-                    LogGridCard(log: log, showSavedBadge: true)
-                }
-                .buttonStyle(.plain)
-            }
+        .font(DesignSystem.Typography.body)
+        .foregroundColor(DesignSystem.Colors.tertiaryText)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DesignSystem.Spacing.xxl)
+    }
+
+    private var isEmptyForCurrentTab: Bool {
+        switch viewModel.selectedTab {
+        case .recipes: return viewModel.recipes.isEmpty && !viewModel.isLoadingContent
+        case .logs: return viewModel.logs.isEmpty && !viewModel.isLoadingContent
+        case .saved: return false // Handled separately
         }
     }
 

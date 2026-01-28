@@ -1006,12 +1006,24 @@ struct HashtagView: View {
 
     @ViewBuilder
     private var contentGrid: some View {
-        if viewModel.filteredItems.isEmpty {
-            emptyStateView
+        TabView(selection: $viewModel.contentFilter) {
+            ForEach(HashtagContentFilter.allCases, id: \.self) { filter in
+                filterPageContent(for: filter)
+                    .tag(filter)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+    }
+
+    @ViewBuilder
+    private func filterPageContent(for filter: HashtagContentFilter) -> some View {
+        let items = itemsForFilter(filter)
+        if items.isEmpty {
+            emptyStateForFilter(filter)
         } else {
             ScrollView {
                 LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
-                    ForEach(viewModel.filteredItems) { item in
+                    ForEach(items) { item in
                         NavigationLink(value: item.isRecipe
                             ? SearchNavDestination.recipe(id: item.id)
                             : SearchNavDestination.log(id: item.id)
@@ -1027,9 +1039,17 @@ struct HashtagView: View {
         }
     }
 
+    private func itemsForFilter(_ filter: HashtagContentFilter) -> [HashtagContentItem] {
+        switch filter {
+        case .all: return viewModel.items
+        case .recipes: return viewModel.items.filter { $0.isRecipe }
+        case .logs: return viewModel.items.filter { $0.isLog }
+        }
+    }
+
     @ViewBuilder
-    private var emptyStateView: some View {
-        switch viewModel.contentFilter {
+    private func emptyStateForFilter(_ filter: HashtagContentFilter) -> some View {
+        switch filter {
         case .all:
             emptyState(icon: "number", message: "No content with this hashtag")
         case .recipes:
