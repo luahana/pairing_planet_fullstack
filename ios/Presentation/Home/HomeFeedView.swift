@@ -56,7 +56,8 @@ struct HomeFeedView: View {
             }
         }
         .padding(.horizontal, DesignSystem.Spacing.md)
-        .padding(.vertical, DesignSystem.Spacing.sm)
+        .padding(.top, DesignSystem.Spacing.xs)
+        .padding(.bottom, 0)
     }
 
     @ViewBuilder
@@ -72,6 +73,7 @@ struct HomeFeedView: View {
                     Color.clear.frame(height: 0).id("home-top")
                     feedContent
                 }
+                .contentMargins(.top, 0, for: .scrollContent)
                 .refreshable {
                     await viewModel.refresh()
                 }
