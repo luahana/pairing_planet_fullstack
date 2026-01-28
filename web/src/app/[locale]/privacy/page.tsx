@@ -206,7 +206,7 @@ export default function PrivacyPolicyPage() {
           contact us at:
         </p>
         <p className="text-gray-700">
-          <strong>Email:</strong> privacy@cookstemma.com
+          <strong>Email:</strong> contact@cookstemma.com
         </p>
       </section>
 
