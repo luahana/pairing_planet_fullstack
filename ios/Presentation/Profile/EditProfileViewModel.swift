@@ -191,16 +191,17 @@ final class EditProfileViewModel: ObservableObject {
 
         let result = await userRepository.updateProfile(request)
 
-        isSubmitting = false
-
         switch result {
-        case .success(let profile):
-            initialUsername = profile.username
+        case .success:
+            // Reload profile to get fresh data
+            await loadProfile()
             usernameAvailable = nil
             saveSuccess = true
         case .failure(let error):
             self.error = error.localizedDescription
         }
+
+        isSubmitting = false
     }
 
     // MARK: - Reset
