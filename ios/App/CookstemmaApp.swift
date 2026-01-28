@@ -19,6 +19,7 @@ extension Notification.Name {
 struct CookstemmaApp: App {
     @StateObject private var authManager = AuthManager.shared
     @StateObject private var appState = AppState()
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
     init() {
         FirebaseService.shared.configure()
@@ -42,6 +43,7 @@ struct CookstemmaApp: App {
             }
             .environmentObject(authManager)
             .environmentObject(appState)
+            .preferredColorScheme(appTheme.colorScheme)
             .animation(.easeInOut(duration: 0.3), value: authManager.authState)
             .onAppear {
                 setupAppearance()

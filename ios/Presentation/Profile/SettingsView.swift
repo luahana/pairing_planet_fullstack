@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @State private var showLogoutConfirmation = false
     @State private var showDeleteAccountConfirmation = false
 
@@ -22,6 +23,13 @@ struct SettingsView: View {
 
             // Preferences section
             Section("Preferences") {
+                NavigationLink(destination: ThemeSettingsView()) {
+                    HStack {
+                        Label("Theme", systemImage: "circle.lefthalf.filled")
+                        Spacer()
+                        Text(appTheme.displayName).foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
+                }
                 NavigationLink(destination: LanguageSettingsView()) {
                     HStack {
                         Label("Language", systemImage: "globe")
@@ -40,7 +48,9 @@ struct SettingsView: View {
 
             // Support section
             Section("Support") {
-                Link(destination: URL(string: "https://cookstemma.com/feedback")!) {
+                Button {
+                    sendFeedbackEmail()
+                } label: {
                     Label("Send Feedback", systemImage: "envelope")
                 }
                 NavigationLink(destination: AboutView()) {
@@ -105,7 +115,76 @@ struct SettingsView: View {
             Text("This action cannot be undone. All your data will be permanently deleted.")
         }
     }
+
+    private func sendFeedbackEmail() {
+        let email = "contact@cookstemma.com"
+        let subject = "Cookstemma Feedback"
+        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? subject
+        if let url = URL(string: "mailto:\(email)?subject=\(encodedSubject)") {
+            UIApplication.shared.open(url)
+        }
+    }
 }
+
+// MARK: - App Theme
+enum AppTheme: String, CaseIterable {
+    case system
+    case light
+    case dark
+
+    var displayName: String {
+        switch self {
+        case .system: return "System"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+}
+
+struct ThemeSettingsView: View {
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
+
+    var body: some View {
+        List {
+            ForEach(AppTheme.allCases, id: \.self) { theme in
+                Button {
+                    appTheme = theme
+                } label: {
+                    HStack {
+                        Label {
+                            Text(theme.displayName)
+                        } icon: {
+                            Image(systemName: iconName(for: theme))
+                        }
+                        Spacer()
+                        if appTheme == theme {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(DesignSystem.Colors.primary)
+                        }
+                    }
+                }
+                .foregroundColor(DesignSystem.Colors.primaryText)
+            }
+        }
+        .contentMargins(.bottom, 80, for: .scrollContent)
+        .navigationTitle("Theme")
+    }
+
+    private func iconName(for theme: AppTheme) -> String {
+        switch theme {
+        case .system: return "circle.lefthalf.filled"
+        case .light: return "sun.max"
+        case .dark: return "moon"
+        }
+    }
 
 // MARK: - Settings Subviews
 struct EditProfileView: View {
