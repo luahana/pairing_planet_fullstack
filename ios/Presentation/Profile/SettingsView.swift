@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var authManager: AuthManager
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @AppStorage("userMeasurement") private var measurementPreference: MeasurementPreference = .original
     @State private var showLogoutConfirmation = false
     @State private var showDeleteAccountConfirmation = false
     @State private var showEmailCopiedAlert = false
@@ -42,7 +43,7 @@ struct SettingsView: View {
                     HStack {
                         Label("Units", systemImage: "ruler")
                         Spacer()
-                        Text("Metric").foregroundColor(DesignSystem.Colors.secondaryText)
+                        Text(measurementPreference.displayName).foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
             }
@@ -544,38 +545,54 @@ struct LanguageSettingsView: View {
     }
 }
 
+// MARK: - Measurement Preference
+enum MeasurementPreference: String, CaseIterable {
+    case original = "ORIGINAL"
+    case metric = "METRIC"
+    case us = "US"
+
+    var displayName: String {
+        switch self {
+        case .original: return "Original"
+        case .metric: return "Metric"
+        case .us: return "US"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .original: return "As written in recipe"
+        case .metric: return "grams, milliliters"
+        case .us: return "cups, ounces"
+        }
+    }
+}
+
 struct UnitsSettingsView: View {
-    @State private var useMetric = true
+    @AppStorage("userMeasurement") private var measurementPreference: MeasurementPreference = .original
 
     var body: some View {
         List {
-            Button {
-                useMetric = true
-            } label: {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Metric")
-                        Text("grams, milliliters, celsius").font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
+            ForEach(MeasurementPreference.allCases, id: \.self) { preference in
+                Button {
+                    measurementPreference = preference
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(preference.displayName)
+                            Text(preference.description)
+                                .font(DesignSystem.Typography.caption)
+                                .foregroundColor(DesignSystem.Colors.secondaryText)
+                        }
+                        Spacer()
+                        if measurementPreference == preference {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(DesignSystem.Colors.primary)
+                        }
                     }
-                    Spacer()
-                    if useMetric { Image(systemName: "checkmark").foregroundColor(DesignSystem.Colors.primary) }
                 }
+                .foregroundColor(DesignSystem.Colors.primaryText)
             }
-            .foregroundColor(DesignSystem.Colors.primaryText)
-
-            Button {
-                useMetric = false
-            } label: {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Imperial")
-                        Text("ounces, cups, fahrenheit").font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
-                    }
-                    Spacer()
-                    if !useMetric { Image(systemName: "checkmark").foregroundColor(DesignSystem.Colors.primary) }
-                }
-            }
-            .foregroundColor(DesignSystem.Colors.primaryText)
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
         .navigationTitle("Units")
