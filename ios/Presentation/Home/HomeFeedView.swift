@@ -18,9 +18,6 @@ struct HomeFeedView: View {
             .navigationDestination(for: String.self) { logId in
                 LogDetailView(logId: logId)
             }
-            .navigationDestination(for: NotificationDestination.self) { _ in
-                NotificationsView()
-            }
         }
         .onAppear { if case .idle = viewModel.state { viewModel.loadFeed() } }
         .onChange(of: appState.homeScrollToTopTrigger) { _, _ in
@@ -36,8 +33,7 @@ struct HomeFeedView: View {
         }
     }
 
-    // Placeholder type for notifications navigation
-    private struct NotificationDestination: Hashable {}
+    @State private var showNotifications = false
 
     private var homeHeader: some View {
         HStack {
@@ -51,8 +47,15 @@ struct HomeFeedView: View {
                     .foregroundColor(DesignSystem.Colors.text)
             }
             Spacer()
-            NavigationLink(value: NotificationDestination()) {
+            Button {
+                appState.requireAuth {
+                    showNotifications = true
+                }
+            } label: {
                 NotificationBadge(count: appState.unreadNotificationCount)
+            }
+            .navigationDestination(isPresented: $showNotifications) {
+                NotificationsView()
             }
         }
         .padding(.horizontal, DesignSystem.Spacing.md)
