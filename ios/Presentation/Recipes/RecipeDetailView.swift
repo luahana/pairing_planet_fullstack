@@ -30,7 +30,7 @@ struct RecipeDetailView: View {
                 
                 Spacer()
                 
-                HStack(spacing: DesignSystem.Spacing.sm) {
+                HStack(spacing: 0) {
                     // Save button (icon only) - requires auth
                     Button {
                         appState.requireAuth {
@@ -38,14 +38,20 @@ struct RecipeDetailView: View {
                         }
                     } label: {
                         Image(systemName: viewModel.isSaved ? AppIcon.save : AppIcon.saveOutline)
+                            .font(.system(size: 18))
                             .foregroundColor(viewModel.isSaved ? DesignSystem.Colors.bookmark : DesignSystem.Colors.secondaryText)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
 
                     // Share button (icon only)
                     if let url = viewModel.shareRecipe() {
                         ShareLink(item: url) {
                             Image(systemName: AppIcon.share)
+                                .font(.system(size: 18))
                                 .foregroundColor(DesignSystem.Colors.text)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
                     }
 
@@ -60,7 +66,7 @@ struct RecipeDetailView: View {
                         )
                     }
                 }
-                .padding(.trailing, DesignSystem.Spacing.md)
+                .padding(.trailing, DesignSystem.Spacing.xs)
             }
             .padding(.vertical, DesignSystem.Spacing.sm)
             .background(DesignSystem.Colors.background)
@@ -97,7 +103,8 @@ struct RecipeDetailView: View {
             CreateLogView(recipe: viewModel.recipeSummary)
         }
         .background(DesignSystem.Colors.secondaryBackground)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .onAppear { if case .idle = viewModel.state { viewModel.loadRecipe() } }
     }
 

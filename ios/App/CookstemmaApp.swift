@@ -9,6 +9,10 @@ extension Notification.Name {
     /// Posted when a log's save state changes
     /// userInfo: ["logId": String, "isSaved": Bool]
     static let logSaveStateChanged = Notification.Name("logSaveStateChanged")
+
+    /// Posted when a log is deleted
+    /// userInfo: ["logId": String]
+    static let logDeleted = Notification.Name("logDeleted")
 }
 
 @main

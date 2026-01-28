@@ -17,104 +17,118 @@ struct CreateLogView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    // Recipe Link Section (moved to top)
-                    recipeLinkSection
-                        .padding(.horizontal, DesignSystem.Spacing.md)
-                        .padding(.vertical, DesignSystem.Spacing.md)
-
-                    Divider()
-
-                    // Photo Section
-                    photoSection
-                        .padding(.horizontal, DesignSystem.Spacing.md)
-                        .padding(.vertical, DesignSystem.Spacing.lg)
-
-                    Divider()
-
-                    // Rating Section
-                    ratingSection
-                        .padding(.horizontal, DesignSystem.Spacing.md)
-                        .padding(.vertical, DesignSystem.Spacing.lg)
-
-                    Divider()
-
-                    // Description Section
-                    descriptionSection
-                        .padding(.horizontal, DesignSystem.Spacing.md)
-                        .padding(.vertical, DesignSystem.Spacing.md)
-
-                    Divider()
-
-                    // Hashtags Section
-                    hashtagsSection
-                        .padding(.horizontal, DesignSystem.Spacing.md)
-                        .padding(.vertical, DesignSystem.Spacing.md)
-
-                    Divider()
-
-                    // Privacy Toggle
-                    privacySection
-                        .padding(.horizontal, DesignSystem.Spacing.md)
-                        .padding(.vertical, DesignSystem.Spacing.md)
-                }
-            }
-            .background(DesignSystem.Colors.background)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+            VStack(spacing: 0) {
+                // Custom header
+                HStack {
                     Button { dismiss() } label: {
                         Image(systemName: AppIcon.close)
                             .font(.system(size: DesignSystem.IconSize.md, weight: .medium))
                             .foregroundColor(DesignSystem.Colors.text)
+                            .frame(width: 44, alignment: .leading)
                     }
-                }
-                ToolbarItem(placement: .principal) {
+                    .buttonStyle(.borderless)
+                    .padding(.leading, DesignSystem.Spacing.md)
+
+                    Spacer()
+
                     Text("New Cooking Log")
                         .font(DesignSystem.Typography.headline)
                         .foregroundColor(DesignSystem.Colors.text)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
+
+                    Spacer()
+
                     Button {
                         Task {
                             await viewModel.submit()
                             if case .success = viewModel.state { dismiss() }
                         }
                     } label: {
-                        Text("Post")
-                            .font(DesignSystem.Typography.headline)
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 24))
                             .foregroundColor(viewModel.canSubmit ? DesignSystem.Colors.primary : DesignSystem.Colors.tertiaryText)
+                            .frame(width: 44, alignment: .trailing)
                     }
+                    .buttonStyle(.borderless)
                     .disabled(!viewModel.canSubmit)
+                    .padding(.trailing, DesignSystem.Spacing.md)
                 }
-            }
-            .alert("", isPresented: .constant(viewModel.state == .error(""))) {
-                Button("OK") { }
-            } message: {
-                if case .error(let msg) = viewModel.state { Text(msg) }
-            }
-            .alert("Add Photo", isPresented: $showingPhotoSourceSheet) {
-                Button("Cancel", role: .cancel) { }
-                Button("Take Photo") {
-                    showingCamera = true
-                }
-                Button("Choose from Library") {
-                    showingGallery = true
-                }
-            }
-            .sheet(isPresented: $showingCamera) {
-                CameraPicker { image in
-                    if let image = image {
-                        viewModel.addPhoto(image)
+                .padding(.top, DesignSystem.Spacing.lg)
+                .padding(.bottom, DesignSystem.Spacing.sm)
+                .background(DesignSystem.Colors.background)
+
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Recipe Link Section (moved to top)
+                        recipeLinkSection
+                            .padding(.horizontal, DesignSystem.Spacing.md)
+                            .padding(.vertical, DesignSystem.Spacing.md)
+
+                        Divider()
+
+                        // Photo Section
+                        photoSection
+                            .padding(.horizontal, DesignSystem.Spacing.md)
+                            .padding(.vertical, DesignSystem.Spacing.lg)
+
+                        Divider()
+
+                        // Rating Section
+                        ratingSection
+                            .padding(.horizontal, DesignSystem.Spacing.md)
+                            .padding(.vertical, DesignSystem.Spacing.lg)
+
+                        Divider()
+
+                        // Description Section
+                        descriptionSection
+                            .padding(.horizontal, DesignSystem.Spacing.md)
+                            .padding(.vertical, DesignSystem.Spacing.md)
+
+                        Divider()
+
+                        // Hashtags Section
+                        hashtagsSection
+                            .padding(.horizontal, DesignSystem.Spacing.md)
+                            .padding(.vertical, DesignSystem.Spacing.md)
+
+                        Divider()
+
+                        // Privacy Toggle
+                        privacySection
+                            .padding(.horizontal, DesignSystem.Spacing.md)
+                            .padding(.vertical, DesignSystem.Spacing.md)
                     }
                 }
+                .background(DesignSystem.Colors.background)
             }
-            .sheet(isPresented: $showingGallery) {
-                PhotosPickerSheet(maxSelection: maxPhotos - viewModel.photos.count) { images in
-                    for image in images {
-                        viewModel.addPhoto(image)
-                    }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
+        .alert("", isPresented: .constant(viewModel.state == .error(""))) {
+            Button("OK") { }
+        } message: {
+            if case .error(let msg) = viewModel.state { Text(msg) }
+        }
+        .alert("Add Photo", isPresented: $showingPhotoSourceSheet) {
+            Button("Cancel", role: .cancel) { }
+            Button("Take Photo") {
+                showingCamera = true
+            }
+            Button("Choose from Library") {
+                showingGallery = true
+            }
+        }
+        .sheet(isPresented: $showingCamera) {
+            CameraPicker { image in
+                if let image = image {
+                    viewModel.addPhoto(image)
+                }
+            }
+        }
+        .sheet(isPresented: $showingGallery) {
+            PhotosPickerSheet(maxSelection: maxPhotos - viewModel.photos.count) { images in
+                for image in images {
+                    viewModel.addPhoto(image)
                 }
             }
         }
@@ -134,28 +148,58 @@ struct CreateLogView: View {
         let slotSize: CGFloat = (UIScreen.main.bounds.width - DesignSystem.Spacing.md * 2 - DesignSystem.Spacing.sm * 2) / 3
 
         if index < viewModel.photos.count {
-            // Filled slot with image
-            ZStack(alignment: .topTrailing) {
-                Image(uiImage: viewModel.photos[index].image)
+            let photo = viewModel.photos[index]
+            // Filled slot with image - draggable
+            ZStack {
+                Image(uiImage: photo.image)
                     .resizable()
                     .scaledToFill()
                     .frame(width: slotSize, height: slotSize)
                     .cornerRadius(DesignSystem.CornerRadius.sm)
                     .clipped()
-
-                Button { viewModel.removePhoto(at: index) } label: {
-                    Image(systemName: AppIcon.close)
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 20, height: 20)
-                        .background(Color.black.opacity(0.6))
-                        .clipShape(Circle())
+                
+                // Upload status overlay
+                photoUploadOverlay(for: photo, at: index, size: slotSize)
+                
+                // Remove button (top right)
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button { viewModel.removePhoto(at: index) } label: {
+                            Image(systemName: AppIcon.close)
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 20, height: 20)
+                                .background(Color.black.opacity(0.6))
+                                .clipShape(Circle())
+                        }
+                        .offset(x: -4, y: 4)
+                    }
+                    Spacer()
                 }
-                .offset(x: -4, y: 4)
             }
             .frame(width: slotSize, height: slotSize)
+            .draggable(photo.id) {
+                // Drag preview
+                Image(uiImage: photo.image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: slotSize * 0.8, height: slotSize * 0.8)
+                    .cornerRadius(DesignSystem.CornerRadius.sm)
+                    .clipped()
+                    .opacity(0.8)
+            }
+            .dropDestination(for: String.self) { items, _ in
+                guard let draggedId = items.first,
+                      let sourceIndex = viewModel.photos.firstIndex(where: { $0.id == draggedId }),
+                      sourceIndex != index else { return false }
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.movePhoto(from: sourceIndex, to: index)
+                }
+                return true
+            }
         } else {
-            // Empty slot
+            // Empty slot - can be drop destination if there are photos to reorder
             Button {
                 showingPhotoSourceSheet = true
             } label: {
@@ -171,6 +215,60 @@ struct CreateLogView: View {
                 .background(DesignSystem.Colors.secondaryBackground)
                 .cornerRadius(DesignSystem.CornerRadius.sm)
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func photoUploadOverlay(for photo: SelectedPhoto, at index: Int, size: CGFloat) -> some View {
+        switch photo.uploadState {
+        case .idle:
+            EmptyView()
+        case .uploading:
+            // Loading overlay
+            ZStack {
+                Color.black.opacity(0.4)
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .scaleEffect(1.2)
+            }
+            .frame(width: size, height: size)
+            .cornerRadius(DesignSystem.CornerRadius.sm)
+        case .success:
+            // Success indicator (bottom right)
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.green)
+                        .background(Circle().fill(.white).padding(2))
+                        .offset(x: -6, y: -6)
+                }
+            }
+        case .failed:
+            // Failed overlay with retry
+            ZStack {
+                Color.black.opacity(0.5)
+                VStack(spacing: DesignSystem.Spacing.xs) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(DesignSystem.Colors.error)
+                    Button {
+                        viewModel.retryUpload(at: index)
+                    } label: {
+                        Text("Retry")
+                            .font(DesignSystem.Typography.caption)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, DesignSystem.Spacing.sm)
+                            .padding(.vertical, DesignSystem.Spacing.xxs)
+                            .background(DesignSystem.Colors.error)
+                            .cornerRadius(DesignSystem.CornerRadius.xs)
+                    }
+                }
+            }
+            .frame(width: size, height: size)
+            .cornerRadius(DesignSystem.CornerRadius.sm)
         }
     }
 

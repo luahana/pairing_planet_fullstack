@@ -158,7 +158,7 @@ enum LogEndpoint: APIEndpoint {
         switch self {
         case .home, .feed, .detail, .userLogs: return .get
         case .create, .like, .save: return .post
-        case .update: return .patch
+        case .update: return .put
         case .delete, .unlike, .unsave: return .delete
         }
     }

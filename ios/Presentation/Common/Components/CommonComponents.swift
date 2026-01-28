@@ -301,9 +301,24 @@ struct FollowButton: View {
 // MARK: - Date Extension
 extension Date {
     func timeAgo() -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: self, relativeTo: Date())
+        let now = Date()
+        let components = Calendar.current.dateComponents([.year, .month, .weekOfYear, .day, .hour, .minute], from: self, to: now)
+
+        if let years = components.year, years > 0 {
+            return "\(years)y"
+        } else if let months = components.month, months > 0 {
+            return "\(months)mo"
+        } else if let weeks = components.weekOfYear, weeks > 0 {
+            return "\(weeks)w"
+        } else if let days = components.day, days > 0 {
+            return "\(days)d"
+        } else if let hours = components.hour, hours > 0 {
+            return "\(hours)h"
+        } else if let minutes = components.minute, minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "now"
+        }
     }
 }
 
@@ -1015,5 +1030,30 @@ struct FlowLayout: Layout {
         }
 
         return (CGSize(width: maxWidth, height: currentY + lineHeight), positions)
+    }
+}
+
+// MARK: - Swipe Back Gesture Enabler
+/// Enables the interactive pop gesture (swipe from left edge to go back) when navigation bar is hidden
+struct SwipeBackGestureEnabler: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        SwipeBackGestureViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+
+private class SwipeBackGestureViewController: UIViewController {
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        navigationController?.interactivePopGestureRecognizer?.delegate = nil
+    }
+}
+
+extension View {
+    /// Enables swipe back gesture when navigation bar is hidden
+    func enableSwipeBack() -> some View {
+        background(SwipeBackGestureEnabler())
     }
 }

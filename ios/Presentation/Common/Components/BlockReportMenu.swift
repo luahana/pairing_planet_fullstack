@@ -1,33 +1,35 @@
 import SwiftUI
 
 /// A reusable menu component for block and report actions.
-/// Provides consistent UX across the app with centered alert for block confirmation
-/// and confirmation dialog for report reason selection.
+/// Uses native action sheets (confirmationDialog) for consistent UX.
 struct BlockReportMenu: View {
     let targetUserId: String
     let targetUsername: String
     let onBlock: () -> Void
     let onReport: (ReportReason) -> Void
 
+    @State private var showActionSheet = false
     @State private var showBlockConfirmation = false
     @State private var showReportSheet = false
 
     var body: some View {
-        Menu {
-            Button(role: .destructive) {
-                showBlockConfirmation = true
-            } label: {
-                Label("Block @\(targetUsername)", systemImage: AppIcon.block)
-            }
-
-            Button(role: .destructive) {
-                showReportSheet = true
-            } label: {
-                Label("Report", systemImage: AppIcon.report)
-            }
+        Button {
+            showActionSheet = true
         } label: {
             Image(systemName: AppIcon.more)
+                .font(.system(size: 18, weight: .medium))
                 .foregroundColor(DesignSystem.Colors.secondaryText)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .confirmationDialog("", isPresented: $showActionSheet, titleVisibility: .hidden) {
+            Button("Block @\(targetUsername)", role: .destructive) {
+                showBlockConfirmation = true
+            }
+            Button("Report", role: .destructive) {
+                showReportSheet = true
+            }
+            Button("Cancel", role: .cancel) { }
         }
         .alert("Block @\(targetUsername)?", isPresented: $showBlockConfirmation) {
             Button("Cancel", role: .cancel) { }
@@ -44,7 +46,7 @@ struct BlockReportMenu: View {
     }
 }
 
-/// A variant that includes a share link alongside block/report options.
+/// A variant that includes a share option alongside block/report options.
 struct BlockReportShareMenu: View {
     let targetUserId: String
     let targetUsername: String
@@ -52,29 +54,32 @@ struct BlockReportShareMenu: View {
     let onBlock: () -> Void
     let onReport: (ReportReason) -> Void
 
+    @State private var showActionSheet = false
     @State private var showBlockConfirmation = false
     @State private var showReportSheet = false
+    @State private var showShareSheet = false
 
     var body: some View {
-        Menu {
-            ShareLink(item: shareURL) {
-                Label("Share", systemImage: AppIcon.share)
-            }
-
-            Button(role: .destructive) {
-                showBlockConfirmation = true
-            } label: {
-                Label("Block @\(targetUsername)", systemImage: AppIcon.block)
-            }
-
-            Button(role: .destructive) {
-                showReportSheet = true
-            } label: {
-                Label("Report", systemImage: AppIcon.report)
-            }
+        Button {
+            showActionSheet = true
         } label: {
             Image(systemName: AppIcon.more)
+                .font(.system(size: 18, weight: .medium))
                 .foregroundColor(DesignSystem.Colors.secondaryText)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .confirmationDialog("", isPresented: $showActionSheet, titleVisibility: .hidden) {
+            Button("Share") {
+                showShareSheet = true
+            }
+            Button("Block @\(targetUsername)", role: .destructive) {
+                showBlockConfirmation = true
+            }
+            Button("Report", role: .destructive) {
+                showReportSheet = true
+            }
+            Button("Cancel", role: .cancel) { }
         }
         .alert("Block @\(targetUsername)?", isPresented: $showBlockConfirmation) {
             Button("Cancel", role: .cancel) { }
@@ -88,7 +93,21 @@ struct BlockReportShareMenu: View {
             }
             Button("Cancel", role: .cancel) { }
         }
+        .sheet(isPresented: $showShareSheet) {
+            ShareSheet(items: [shareURL])
+        }
     }
+}
+
+/// UIKit share sheet wrapper
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) { }
 }
 
 #Preview {

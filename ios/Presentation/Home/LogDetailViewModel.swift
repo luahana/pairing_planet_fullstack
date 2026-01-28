@@ -106,6 +106,23 @@ final class LogDetailViewModel: ObservableObject {
         }
         #endif
     }
+
+    func deleteLog() async -> Bool {
+        let result = await logRepository.deleteLog(id: logId)
+        switch result {
+        case .success:
+            #if DEBUG
+            print("[LogDetail] Deleted log: \(logId)")
+            #endif
+            NotificationCenter.default.post(name: .logDeleted, object: nil, userInfo: ["logId": logId])
+            return true
+        case .failure(let error):
+            #if DEBUG
+            print("[LogDetail] Failed to delete log: \(error)")
+            #endif
+            return false
+        }
+    }
 }
 
 // MARK: - Comments ViewModel

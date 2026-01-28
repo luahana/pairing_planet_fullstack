@@ -2,13 +2,40 @@ import Foundation
 import SwiftUI
 
 enum CreateLogState: Equatable {
-    case idle, uploading, submitting, success(CookingLogDetail), error(String)
+    case idle, submitting, success(CookingLogDetail), error(String)
+}
+
+enum PhotoUploadState: Equatable {
+    case idle
+    case uploading
+    case success(String) // uploadedId
+    case failed(String) // error message
 }
 
 struct SelectedPhoto: Identifiable, Equatable {
     let id: String
     let image: UIImage
-    var uploadedId: String?
+    var uploadState: PhotoUploadState = .idle
+    
+    var isUploading: Bool {
+        if case .uploading = uploadState { return true }
+        return false
+    }
+    
+    var isUploaded: Bool {
+        if case .success = uploadState { return true }
+        return false
+    }
+    
+    var isFailed: Bool {
+        if case .failed = uploadState { return true }
+        return false
+    }
+    
+    var uploadedId: String? {
+        if case .success(let id) = uploadState { return id }
+        return nil
+    }
 }
 
 @MainActor
@@ -22,28 +49,94 @@ final class CreateLogViewModel: ObservableObject {
     @Published var isPrivate: Bool = false
 
     private let logRepository: CookingLogRepositoryProtocol
+    private let apiClient: APIClientProtocol
     private let maxPhotos = 3
     let maxContentLength = 2000
     let maxHashtags = 5
 
-    var canSubmit: Bool { !photos.isEmpty && rating >= 1 && state != .uploading && state != .submitting }
+    var canSubmit: Bool {
+        !photos.isEmpty
+        && rating >= 1
+        && !content.trimmingCharacters(in: .whitespaces).isEmpty
+        && selectedRecipe != nil
+        && state != .submitting
+        && allPhotosUploaded
+    }
+    
+    var allPhotosUploaded: Bool {
+        photos.allSatisfy { $0.isUploaded }
+    }
+    
+    var hasFailedUploads: Bool {
+        photos.contains { $0.isFailed }
+    }
     var photosRemaining: Int { max(0, maxPhotos - photos.count) }
     var contentRemaining: Int { maxContentLength - content.count }
     var hashtagsRemaining: Int { max(0, maxHashtags - hashtags.count) }
 
-    init(recipe: RecipeSummary? = nil, logRepository: CookingLogRepositoryProtocol = CookingLogRepository()) {
+    init(
+        recipe: RecipeSummary? = nil,
+        logRepository: CookingLogRepositoryProtocol = CookingLogRepository(),
+        apiClient: APIClientProtocol = APIClient.shared
+    ) {
         self.logRepository = logRepository
+        self.apiClient = apiClient
         self.selectedRecipe = recipe
     }
 
     func addPhoto(_ image: UIImage) {
         guard photos.count < maxPhotos else { return }
-        photos.append(SelectedPhoto(id: UUID().uuidString, image: image))
+        let photoId = UUID().uuidString
+        photos.append(SelectedPhoto(id: photoId, image: image, uploadState: .uploading))
+        
+        // Start upload immediately
+        Task {
+            await uploadPhoto(id: photoId, image: image)
+        }
+    }
+    
+    private func uploadPhoto(id: String, image: UIImage) async {
+        guard let index = photos.firstIndex(where: { $0.id == id }) else { return }
+        
+        guard let jpegData = image.jpegData(compressionQuality: 0.8) else {
+            photos[index].uploadState = .failed("Failed to process image")
+            return
+        }
+        
+        do {
+            let response = try await apiClient.uploadImage(jpegData, type: "LOG_POST")
+            // Check if photo still exists (might have been removed)
+            if let currentIndex = photos.firstIndex(where: { $0.id == id }) {
+                photos[currentIndex].uploadState = .success(response.imagePublicId)
+            }
+        } catch {
+            if let currentIndex = photos.firstIndex(where: { $0.id == id }) {
+                photos[currentIndex].uploadState = .failed(error.localizedDescription)
+            }
+        }
+    }
+    
+    func retryUpload(at index: Int) {
+        guard photos.indices.contains(index), photos[index].isFailed else { return }
+        let photo = photos[index]
+        photos[index].uploadState = .uploading
+        
+        Task {
+            await uploadPhoto(id: photo.id, image: photo.image)
+        }
     }
 
     func removePhoto(at index: Int) {
         guard photos.indices.contains(index) else { return }
         photos.remove(at: index)
+    }
+    
+    func movePhoto(from source: Int, to destination: Int) {
+        guard photos.indices.contains(source),
+              destination >= 0 && destination < photos.count,
+              source != destination else { return }
+        let photo = photos.remove(at: source)
+        photos.insert(photo, at: destination)
     }
 
     func selectRecipe(_ recipe: RecipeSummary?) { selectedRecipe = recipe }
@@ -65,12 +158,19 @@ final class CreateLogViewModel: ObservableObject {
 
     func submit() async {
         guard canSubmit else { return }
-        state = .uploading
-        let imageIds = photos.compactMap { $0.uploadedId ?? $0.id }
         state = .submitting
 
-        let request = CreateLogRequest(rating: rating, content: content.isEmpty ? nil : content, imageIds: imageIds,
-            recipeId: selectedRecipe?.id, hashtags: hashtags, isPrivate: isPrivate)
+        // Collect already-uploaded image IDs
+        let imageIds = photos.compactMap { $0.uploadedId }
+        
+        let request = CreateLogRequest(
+            rating: rating,
+            content: content,
+            imageIds: imageIds,
+            recipeId: selectedRecipe?.id,
+            hashtags: hashtags,
+            isPrivate: isPrivate
+        )
         let result = await logRepository.createLog(request)
 
         switch result {

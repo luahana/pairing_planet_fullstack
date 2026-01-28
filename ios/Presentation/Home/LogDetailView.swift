@@ -6,6 +6,9 @@ struct LogDetailView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss
+    @State private var showDeleteConfirmation = false
+    @State private var showEditSheet = false
+    @State private var showActionSheet = false
 
     init(logId: String) {
         self.logId = logId
@@ -29,7 +32,7 @@ struct LogDetailView: View {
                 
                 Spacer()
                 
-                HStack(spacing: DesignSystem.Spacing.sm) {
+                HStack(spacing: 0) {
                     // Save button (icon only) - requires auth
                     Button {
                         appState.requireAuth {
@@ -37,27 +40,55 @@ struct LogDetailView: View {
                         }
                     } label: {
                         Image(systemName: viewModel.isSaved ? AppIcon.save : AppIcon.saveOutline)
+                            .font(.system(size: 18))
                             .foregroundColor(viewModel.isSaved ? DesignSystem.Colors.bookmark : DesignSystem.Colors.secondaryText)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
 
                     // Share button (icon only)
                     ShareLink(item: URL(string: "https://cookstemma.com/logs/\(logId)")!) {
                         Image(systemName: AppIcon.share)
+                            .font(.system(size: 18))
                             .foregroundColor(DesignSystem.Colors.text)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
 
-                    // More options (block/report) - only show for other users' logs
-                    if let log = viewModel.log,
-                       log.author.id != authManager.currentUser?.id {
-                        BlockReportMenu(
-                            targetUserId: log.author.id,
-                            targetUsername: log.author.username,
-                            onBlock: { Task { await viewModel.blockUser() } },
-                            onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
-                        )
+                    // More options menu
+                    if let log = viewModel.log {
+                        if log.author.id == authManager.currentUser?.id {
+                            // Own log - show edit/delete action sheet
+                            Button {
+                                showActionSheet = true
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(DesignSystem.Colors.text)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .confirmationDialog("", isPresented: $showActionSheet, titleVisibility: .hidden) {
+                                Button("Edit") {
+                                    showEditSheet = true
+                                }
+                                Button("Delete", role: .destructive) {
+                                    showDeleteConfirmation = true
+                                }
+                                Button("Cancel", role: .cancel) { }
+                            }
+                        } else {
+                            // Other user's log - show block/report
+                            BlockReportMenu(
+                                targetUserId: log.author.id,
+                                targetUsername: log.author.username,
+                                onBlock: { Task { await viewModel.blockUser() } },
+                                onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
+                            )
+                        }
                     }
                 }
-                .padding(.trailing, DesignSystem.Spacing.md)
+                .padding(.trailing, DesignSystem.Spacing.xs)
             }
             .padding(.vertical, DesignSystem.Spacing.sm)
             .background(DesignSystem.Colors.background)
@@ -75,8 +106,28 @@ struct LogDetailView: View {
                 }
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .onAppear { if case .idle = viewModel.state { viewModel.loadLog() } }
+        .alert("Delete Cooking Log", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                Task {
+                    if await viewModel.deleteLog() {
+                        dismiss()
+                    }
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete this cooking log? This action cannot be undone.")
+        }
+        .sheet(isPresented: $showEditSheet) {
+            if let log = viewModel.log {
+                EditLogView(log: log) {
+                    viewModel.loadLog()
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -89,7 +140,7 @@ struct LogDetailView: View {
                         AvatarView(url: log.author.avatarUrl, size: DesignSystem.AvatarSize.sm)
                         VStack(alignment: .leading) {
                             Text(log.author.displayNameOrUsername).font(DesignSystem.Typography.subheadline).fontWeight(.medium)
-                            Text(log.createdAt, style: .relative).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
+                            Text(log.createdAt.timeAgo()).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
                         }
                     }
                 }
@@ -178,19 +229,6 @@ struct LogDetailView: View {
                 .padding(.horizontal)
             }
 
-            // Actions
-            HStack(spacing: DesignSystem.Spacing.lg) {
-                Button { Task { await viewModel.toggleLike() } } label: {
-                    Label("\(log.likeCount)", systemImage: log.isLiked ? "heart.fill" : "heart")
-                        .foregroundColor(log.isLiked ? .red : DesignSystem.Colors.primaryText)
-                }
-                Button { } label: {
-                    Label("\(log.commentCount)", systemImage: "bubble.right")
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-
             Divider()
 
             // Comments section
@@ -216,9 +254,14 @@ struct CommentsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-            Text("Comments (\(viewModel.comments.count))")
-                .font(DesignSystem.Typography.headline)
-                .padding(.horizontal)
+            HStack(spacing: DesignSystem.Spacing.xs) {
+                Image(systemName: AppIcon.comment)
+                    .font(.system(size: DesignSystem.IconSize.md))
+                Text("\(viewModel.comments.count)")
+                    .font(DesignSystem.Typography.headline)
+            }
+            .foregroundColor(DesignSystem.Colors.text)
+            .padding(.horizontal)
 
             ForEach(viewModel.comments) { comment in
                 CommentRow(
@@ -283,7 +326,7 @@ struct CommentRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack {
                         Text(comment.author.displayNameOrUsername).font(DesignSystem.Typography.caption).fontWeight(.medium)
-                        Text(comment.createdAt, style: .relative).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
+                        Text(comment.createdAt.timeAgo()).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                     Text(comment.content).font(DesignSystem.Typography.body)
                     HStack {
@@ -318,7 +361,7 @@ struct CommentRow: View {
                         VStack(alignment: .leading, spacing: 2) {
                             HStack {
                                 Text(reply.author.displayNameOrUsername).font(DesignSystem.Typography.caption).fontWeight(.medium)
-                                Text(reply.createdAt, style: .relative).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
+                                Text(reply.createdAt.timeAgo()).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
                             }
                             Text(reply.content).font(DesignSystem.Typography.body)
                         }
