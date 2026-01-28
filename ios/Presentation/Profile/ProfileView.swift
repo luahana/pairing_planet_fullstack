@@ -89,11 +89,7 @@ struct ProfileView: View {
             // Pop to root if navigated
             if !navigationPath.isEmpty {
                 navigationPath = NavigationPath()
-                return
             }
-
-            // Refresh profile
-            viewModel.loadProfile()
         }
     }
 
