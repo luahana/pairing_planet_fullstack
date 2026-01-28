@@ -916,6 +916,7 @@ final class HashtagContentViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var cursor: String?
     @Published private(set) var hasNext = false
+    @Published private(set) var totalElements: Int?
     @Published var contentFilter: HashtagContentFilter = .all
 
     private let searchRepository: SearchRepositoryProtocol
@@ -945,6 +946,7 @@ final class HashtagContentViewModel: ObservableObject {
                 items = response.content
                 cursor = response.nextCursor
                 hasNext = response.hasNext
+                totalElements = response.totalElements
             }
         }
     }
@@ -994,6 +996,11 @@ struct HashtagView: View {
                         .foregroundColor(DesignSystem.Colors.primary)
                     Text(hashtag)
                         .font(DesignSystem.Typography.headline)
+                    if let total = viewModel.totalElements {
+                        Text("(\(total))")
+                            .font(DesignSystem.Typography.subheadline)
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
                 }
             }
         }
