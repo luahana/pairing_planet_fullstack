@@ -164,9 +164,11 @@ struct RecipeDetailView: View {
                 if let hashtags = recipe.hashtags, !hashtags.isEmpty {
                     FlowLayout(spacing: DesignSystem.Spacing.xs) {
                         ForEach(hashtags, id: \.self) { tag in
-                            Text("#\(tag)")
-                                .font(DesignSystem.Typography.subheadline)
-                                .foregroundColor(DesignSystem.Colors.primary)
+                            NavigationLink(destination: HashtagView(hashtag: tag)) {
+                                Text("#\(tag)")
+                                    .font(DesignSystem.Typography.subheadline)
+                                    .foregroundColor(DesignSystem.Colors.primary)
+                            }
                         }
                     }
                 }

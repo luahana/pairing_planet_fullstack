@@ -112,9 +112,11 @@ struct LogDetailView: View {
             if !log.hashtags.isEmpty {
                 FlowLayout(spacing: DesignSystem.Spacing.xs) {
                     ForEach(log.hashtags, id: \.self) { hashtag in
-                        Text("#\(hashtag)")
-                            .font(DesignSystem.Typography.subheadline)
-                            .foregroundColor(DesignSystem.Colors.primary)
+                        NavigationLink(destination: HashtagView(hashtag: hashtag)) {
+                            Text("#\(hashtag)")
+                                .font(DesignSystem.Typography.subheadline)
+                                .foregroundColor(DesignSystem.Colors.primary)
+                        }
                     }
                 }
                 .padding(.horizontal)
