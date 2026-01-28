@@ -205,7 +205,7 @@ struct RecipeFiltersView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Cooking Time Section (icon header)
+                // Cooking Time Section
                 Section {
                     ForEach(CookingTimeRange.allCases, id: \.self) { range in
                         Button {
@@ -226,22 +226,27 @@ struct RecipeFiltersView: View {
                     HStack(spacing: DesignSystem.Spacing.xs) {
                         Image(systemName: AppIcon.timer)
                             .foregroundColor(DesignSystem.Colors.primary)
+                        Text("Cooking Time")
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
 
-                // Sort Section (icon header)
+                // Servings Section
                 Section {
-                    ForEach(RecipeSortOption.allCases, id: \.self) { option in
+                    ForEach(ServingsOption.allCases, id: \.self) { option in
                         Button {
-                            filters.sortBy = option
+                            if filters.minServings == option.minServings {
+                                filters.minServings = nil
+                                filters.maxServings = nil
+                            } else {
+                                filters.minServings = option.minServings
+                                filters.maxServings = option.maxServings
+                            }
                         } label: {
                             HStack {
-                                Image(systemName: option.iconName)
-                                    .foregroundColor(DesignSystem.Colors.secondaryText)
-                                    .frame(width: 20)
                                 Text(option.displayText)
                                 Spacer()
-                                if filters.sortBy == option {
+                                if filters.minServings == option.minServings {
                                     Image(systemName: AppIcon.checkmark)
                                         .foregroundColor(DesignSystem.Colors.primary)
                                 }
@@ -251,15 +256,28 @@ struct RecipeFiltersView: View {
                     }
                 } header: {
                     HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: AppIcon.sort)
+                        Image(systemName: AppIcon.servings)
                             .foregroundColor(DesignSystem.Colors.primary)
+                        Text("Servings")
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
+                }
+
+                // Cooking Style Section (searchable dropdown with all countries)
+                Section {
+                    CookingStylePicker(selection: $filters.cookingStyle)
+                } header: {
+                    HStack(spacing: DesignSystem.Spacing.xs) {
+                        Image(systemName: AppIcon.chef)
+                            .foregroundColor(DesignSystem.Colors.primary)
+                        Text("Cooking Style")
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    // Reset button (icon)
                     Button {
                         filters = RecipeFilters()
                     } label: {
@@ -268,7 +286,6 @@ struct RecipeFiltersView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    // Apply button (icon)
                     Button {
                         onApply()
                         dismiss()
@@ -282,14 +299,88 @@ struct RecipeFiltersView: View {
     }
 }
 
-// Extension for sort option icons
-extension RecipeSortOption {
-    var iconName: String {
-        switch self {
-        case .trending: return "flame"
-        case .mostCooked: return "person.2"
-        case .highestRated: return "star"
-        case .newest: return "clock"
+// MARK: - Cooking Style Picker (Searchable Dropdown)
+struct CookingStylePicker: View {
+    @Binding var selection: String?
+    @State private var searchText = ""
+
+    private var filteredStyles: [CookingStyleOption] {
+        if searchText.isEmpty {
+            return CookingStyleOption.allCases
+        }
+        return CookingStyleOption.allCases.filter {
+            $0.displayText.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Search field
+            HStack {
+                Image(systemName: AppIcon.search)
+                    .foregroundColor(DesignSystem.Colors.tertiaryText)
+                TextField("Search countries...", text: $searchText)
+                    .textFieldStyle(.plain)
+                if !searchText.isEmpty {
+                    Button { searchText = "" } label: {
+                        Image(systemName: AppIcon.close)
+                            .foregroundColor(DesignSystem.Colors.tertiaryText)
+                    }
+                }
+            }
+            .padding(DesignSystem.Spacing.sm)
+            .background(DesignSystem.Colors.tertiaryBackground)
+            .cornerRadius(DesignSystem.CornerRadius.sm)
+
+            // Selected style indicator
+            if let selected = selection, let style = CookingStyleOption(rawValue: selected) {
+                HStack {
+                    Text("Selected:")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundColor(DesignSystem.Colors.secondaryText)
+                    Text("\(style.flag) \(style.displayText)")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundColor(DesignSystem.Colors.primary)
+                    Spacer()
+                    Button { selection = nil } label: {
+                        Image(systemName: AppIcon.close)
+                            .font(.system(size: DesignSystem.IconSize.sm))
+                            .foregroundColor(DesignSystem.Colors.tertiaryText)
+                    }
+                }
+                .padding(.top, DesignSystem.Spacing.xs)
+            }
+
+            // Country list
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(filteredStyles) { style in
+                        Button {
+                            selection = selection == style.rawValue ? nil : style.rawValue
+                        } label: {
+                            HStack {
+                                Text(style.flag)
+                                    .font(.system(size: 20))
+                                Text(style.displayText)
+                                    .font(DesignSystem.Typography.body)
+                                Spacer()
+                                if selection == style.rawValue {
+                                    Image(systemName: AppIcon.checkmark)
+                                        .foregroundColor(DesignSystem.Colors.primary)
+                                }
+                            }
+                            .padding(.vertical, DesignSystem.Spacing.sm)
+                            .contentShape(Rectangle())
+                        }
+                        .foregroundColor(DesignSystem.Colors.text)
+
+                        if style != filteredStyles.last {
+                            Divider()
+                        }
+                    }
+                }
+            }
+            .frame(maxHeight: 250)
         }
     }
 }

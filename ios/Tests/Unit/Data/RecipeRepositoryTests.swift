@@ -62,7 +62,7 @@ final class RecipeRepositoryTests: XCTestCase {
     func testGetRecipes_withFilters_passesToAPI() async {
         // Given
         let filters = RecipeFilters(
-            cookingTimeRange: .under15,
+            cookingTimeRange: .under15Min,
             category: "korean",
             searchQuery: "kimchi",
             sortBy: .newest
@@ -304,7 +304,7 @@ final class RecipeRepositoryTests: XCTestCase {
             title: "Test Recipe",
             description: "Test description",
             images: [],
-            cookingTimeRange: .between15And30,
+            cookingTimeRange: .min15To30,
             servings: 4,
             cookCount: 100,
             averageRating: 4.5,

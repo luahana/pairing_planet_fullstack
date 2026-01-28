@@ -103,10 +103,12 @@ enum RecipeEndpoint: APIEndpoint {
             var items: [URLQueryItem] = []
             if let cursor = cursor { items.append(URLQueryItem(name: "cursor", value: cursor)) }
             if let filters = filters {
-                if let t = filters.cookingTimeRange { items.append(URLQueryItem(name: "cookingTimeRange", value: t.rawValue)) }
+                if let t = filters.cookingTimeRange { items.append(URLQueryItem(name: "cookingTime", value: t.rawValue)) }
                 if let c = filters.category { items.append(URLQueryItem(name: "category", value: c)) }
                 if let q = filters.searchQuery { items.append(URLQueryItem(name: "q", value: q)) }
-                items.append(URLQueryItem(name: "sort", value: filters.sortBy.rawValue))
+                if let minS = filters.minServings { items.append(URLQueryItem(name: "minServings", value: String(minS))) }
+                if let maxS = filters.maxServings { items.append(URLQueryItem(name: "maxServings", value: String(maxS))) }
+                if let style = filters.cookingStyle { items.append(URLQueryItem(name: "locale", value: style)) }
             }
             return items.isEmpty ? nil : items
         case .logs(_, let cursor):

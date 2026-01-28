@@ -291,7 +291,7 @@ final class RecipeDetailViewModelTests: XCTestCase {
             description: "Test description",
             coverImageUrl: nil,
             images: [],
-            cookingTimeRange: .under15,
+            cookingTimeRange: .under15Min,
             servings: 2,
             cookCount: 100,
             saveCount: 50,

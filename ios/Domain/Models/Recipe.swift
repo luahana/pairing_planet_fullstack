@@ -172,11 +172,10 @@ struct RecipeStep: Codable, Identifiable, Equatable {
 extension String {
     var cookingTimeDisplayText: String {
         switch self {
-        case "UNDER_15", "UNDER_15_MIN": return "<15 min"
+        case "UNDER_15_MIN": return "<15 min"
         case "MIN_15_TO_30": return "15-30 min"
         case "MIN_30_TO_60": return "30-60 min"
         case "HOUR_1_TO_2": return "1-2 hr"
-        case "OVER_60": return "60+ min"
         case "OVER_2_HOURS": return "2+ hr"
         default: return self
         }
@@ -214,6 +213,41 @@ extension String {
         case "TR": return "Turkish"
         case "DE": return "German"
         case "GB", "UK": return "British"
+        case "BR": return "Brazilian"
+        case "ID": return "Indonesian"
+        case "MY": return "Malaysian"
+        case "PH": return "Filipino"
+        case "AU": return "Australian"
+        case "CA": return "Canadian"
+        case "RU": return "Russian"
+        case "PL": return "Polish"
+        case "NL": return "Dutch"
+        case "SE": return "Swedish"
+        case "NO": return "Norwegian"
+        case "DK": return "Danish"
+        case "FI": return "Finnish"
+        case "PT": return "Portuguese"
+        case "MA": return "Moroccan"
+        case "EG": return "Egyptian"
+        case "ET": return "Ethiopian"
+        case "NG": return "Nigerian"
+        case "ZA": return "South African"
+        case "LB": return "Lebanese"
+        case "IR": return "Iranian"
+        case "IL": return "Israeli"
+        case "SA": return "Saudi"
+        case "AE": return "Emirati"
+        case "PK": return "Pakistani"
+        case "BD": return "Bangladeshi"
+        case "TW": return "Taiwanese"
+        case "SG": return "Singaporean"
+        case "NP": return "Nepalese"
+        case "LK": return "Sri Lankan"
+        case "PE": return "Peruvian"
+        case "AR": return "Argentinian"
+        case "CO": return "Colombian"
+        case "CU": return "Cuban"
+        case "JM": return "Jamaican"
         default: return self
         }
     }
@@ -222,10 +256,11 @@ extension String {
 // MARK: - CookingTimeRange enum (for filters)
 
 enum CookingTimeRange: String, Codable, CaseIterable {
-    case under15 = "UNDER_15"
-    case between15And30 = "MIN_15_TO_30"
-    case between30And60 = "MIN_30_TO_60"
-    case over60 = "OVER_60"
+    case under15Min = "UNDER_15_MIN"
+    case min15To30 = "MIN_15_TO_30"
+    case min30To60 = "MIN_30_TO_60"
+    case hour1To2 = "HOUR_1_TO_2"
+    case over2Hours = "OVER_2_HOURS"
 
     var displayText: String {
         rawValue.cookingTimeDisplayText
@@ -252,9 +287,111 @@ struct RecipeFilters: Equatable {
     var category: String?
     var searchQuery: String?
     var sortBy: RecipeSortOption = .trending
+    var minServings: Int?
+    var maxServings: Int?
+    var cookingStyle: String?  // Country code (e.g., "KR", "JP")
 
     var isEmpty: Bool {
-        cookingTimeRange == nil && category == nil && searchQuery == nil && sortBy == .trending
+        cookingTimeRange == nil && category == nil && searchQuery == nil && minServings == nil && maxServings == nil && cookingStyle == nil
+    }
+}
+
+enum ServingsOption: CaseIterable {
+    case oneToTwo
+    case threeToFour
+    case fiveToSix
+    case sevenPlus
+
+    var displayText: String {
+        switch self {
+        case .oneToTwo: return "1-2 servings"
+        case .threeToFour: return "3-4 servings"
+        case .fiveToSix: return "5-6 servings"
+        case .sevenPlus: return "7+ servings"
+        }
+    }
+
+    var minServings: Int {
+        switch self {
+        case .oneToTwo: return 1
+        case .threeToFour: return 3
+        case .fiveToSix: return 5
+        case .sevenPlus: return 7
+        }
+    }
+
+    var maxServings: Int? {
+        switch self {
+        case .oneToTwo: return 2
+        case .threeToFour: return 4
+        case .fiveToSix: return 6
+        case .sevenPlus: return nil  // No upper limit
+        }
+    }
+}
+
+// All country codes for cooking style (ISO 3166-1 alpha-2)
+enum CookingStyleOption: String, CaseIterable, Identifiable {
+    // Popular cuisines first
+    case korean = "KR"
+    case japanese = "JP"
+    case chinese = "CN"
+    case american = "US"
+    case italian = "IT"
+    case french = "FR"
+    case mexican = "MX"
+    case thai = "TH"
+    case vietnamese = "VN"
+    case indian = "IN"
+    case spanish = "ES"
+    case greek = "GR"
+    case turkish = "TR"
+    case german = "DE"
+    case british = "GB"
+    case brazilian = "BR"
+    case indonesian = "ID"
+    case malaysian = "MY"
+    case filipino = "PH"
+    case australian = "AU"
+    case canadian = "CA"
+    case russian = "RU"
+    case polish = "PL"
+    case dutch = "NL"
+    case swedish = "SE"
+    case norwegian = "NO"
+    case danish = "DK"
+    case finnish = "FI"
+    case portuguese = "PT"
+    case moroccan = "MA"
+    case egyptian = "EG"
+    case ethiopian = "ET"
+    case nigerian = "NG"
+    case southAfrican = "ZA"
+    case lebanese = "LB"
+    case iranian = "IR"
+    case israeli = "IL"
+    case saudi = "SA"
+    case emirati = "AE"
+    case pakistani = "PK"
+    case bangladeshi = "BD"
+    case taiwanese = "TW"
+    case singaporean = "SG"
+    case nepalese = "NP"
+    case sriLankan = "LK"
+    case peruvian = "PE"
+    case argentinian = "AR"
+    case colombian = "CO"
+    case cuban = "CU"
+    case jamaican = "JM"
+
+    var id: String { rawValue }
+
+    var displayText: String {
+        rawValue.cookingStyleName
+    }
+
+    var flag: String {
+        rawValue.flagEmoji
     }
 }
 

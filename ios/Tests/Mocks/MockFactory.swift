@@ -118,7 +118,7 @@ enum MockFactory {
             description: "A detailed test recipe",
             coverImageUrl: nil,
             images: [],
-            cookingTimeRange: .between30And60,
+            cookingTimeRange: .min30To60,
             servings: 4,
             cookCount: 50,
             saveCount: 25,
