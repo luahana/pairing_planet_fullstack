@@ -235,23 +235,14 @@ struct SearchView: View {
                     HStack(spacing: DesignSystem.Spacing.sm) {
                         ForEach(viewModel.trendingHashtags, id: \.id) { hashtag in
                             NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
-                                HStack(spacing: DesignSystem.Spacing.xxs) {
-                                    Text("#\(hashtag.name)")
-                                        .font(DesignSystem.Typography.subheadline)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(DesignSystem.Colors.primary)
-                                    
-                                    Text("·")
-                                        .foregroundColor(DesignSystem.Colors.primary.opacity(0.5))
-                                    
-                                    Text(formatCount(hashtag.postCount))
-                                        .font(DesignSystem.Typography.caption)
-                                        .foregroundColor(DesignSystem.Colors.secondaryText)
-                                }
-                                .padding(.horizontal, DesignSystem.Spacing.sm)
-                                .padding(.vertical, DesignSystem.Spacing.xs)
-                                .background(DesignSystem.Colors.primary.opacity(0.1))
-                                .cornerRadius(DesignSystem.CornerRadius.full)
+                                Text("#\(hashtag.name)")
+                                    .font(DesignSystem.Typography.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(DesignSystem.Colors.primary)
+                                    .padding(.horizontal, DesignSystem.Spacing.sm)
+                                    .padding(.vertical, DesignSystem.Spacing.xs)
+                                    .background(DesignSystem.Colors.primary.opacity(0.1))
+                                    .cornerRadius(DesignSystem.CornerRadius.full)
                             }
                         }
                     }
