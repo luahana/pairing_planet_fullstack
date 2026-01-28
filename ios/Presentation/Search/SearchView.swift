@@ -31,6 +31,7 @@ struct SearchView: View {
     @EnvironmentObject private var appState: AppState
     @State private var selectedTab: SearchTab = .all
     @State private var navigationPath = NavigationPath()
+    @State private var scrollProxy: ScrollViewProxy?
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
@@ -79,6 +80,11 @@ struct SearchView: View {
         // Clear search if active
         if !viewModel.query.isEmpty {
             viewModel.clearSearch()
+        }
+
+        // Scroll to top with animation
+        withAnimation(.easeInOut(duration: 0.3)) {
+            scrollProxy?.scrollTo("search-top", anchor: .top)
         }
 
         // Refresh home feed
@@ -141,22 +147,27 @@ struct SearchView: View {
     // MARK: - Home Style Content (Default View)
 
     private var homeStyleContentView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                // Trending Recipes Section
-                trendingRecipesSection
+        ScrollViewReader { proxy in
+            ScrollView {
+                Color.clear.frame(height: 0).id("search-top")
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                    // Trending Recipes Section
+                    trendingRecipesSection
 
-                // Popular Hashtags Section
-                popularHashtagsSection
+                    // Popular Hashtags Section
+                    popularHashtagsSection
 
-                // Recent Cooking Logs Section
-                recentLogsSection
+                    // Recent Cooking Logs Section
+                    recentLogsSection
+                }
+                .padding(.vertical, DesignSystem.Spacing.md)
             }
-            .padding(.vertical, DesignSystem.Spacing.md)
-            .safeAreaPadding(.bottom)
-        }
-        .refreshable {
-            viewModel.loadHomeFeed()
+            .scrollIndicators(.hidden)
+            .contentMargins(.bottom, 80, for: .scrollContent)
+            .refreshable {
+                await viewModel.refreshHomeFeed()
+            }
+            .onAppear { scrollProxy = proxy }
         }
     }
 
@@ -409,6 +420,7 @@ struct SearchView: View {
             }
             .padding(.vertical, DesignSystem.Spacing.md)
         }
+        .scrollIndicators(.hidden)
     }
 
     // MARK: - See All Views
@@ -446,7 +458,7 @@ struct SearchView: View {
         .listStyle(.plain)
         .contentMargins(.bottom, 80, for: .scrollContent)
         .refreshable {
-            viewModel.loadHomeFeed()
+            await viewModel.refreshHomeFeed()
         }
     }
 
@@ -483,7 +495,7 @@ struct SearchView: View {
         .listStyle(.plain)
         .contentMargins(.bottom, 80, for: .scrollContent)
         .refreshable {
-            viewModel.loadHomeFeed()
+            await viewModel.refreshHomeFeed()
         }
     }
 
@@ -1062,6 +1074,7 @@ struct HashtagView: View {
                 .padding(.horizontal, DesignSystem.Spacing.md)
                 .padding(.bottom, 100) // Extra padding for tab bar
             }
+            .scrollIndicators(.hidden)
         }
     }
 

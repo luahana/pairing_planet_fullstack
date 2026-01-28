@@ -133,6 +133,7 @@ struct ProfileView: View {
                 }
             }
             .scrollIndicators(.hidden)
+            .contentMargins(.bottom, 80, for: .scrollContent)
             .onAppear { scrollProxy = proxy }
         }
     }
@@ -149,7 +150,6 @@ struct ProfileView: View {
             contentGrid
         }
         .padding(.vertical, DesignSystem.Spacing.md)
-        .safeAreaPadding(.bottom)
     }
 
     // MARK: - Profile Section (Seamless Layout)

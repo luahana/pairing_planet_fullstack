@@ -106,6 +106,7 @@ struct LogDetailView: View {
                     ErrorStateView(message: message) { viewModel.loadLog() }
                 }
             }
+            .contentMargins(.bottom, 80, for: .scrollContent)
         }
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()

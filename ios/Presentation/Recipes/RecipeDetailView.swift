@@ -79,6 +79,7 @@ struct RecipeDetailView: View {
                 case .error(let msg): ErrorStateView(message: msg) { viewModel.loadRecipe() }
                 }
             }
+            .contentMargins(.bottom, 80, for: .scrollContent)
         }
         .overlay(alignment: .bottomTrailing) {
             // FAB for creating cooking log
@@ -216,7 +217,6 @@ struct RecipeDetailView: View {
             cookingLogsSectionCard(recipe)
         }
         .padding(.bottom, DesignSystem.Spacing.xl)
-        .safeAreaPadding(.bottom)
     }
 
     // MARK: - Ingredients Section Card
