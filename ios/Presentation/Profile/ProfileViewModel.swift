@@ -108,6 +108,16 @@ final class ProfileViewModel: ObservableObject {
         }
     }
 
+    func reportUser(reason: ReportReason) async {
+        guard let profile = profile else { return }
+        let result = await userRepository.reportUser(userId: profile.id, reason: reason)
+        #if DEBUG
+        if case .success = result {
+            print("[Profile] Reported user \(profile.id) for: \(reason.rawValue)")
+        }
+        #endif
+    }
+
     private func loadMyProfile() async {
         let result = await userRepository.getMyProfile()
         switch result {

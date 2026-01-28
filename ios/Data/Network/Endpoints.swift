@@ -205,6 +205,7 @@ enum UserEndpoint: APIEndpoint {
     case following(userId: String, cursor: String?)
     case block(userId: String)
     case unblock(userId: String)
+    case blockedUsers(page: Int)
     case report(userId: String, reason: ReportReason)
 
     var path: String {
@@ -218,13 +219,14 @@ enum UserEndpoint: APIEndpoint {
         case .followers(let id, _): return "users/\(id)/followers"
         case .following(let id, _): return "users/\(id)/following"
         case .block(let id), .unblock(let id): return "users/\(id)/block"
+        case .blockedUsers: return "users/me/blocked"
         case .report(let id, _): return "users/\(id)/report"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .myProfile, .profile, .checkUsername, .userRecipes, .followers, .following: return .get
+        case .myProfile, .profile, .checkUsername, .userRecipes, .followers, .following, .blockedUsers: return .get
         case .updateProfile: return .patch
         case .follow, .block, .report: return .post
         case .unfollow, .unblock: return .delete
@@ -237,6 +239,8 @@ enum UserEndpoint: APIEndpoint {
             return [URLQueryItem(name: "username", value: username)]
         case .userRecipes(_, let cursor), .followers(_, let cursor), .following(_, let cursor):
             return cursor.map { [URLQueryItem(name: "cursor", value: $0)] }
+        case .blockedUsers(let page):
+            return [URLQueryItem(name: "page", value: String(page))]
         default: return nil
         }
     }

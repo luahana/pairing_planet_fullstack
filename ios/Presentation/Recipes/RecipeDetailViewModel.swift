@@ -16,12 +16,19 @@ final class RecipeDetailViewModel: ObservableObject {
     private let recipeId: String
     private let recipeRepository: RecipeRepositoryProtocol
     private let logRepository: CookingLogRepositoryProtocol
+    private let userRepository: UserRepositoryProtocol
     private var nextLogsCursor: String?
 
-    init(recipeId: String, recipeRepository: RecipeRepositoryProtocol = RecipeRepository(), logRepository: CookingLogRepositoryProtocol = CookingLogRepository()) {
+    init(
+        recipeId: String,
+        recipeRepository: RecipeRepositoryProtocol = RecipeRepository(),
+        logRepository: CookingLogRepositoryProtocol = CookingLogRepository(),
+        userRepository: UserRepositoryProtocol = UserRepository()
+    ) {
         self.recipeId = recipeId
         self.recipeRepository = recipeRepository
         self.logRepository = logRepository
+        self.userRepository = userRepository
     }
 
     func loadRecipe() {
@@ -95,6 +102,26 @@ final class RecipeDetailViewModel: ObservableObject {
     func shareRecipe() -> URL? {
         guard recipe != nil else { return nil }
         return URL(string: "https://cookstemma.com/recipes/\(recipeId)")
+    }
+
+    func blockUser() async {
+        guard let authorId = recipe?.author.id else { return }
+        let result = await userRepository.blockUser(userId: authorId)
+        if case .success = result {
+            #if DEBUG
+            print("[RecipeDetail] Blocked user: \(authorId)")
+            #endif
+        }
+    }
+
+    func reportUser(reason: ReportReason) async {
+        guard let authorId = recipe?.author.id else { return }
+        let result = await userRepository.reportUser(userId: authorId, reason: reason)
+        #if DEBUG
+        if case .success = result {
+            print("[RecipeDetail] Reported user \(authorId) for: \(reason.rawValue)")
+        }
+        #endif
     }
 
     var recipeSummary: RecipeSummary? {

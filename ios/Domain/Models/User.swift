@@ -155,3 +155,34 @@ enum ReportReason: String, Codable, CaseIterable {
         }
     }
 }
+
+// MARK: - Blocked User
+
+struct BlockedUser: Codable, Identifiable, Equatable {
+    let id: String
+    let username: String
+    let avatarUrl: String?
+    let blockedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "publicId"
+        case username
+        case avatarUrl = "profileImageUrl"
+        case blockedAt
+    }
+
+    var displayNameOrUsername: String { username }
+}
+
+// MARK: - Blocked Users Response
+
+struct BlockedUsersResponse: Codable {
+    let content: [BlockedUser]
+    let hasNext: Bool
+    let page: Int
+    let size: Int
+    let totalElements: Int
+
+    var hasMore: Bool { hasNext }
+    var nextPage: Int? { hasNext ? page + 1 : nil }
+}

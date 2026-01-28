@@ -66,12 +66,15 @@ struct RecipeDetailView: View {
                         }
                     }
 
-                    // More options (icon only)
-                    Menu {
-                        Button { } label: { Label("", systemImage: AppIcon.report) }
-                    } label: {
-                        Image(systemName: AppIcon.more)
-                            .foregroundColor(DesignSystem.Colors.text)
+                    // More options (block/report) - only show for other users' recipes
+                    if let recipe = viewModel.recipe,
+                       recipe.author.id != authManager.currentUser?.id {
+                        BlockReportMenu(
+                            targetUserId: recipe.author.id,
+                            targetUsername: recipe.author.username,
+                            onBlock: { Task { await viewModel.blockUser() } },
+                            onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
+                        )
                     }
                 }
             }

@@ -10,10 +10,16 @@ final class LogDetailViewModel: ObservableObject {
 
     private let logId: String
     private let logRepository: CookingLogRepositoryProtocol
+    private let userRepository: UserRepositoryProtocol
 
-    init(logId: String, logRepository: CookingLogRepositoryProtocol = CookingLogRepository()) {
+    init(
+        logId: String,
+        logRepository: CookingLogRepositoryProtocol = CookingLogRepository(),
+        userRepository: UserRepositoryProtocol = UserRepository()
+    ) {
         self.logId = logId
         self.logRepository = logRepository
+        self.userRepository = userRepository
     }
 
     func loadLog() {
@@ -57,6 +63,26 @@ final class LogDetailViewModel: ObservableObject {
         if case .failure = result {
             isSaved = wasSaved
         }
+    }
+
+    func blockUser() async {
+        guard let authorId = log?.author.id else { return }
+        let result = await userRepository.blockUser(userId: authorId)
+        if case .success = result {
+            #if DEBUG
+            print("[LogDetail] Blocked user: \(authorId)")
+            #endif
+        }
+    }
+
+    func reportUser(reason: ReportReason) async {
+        guard let authorId = log?.author.id else { return }
+        let result = await userRepository.reportUser(userId: authorId, reason: reason)
+        #if DEBUG
+        if case .success = result {
+            print("[LogDetail] Reported user \(authorId) for: \(reason.rawValue)")
+        }
+        #endif
     }
 }
 

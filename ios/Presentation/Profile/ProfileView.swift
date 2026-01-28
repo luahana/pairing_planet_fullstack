@@ -40,22 +40,15 @@ struct ProfileView: View {
             .background(DesignSystem.Colors.background)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if !viewModel.isOwnProfile, viewModel.profile != nil {
+                if !viewModel.isOwnProfile, let profile = viewModel.profile {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Menu {
-                            ShareLink(
-                                item: URL(string: "https://cookstemma.com/users/\(userId ?? "")")!
-                            ) {
-                                Label("", systemImage: AppIcon.share)
-                            }
-                            Button(role: .destructive) {
-                                Task { await viewModel.blockUser() }
-                            } label: {
-                                Label("", systemImage: AppIcon.block)
-                            }
-                        } label: {
-                            Image(systemName: AppIcon.more)
-                        }
+                        BlockReportShareMenu(
+                            targetUserId: profile.id,
+                            targetUsername: profile.username,
+                            shareURL: URL(string: "https://cookstemma.com/users/\(profile.id)")!,
+                            onBlock: { Task { await viewModel.blockUser() } },
+                            onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
+                        )
                     }
                 }
             }

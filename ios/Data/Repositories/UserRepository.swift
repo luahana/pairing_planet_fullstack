@@ -27,9 +27,10 @@ final class UserRepository: UserRepositoryProtocol {
         }
     }
 
-    func updateProfile(_ request: UpdateProfileRequest) async -> RepositoryResult<MyProfile> {
+    func updateProfile(_ request: UpdateProfileRequest) async -> RepositoryResult<Void> {
         do {
-            return .success(try await apiClient.request(UserEndpoint.updateProfile(request)))
+            try await apiClient.request(UserEndpoint.updateProfile(request))
+            return .success(())
         } catch let error as APIError {
             return .failure(mapError(error))
         } catch {
@@ -115,6 +116,16 @@ final class UserRepository: UserRepositoryProtocol {
         do {
             try await apiClient.request(UserEndpoint.unblock(userId: userId))
             return .success(())
+        } catch let error as APIError {
+            return .failure(mapError(error))
+        } catch {
+            return .failure(.unknown)
+        }
+    }
+
+    func getBlockedUsers(page: Int) async -> RepositoryResult<BlockedUsersResponse> {
+        do {
+            return .success(try await apiClient.request(UserEndpoint.blockedUsers(page: page)))
         } catch let error as APIError {
             return .failure(mapError(error))
         } catch {

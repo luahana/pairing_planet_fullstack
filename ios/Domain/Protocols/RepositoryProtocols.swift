@@ -91,7 +91,7 @@ protocol CookingLogRepositoryProtocol {
 protocol UserRepositoryProtocol {
     func getMyProfile() async -> RepositoryResult<MyProfile>
     func getUserProfile(id: String) async -> RepositoryResult<UserProfile>
-    func updateProfile(_ request: UpdateProfileRequest) async -> RepositoryResult<MyProfile>
+    func updateProfile(_ request: UpdateProfileRequest) async -> RepositoryResult<Void>
     func checkUsernameAvailability(_ username: String) async -> RepositoryResult<Bool>
     func getUserRecipes(userId: String, cursor: String?) async -> RepositoryResult<PaginatedResponse<RecipeSummary>>
     func follow(userId: String) async -> RepositoryResult<Void>
@@ -100,6 +100,7 @@ protocol UserRepositoryProtocol {
     func getFollowing(userId: String, cursor: String?) async -> RepositoryResult<PaginatedResponse<UserSummary>>
     func blockUser(userId: String) async -> RepositoryResult<Void>
     func unblockUser(userId: String) async -> RepositoryResult<Void>
+    func getBlockedUsers(page: Int) async -> RepositoryResult<BlockedUsersResponse>
     func reportUser(userId: String, reason: ReportReason) async -> RepositoryResult<Void>
 }
 

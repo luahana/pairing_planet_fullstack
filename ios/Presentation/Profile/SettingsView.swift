@@ -325,25 +325,109 @@ struct PrivacySettingsView: View {
 }
 
 struct BlockedUsersView: View {
-    @State private var blockedUsers: [UserSummary] = []
+    @StateObject private var viewModel = BlockedUsersViewModel()
 
     var body: some View {
         Group {
-            if blockedUsers.isEmpty {
-                EmptyStateView(icon: "hand.raised", title: "No blocked users", message: "Users you block will appear here")
-            } else {
-                List(blockedUsers) { user in
-                    HStack {
-                        AvatarView(url: user.avatarUrl, size: DesignSystem.AvatarSize.sm)
-                        Text("@\(user.username)")
-                        Spacer()
-                        Button("Unblock") { }
-                            .foregroundColor(DesignSystem.Colors.primary)
+            switch viewModel.state {
+            case .idle, .loading:
+                LoadingView()
+            case .loaded:
+                if viewModel.blockedUsers.isEmpty {
+                    EmptyStateView(icon: "hand.raised", title: "No blocked users", message: "Users you block will appear here")
+                } else {
+                    List {
+                        ForEach(viewModel.blockedUsers) { user in
+                            HStack {
+                                AvatarView(url: user.avatarUrl, size: DesignSystem.AvatarSize.sm)
+                                Text("@\(user.username)")
+                                    .font(DesignSystem.Typography.subheadline)
+                                Spacer()
+                                Button("Unblock") {
+                                    Task { await viewModel.unblockUser(user) }
+                                }
+                                .font(DesignSystem.Typography.subheadline)
+                                .foregroundColor(DesignSystem.Colors.primary)
+                            }
+                        }
+                        if viewModel.hasMore && !viewModel.isLoadingMore {
+                            Button("Load more") {
+                                Task { await viewModel.loadMore() }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        if viewModel.isLoadingMore {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                        }
                     }
+                }
+            case .error(let message):
+                ErrorStateView(message: message) {
+                    Task { await viewModel.loadBlockedUsers() }
                 }
             }
         }
         .navigationTitle("Blocked Users")
+        .onAppear {
+            if case .idle = viewModel.state {
+                Task { await viewModel.loadBlockedUsers() }
+            }
+        }
+    }
+}
+
+// MARK: - Blocked Users ViewModel
+@MainActor
+final class BlockedUsersViewModel: ObservableObject {
+    enum State: Equatable { case idle, loading, loaded, error(String) }
+
+    @Published private(set) var state: State = .idle
+    @Published private(set) var blockedUsers: [BlockedUser] = []
+    @Published private(set) var hasMore = false
+    @Published private(set) var isLoadingMore = false
+
+    private let userRepository: UserRepositoryProtocol
+    private var currentPage = 0
+
+    init(userRepository: UserRepositoryProtocol = UserRepository()) {
+        self.userRepository = userRepository
+    }
+
+    func loadBlockedUsers() async {
+        state = .loading
+        currentPage = 0
+        let result = await userRepository.getBlockedUsers(page: 0)
+        switch result {
+        case .success(let response):
+            blockedUsers = response.content
+            hasMore = response.hasMore
+            currentPage = response.page
+            state = .loaded
+        case .failure(let error):
+            state = .error(error.localizedDescription)
+        }
+    }
+
+    func loadMore() async {
+        guard !isLoadingMore, hasMore else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
+
+        let nextPage = currentPage + 1
+        let result = await userRepository.getBlockedUsers(page: nextPage)
+        if case .success(let response) = result {
+            blockedUsers.append(contentsOf: response.content)
+            hasMore = response.hasMore
+            currentPage = response.page
+        }
+    }
+
+    func unblockUser(_ user: BlockedUser) async {
+        let result = await userRepository.unblockUser(userId: user.id)
+        if case .success = result {
+            blockedUsers.removeAll { $0.id == user.id }
+        }
     }
 }
 

@@ -3,6 +3,7 @@ import SwiftUI
 struct LogDetailView: View {
     let logId: String
     @StateObject private var viewModel: LogDetailViewModel
+    @EnvironmentObject private var authManager: AuthManager
     @Environment(\.dismiss) private var dismiss
 
     init(logId: String) {
@@ -26,15 +27,19 @@ struct LogDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
+                if let log = viewModel.log,
+                   log.author.id != authManager.currentUser?.id {
+                    BlockReportShareMenu(
+                        targetUserId: log.author.id,
+                        targetUsername: log.author.username,
+                        shareURL: URL(string: "https://cookstemma.com/logs/\(logId)")!,
+                        onBlock: { Task { await viewModel.blockUser() } },
+                        onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
+                    )
+                } else {
                     ShareLink(item: URL(string: "https://cookstemma.com/logs/\(logId)")!) {
-                        Label("Share", systemImage: "square.and.arrow.up")
+                        Image(systemName: AppIcon.share)
                     }
-                    Button(role: .destructive) { } label: {
-                        Label("Report", systemImage: "flag")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
                 }
             }
         }
@@ -227,7 +232,6 @@ struct CommentRow: View {
     let onLike: () -> Void
     let onBlock: () -> Void
     let onReport: (ReportReason) -> Void
-    @State private var showReportSheet = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
@@ -252,28 +256,16 @@ struct CommentRow: View {
                 }
                 Spacer()
                 if !isOwnComment {
-                    Menu {
-                        Button(role: .destructive) { onBlock() } label: {
-                            Label("Block User", systemImage: AppIcon.block)
-                        }
-                        Button(role: .destructive) { showReportSheet = true } label: {
-                            Label("Report", systemImage: AppIcon.report)
-                        }
-                    } label: {
-                        Image(systemName: AppIcon.more)
-                            .font(.caption)
-                            .foregroundColor(DesignSystem.Colors.secondaryText)
-                            .padding(DesignSystem.Spacing.xs)
-                    }
+                    BlockReportMenu(
+                        targetUserId: comment.author.id,
+                        targetUsername: comment.author.username,
+                        onBlock: onBlock,
+                        onReport: onReport
+                    )
+                    .font(.caption)
                 }
             }
             .padding(.horizontal)
-            .confirmationDialog("Report Comment", isPresented: $showReportSheet, titleVisibility: .visible) {
-                ForEach(ReportReason.allCases, id: \.self) { reason in
-                    Button(reason.displayText) { onReport(reason) }
-                }
-                Button("Cancel", role: .cancel) { }
-            }
 
             // Replies
             if let replies = comment.replies, !replies.isEmpty {
