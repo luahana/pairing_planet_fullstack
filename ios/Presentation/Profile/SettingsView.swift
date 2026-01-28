@@ -88,11 +88,11 @@ struct SettingsView: View {
         .listStyle(.insetGrouped)
         .contentMargins(.bottom, 80, for: .scrollContent)
         .navigationTitle("Settings")
-        .confirmationDialog("Log Out", isPresented: $showLogoutConfirmation) {
+        .alert("Log Out", isPresented: $showLogoutConfirmation) {
+            Button("Cancel", role: .cancel) { }
             Button("Log Out", role: .destructive) {
                 Task { await authManager.logout() }
             }
-            Button("Cancel", role: .cancel) { }
         } message: {
             Text("Are you sure you want to log out?")
         }

@@ -94,14 +94,14 @@ struct CreateLogView: View {
             } message: {
                 if case .error(let msg) = viewModel.state { Text(msg) }
             }
-            .confirmationDialog("Add Photo", isPresented: $showingPhotoSourceSheet, titleVisibility: .visible) {
+            .alert("Add Photo", isPresented: $showingPhotoSourceSheet) {
+                Button("Cancel", role: .cancel) { }
                 Button("Take Photo") {
                     showingCamera = true
                 }
                 Button("Choose from Library") {
                     showingGallery = true
                 }
-                Button("Cancel", role: .cancel) { }
             }
             .sheet(isPresented: $showingCamera) {
                 CameraPicker { image in
