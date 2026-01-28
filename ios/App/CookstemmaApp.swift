@@ -1,5 +1,16 @@
 import SwiftUI
 
+// MARK: - App Notifications
+extension Notification.Name {
+    /// Posted when a recipe's save state changes
+    /// userInfo: ["recipeId": String, "isSaved": Bool]
+    static let recipeSaveStateChanged = Notification.Name("recipeSaveStateChanged")
+
+    /// Posted when a log's save state changes
+    /// userInfo: ["logId": String, "isSaved": Bool]
+    static let logSaveStateChanged = Notification.Name("logSaveStateChanged")
+}
+
 @main
 struct CookstemmaApp: App {
     @StateObject private var authManager = AuthManager.shared

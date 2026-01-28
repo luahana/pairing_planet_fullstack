@@ -4,6 +4,7 @@ struct HomeFeedView: View {
     @StateObject private var viewModel = HomeFeedViewModel()
     @EnvironmentObject private var appState: AppState
     @State private var navigationPath = NavigationPath()
+    @State private var scrollProxy: ScrollViewProxy?
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -26,6 +27,10 @@ struct HomeFeedView: View {
             if !navigationPath.isEmpty {
                 navigationPath = NavigationPath()
                 return
+            }
+            // Scroll to top with animation
+            withAnimation(.easeInOut(duration: 0.3)) {
+                scrollProxy?.scrollTo("home-top", anchor: .top)
             }
             Task { await viewModel.refresh() }
         }
@@ -62,11 +67,15 @@ struct HomeFeedView: View {
             ProgressView()
             Spacer()
         case .loaded:
-            ScrollView(.vertical, showsIndicators: false) {
-                feedContent
-            }
-            .refreshable {
-                await viewModel.refresh()
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    Color.clear.frame(height: 0).id("home-top")
+                    feedContent
+                }
+                .refreshable {
+                    await viewModel.refresh()
+                }
+                .onAppear { scrollProxy = proxy }
             }
         case .empty:
             Spacer()

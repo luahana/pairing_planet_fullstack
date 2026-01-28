@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 enum RecipeDetailState: Equatable {
     case idle, loading, loaded(RecipeDetail), error(String)
@@ -18,6 +19,7 @@ final class RecipeDetailViewModel: ObservableObject {
     private let logRepository: CookingLogRepositoryProtocol
     private let userRepository: UserRepositoryProtocol
     private var nextLogsCursor: String?
+    private var cancellables = Set<AnyCancellable>()
 
     init(
         recipeId: String,
@@ -29,6 +31,20 @@ final class RecipeDetailViewModel: ObservableObject {
         self.recipeRepository = recipeRepository
         self.logRepository = logRepository
         self.userRepository = userRepository
+        setupSaveStateObserver()
+    }
+
+    private func setupSaveStateObserver() {
+        NotificationCenter.default.publisher(for: .recipeSaveStateChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                guard let self = self,
+                      let notificationRecipeId = notification.userInfo?["recipeId"] as? String,
+                      notificationRecipeId == self.recipeId,
+                      let newSavedState = notification.userInfo?["isSaved"] as? Bool else { return }
+                self.isSaved = newSavedState
+            }
+            .store(in: &cancellables)
     }
 
     func loadRecipe() {
@@ -96,7 +112,16 @@ final class RecipeDetailViewModel: ObservableObject {
         let wasSaved = isSaved
         isSaved = !wasSaved
         let result = wasSaved ? await recipeRepository.unsaveRecipe(id: recipeId) : await recipeRepository.saveRecipe(id: recipeId)
-        if case .failure = result { isSaved = wasSaved }
+        if case .failure = result {
+            isSaved = wasSaved
+        } else {
+            // Notify other views about save state change
+            NotificationCenter.default.post(
+                name: .recipeSaveStateChanged,
+                object: nil,
+                userInfo: ["recipeId": recipeId, "isSaved": isSaved]
+            )
+        }
     }
 
     func shareRecipe() -> URL? {
@@ -139,7 +164,8 @@ final class RecipeDetailViewModel: ObservableObject {
             servings: recipe.servings,
             cookingTimeRange: recipe.cookingTimeRange,
             hashtags: recipe.hashtags ?? [],
-            isPrivate: false
+            isPrivate: false,
+            isSaved: recipe.isSaved
         )
     }
 }

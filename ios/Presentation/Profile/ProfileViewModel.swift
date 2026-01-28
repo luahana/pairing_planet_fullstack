@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 enum ProfileState: Equatable { case idle, loading, loaded, error(String) }
 enum ProfileTab: String, CaseIterable { case recipes, logs, saved }
@@ -53,6 +54,9 @@ final class ProfileViewModel: ObservableObject {
     private var logsNextCursor: String?
     private var savedRecipesNextCursor: String?
     private var savedLogsNextCursor: String?
+    private var cancellables = Set<AnyCancellable>()
+    private var savedContentNeedsRefresh = false
+    @Published private var savedCountAdjustment = 0
 
     init(
         userId: String? = nil,
@@ -65,6 +69,63 @@ final class ProfileViewModel: ObservableObject {
         self.logRepository = logRepository
         self.savedContentRepository = savedContentRepository
         self.isOwnProfile = userId == nil
+        setupSaveStateObserver()
+    }
+
+    private func setupSaveStateObserver() {
+        // Listen for recipe save state changes
+        NotificationCenter.default.publisher(for: .recipeSaveStateChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                guard let self = self, self.isOwnProfile else { return }
+                guard let recipeId = notification.userInfo?["recipeId"] as? String,
+                      let isSaved = notification.userInfo?["isSaved"] as? Bool else { return }
+
+                #if DEBUG
+                print("[Profile] Recipe save state changed: \(recipeId), isSaved=\(isSaved)")
+                #endif
+
+                if isSaved {
+                    // Recipe was saved - update count and refresh to get full data
+                    self.savedCountAdjustment += 1
+                    self.savedContentNeedsRefresh = true
+                    if self.selectedTab == .saved {
+                        Task { await self.loadSavedContent(refresh: true) }
+                    }
+                } else {
+                    // Recipe was unsaved - update count and remove from list immediately
+                    self.savedCountAdjustment -= 1
+                    self.savedRecipes = self.savedRecipes.filter { $0.id != recipeId }
+                }
+            }
+            .store(in: &cancellables)
+
+        // Listen for log save state changes
+        NotificationCenter.default.publisher(for: .logSaveStateChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                guard let self = self, self.isOwnProfile else { return }
+                guard let logId = notification.userInfo?["logId"] as? String,
+                      let isSaved = notification.userInfo?["isSaved"] as? Bool else { return }
+
+                #if DEBUG
+                print("[Profile] Log save state changed: \(logId), isSaved=\(isSaved)")
+                #endif
+
+                if isSaved {
+                    // Log was saved - update count and refresh to get full data
+                    self.savedCountAdjustment += 1
+                    self.savedContentNeedsRefresh = true
+                    if self.selectedTab == .saved {
+                        Task { await self.loadSavedContent(refresh: true) }
+                    }
+                } else {
+                    // Log was unsaved - update count and remove from list immediately
+                    self.savedCountAdjustment -= 1
+                    self.savedLogs = self.savedLogs.filter { $0.id != logId }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func loadProfile() {
@@ -80,13 +141,15 @@ final class ProfileViewModel: ObservableObject {
             switch selectedTab {
             case .recipes: await loadRecipes(refresh: true)
             case .logs: await loadLogs(refresh: true)
-            case .saved: await loadSavedContent(refresh: true)
+            case .saved:
+                await loadSavedContent(refresh: true)
+                savedContentNeedsRefresh = false
             }
         }
     }
 
     var savedCount: Int {
-        myProfile?.savedCount ?? 0
+        max(0, (myProfile?.savedCount ?? 0) + savedCountAdjustment)
     }
 
     func toggleFollow() async {
@@ -121,8 +184,13 @@ final class ProfileViewModel: ObservableObject {
     private func loadMyProfile() async {
         let result = await userRepository.getMyProfile()
         switch result {
-        case .success(let profile): myProfile = profile; state = .loaded; loadContent()
-        case .failure(let error): state = .error(error.localizedDescription)
+        case .success(let profile):
+            myProfile = profile
+            savedCountAdjustment = 0  // Reset adjustment since API has accurate count
+            state = .loaded
+            loadContent()
+        case .failure(let error):
+            state = .error(error.localizedDescription)
         }
     }
 

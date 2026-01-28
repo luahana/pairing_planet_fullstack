@@ -73,6 +73,12 @@ final class LogDetailViewModel: ObservableObject {
             #if DEBUG
             print("[LogDetail] toggleSave: API success, isSaved=\(isSaved)")
             #endif
+            // Notify other views about save state change
+            NotificationCenter.default.post(
+                name: .logSaveStateChanged,
+                object: nil,
+                userInfo: ["logId": logId, "isSaved": isSaved]
+            )
         case .failure(let error):
             #if DEBUG
             print("[LogDetail] toggleSave: API failed with error: \(error), reverting to \(wasSaved)")

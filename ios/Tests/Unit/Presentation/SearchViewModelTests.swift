@@ -380,7 +380,8 @@ final class SearchViewModelTests: XCTestCase {
             servings: 2,
             cookingTimeRange: "UNDER_15",
             hashtags: [],
-            isPrivate: false
+            isPrivate: false,
+            isSaved: false
         )
     }
 

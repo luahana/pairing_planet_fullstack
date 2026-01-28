@@ -283,15 +283,17 @@ final class RecipeRepositoryTests: XCTestCase {
                 id: "recipe-\(i)",
                 title: "Recipe \(i)",
                 description: "Description \(i)",
-                coverImageUrl: nil,
-                cookingTimeRange: .under15,
+                foodName: "Food \(i)",
+                cookingStyle: "US",
+                userName: "testuser",
+                thumbnail: nil,
+                variantCount: 1,
+                logCount: i * 10,
                 servings: 2,
-                cookCount: i * 10,
-                averageRating: 4.0,
-                author: createMockAuthor(),
-                isSaved: false,
-                category: nil,
-                createdAt: Date()
+                cookingTimeRange: "UNDER_15",
+                hashtags: [],
+                isPrivate: false,
+                isSaved: false
             )
         }
     }

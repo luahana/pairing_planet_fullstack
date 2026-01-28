@@ -108,6 +108,20 @@ struct LogDetailView: View {
                     .padding(.horizontal)
             }
 
+            // Hashtags
+            if !log.hashtags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DesignSystem.Spacing.xs) {
+                        ForEach(log.hashtags, id: \.self) { hashtag in
+                            Text("#\(hashtag)")
+                                .font(DesignSystem.Typography.subheadline)
+                                .foregroundColor(DesignSystem.Colors.primary)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+
             // Linked recipe
             if let recipe = log.recipe {
                 NavigationLink(destination: RecipeDetailView(recipeId: recipe.id)) {

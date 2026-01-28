@@ -93,15 +93,17 @@ enum MockFactory {
             id: id,
             title: title,
             description: "A test recipe description",
-            coverImageUrl: nil,
-            cookingTimeRange: .between15And30,
+            foodName: "Test Food",
+            cookingStyle: "US",
+            userName: "testuser",
+            thumbnail: nil,
+            variantCount: 1,
+            logCount: cookCount,
             servings: 2,
-            cookCount: cookCount,
-            averageRating: 4.5,
-            author: userSummary(),
-            isSaved: isSaved,
-            category: nil,
-            createdAt: Date()
+            cookingTimeRange: "MIN_15_TO_30",
+            hashtags: [],
+            isPrivate: false,
+            isSaved: isSaved
         )
     }
 

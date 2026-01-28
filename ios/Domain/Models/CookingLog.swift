@@ -158,7 +158,8 @@ struct CookingLogDetail: Codable, Identifiable, Equatable {
             id: r.id, title: r.title, description: r.description, foodName: r.foodName,
             cookingStyle: r.cookingStyle, userName: r.userName, thumbnail: r.thumbnail,
             variantCount: r.variantCount, logCount: r.logCount, servings: r.servings,
-            cookingTimeRange: r.cookingTimeRange, hashtags: r.hashtags, isPrivate: r.isPrivate
+            cookingTimeRange: r.cookingTimeRange, hashtags: r.hashtags, isPrivate: r.isPrivate,
+            isSaved: false
         )
     }
     var likeCount: Int { 0 }

@@ -378,15 +378,17 @@ final class UserRepositoryTests: XCTestCase {
             id: "recipe-123",
             title: "Test Recipe",
             description: nil,
-            coverImageUrl: nil,
-            cookingTimeRange: .under15,
+            foodName: "Test Food",
+            cookingStyle: "US",
+            userName: "testuser",
+            thumbnail: nil,
+            variantCount: 1,
+            logCount: 50,
             servings: 2,
-            cookCount: 50,
-            averageRating: 4.0,
-            author: createMockUserSummary(),
-            isSaved: false,
-            category: nil,
-            createdAt: Date()
+            cookingTimeRange: "UNDER_15",
+            hashtags: [],
+            isPrivate: false,
+            isSaved: false
         )
     }
 }
