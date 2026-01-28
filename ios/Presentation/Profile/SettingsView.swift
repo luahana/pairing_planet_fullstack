@@ -282,27 +282,26 @@ struct EditProfileView: View {
 struct NotificationSettingsView: View {
     @State private var commentsEnabled = true
     @State private var followersEnabled = true
-    @State private var recipeActivityEnabled = true
-    @State private var likesEnabled = false
-    @State private var weeklyDigestEnabled = true
-    @State private var quietHoursEnabled = false
+    @State private var newSavedEnabled = true
+    @State private var newCookingLogsEnabled = true
+    @State private var newVariantRecipesEnabled = true
 
     var body: some View {
         Form {
             Section("Push Notifications") {
                 Toggle("Comments & Replies", isOn: $commentsEnabled)
                 Toggle("New Followers", isOn: $followersEnabled)
-                Toggle("Recipe Activity", isOn: $recipeActivityEnabled)
-                Toggle("Likes", isOn: $likesEnabled)
-                Toggle("Weekly Digest", isOn: $weeklyDigestEnabled)
+                Toggle("New Saved", isOn: $newSavedEnabled)
             }
 
-            Section("Quiet Hours") {
-                Toggle("Enable Quiet Hours", isOn: $quietHoursEnabled)
-                if quietHoursEnabled {
-                    DatePicker("Start", selection: .constant(Date()), displayedComponents: .hourAndMinute)
-                    DatePicker("End", selection: .constant(Date()), displayedComponents: .hourAndMinute)
-                }
+            Section {
+                Toggle("New Cooking Logs", isOn: $newCookingLogsEnabled)
+                Toggle("New Variant Recipes", isOn: $newVariantRecipesEnabled)
+            } header: {
+                Text("Recipe Activity")
+            } footer: {
+                Text("Notify when another user adds a cooking log or variant recipe of your recipe")
+                    .font(DesignSystem.Typography.caption)
             }
         }
         .contentMargins(.bottom, 80, for: .scrollContent)

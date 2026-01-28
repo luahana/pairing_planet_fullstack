@@ -36,6 +36,7 @@ public class SavedRecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeLogRepository recipeLogRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
@@ -51,6 +52,10 @@ public class SavedRecipeService {
                     .recipeId(recipe.getId())
                     .build());
             recipe.incrementSavedCount();
+
+            // Send notification to recipe owner
+            User sender = userRepository.getReferenceById(userId);
+            notificationService.notifyRecipeSaved(recipe, sender);
         }
     }
 

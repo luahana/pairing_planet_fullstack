@@ -34,6 +34,7 @@ public class SavedLogService {
     private final SavedLogRepository savedLogRepository;
     private final LogPostRepository logPostRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
@@ -49,6 +50,10 @@ public class SavedLogService {
                     .logPostId(logPost.getId())
                     .build());
             logPost.incrementSavedCount();
+
+            // Send notification to log owner
+            User sender = userRepository.getReferenceById(userId);
+            notificationService.notifyLogSaved(logPost, sender);
         }
     }
 

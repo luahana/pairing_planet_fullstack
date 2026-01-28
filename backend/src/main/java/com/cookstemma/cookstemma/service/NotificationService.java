@@ -187,6 +187,78 @@ public class NotificationService {
         log.info("Sent RECIPE_VARIATION notification to user {} from user {}", parentOwnerId, sender.getId());
     }
 
+    /**
+     * Called when someone saves a recipe
+     */
+    public void notifyRecipeSaved(Recipe recipe, User sender) {
+        Long recipeOwnerId = recipe.getCreatorId();
+
+        // Don't notify yourself
+        if (recipeOwnerId.equals(sender.getId())) {
+            log.debug("Skipping self-notification for RECIPE_SAVED");
+            return;
+        }
+
+        User recipient = userRepository.getReferenceById(recipeOwnerId);
+
+        String title = "누군가 당신의 레시피를 저장했어요!";
+        String body = String.format("%s님이 '%s' 레시피를 저장했습니다.",
+            sender.getUsername(), truncate(recipe.getTitle(), 30));
+
+        Notification notification = Notification.builder()
+            .recipient(recipient)
+            .sender(sender)
+            .type(NotificationType.RECIPE_SAVED)
+            .recipe(recipe)
+            .title(title)
+            .body(body)
+            .data(Map.of(
+                "recipeTitle", recipe.getTitle(),
+                "senderName", sender.getUsername()
+            ))
+            .build();
+
+        notificationRepository.save(notification);
+        pushNotificationService.sendToUser(recipeOwnerId, notification);
+        log.info("Sent RECIPE_SAVED notification to user {} from user {}", recipeOwnerId, sender.getId());
+    }
+
+    /**
+     * Called when someone saves a cooking log
+     */
+    public void notifyLogSaved(LogPost logPost, User sender) {
+        Long logOwnerId = logPost.getCreatorId();
+
+        // Don't notify yourself
+        if (logOwnerId.equals(sender.getId())) {
+            log.debug("Skipping self-notification for LOG_SAVED");
+            return;
+        }
+
+        User recipient = userRepository.getReferenceById(logOwnerId);
+
+        String title = "누군가 당신의 요리 일지를 저장했어요!";
+        String body = String.format("%s님이 회원님의 요리 일지를 저장했습니다.",
+            sender.getUsername());
+
+        Notification notification = Notification.builder()
+            .recipient(recipient)
+            .sender(sender)
+            .type(NotificationType.LOG_SAVED)
+            .logPost(logPost)
+            .title(title)
+            .body(body)
+            .data(Map.of(
+                "senderName", sender.getUsername(),
+                "logPublicId", logPost.getPublicId().toString()
+            ))
+            .build();
+
+        notificationRepository.save(notification);
+        pushNotificationService.sendToUser(logOwnerId, notification);
+        log.info("Sent LOG_SAVED notification to user {} from user {}", logOwnerId, sender.getId());
+    }
+
     // =========== Notification Inbox ===========
 
     @Transactional(readOnly = true)
