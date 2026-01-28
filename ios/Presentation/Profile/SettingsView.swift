@@ -604,12 +604,6 @@ struct AboutView: View {
                 Link(destination: URL(string: "https://cookstemma.com")!) {
                     Label("Website", systemImage: "globe")
                 }
-                Link(destination: URL(string: "https://twitter.com/cookstemma")!) {
-                    Label("Twitter", systemImage: "at")
-                }
-                Link(destination: URL(string: "https://instagram.com/cookstemma")!) {
-                    Label("Instagram", systemImage: "camera")
-                }
             }
 
             Section {
