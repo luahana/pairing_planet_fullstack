@@ -15,6 +15,7 @@ struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var appState: AppState
     @State private var navigationPath = NavigationPath()
+    @State private var scrollProxy: ScrollViewProxy?
 
     private var isViewingOwnProfile: Bool { userId == nil }
     private let gridColumns = [
@@ -90,6 +91,10 @@ struct ProfileView: View {
             if !navigationPath.isEmpty {
                 navigationPath = NavigationPath()
             }
+            // Scroll to top with animation
+            withAnimation(.easeInOut(duration: 0.3)) {
+                scrollProxy?.scrollTo("profile-top", anchor: .top)
+            }
         }
     }
 
@@ -118,12 +123,17 @@ struct ProfileView: View {
     }
 
     private var mainContent: some View {
-        ScrollView {
-            switch viewModel.state {
-            case .idle, .loading: LoadingView()
-            case .loaded: profileContent
-            case .error(let msg): ErrorStateView(message: msg) { viewModel.loadProfile() }
+        ScrollViewReader { proxy in
+            ScrollView {
+                Color.clear.frame(height: 0).id("profile-top")
+                switch viewModel.state {
+                case .idle, .loading: LoadingView()
+                case .loaded: profileContent
+                case .error(let msg): ErrorStateView(message: msg) { viewModel.loadProfile() }
+                }
             }
+            .scrollIndicators(.hidden)
+            .onAppear { scrollProxy = proxy }
         }
     }
 
@@ -327,108 +337,83 @@ struct ProfileView: View {
         }
     }
 
-    // MARK: - Content Grid with Swipe Animation
+    // MARK: - Content Grid
     @ViewBuilder
     private var contentGrid: some View {
-        // Calculate height: screen height minus estimated header (~350) and tab bar (~80)
-        let contentHeight = max(400, UIScreen.main.bounds.height - 430)
-
         if viewModel.selectedTab == .saved {
-            // Saved tab with swipeable filter pages
-            TabView(selection: $viewModel.savedContentFilter) {
-                ForEach(SavedContentFilter.allCases, id: \.self) { filter in
-                    savedFilterContent(for: filter)
-                        .tag(filter)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: contentHeight)
+            savedFilterContent(for: viewModel.savedContentFilter)
         } else {
-            // Recipes/Logs tab with swipeable visibility filter pages
-            TabView(selection: $viewModel.visibilityFilter) {
-                ForEach(VisibilityFilter.allCases, id: \.self) { filter in
-                    visibilityFilterContent(for: filter)
-                        .tag(filter)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: contentHeight)
+            visibilityFilterContent(for: viewModel.visibilityFilter)
         }
     }
 
     @ViewBuilder
     private func visibilityFilterContent(for filter: VisibilityFilter) -> some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
-                    switch viewModel.selectedTab {
-                    case .recipes:
-                        ForEach(viewModel.recipes) { recipe in
-                            NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
-                                RecipeGridCard(recipe: recipe)
-                            }
-                            .buttonStyle(.plain)
+        VStack(spacing: 0) {
+            LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
+                switch viewModel.selectedTab {
+                case .recipes:
+                    ForEach(viewModel.recipes) { recipe in
+                        NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
+                            RecipeGridCard(recipe: recipe)
                         }
-                    case .logs:
-                        ForEach(viewModel.logs) { log in
-                            NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
-                                LogGridCard(log: log)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    case .saved:
-                        EmptyView()
+                        .buttonStyle(.plain)
                     }
-                }
-                .padding(.horizontal, DesignSystem.Spacing.md)
-
-                if viewModel.isLoadingContent {
-                    ProgressView()
-                        .padding()
-                }
-
-                if isEmptyForCurrentTab {
-                    emptyState
+                case .logs:
+                    ForEach(viewModel.logs) { log in
+                        NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
+                            LogGridCard(log: log)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                case .saved:
+                    EmptyView()
                 }
             }
-            .padding(.bottom, 100) // Extra padding for tab bar
+            .padding(.horizontal, DesignSystem.Spacing.md)
+
+            if viewModel.isLoadingContent {
+                ProgressView()
+                    .padding()
+            }
+
+            if isEmptyForCurrentTab {
+                emptyState
+            }
         }
     }
 
     @ViewBuilder
     private func savedFilterContent(for filter: SavedContentFilter) -> some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
-                    if filter != .logs {
-                        ForEach(viewModel.savedRecipes) { recipe in
-                            NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
-                                RecipeGridCard(recipe: recipe, showSavedBadge: true)
-                            }
-                            .buttonStyle(.plain)
+        VStack(spacing: 0) {
+            LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
+                if filter != .logs {
+                    ForEach(viewModel.savedRecipes) { recipe in
+                        NavigationLink(value: ProfileNavDestination.recipe(id: recipe.id)) {
+                            RecipeGridCard(recipe: recipe, showSavedBadge: true)
                         }
-                    }
-                    if filter != .recipes {
-                        ForEach(viewModel.savedLogs) { log in
-                            NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
-                                LogGridCard(log: log, showSavedBadge: true)
-                            }
-                            .buttonStyle(.plain)
-                        }
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, DesignSystem.Spacing.md)
-
-                if viewModel.isLoadingContent {
-                    ProgressView()
-                        .padding()
-                }
-
-                if isEmptyForSavedFilter(filter) {
-                    savedEmptyState(for: filter)
+                if filter != .recipes {
+                    ForEach(viewModel.savedLogs) { log in
+                        NavigationLink(value: ProfileNavDestination.log(id: log.id)) {
+                            LogGridCard(log: log, showSavedBadge: true)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
-            .padding(.bottom, 100) // Extra padding for tab bar
+            .padding(.horizontal, DesignSystem.Spacing.md)
+
+            if viewModel.isLoadingContent {
+                ProgressView()
+                    .padding()
+            }
+
+            if isEmptyForSavedFilter(filter) {
+                savedEmptyState(for: filter)
+            }
         }
     }
 
