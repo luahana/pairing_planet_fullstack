@@ -23,7 +23,7 @@ enum DesignSystem {
         static let warning = Color.orange
         static let error = Color.red
         static let like = Color.red
-        static let bookmark = Color.yellow
+        static let bookmark = Color.orange
         static let share = Color.blue
         static let rating = Color.yellow
         static let primaryText = Color(uiColor: .label)

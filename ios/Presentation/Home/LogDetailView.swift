@@ -155,10 +155,6 @@ struct LogDetailView: View {
                 Button { } label: {
                     Label("\(log.commentCount)", systemImage: "bubble.right")
                 }
-                Button { Task { await viewModel.toggleSave() } } label: {
-                    Image(systemName: viewModel.isSaved ? "bookmark.fill" : "bookmark")
-                        .foregroundColor(viewModel.isSaved ? DesignSystem.Colors.primary : DesignSystem.Colors.primaryText)
-                }
                 Spacer()
             }
             .padding(.horizontal)

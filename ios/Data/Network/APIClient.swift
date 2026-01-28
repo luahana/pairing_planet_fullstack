@@ -209,7 +209,9 @@ final class APIClient: APIClientProtocol {
 
         endpoint.headers?.forEach { request.setValue($1, forHTTPHeaderField: $0) }
 
-        if endpoint.requiresAuth, let token = tokenManager?.accessToken {
+        // Always send auth token if available - this allows public endpoints
+        // to return user-specific data (e.g., isSavedByCurrentUser)
+        if let token = tokenManager?.accessToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
