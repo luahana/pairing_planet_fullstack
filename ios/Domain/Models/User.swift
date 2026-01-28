@@ -85,13 +85,90 @@ struct UserProfile: Codable, Identifiable, Equatable {
     let isFollowing: Bool
     let isFollowedBy: Bool
     let isBlocked: Bool
-    let createdAt: Date
+    let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
-        case id = "publicId"
-        case username, displayName, avatarUrl, bio, level
+        case id
+        case username, displayName, avatarUrl, profileImageUrl, bio, level
         case recipeCount, logCount, followerCount, followingCount
         case socialLinks, isFollowing, isFollowedBy, isBlocked, createdAt
+    }
+
+    // Memberwise initializer for creating instances programmatically
+    init(
+        id: String,
+        username: String,
+        displayName: String?,
+        avatarUrl: String?,
+        bio: String?,
+        level: Int,
+        recipeCount: Int,
+        logCount: Int,
+        followerCount: Int,
+        followingCount: Int,
+        socialLinks: SocialLinks?,
+        isFollowing: Bool,
+        isFollowedBy: Bool,
+        isBlocked: Bool,
+        createdAt: Date?
+    ) {
+        self.id = id
+        self.username = username
+        self.displayName = displayName
+        self.avatarUrl = avatarUrl
+        self.bio = bio
+        self.level = level
+        self.recipeCount = recipeCount
+        self.logCount = logCount
+        self.followerCount = followerCount
+        self.followingCount = followingCount
+        self.socialLinks = socialLinks
+        self.isFollowing = isFollowing
+        self.isFollowedBy = isFollowedBy
+        self.isBlocked = isBlocked
+        self.createdAt = createdAt
+    }
+
+    // Custom decoder to handle API response format
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.id = try container.decode(String.self, forKey: .id)
+        self.username = try container.decode(String.self, forKey: .username)
+        self.displayName = try container.decodeIfPresent(String.self, forKey: .displayName)
+        // Try avatarUrl first, fall back to profileImageUrl
+        self.avatarUrl = try container.decodeIfPresent(String.self, forKey: .avatarUrl)
+            ?? container.decodeIfPresent(String.self, forKey: .profileImageUrl)
+        self.bio = try container.decodeIfPresent(String.self, forKey: .bio)
+        self.level = try container.decode(Int.self, forKey: .level)
+        self.recipeCount = try container.decode(Int.self, forKey: .recipeCount)
+        self.logCount = try container.decode(Int.self, forKey: .logCount)
+        self.followerCount = try container.decode(Int.self, forKey: .followerCount)
+        self.followingCount = try container.decode(Int.self, forKey: .followingCount)
+        self.socialLinks = try container.decodeIfPresent(SocialLinks.self, forKey: .socialLinks)
+        self.isFollowing = try container.decodeIfPresent(Bool.self, forKey: .isFollowing) ?? false
+        self.isFollowedBy = try container.decodeIfPresent(Bool.self, forKey: .isFollowedBy) ?? false
+        self.isBlocked = try container.decodeIfPresent(Bool.self, forKey: .isBlocked) ?? false
+        self.createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(username, forKey: .username)
+        try container.encodeIfPresent(displayName, forKey: .displayName)
+        try container.encodeIfPresent(avatarUrl, forKey: .avatarUrl)
+        try container.encodeIfPresent(bio, forKey: .bio)
+        try container.encode(level, forKey: .level)
+        try container.encode(recipeCount, forKey: .recipeCount)
+        try container.encode(logCount, forKey: .logCount)
+        try container.encode(followerCount, forKey: .followerCount)
+        try container.encode(followingCount, forKey: .followingCount)
+        try container.encodeIfPresent(socialLinks, forKey: .socialLinks)
+        try container.encode(isFollowing, forKey: .isFollowing)
+        try container.encode(isFollowedBy, forKey: .isFollowedBy)
+        try container.encode(isBlocked, forKey: .isBlocked)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
     }
 
     var displayNameOrUsername: String { displayName ?? username }

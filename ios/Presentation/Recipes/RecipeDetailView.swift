@@ -106,11 +106,13 @@ struct RecipeDetailView: View {
                     .foregroundColor(DesignSystem.Colors.text)
 
                 // Author row (icon-focused)
-                HStack(spacing: DesignSystem.Spacing.sm) {
-                    AvatarView(url: recipe.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
-                    Text("@\(recipe.author.username)")
-                        .font(DesignSystem.Typography.caption)
-                        .foregroundColor(DesignSystem.Colors.secondaryText)
+                NavigationLink(destination: ProfileView(userId: recipe.author.id)) {
+                    HStack(spacing: DesignSystem.Spacing.sm) {
+                        AvatarView(url: recipe.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
+                        Text("@\(recipe.author.username)")
+                            .font(DesignSystem.Typography.caption)
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
                 }
 
                 // Stats row (Icons with minimal text)

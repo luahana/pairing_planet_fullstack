@@ -28,45 +28,55 @@ struct ProfileView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            Group {
-                if isViewingOwnProfile && !authManager.isAuthenticated {
-                    loginPromptView
-                } else {
-                    mainContent
-                }
-            }
-            .background(DesignSystem.Colors.background)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if !viewModel.isOwnProfile, let profile = viewModel.profile {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        BlockReportShareMenu(
-                            targetUserId: profile.id,
-                            targetUsername: profile.username,
-                            shareURL: URL(string: "https://cookstemma.com/users/\(profile.id)")!,
-                            onBlock: { Task { await viewModel.blockUser() } },
-                            onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
-                        )
+        // Use NavigationStack only for own profile (tab root), not when pushed from other views
+        if isViewingOwnProfile {
+            NavigationStack(path: $navigationPath) {
+                profileBody
+                    .navigationDestination(for: ProfileNavDestination.self) { destination in
+                        switch destination {
+                        case .settings:
+                            SettingsView()
+                        case .followers(let userId):
+                            FollowersListView(userId: userId, initialTab: .followers)
+                        case .following(let userId):
+                            FollowersListView(userId: userId, initialTab: .following)
+                        case .recipe(let id):
+                            RecipeDetailView(recipeId: id)
+                        case .log(let id):
+                            LogDetailView(logId: id)
+                        }
                     }
-                }
             }
-            .refreshable { viewModel.loadProfile() }
-            .navigationDestination(for: ProfileNavDestination.self) { destination in
-                switch destination {
-                case .settings:
-                    SettingsView()
-                case .followers(let userId):
-                    FollowersListView(userId: userId, initialTab: .followers)
-                case .following(let userId):
-                    FollowersListView(userId: userId, initialTab: .following)
-                case .recipe(let id):
-                    RecipeDetailView(recipeId: id)
-                case .log(let id):
-                    LogDetailView(logId: id)
+        } else {
+            profileBody
+        }
+    }
+
+    @ViewBuilder
+    private var profileBody: some View {
+        Group {
+            if isViewingOwnProfile && !authManager.isAuthenticated {
+                loginPromptView
+            } else {
+                mainContent
+            }
+        }
+        .background(DesignSystem.Colors.background)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if !viewModel.isOwnProfile, let profile = viewModel.profile {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    BlockReportShareMenu(
+                        targetUserId: profile.id,
+                        targetUsername: profile.username,
+                        shareURL: URL(string: "https://cookstemma.com/users/\(profile.id)")!,
+                        onBlock: { Task { await viewModel.blockUser() } },
+                        onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
+                    )
                 }
             }
         }
+        .refreshable { viewModel.loadProfile() }
         .onAppear {
             if !isViewingOwnProfile || authManager.isAuthenticated {
                 if case .idle = viewModel.state { viewModel.loadProfile() }
