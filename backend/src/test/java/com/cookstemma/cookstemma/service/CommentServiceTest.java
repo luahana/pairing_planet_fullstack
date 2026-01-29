@@ -602,6 +602,50 @@ class CommentServiceTest extends BaseIntegrationTest {
             assertThat(comment.isHidden()).isTrue();
             assertThat(comment.getHiddenReason()).isEqualTo("Test reason");
         }
+
+        @Test
+        @DisplayName("Visible comment count should include both top-level and replies")
+        void visibleCommentCount_IncludesReplies() {
+            // Clear the hidden comment from setup
+            commentRepository.delete(hiddenComment);
+            commentRepository.flush();
+
+            // Create 2 top-level comments
+            Comment topLevel1 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(commenter)
+                    .content("Top level 1")
+                    .build();
+            commentRepository.saveAndFlush(topLevel1);
+
+            Comment topLevel2 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(anotherUser)
+                    .content("Top level 2")
+                    .build();
+            commentRepository.saveAndFlush(topLevel2);
+
+            // Create 2 replies to top-level 1
+            Comment reply1 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(anotherUser)
+                    .parent(topLevel1)
+                    .content("Reply 1")
+                    .build();
+            commentRepository.saveAndFlush(reply1);
+
+            Comment reply2 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(commenter)
+                    .parent(topLevel1)
+                    .content("Reply 2")
+                    .build();
+            commentRepository.saveAndFlush(reply2);
+
+            // Count should be 4 (2 top-level + 2 replies)
+            long count = commentRepository.countVisibleCommentsAnonymous(testLogPost.getId());
+            assertThat(count).as("Count should include 2 top-level + 2 replies = 4").isEqualTo(4);
+        }
     }
 
     @Nested
