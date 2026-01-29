@@ -289,29 +289,10 @@ struct CreateLogView: View {
                     .foregroundColor(DesignSystem.Colors.primary)
 
                 if let recipe = viewModel.selectedRecipe {
-                    if let thumbnailUrl = recipe.coverImageUrl, let url = URL(string: thumbnailUrl) {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image.resizable().scaledToFill()
-                            case .failure, .empty:
-                                Image(systemName: "photo")
-                                    .foregroundColor(DesignSystem.Colors.tertiaryText)
-                            @unknown default:
-                                Rectangle().fill(DesignSystem.Colors.secondaryBackground)
-                            }
-                        }
+                    RecipeImageView(urlString: recipe.coverImageUrl)
                         .frame(width: 40, height: 40)
-                        .background(DesignSystem.Colors.secondaryBackground)
                         .cornerRadius(DesignSystem.CornerRadius.xs)
                         .clipped()
-                    } else {
-                        Image(systemName: "photo")
-                            .foregroundColor(DesignSystem.Colors.tertiaryText)
-                            .frame(width: 40, height: 40)
-                            .background(DesignSystem.Colors.secondaryBackground)
-                            .cornerRadius(DesignSystem.CornerRadius.xs)
-                    }
 
                     Text(recipe.title)
                         .font(DesignSystem.Typography.subheadline)
@@ -711,6 +692,57 @@ final class RecipeSearchViewModel: ObservableObject {
             recentRecipes = []
         }
         isLoadingRecent = false
+    }
+}
+
+// MARK: - Recipe Image View
+struct RecipeImageView: View {
+    let urlString: String?
+    @State private var image: UIImage?
+    @State private var isLoading = true
+
+    var body: some View {
+        Group {
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else if isLoading {
+                Rectangle()
+                    .fill(DesignSystem.Colors.secondaryBackground)
+            } else {
+                Rectangle()
+                    .fill(DesignSystem.Colors.secondaryBackground)
+            }
+        }
+        .task(id: urlString) {
+            await loadImage()
+        }
+    }
+
+    private func loadImage() async {
+        guard let urlString = urlString, let url = URL(string: urlString) else {
+            isLoading = false
+            return
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let uiImage = UIImage(data: data) {
+                await MainActor.run {
+                    self.image = uiImage
+                    self.isLoading = false
+                }
+            } else {
+                await MainActor.run {
+                    self.isLoading = false
+                }
+            }
+        } catch {
+            await MainActor.run {
+                self.isLoading = false
+            }
+        }
     }
 }
 
