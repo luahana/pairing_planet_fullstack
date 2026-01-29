@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var appState: AppState
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("userMeasurement") private var measurementPreference: MeasurementPreference = .original
     @State private var showLogoutConfirmation = false
@@ -115,7 +116,10 @@ struct SettingsView: View {
         .alert(String(localized: "settings.logout"), isPresented: $showLogoutConfirmation) {
             Button(String(localized: "common.cancel"), role: .cancel) { }
             Button(String(localized: "settings.logout"), role: .destructive) {
-                Task { await authManager.logout() }
+                Task {
+                    await authManager.logout()
+                    appState.navigateToHome()
+                }
             }
         } message: {
             Text(String(localized: "settings.logoutConfirm"))
@@ -161,6 +165,7 @@ struct SettingsView: View {
         switch result {
         case .success:
             await authManager.logout()
+            appState.navigateToHome()
         case .failure(let error):
             deleteErrorMessage = error.localizedDescription
             showDeleteError = true
@@ -563,15 +568,16 @@ final class BlockedUsersViewModel: ObservableObject {
 
 struct LanguageSettingsView: View {
     @StateObject private var languageManager = LanguageManager.shared
-    @State private var showRestartAlert = false
+    @State private var showRestartConfirmation = false
+    @State private var selectedLanguage: AppLanguage?
 
     var body: some View {
         List {
             ForEach(AppLanguage.allCases) { language in
                 Button {
                     if languageManager.currentLanguage != language {
-                        languageManager.setLanguage(language)
-                        showRestartAlert = true
+                        selectedLanguage = language
+                        showRestartConfirmation = true
                     }
                 } label: {
                     HStack {
@@ -588,10 +594,18 @@ struct LanguageSettingsView: View {
         }
         .contentMargins(.bottom, 80, for: .scrollContent)
         .navigationTitle(String(localized: "settings.language"))
-        .alert(String(localized: "settings.restartRequired"), isPresented: $showRestartAlert) {
-            Button(String(localized: "common.ok")) { }
+        .alert(String(localized: "settings.changeLanguage"), isPresented: $showRestartConfirmation) {
+            Button(String(localized: "common.cancel"), role: .cancel) {
+                selectedLanguage = nil
+            }
+            Button(String(localized: "settings.restart"), role: .destructive) {
+                if let language = selectedLanguage {
+                    languageManager.setLanguage(language)
+                }
+                selectedLanguage = nil
+            }
         } message: {
-            Text(String(localized: "settings.restartMessage"))
+            Text(String(localized: "settings.restartConfirmMessage"))
         }
     }
 }
@@ -671,4 +685,4 @@ struct AboutView: View {
     }
 }
 
-#Preview { NavigationStack { SettingsView().environmentObject(AuthManager.shared) } }
+#Preview { NavigationStack { SettingsView().environmentObject(AuthManager.shared).environmentObject(AppState()) } }

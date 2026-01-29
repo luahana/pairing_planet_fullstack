@@ -2375,6 +2375,23 @@
         }
       }
     },
+    "settings.changeLanguage" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Language"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "언어 변경"
+          }
+        }
+      }
+    },
     "settings.commentsReplies" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2745,6 +2762,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "푸시 알림"
+          }
+        }
+      }
+    },
+    "settings.restart" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "재시작"
+          }
+        }
+      }
+    },
+    "settings.restartConfirmMessage" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app will restart to apply the new language. Continue?"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 언어를 적용하기 위해 앱이 재시작됩니다. 계속하시겠습니까?"
           }
         }
       }

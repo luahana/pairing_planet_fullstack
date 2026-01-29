@@ -36,5 +36,10 @@ final class LanguageManager: ObservableObject {
         currentLanguage = language
         UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
+
+        // Terminate the app - user will need to reopen it with new language
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            exit(0)
+        }
     }
 }

@@ -18,6 +18,9 @@ final class AppState: ObservableObject {
     /// Trigger to scroll profile view to top and refresh (incremented on each trigger)
     @Published var profileScrollToTopTrigger: Int = 0
 
+    /// Trigger to navigate to home tab (e.g., after logout)
+    @Published var navigateToHomeTrigger: Int = 0
+
     func triggerHomeScrollToTop() {
         homeScrollToTopTrigger += 1
     }
@@ -32,6 +35,11 @@ final class AppState: ObservableObject {
 
     func triggerProfileScrollToTop() {
         profileScrollToTopTrigger += 1
+    }
+
+    /// Navigate to home tab (e.g., after logout or account deletion)
+    func navigateToHome() {
+        navigateToHomeTrigger += 1
     }
 
     /// Call this to require authentication before performing an action

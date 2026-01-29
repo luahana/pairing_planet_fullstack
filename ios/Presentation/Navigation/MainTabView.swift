@@ -69,6 +69,10 @@ struct MainTabView: View {
         .sheet(isPresented: $showCreateLog) {
             CreateLogView()
         }
+        .onChange(of: appState.navigateToHomeTrigger) { _, _ in
+            selectedTab = .home
+            previousTab = .home
+        }
         .onChange(of: selectedTab) { _, newTab in
             if newTab == .create {
                 // Create tab should show sheet, handled by handleTabTap
@@ -92,20 +96,19 @@ struct MainTabView: View {
                 selectedTab = tab
             }
         } else {
-            // If tapping the same tab, trigger scroll to top and refresh
-            if tab == selectedTab {
-                switch tab {
-                case .home:
-                    appState.triggerHomeScrollToTop()
-                case .recipes:
-                    appState.triggerRecipesScrollToTop()
-                case .search:
-                    appState.triggerSearchScrollToTop()
-                case .profile:
-                    appState.triggerProfileScrollToTop()
-                case .create:
-                    break  // Create is a sheet, not a tab view
-                }
+            // Always trigger scroll-to-top/pop-to-root when tapping a tab
+            // This ensures navigation stack resets even when switching between tabs
+            switch tab {
+            case .home:
+                appState.triggerHomeScrollToTop()
+            case .recipes:
+                appState.triggerRecipesScrollToTop()
+            case .search:
+                appState.triggerSearchScrollToTop()
+            case .profile:
+                appState.triggerProfileScrollToTop()
+            case .create:
+                break  // Create is a sheet, not a tab view
             }
             previousTab = selectedTab
             selectedTab = tab
