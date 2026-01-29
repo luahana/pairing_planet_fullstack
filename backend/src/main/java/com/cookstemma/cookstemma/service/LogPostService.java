@@ -233,13 +233,9 @@ public class LogPostService {
         String localizedContent = LocaleUtils.getLocalizedValue(
                 logPost.getContentTranslations(), normalizedLocale, logPost.getContent());
 
-        // 7. Calculate visible comment count (excludes hidden comments for non-creators)
-        int visibleCommentCount;
-        if (userId != null) {
-            visibleCommentCount = (int) commentRepository.countVisibleComments(logPost.getId(), userId);
-        } else {
-            visibleCommentCount = (int) commentRepository.countVisibleCommentsAnonymous(logPost.getId());
-        }
+        // 7. Calculate visible comment count (excludes hidden comments)
+        // Use anonymous count for consistency with feed cards
+        int visibleCommentCount = (int) commentRepository.countVisibleCommentsAnonymous(logPost.getId());
 
         // 8. 최종 DTO 생성
         return new LogPostDetailResponseDto(
