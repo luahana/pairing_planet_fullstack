@@ -48,42 +48,12 @@ struct NotificationsView: View {
 
     private var notificationsList: some View {
         List {
-            // New notifications section (icon header)
-            if !viewModel.newNotifications.isEmpty {
-                Section {
-                    ForEach(viewModel.newNotifications) { notification in
-                        NotificationRow(notification: notification)
-                            .onTapGesture { handleNotificationTap(notification) }
-                    }
-                    .onDelete { offsets in
-                        viewModel.deleteNotifications(at: offsets, from: viewModel.newNotifications)
-                    }
-                } header: {
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: AppIcon.new)
-                            .foregroundColor(DesignSystem.Colors.primary)
-                        // Unread indicator dot
-                        Circle()
-                            .fill(DesignSystem.Colors.error)
-                            .frame(width: 6, height: 6)
-                    }
-                }
+            ForEach(viewModel.notifications) { notification in
+                NotificationRow(notification: notification)
+                    .onTapGesture { handleNotificationTap(notification) }
             }
-
-            // Earlier notifications section (icon header)
-            if !viewModel.earlierNotifications.isEmpty {
-                Section {
-                    ForEach(viewModel.earlierNotifications) { notification in
-                        NotificationRow(notification: notification)
-                            .onTapGesture { handleNotificationTap(notification) }
-                    }
-                    .onDelete { offsets in
-                        viewModel.deleteNotifications(at: offsets, from: viewModel.earlierNotifications)
-                    }
-                } header: {
-                    Image(systemName: AppIcon.history)
-                        .foregroundColor(DesignSystem.Colors.secondaryText)
-                }
+            .onDelete { offsets in
+                viewModel.deleteNotifications(at: offsets, from: viewModel.notifications)
             }
 
             if viewModel.hasMore {
