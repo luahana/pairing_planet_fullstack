@@ -131,10 +131,9 @@ public class CommentService {
 
         Page<Comment> commentsPage = commentRepository.findTopLevelCommentsByLogPostId(logPost.getId(), pageable);
 
-        // Filter out hidden comments for non-creators
-        // Hidden comments should only be visible to the comment creator
+        // Filter out all hidden comments for consistency with comment count
         List<Comment> visibleComments = commentsPage.getContent().stream()
-            .filter(c -> !c.isHidden() || (currentUserId != null && currentUserId.equals(c.getCreator().getId())))
+            .filter(c -> !c.isHidden())
             .toList();
 
         // Get preview replies for visible comments
@@ -144,9 +143,9 @@ public class CommentService {
 
         Map<Long, List<Comment>> repliesMap = getPreviewRepliesMap(commentIds);
 
-        // Filter hidden replies for non-creators
+        // Filter hidden replies for consistency with comment count
         repliesMap.replaceAll((parentId, replies) -> replies.stream()
-            .filter(r -> !r.isHidden() || (currentUserId != null && currentUserId.equals(r.getCreator().getId())))
+            .filter(r -> !r.isHidden())
             .toList());
 
         // Get liked comment IDs for current user
@@ -189,9 +188,9 @@ public class CommentService {
 
         Page<Comment> repliesPage = commentRepository.findRepliesByParentId(parentComment.getId(), pageable);
 
-        // Filter out hidden replies for non-creators
+        // Filter out all hidden replies for consistency with comment count
         List<Comment> visibleReplies = repliesPage.getContent().stream()
-            .filter(r -> !r.isHidden() || (currentUserId != null && currentUserId.equals(r.getCreator().getId())))
+            .filter(r -> !r.isHidden())
             .toList();
 
         // Get liked comment IDs for current user
