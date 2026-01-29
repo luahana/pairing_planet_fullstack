@@ -538,14 +538,13 @@ class CommentServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Hidden comment should show content to creator")
-        void hiddenComment_ShowsContentToCreator() {
+        @DisplayName("Hidden comment should not be returned even to creator")
+        void hiddenComment_NotReturnedToCreator() {
+            // Hidden comments are filtered out for everyone (including creator)
+            // to ensure comment count matches visible comments
             Page<CommentWithRepliesDto> result = commentService.getComments(testLogPost.getPublicId(), "en", PageRequest.of(0, 10), commenter.getId());
 
-            assertThat(result.getContent()).hasSize(1);
-            CommentResponseDto dto = result.getContent().get(0).comment();
-            assertThat(dto.isHidden()).isTrue();
-            assertThat(dto.content()).isEqualTo("Hidden content");
+            assertThat(result.getContent()).isEmpty();
         }
 
         @Test
