@@ -146,6 +146,7 @@ protocol UserRepositoryProtocol {
     func unblockUser(userId: String) async -> RepositoryResult<Void>
     func getBlockedUsers(page: Int) async -> RepositoryResult<BlockedUsersResponse>
     func reportUser(userId: String, reason: ReportReason) async -> RepositoryResult<Void>
+    func deleteAccount() async -> RepositoryResult<Void>
 }
 
 // MARK: - Comment Repository

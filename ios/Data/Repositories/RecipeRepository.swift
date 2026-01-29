@@ -76,7 +76,9 @@ final class RecipeRepository: RecipeRepositoryProtocol {
             try await apiClient.request(ViewHistoryEndpoint.recordRecipeView(id: id))
         } catch {
             // Silently fail - view tracking shouldn't break the app
+            #if DEBUG
             print("Failed to record recipe view: \(error)")
+            #endif
         }
     }
 

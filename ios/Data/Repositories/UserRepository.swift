@@ -144,6 +144,17 @@ final class UserRepository: UserRepositoryProtocol {
         }
     }
 
+    func deleteAccount() async -> RepositoryResult<Void> {
+        do {
+            try await apiClient.request(UserEndpoint.deleteAccount)
+            return .success(())
+        } catch let error as APIError {
+            return .failure(mapError(error))
+        } catch {
+            return .failure(.unknown)
+        }
+    }
+
     private func mapError(_ error: APIError) -> RepositoryError {
         switch error {
         case .networkError(let msg): return .networkError(msg)
