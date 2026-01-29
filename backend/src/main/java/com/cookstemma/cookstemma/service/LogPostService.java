@@ -305,6 +305,9 @@ public class LogPostService {
                 .map(Hashtag::getName)
                 .toList();
 
+        // Calculate visible comment count (excludes hidden comments)
+        int visibleCommentCount = (int) commentRepository.countVisibleCommentsAnonymous(log.getId());
+
         return new LogPostSummaryDto(
                 log.getPublicId(),
                 localizedTitle,
@@ -318,7 +321,7 @@ public class LogPostService {
                 hashtags,
                 isVariant,
                 log.getIsPrivate() != null ? log.getIsPrivate() : false,
-                log.getCommentCount() != null ? log.getCommentCount() : 0,
+                visibleCommentCount,
                 log.getLocale()
         );
     }
