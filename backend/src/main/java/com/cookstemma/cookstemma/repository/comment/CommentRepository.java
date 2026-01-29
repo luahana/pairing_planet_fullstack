@@ -86,16 +86,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // Count active comments for a log post
     long countByLogPostIdAndDeletedAtIsNull(Long logPostId);
 
-    // Count visible comments for a log post (excludes hidden comments for non-creators)
+    // Count visible comments for anonymous users
+    // Excludes: hidden comments AND replies to hidden parent comments
     @Query("SELECT COUNT(c) FROM Comment c " +
            "WHERE c.logPost.id = :logPostId AND c.deletedAt IS NULL " +
-           "AND (c.isHidden = false OR c.isHidden IS NULL OR c.creator.id = :userId)")
-    long countVisibleComments(@Param("logPostId") Long logPostId, @Param("userId") Long userId);
-
-    // Count visible comments for anonymous users (excludes all hidden comments)
-    @Query("SELECT COUNT(c) FROM Comment c " +
-           "WHERE c.logPost.id = :logPostId AND c.deletedAt IS NULL " +
-           "AND (c.isHidden = false OR c.isHidden IS NULL)")
+           "AND (c.isHidden = false OR c.isHidden IS NULL) " +
+           "AND (c.parent IS NULL OR c.parent.isHidden = false OR c.parent.isHidden IS NULL)")
     long countVisibleCommentsAnonymous(@Param("logPostId") Long logPostId);
 
     // Count replies for a comment
