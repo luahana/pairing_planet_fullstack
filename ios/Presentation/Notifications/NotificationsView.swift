@@ -1,17 +1,18 @@
 import SwiftUI
 
 struct NotificationsView: View {
+    @Binding var navigationPath: NavigationPath
     @StateObject private var viewModel = NotificationsViewModel()
     @EnvironmentObject private var appState: AppState
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         Group {
             switch viewModel.state {
             case .idle, .loading:
-                LoadingView()
+                ProgressView()
             case .loaded:
                 if viewModel.notifications.isEmpty {
-                    // Empty state (icon only)
                     IconEmptyState(icon: AppIcon.notificationsOutline)
                 } else {
                     notificationsList
@@ -20,18 +21,11 @@ struct NotificationsView: View {
                 ErrorStateView(message: message) { viewModel.loadNotifications() }
             }
         }
-        .background(DesignSystem.Colors.secondaryBackground)
+        .navigationTitle(String(localized: "settings.notifications"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                // Icon header
-                Image(systemName: AppIcon.notifications)
-                    .font(.system(size: DesignSystem.IconSize.lg))
-                    .foregroundColor(DesignSystem.Colors.primary)
-            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 if !viewModel.notifications.isEmpty {
-                    // Mark all button (icon only)
                     Button {
                         Task { await viewModel.markAllAsRead() }
                     } label: {
@@ -41,7 +35,6 @@ struct NotificationsView: View {
                 }
             }
         }
-        .refreshable { viewModel.loadNotifications() }
         .onAppear {
             if case .idle = viewModel.state { viewModel.loadNotifications() }
         }
@@ -96,23 +89,29 @@ struct NotificationsView: View {
     private func handleNotificationTap(_ notification: AppNotification) {
         Task { await viewModel.markAsRead(notification) }
 
-        guard let targetId = notification.targetId else { return }
-
         switch notification.type {
         case .newFollower:
-            appState.deepLinkDestination = .user(id: notification.actor?.id ?? targetId)
-        case .logComment, .commentReply, .logLike:
-            appState.deepLinkDestination = .log(id: targetId, commentId: nil)
-        case .recipeCooked, .recipeSaved:
-            if notification.targetType == .log {
-                appState.deepLinkDestination = .log(id: targetId)
-            } else {
-                appState.deepLinkDestination = .recipe(id: targetId)
+            // For followers, navigate to the sender's profile
+            if let username = notification.senderUsername {
+                // We need sender's user ID - for now use username as workaround
+                // TODO: Backend should provide sender's publicId
+                navigationPath.append(HomeDestination.user(username))
             }
-        case .commentLike:
-            appState.deepLinkDestination = .log(id: targetId)
+        case .logComment, .commentReply, .logLike, .commentLike:
+            // For all comment-related notifications, use logId directly
+            if let logId = notification.logId {
+                navigationPath.append(HomeDestination.log(logId))
+            }
+        case .recipeCooked, .recipeSaved:
+            // Prefer logId if available (user cooked and created a log)
+            // Otherwise navigate to the recipe
+            if let logId = notification.logId {
+                navigationPath.append(HomeDestination.log(logId))
+            } else if let recipeId = notification.recipeId {
+                navigationPath.append(HomeDestination.recipe(recipeId))
+            }
         case .weeklyDigest, .unknown:
-            break // No navigation for weekly digest or unknown types
+            break
         }
     }
 }
@@ -123,7 +122,7 @@ struct NotificationRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: DesignSystem.Spacing.sm) {
             // Icon or avatar
-            if let avatarUrl = notification.actor?.avatarUrl {
+            if let avatarUrl = notification.senderProfileImageUrl {
                 AvatarView(url: avatarUrl, size: DesignSystem.AvatarSize.sm)
             } else {
                 Image(systemName: notification.type.iconName)
@@ -173,4 +172,9 @@ struct NotificationRow: View {
     }
 }
 
-#Preview { NotificationsView().environmentObject(AppState()) }
+#Preview {
+    NavigationStack {
+        NotificationsView(navigationPath: .constant(NavigationPath()))
+    }
+    .environmentObject(AppState())
+}

@@ -67,8 +67,10 @@ final class NotificationsViewModel: ObservableObject {
         if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
             notifications[index] = AppNotification(
                 id: notification.id, type: notification.type, title: notification.title,
-                body: notification.body, isRead: true, actor: notification.actor,
-                targetId: notification.targetId, targetType: notification.targetType,
+                body: notification.body, isRead: true,
+                logId: notification.logId, recipeId: notification.recipeId,
+                senderUsername: notification.senderUsername,
+                senderProfileImageUrl: notification.senderProfileImageUrl,
                 thumbnailUrl: notification.thumbnailUrl, createdAt: notification.createdAt
             )
             unreadCount = max(0, unreadCount - 1)
@@ -92,8 +94,10 @@ final class NotificationsViewModel: ObservableObject {
         notifications = notifications.map { notification in
             AppNotification(
                 id: notification.id, type: notification.type, title: notification.title,
-                body: notification.body, isRead: true, actor: notification.actor,
-                targetId: notification.targetId, targetType: notification.targetType,
+                body: notification.body, isRead: true,
+                logId: notification.logId, recipeId: notification.recipeId,
+                senderUsername: notification.senderUsername,
+                senderProfileImageUrl: notification.senderProfileImageUrl,
                 thumbnailUrl: notification.thumbnailUrl, createdAt: notification.createdAt
             )
         }

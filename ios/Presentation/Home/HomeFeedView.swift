@@ -1,5 +1,12 @@
 import SwiftUI
 
+enum HomeDestination: Hashable {
+    case log(String)
+    case notifications
+    case user(String)
+    case recipe(String)
+}
+
 struct HomeFeedView: View {
     @StateObject private var viewModel = HomeFeedViewModel()
     @EnvironmentObject private var appState: AppState
@@ -15,12 +22,22 @@ struct HomeFeedView: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .background(DesignSystem.Colors.background)
             .navigationBarHidden(true)
-            .navigationDestination(for: String.self) { logId in
-                LogDetailView(logId: logId)
+            .navigationDestination(for: HomeDestination.self) { destination in
+                switch destination {
+                case .log(let logId):
+                    LogDetailView(logId: logId)
+                case .notifications:
+                    NotificationsView(navigationPath: $navigationPath)
+                case .user(let userId):
+                    ProfileView(userId: userId)
+                case .recipe(let recipeId):
+                    RecipeDetailView(recipeId: recipeId)
+                }
             }
         }
         .onAppear { if case .idle = viewModel.state { viewModel.loadFeed() } }
         .onChange(of: appState.homeScrollToTopTrigger) { _, _ in
+            // Dismiss any presented views and pop to root
             if !navigationPath.isEmpty {
                 navigationPath = NavigationPath()
                 return
@@ -32,8 +49,6 @@ struct HomeFeedView: View {
             Task { await viewModel.refresh() }
         }
     }
-
-    @State private var showNotifications = false
 
     private var homeHeader: some View {
         HStack {
@@ -49,13 +64,10 @@ struct HomeFeedView: View {
             Spacer()
             Button {
                 appState.requireAuth {
-                    showNotifications = true
+                    navigationPath.append(HomeDestination.notifications)
                 }
             } label: {
                 NotificationBadge(count: appState.unreadNotificationCount)
-            }
-            .navigationDestination(isPresented: $showNotifications) {
-                NotificationsView()
             }
         }
         .padding(.horizontal, DesignSystem.Spacing.md)
@@ -96,7 +108,7 @@ struct HomeFeedView: View {
     private var feedContent: some View {
         VStack(spacing: DesignSystem.Spacing.md) {
             ForEach(viewModel.feedItems) { item in
-                NavigationLink(value: item.id) {
+                NavigationLink(value: HomeDestination.log(item.id)) {
                     FeedLogCard(item: item)
                 }
                 .buttonStyle(.plain)

@@ -131,31 +131,52 @@ public class CommentService {
 
         Page<Comment> commentsPage = commentRepository.findTopLevelCommentsByLogPostId(logPost.getId(), pageable);
 
-        // Get preview replies for all comments
-        List<Long> commentIds = commentsPage.getContent().stream()
+        // Filter out hidden comments for non-creators
+        // Hidden comments should only be visible to the comment creator
+        List<Comment> visibleComments = commentsPage.getContent().stream()
+            .filter(c -> !c.isHidden() || (currentUserId != null && currentUserId.equals(c.getCreator().getId())))
+            .toList();
+
+        // Get preview replies for visible comments
+        List<Long> commentIds = visibleComments.stream()
             .map(Comment::getId)
             .toList();
 
         Map<Long, List<Comment>> repliesMap = getPreviewRepliesMap(commentIds);
 
+        // Filter hidden replies for non-creators
+        repliesMap.replaceAll((parentId, replies) -> replies.stream()
+            .filter(r -> !r.isHidden() || (currentUserId != null && currentUserId.equals(r.getCreator().getId())))
+            .toList());
+
         // Get liked comment IDs for current user
         Set<Long> likedCommentIds = getLikedCommentIds(currentUserId, commentIds, repliesMap);
 
-        return commentsPage.map(comment -> {
-            List<Comment> replies = repliesMap.getOrDefault(comment.getId(), Collections.emptyList());
-            boolean hasMoreReplies = comment.getReplyCount() > MAX_PREVIEW_REPLIES;
+        // Convert to DTOs
+        List<CommentWithRepliesDto> dtos = visibleComments.stream()
+            .map(comment -> {
+                List<Comment> replies = repliesMap.getOrDefault(comment.getId(), Collections.emptyList());
+                boolean hasMoreReplies = comment.getReplyCount() > MAX_PREVIEW_REPLIES;
 
-            List<CommentResponseDto> replyDtos = replies.stream()
-                .limit(MAX_PREVIEW_REPLIES)
-                .map(r -> toCommentResponse(r, locale, currentUserId, likedCommentIds))
-                .toList();
+                List<CommentResponseDto> replyDtos = replies.stream()
+                    .limit(MAX_PREVIEW_REPLIES)
+                    .map(r -> toCommentResponse(r, locale, currentUserId, likedCommentIds))
+                    .toList();
 
-            return new CommentWithRepliesDto(
-                toCommentResponse(comment, locale, currentUserId, likedCommentIds),
-                replyDtos,
-                hasMoreReplies
-            );
-        });
+                return new CommentWithRepliesDto(
+                    toCommentResponse(comment, locale, currentUserId, likedCommentIds),
+                    replyDtos,
+                    hasMoreReplies
+                );
+            })
+            .toList();
+
+        // Return as a Page with the original pagination info but filtered content
+        return new org.springframework.data.domain.PageImpl<>(
+            dtos,
+            pageable,
+            commentsPage.getTotalElements()
+        );
     }
 
     /**
@@ -168,15 +189,28 @@ public class CommentService {
 
         Page<Comment> repliesPage = commentRepository.findRepliesByParentId(parentComment.getId(), pageable);
 
+        // Filter out hidden replies for non-creators
+        List<Comment> visibleReplies = repliesPage.getContent().stream()
+            .filter(r -> !r.isHidden() || (currentUserId != null && currentUserId.equals(r.getCreator().getId())))
+            .toList();
+
         // Get liked comment IDs for current user
-        List<Long> replyIds = repliesPage.getContent().stream()
+        List<Long> replyIds = visibleReplies.stream()
             .map(Comment::getId)
             .toList();
-        Set<Long> likedCommentIds = currentUserId != null
+        Set<Long> likedCommentIds = currentUserId != null && !replyIds.isEmpty()
             ? commentLikeRepository.findLikedCommentIdsByUserIdAndCommentIds(currentUserId, replyIds)
             : Collections.emptySet();
 
-        return repliesPage.map(reply -> toCommentResponse(reply, locale, currentUserId, likedCommentIds));
+        List<CommentResponseDto> dtos = visibleReplies.stream()
+            .map(reply -> toCommentResponse(reply, locale, currentUserId, likedCommentIds))
+            .toList();
+
+        return new org.springframework.data.domain.PageImpl<>(
+            dtos,
+            pageable,
+            repliesPage.getTotalElements()
+        );
     }
 
     /**
