@@ -99,6 +99,7 @@ struct RecipesListView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .responsiveFrame()
                 .onAppear {
                     if recipe.id == viewModel.recipes.suffix(3).first?.id {
                         viewModel.loadMore()
@@ -111,6 +112,7 @@ struct RecipesListView: View {
                     .padding(.vertical, DesignSystem.Spacing.md)
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(.bottom, DesignSystem.Spacing.sm)
     }
 }

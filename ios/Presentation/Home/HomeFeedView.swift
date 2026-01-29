@@ -112,6 +112,7 @@ struct HomeFeedView: View {
                     FeedLogCard(item: item)
                 }
                 .buttonStyle(.plain)
+                .responsiveFrame()
                 .onAppear {
                     viewModel.loadMoreIfNeeded(currentItem: item)
                 }
@@ -123,6 +124,7 @@ struct HomeFeedView: View {
                     .padding(.vertical, DesignSystem.Spacing.md)
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(.bottom, DesignSystem.Spacing.sm)
     }
 }

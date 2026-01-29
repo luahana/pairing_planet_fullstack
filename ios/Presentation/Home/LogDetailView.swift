@@ -160,7 +160,10 @@ struct LogDetailView: View {
                 TabView {
                     ForEach(log.images, id: \.url) { image in
                         AsyncImage(url: URL(string: image.url)) { img in
-                            img.resizable().scaledToFill()
+                            img.resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .clipped()
                         } placeholder: {
                             Rectangle().fill(DesignSystem.Colors.secondaryBackground)
                         }
@@ -168,6 +171,7 @@ struct LogDetailView: View {
                 }
                 .tabViewStyle(.page)
                 .frame(height: 300)
+                .clipped()
             }
 
             // Rating
@@ -253,6 +257,8 @@ struct LogDetailView: View {
                 .padding(.vertical, DesignSystem.Spacing.sm)
             }
         }
+        .responsiveFrame()
+        .frame(maxWidth: .infinity)
         .padding(.bottom, DesignSystem.Spacing.xl)
     }
 }

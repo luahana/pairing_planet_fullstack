@@ -117,7 +117,10 @@ struct RecipeDetailView: View {
             TabView {
                 ForEach(recipe.images) { image in
                     AsyncImage(url: URL(string: image.url)) { img in
-                        img.resizable().scaledToFill()
+                        img.resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .clipped()
                     } placeholder: {
                         Rectangle().fill(DesignSystem.Colors.tertiaryBackground)
                     }
@@ -125,6 +128,7 @@ struct RecipeDetailView: View {
             }
             .tabViewStyle(.page)
             .frame(height: 300)
+            .clipped()
 
             // Content Card
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
@@ -216,6 +220,8 @@ struct RecipeDetailView: View {
             // Cooking Logs Section (Icon header)
             cookingLogsSectionCard(recipe)
         }
+        .responsiveFrame()
+        .frame(maxWidth: .infinity)
         .padding(.bottom, DesignSystem.Spacing.xl)
     }
 

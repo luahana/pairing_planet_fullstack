@@ -96,6 +96,17 @@ enum DesignSystem {
         static let slow = SwiftUI.Animation.easeInOut(duration: 0.4)
         static let spring = SwiftUI.Animation.spring(response: 0.35, dampingFraction: 0.7)
     }
+
+    // MARK: - Layout (iPad Support)
+    enum Layout {
+        /// Maximum content width for cards/feed items on iPad
+        static let maxContentWidth: CGFloat = 600
+
+        /// Check if current device is iPad
+        static var isIPad: Bool {
+            UIDevice.current.userInterfaceIdiom == .pad
+        }
+    }
 }
 
 // MARK: - View Modifiers
@@ -104,6 +115,11 @@ extension View {
         self.background(DesignSystem.Colors.background)
             .cornerRadius(DesignSystem.CornerRadius.md)
             .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+    }
+
+    /// Constrains content width on iPad while allowing full width on iPhone
+    func responsiveFrame() -> some View {
+        self.frame(maxWidth: DesignSystem.Layout.isIPad ? DesignSystem.Layout.maxContentWidth : .infinity)
     }
 
     func primaryButtonStyle() -> some View {

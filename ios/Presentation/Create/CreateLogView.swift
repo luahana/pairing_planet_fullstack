@@ -98,6 +98,8 @@ struct CreateLogView: View {
                             .padding(.horizontal, DesignSystem.Spacing.md)
                             .padding(.vertical, DesignSystem.Spacing.md)
                     }
+                    .responsiveFrame()
+                    .frame(maxWidth: .infinity)
                 }
                 .background(DesignSystem.Colors.background)
             }
@@ -143,9 +145,12 @@ struct CreateLogView: View {
         }
     }
 
+    /// Fixed slot size that works well on both iPhone and iPad
+    private var photoSlotSize: CGFloat { 100 }
+
     @ViewBuilder
     private func photoSlot(at index: Int) -> some View {
-        let slotSize: CGFloat = (UIScreen.main.bounds.width - DesignSystem.Spacing.md * 2 - DesignSystem.Spacing.sm * 2) / 3
+        let slotSize = photoSlotSize
 
         if index < viewModel.photos.count {
             let photo = viewModel.photos[index]
