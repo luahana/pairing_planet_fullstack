@@ -1,5 +1,11 @@
 import SwiftUI
 
+// MARK: - Notification Names
+
+extension Notification.Name {
+    static let languageDidChange = Notification.Name("languageDidChange")
+}
+
 // MARK: - App Language
 
 enum AppLanguage: String, CaseIterable, Identifiable {
@@ -50,10 +56,8 @@ final class LanguageManager: ObservableObject {
         currentLanguage = language
         UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
-
-        // Terminate the app - user will need to reopen it with new language
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            exit(0)
-        }
+        
+        // Post notification for app to handle restart gracefully
+        NotificationCenter.default.post(name: .languageDidChange, object: language)
     }
 }

@@ -61,13 +61,21 @@ final class SearchViewModel: ObservableObject {
         isLoadingHomeFeed = true
 
         Task {
-            defer { isLoadingHomeFeed = false }
+            await performLoadHomeFeed()
+        }
+    }
 
-            let result = await logRepository.getHomeFeed()
-            if case .success(let feed) = result {
-                trendingRecipes = feed.recentRecipes
-                recentLogs = feed.recentActivity
-            }
+    func refreshHomeFeed() async {
+        await performLoadHomeFeed()
+    }
+
+    private func performLoadHomeFeed() async {
+        defer { isLoadingHomeFeed = false }
+
+        let result = await logRepository.getHomeFeed()
+        if case .success(let feed) = result {
+            trendingRecipes = feed.recentRecipes
+            recentLogs = feed.recentActivity
         }
     }
 

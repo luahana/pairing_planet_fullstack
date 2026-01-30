@@ -569,6 +569,7 @@ final class BlockedUsersViewModel: ObservableObject {
 struct LanguageSettingsView: View {
     @StateObject private var languageManager = LanguageManager.shared
     @State private var showRestartConfirmation = false
+    @State private var showRestartRequiredAlert = false
     @State private var selectedLanguage: AppLanguage?
 
     var body: some View {
@@ -598,14 +599,20 @@ struct LanguageSettingsView: View {
             Button(String(localized: "common.cancel"), role: .cancel) {
                 selectedLanguage = nil
             }
-            Button(String(localized: "settings.restart"), role: .destructive) {
+            Button(String(localized: "common.confirm")) {
                 if let language = selectedLanguage {
                     languageManager.setLanguage(language)
+                    showRestartRequiredAlert = true
                 }
                 selectedLanguage = nil
             }
         } message: {
             Text(String(localized: "settings.restartConfirmMessage"))
+        }
+        .alert(String(localized: "settings.restartRequired"), isPresented: $showRestartRequiredAlert) {
+            Button(String(localized: "common.ok")) { }
+        } message: {
+            Text(String(localized: "settings.restartMessage"))
         }
     }
 }

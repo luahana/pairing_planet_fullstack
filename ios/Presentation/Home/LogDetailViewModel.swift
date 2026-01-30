@@ -270,4 +270,55 @@ final class CommentsViewModel: ObservableObject {
         }
         #endif
     }
+
+    func editComment(_ comment: Comment, newContent: String) async -> Bool {
+        guard !newContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+
+        let result = await commentRepository.updateComment(id: comment.id, content: newContent)
+        switch result {
+        case .success(let updatedComment):
+            if let index = comments.firstIndex(where: { $0.id == comment.id }) {
+                // Preserve replies when updating
+                comments[index] = Comment(
+                    id: updatedComment.id,
+                    content: updatedComment.content,
+                    author: updatedComment.author,
+                    likeCount: updatedComment.likeCount,
+                    isLiked: updatedComment.isLiked,
+                    isEdited: true,
+                    parentId: updatedComment.parentId,
+                    replies: comments[index].replies,
+                    replyCount: updatedComment.replyCount,
+                    createdAt: updatedComment.createdAt,
+                    updatedAt: updatedComment.updatedAt
+                )
+            }
+            #if DEBUG
+            print("[Comments] Edited comment \(comment.id)")
+            #endif
+            return true
+        case .failure(let error):
+            #if DEBUG
+            print("[Comments] Failed to edit comment: \(error)")
+            #endif
+            return false
+        }
+    }
+
+    func deleteComment(_ comment: Comment) async -> Bool {
+        let result = await commentRepository.deleteComment(id: comment.id)
+        switch result {
+        case .success:
+            comments.removeAll { $0.id == comment.id }
+            #if DEBUG
+            print("[Comments] Deleted comment \(comment.id)")
+            #endif
+            return true
+        case .failure(let error):
+            #if DEBUG
+            print("[Comments] Failed to delete comment: \(error)")
+            #endif
+            return false
+        }
+    }
 }
