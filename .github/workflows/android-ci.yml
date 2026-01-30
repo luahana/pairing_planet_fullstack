@@ -149,16 +149,9 @@ jobs:
           cd android
           ./gradlew assembleDevDebug
 
-      - name: Build Release APK
-        run: |
-          cd android
-          ./gradlew assembleDevRelease
-
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
           name: android-apks
-          path: |
-            android/app/build/outputs/apk/debug/*.apk
-            android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/dev/debug/*.apk
           retention-days: 7
