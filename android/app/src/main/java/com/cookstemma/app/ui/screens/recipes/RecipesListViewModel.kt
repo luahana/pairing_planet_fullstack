@@ -1,5 +1,6 @@
 package com.cookstemma.app.ui.screens.recipes
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cookstemma.app.data.repository.RecipeRepository
@@ -9,6 +10,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "RecipesListViewModel"
 
 data class RecipesListUiState(
     val recipes: List<RecipeSummary> = emptyList(),
@@ -40,6 +43,10 @@ class RecipesListViewModel @Inject constructor(
     private var nextCursor: String? = null
     private var hasFetchedSavedIds = false
 
+    // Track pending changes during initial fetch to prevent overwrite
+    private val pendingUnsaves = mutableSetOf<String>()
+    private val pendingSaves = mutableSetOf<String>()
+
     init {
         loadRecipes()
         fetchSavedRecipeIds()
@@ -63,7 +70,15 @@ class RecipesListViewModel @Inject constructor(
                 }
             } while (cursor != null)
             
-            _uiState.update { it.copy(savedRecipeIds = allSavedIds) }
+            _uiState.update { state ->
+                // Apply fetched IDs while respecting pending changes
+                val mergedIds = (allSavedIds + pendingSaves) - pendingUnsaves
+                Log.d(TAG, "Fetch complete: fetched=${allSavedIds.size}, pendingSaves=${pendingSaves.size}, pendingUnsaves=${pendingUnsaves.size}, merged=${mergedIds.size}")
+                state.copy(savedRecipeIds = mergedIds)
+            }
+            // Clear pending tracking now that fetch is complete
+            pendingSaves.clear()
+            pendingUnsaves.clear()
             hasFetchedSavedIds = true
         }
     }
@@ -121,7 +136,19 @@ class RecipesListViewModel @Inject constructor(
     fun saveRecipe(recipe: RecipeSummary) {
         viewModelScope.launch {
             val wasSaved = _uiState.value.isRecipeSaved(recipe.id)
-            
+            Log.d(TAG, "saveRecipe called: id=${recipe.id}, wasSaved=$wasSaved")
+
+            // Track pending change if initial fetch is still in progress
+            if (!hasFetchedSavedIds) {
+                if (wasSaved) {
+                    pendingUnsaves.add(recipe.id)
+                    pendingSaves.remove(recipe.id)
+                } else {
+                    pendingSaves.add(recipe.id)
+                    pendingUnsaves.remove(recipe.id)
+                }
+            }
+
             // Optimistic update
             _uiState.update { state ->
                 val newSavedIds = if (wasSaved) {
@@ -129,6 +156,7 @@ class RecipesListViewModel @Inject constructor(
                 } else {
                     state.savedRecipeIds + recipe.id
                 }
+                Log.d(TAG, "Optimistic update: newSavedIds size=${newSavedIds.size}")
                 state.copy(savedRecipeIds = newSavedIds)
             }
 
@@ -139,15 +167,28 @@ class RecipesListViewModel @Inject constructor(
             }
 
             result.collect { res ->
-                if (res is Result.Error) {
-                    // Revert on failure
-                    _uiState.update { state ->
-                        val revertedIds = if (wasSaved) {
-                            state.savedRecipeIds + recipe.id
-                        } else {
-                            state.savedRecipeIds - recipe.id
+                Log.d(TAG, "Save result: $res")
+                when (res) {
+                    is Result.Success -> {
+                        Log.d(TAG, "Save successful for recipe ${recipe.id}")
+                    }
+                    is Result.Error -> {
+                        Log.e(TAG, "Save failed for recipe ${recipe.id}: ${res.exception.message}")
+                        // Clear pending change tracking on error
+                        pendingSaves.remove(recipe.id)
+                        pendingUnsaves.remove(recipe.id)
+                        // Revert on failure
+                        _uiState.update { state ->
+                            val revertedIds = if (wasSaved) {
+                                state.savedRecipeIds + recipe.id
+                            } else {
+                                state.savedRecipeIds - recipe.id
+                            }
+                            state.copy(savedRecipeIds = revertedIds)
                         }
-                        state.copy(savedRecipeIds = revertedIds)
+                    }
+                    is Result.Loading -> {
+                        Log.d(TAG, "Save loading for recipe ${recipe.id}")
                     }
                 }
             }

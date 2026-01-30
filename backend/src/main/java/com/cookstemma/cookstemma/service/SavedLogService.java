@@ -52,8 +52,10 @@ public class SavedLogService {
             logPost.incrementSavedCount();
 
             // Send notification to log owner
-            User sender = userRepository.getReferenceById(userId);
-            notificationService.notifyLogSaved(logPost, sender);
+            User sender = userRepository.findById(userId).orElse(null);
+            if (sender != null) {
+                notificationService.notifyLogSaved(logPost, sender);
+            }
         }
     }
 

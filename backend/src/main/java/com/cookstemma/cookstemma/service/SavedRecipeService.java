@@ -54,8 +54,10 @@ public class SavedRecipeService {
             recipe.incrementSavedCount();
 
             // Send notification to recipe owner
-            User sender = userRepository.getReferenceById(userId);
-            notificationService.notifyRecipeSaved(recipe, sender);
+            User sender = userRepository.findById(userId).orElse(null);
+            if (sender != null) {
+                notificationService.notifyRecipeSaved(recipe, sender);
+            }
         }
     }
 

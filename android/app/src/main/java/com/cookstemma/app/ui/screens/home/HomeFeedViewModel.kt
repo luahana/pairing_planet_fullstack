@@ -36,6 +36,10 @@ class HomeFeedViewModel @Inject constructor(
     private var nextCursor: String? = null
     private var hasFetchedSavedIds = false
 
+    // Track pending changes during initial fetch to prevent overwrite
+    private val pendingUnsaves = mutableSetOf<String>()
+    private val pendingSaves = mutableSetOf<String>()
+
     init {
         loadFeed()
         fetchSavedLogIds()
@@ -59,7 +63,14 @@ class HomeFeedViewModel @Inject constructor(
                 }
             } while (cursor != null)
             
-            _uiState.update { it.copy(savedLogIds = allSavedIds) }
+            _uiState.update { state ->
+                // Apply fetched IDs while respecting pending changes
+                val mergedIds = (allSavedIds + pendingSaves) - pendingUnsaves
+                state.copy(savedLogIds = mergedIds)
+            }
+            // Clear pending tracking now that fetch is complete
+            pendingSaves.clear()
+            pendingUnsaves.clear()
             hasFetchedSavedIds = true
         }
     }
@@ -170,7 +181,18 @@ class HomeFeedViewModel @Inject constructor(
     fun saveLog(logId: String) {
         viewModelScope.launch {
             val wasSaved = _uiState.value.isLogSaved(logId)
-            
+
+            // Track pending change if initial fetch is still in progress
+            if (!hasFetchedSavedIds) {
+                if (wasSaved) {
+                    pendingUnsaves.add(logId)
+                    pendingSaves.remove(logId)
+                } else {
+                    pendingSaves.add(logId)
+                    pendingUnsaves.remove(logId)
+                }
+            }
+
             // Optimistic update
             _uiState.update { state ->
                 val newSavedIds = if (wasSaved) {
@@ -180,14 +202,17 @@ class HomeFeedViewModel @Inject constructor(
                 }
                 state.copy(savedLogIds = newSavedIds)
             }
-            
+
             val result = if (wasSaved) {
                 feedRepository.unsaveLog(logId)
             } else {
                 feedRepository.saveLog(logId)
             }
-            
+
             if (result is Result.Error) {
+                // Clear pending change tracking on error
+                pendingSaves.remove(logId)
+                pendingUnsaves.remove(logId)
                 // Revert on failure
                 _uiState.update { state ->
                     val revertedIds = if (wasSaved) {
