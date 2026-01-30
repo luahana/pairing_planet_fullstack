@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -94,7 +95,7 @@ public class NotificationService {
 
         String title = "누군가 당신의 레시피를 요리했어요!";
         String body = String.format("%s님이 '%s' 레시피를 요리하고 후기를 남겼습니다.",
-            sender.getUsername(), truncate(recipe.getTitle(), 30));
+            safeUsername(sender), truncate(recipe.getTitle(), 30));
 
         Notification notification = Notification.builder()
             .recipient(recipient)
@@ -104,9 +105,9 @@ public class NotificationService {
             .logPost(logPost)
             .title(title)
             .body(body)
-            .data(Map.of(
+            .data(buildDataMap(
                 "recipeTitle", recipe.getTitle(),
-                "senderName", sender.getUsername()
+                "senderName", safeUsername(sender)
             ))
             .build();
 
@@ -129,7 +130,7 @@ public class NotificationService {
 
         String title = "새로운 팔로워가 생겼어요!";
         String body = String.format("%s님이 회원님을 팔로우하기 시작했습니다.",
-            follower.getUsername());
+            safeUsername(follower));
 
         Notification notification = Notification.builder()
             .recipient(followedUser)
@@ -137,8 +138,8 @@ public class NotificationService {
             .type(NotificationType.NEW_FOLLOWER)
             .title(title)
             .body(body)
-            .data(Map.of(
-                "followerName", follower.getUsername(),
+            .data(buildDataMap(
+                "followerName", safeUsername(follower),
                 "followerPublicId", follower.getPublicId().toString()
             ))
             .build();
@@ -164,7 +165,7 @@ public class NotificationService {
 
         String title = "당신의 레시피에 새로운 변형이 생겼어요!";
         String body = String.format("%s님이 '%s' 레시피를 변형하여 '%s'를 만들었습니다.",
-            sender.getUsername(),
+            safeUsername(sender),
             truncate(parentRecipe.getTitle(), 20),
             truncate(newVariation.getTitle(), 20));
 
@@ -175,10 +176,10 @@ public class NotificationService {
             .recipe(newVariation)
             .title(title)
             .body(body)
-            .data(Map.of(
+            .data(buildDataMap(
                 "parentRecipeTitle", parentRecipe.getTitle(),
                 "newRecipeTitle", newVariation.getTitle(),
-                "senderName", sender.getUsername()
+                "senderName", safeUsername(sender)
             ))
             .build();
 
@@ -203,7 +204,7 @@ public class NotificationService {
 
         String title = "누군가 당신의 레시피를 저장했어요!";
         String body = String.format("%s님이 '%s' 레시피를 저장했습니다.",
-            sender.getUsername(), truncate(recipe.getTitle(), 30));
+            safeUsername(sender), truncate(recipe.getTitle(), 30));
 
         Notification notification = Notification.builder()
             .recipient(recipient)
@@ -212,9 +213,9 @@ public class NotificationService {
             .recipe(recipe)
             .title(title)
             .body(body)
-            .data(Map.of(
+            .data(buildDataMap(
                 "recipeTitle", recipe.getTitle(),
-                "senderName", sender.getUsername()
+                "senderName", safeUsername(sender)
             ))
             .build();
 
@@ -239,7 +240,7 @@ public class NotificationService {
 
         String title = "누군가 당신의 요리 일지를 저장했어요!";
         String body = String.format("%s님이 회원님의 요리 일지를 저장했습니다.",
-            sender.getUsername());
+            safeUsername(sender));
 
         Notification notification = Notification.builder()
             .recipient(recipient)
@@ -248,8 +249,8 @@ public class NotificationService {
             .logPost(logPost)
             .title(title)
             .body(body)
-            .data(Map.of(
-                "senderName", sender.getUsername(),
+            .data(buildDataMap(
+                "senderName", safeUsername(sender),
                 "logPublicId", logPost.getPublicId().toString()
             ))
             .build();
@@ -354,5 +355,22 @@ public class NotificationService {
         if (text == null) return "";
         if (text.length() <= maxLength) return text;
         return text.substring(0, maxLength - 3) + "...";
+    }
+
+    /**
+     * Creates a map that handles null values (unlike Map.of())
+     */
+    private Map<String, Object> buildDataMap(String... keyValues) {
+        Map<String, Object> map = new HashMap<>();
+        for (int i = 0; i + 1 < keyValues.length; i += 2) {
+            String key = keyValues[i];
+            String value = keyValues[i + 1];
+            map.put(key, value != null ? value : "Unknown");
+        }
+        return map;
+    }
+
+    private String safeUsername(User user) {
+        return user != null && user.getUsername() != null ? user.getUsername() : "Unknown";
     }
 }
