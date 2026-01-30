@@ -74,10 +74,10 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { },
-                actions = {
-                    if (!isOwnProfile) {
+            if (!isOwnProfile) {
+                TopAppBar(
+                    title = { },
+                    actions = {
                         Box {
                             IconButton(onClick = { showMenu = true }) {
                                 Icon(
@@ -118,12 +118,12 @@ fun ProfileScreen(
                                 )
                             }
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
-            )
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
