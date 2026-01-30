@@ -34,9 +34,11 @@ interface ApiService {
     @GET("recipes/{id}")
     suspend fun getRecipe(@Path("id") id: String): RecipeDetail
 
+    @Headers("Content-Type: application/json")
     @POST("recipes/{id}/save")
     suspend fun saveRecipe(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @DELETE("recipes/{id}/save")
     suspend fun unsaveRecipe(@Path("id") id: String)
 
@@ -81,15 +83,19 @@ interface ApiService {
     @DELETE("log_posts/{id}")
     suspend fun deleteLog(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @POST("log_posts/{id}/like")
     suspend fun likeLog(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @DELETE("log_posts/{id}/like")
     suspend fun unlikeLog(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @POST("log_posts/{id}/save")
     suspend fun saveLog(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @DELETE("log_posts/{id}/save")
     suspend fun unsaveLog(@Path("id") id: String)
 
@@ -132,9 +138,11 @@ interface ApiService {
     @DELETE("comments/{commentId}")
     suspend fun deleteComment(@Path("commentId") commentId: String)
 
+    @Headers("Content-Type: application/json")
     @POST("comments/{commentId}/like")
     suspend fun likeComment(@Path("commentId") commentId: String)
 
+    @Headers("Content-Type: application/json")
     @DELETE("comments/{commentId}/like")
     suspend fun unlikeComment(@Path("commentId") commentId: String)
 
@@ -157,9 +165,11 @@ interface ApiService {
         @Query("cursor") cursor: String? = null
     ): PaginatedResponse<CookingLogSummary>
 
+    @Headers("Content-Type: application/json")
     @POST("users/{id}/follow")
     suspend fun followUser(@Path("id") userId: String)
 
+    @Headers("Content-Type: application/json")
     @DELETE("users/{id}/follow")
     suspend fun unfollowUser(@Path("id") userId: String)
 
@@ -175,9 +185,11 @@ interface ApiService {
         @Query("cursor") cursor: String? = null
     ): PaginatedResponse<UserSummary>
 
+    @Headers("Content-Type: application/json")
     @POST("users/{id}/block")
     suspend fun blockUser(@Path("id") userId: String)
 
+    @Headers("Content-Type: application/json")
     @DELETE("users/{id}/block")
     suspend fun unblockUser(@Path("id") userId: String)
 
@@ -232,9 +244,11 @@ interface ApiService {
     suspend fun clearRecentSearches()
 
     // View History
+    @Headers("Content-Type: application/json")
     @POST("view-history/recipes/{id}")
     suspend fun recordRecipeView(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @POST("view-history/logs/{id}")
     suspend fun recordLogView(@Path("id") id: String)
 
@@ -253,15 +267,19 @@ interface ApiService {
     @GET("notifications/unread-count")
     suspend fun getUnreadNotificationCount(): UnreadCountResponse
 
+    @Headers("Content-Type: application/json")
     @PATCH("notifications/{id}/read")
     suspend fun markNotificationRead(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @PATCH("notifications/read-all")
     suspend fun markAllNotificationsRead()
 
+    @Headers("Content-Type: application/json")
     @DELETE("notifications/{id}")
     suspend fun deleteNotification(@Path("id") id: String)
 
+    @Headers("Content-Type: application/json")
     @DELETE("notifications")
     suspend fun deleteAllNotifications()
 
