@@ -140,10 +140,10 @@ interface ApiService {
 
     // Users
     @GET("users/me")
-    suspend fun getMyProfile(): MyProfile
+    suspend fun getMyProfile(): MyProfileResponse
 
     @GET("users/{id}")
-    suspend fun getUserProfile(@Path("id") id: String): UserProfile
+    suspend fun getUserProfile(@Path("id") id: String): UserProfileResponse
 
     @GET("users/{id}/recipes")
     suspend fun getUserRecipes(
@@ -283,7 +283,7 @@ interface ApiService {
         @Query("instagramHandle") instagramHandle: String? = null,
         @Query("tiktokHandle") tiktokHandle: String? = null,
         @Query("website") website: String? = null
-    ): MyProfile
+    ): MyProfileResponse
 
     @GET("users/check-username")
     suspend fun checkUsernameAvailability(@Query("username") username: String): UsernameAvailabilityResponse
@@ -358,6 +358,60 @@ data class TrendingTree(
 )
 data class UnreadCountResponse(val count: Int)
 data class UsernameAvailabilityResponse(val available: Boolean)
+
+// MyProfile API response (matches backend MyProfileResponseDto)
+data class MyProfileResponse(
+    val user: UserInfoDto,
+    val recipeCount: Int = 0,
+    val logCount: Int = 0,
+    val savedCount: Int = 0
+)
+
+// User info (matches backend UserDto)
+data class UserInfoDto(
+    val id: String,
+    val username: String? = null,
+    val role: String? = null,
+    val profileImageUrl: String? = null,
+    val gender: String? = null,
+    val locale: String? = null,
+    val defaultCookingStyle: String? = null,
+    val measurementPreference: String? = null,
+    val followerCount: Int = 0,
+    val followingCount: Int = 0,
+    val recipeCount: Int = 0,
+    val logCount: Int = 0,
+    val level: Int = 0,
+    val levelName: String? = null,
+    val totalXp: Int? = null,
+    val xpForCurrentLevel: Int? = null,
+    val xpForNextLevel: Int? = null,
+    val levelProgress: Double? = null,
+    val bio: String? = null,
+    val youtubeUrl: String? = null,
+    val instagramHandle: String? = null
+)
+
+// UserProfile API response (matches backend UserProfileResponseDto)
+data class UserProfileResponse(
+    val id: String,
+    val username: String? = null,
+    val displayName: String? = null,
+    @SerializedName("profileImageUrl") val avatarUrl: String? = null,
+    val bio: String? = null,
+    val level: Int = 0,
+    val levelName: String? = null,
+    val recipeCount: Int = 0,
+    val logCount: Int = 0,
+    val followerCount: Int = 0,
+    val followingCount: Int = 0,
+    val youtubeUrl: String? = null,
+    val instagramHandle: String? = null,
+    val isFollowing: Boolean = false,
+    val isFollowedBy: Boolean = false,
+    val isBlocked: Boolean = false,
+    val createdAt: String? = null
+)
 data class PagedResponse<T>(
     val content: List<T>,
     val page: Int,

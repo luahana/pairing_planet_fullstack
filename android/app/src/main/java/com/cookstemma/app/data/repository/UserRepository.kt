@@ -2,7 +2,9 @@ package com.cookstemma.app.data.repository
 
 import com.cookstemma.app.data.api.ApiService
 import com.cookstemma.app.data.api.BlockedUser
+import com.cookstemma.app.data.api.MyProfileResponse
 import com.cookstemma.app.data.api.PagedResponse
+import com.cookstemma.app.data.api.UserProfileResponse
 import com.cookstemma.app.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -17,7 +19,8 @@ class UserRepository @Inject constructor(
     fun getMyProfile(): Flow<Result<MyProfile>> = flow {
         emit(Result.Loading)
         try {
-            emit(Result.Success(apiService.getMyProfile()))
+            val response = apiService.getMyProfile()
+            emit(Result.Success(response.toDomain()))
         } catch (e: Exception) {
             emit(Result.Error(e))
         }
@@ -26,7 +29,8 @@ class UserRepository @Inject constructor(
     fun getUserProfile(id: String): Flow<Result<UserProfile>> = flow {
         emit(Result.Loading)
         try {
-            emit(Result.Success(apiService.getUserProfile(id)))
+            val response = apiService.getUserProfile(id)
+            emit(Result.Success(response.toDomain()))
         } catch (e: Exception) {
             emit(Result.Error(e))
         }
@@ -106,7 +110,7 @@ class UserRepository @Inject constructor(
         tiktokHandle: String? = null,
         website: String? = null
     ): Result<MyProfile> = try {
-        val profile = apiService.updateProfile(
+        val response = apiService.updateProfile(
             avatar = avatar,
             username = username,
             displayName = displayName,
@@ -116,7 +120,7 @@ class UserRepository @Inject constructor(
             tiktokHandle = tiktokHandle,
             website = website
         )
-        Result.Success(profile)
+        Result.Success(response.toDomain())
     } catch (e: Exception) {
         Result.Error(e)
     }
@@ -166,3 +170,47 @@ class UserRepository @Inject constructor(
         }
     }
 }
+
+// Extension functions to map API responses to domain models
+fun MyProfileResponse.toDomain() = MyProfile(
+    id = user.id,
+    username = user.username,
+    displayName = null, // Not returned by API for own profile
+    email = null,
+    avatarUrl = user.profileImageUrl,
+    bio = user.bio,
+    level = user.level,
+    levelName = user.levelName,
+    xp = user.totalXp ?: 0,
+    levelProgress = user.levelProgress ?: 0.0,
+    recipeCount = recipeCount,
+    logCount = logCount,
+    followerCount = user.followerCount,
+    followingCount = user.followingCount,
+    savedCount = savedCount,
+    socialLinks = null,
+    youtubeUrl = user.youtubeUrl,
+    instagramHandle = user.instagramHandle,
+    createdAt = null
+)
+
+private fun UserProfileResponse.toDomain() = UserProfile(
+    id = id,
+    username = username,
+    displayName = displayName,
+    avatarUrl = avatarUrl,
+    bio = bio,
+    level = level,
+    levelName = levelName,
+    recipeCount = recipeCount,
+    logCount = logCount,
+    followerCount = followerCount,
+    followingCount = followingCount,
+    socialLinks = null,
+    youtubeUrl = youtubeUrl,
+    instagramHandle = instagramHandle,
+    isFollowing = isFollowing,
+    isFollowedBy = isFollowedBy,
+    isBlocked = isBlocked,
+    createdAt = null
+)

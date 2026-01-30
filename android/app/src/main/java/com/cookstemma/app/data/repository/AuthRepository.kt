@@ -59,7 +59,7 @@ class AuthRepository @Inject constructor(
             )
 
             // Fetch user profile
-            val profile = apiService.getMyProfile()
+            val profile = apiService.getMyProfile().toDomain()
             _authState.value = AuthState.Authenticated(profile)
 
             emit(Result.Success(profile))
@@ -99,7 +99,7 @@ class AuthRepository @Inject constructor(
             }
 
             // Try to fetch profile to verify token is still valid
-            val profile = apiService.getMyProfile()
+            val profile = apiService.getMyProfile().toDomain()
             _authState.value = AuthState.Authenticated(profile)
             emit(Result.Success(AuthState.Authenticated(profile)))
         } catch (e: Exception) {
@@ -112,7 +112,7 @@ class AuthRepository @Inject constructor(
 
     fun refreshUserProfile(): Flow<Result<MyProfile>> = flow {
         try {
-            val profile = apiService.getMyProfile()
+            val profile = apiService.getMyProfile().toDomain()
             _authState.value = AuthState.Authenticated(profile)
             emit(Result.Success(profile))
         } catch (e: Exception) {
