@@ -37,7 +37,11 @@ public class NotificationService {
     // =========== FCM Token Management ===========
 
     public void registerFcmToken(UserPrincipal principal, RegisterFcmTokenRequest request) {
-        User user = userRepository.getReferenceById(principal.getId());
+        User user = userRepository.findById(principal.getId()).orElse(null);
+        if (user == null) {
+            log.warn("User not found for FCM token registration: {}", principal.getId());
+            return;
+        }
 
         // Check if token already exists for this user
         fcmTokenRepository.findByUserIdAndFcmToken(principal.getId(), request.fcmToken())
@@ -91,7 +95,11 @@ public class NotificationService {
             return;
         }
 
-        User recipient = userRepository.getReferenceById(recipeOwnerId);
+        User recipient = userRepository.findById(recipeOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Recipe owner not found for notification: {}", recipeOwnerId);
+            return;
+        }
 
         String title = "누군가 당신의 레시피를 요리했어요!";
         String body = String.format("%s님이 '%s' 레시피를 요리하고 후기를 남겼습니다.",
@@ -161,7 +169,11 @@ public class NotificationService {
             return;
         }
 
-        User recipient = userRepository.getReferenceById(parentOwnerId);
+        User recipient = userRepository.findById(parentOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Parent recipe owner not found for notification: {}", parentOwnerId);
+            return;
+        }
 
         String title = "당신의 레시피에 새로운 변형이 생겼어요!";
         String body = String.format("%s님이 '%s' 레시피를 변형하여 '%s'를 만들었습니다.",
@@ -200,7 +212,11 @@ public class NotificationService {
             return;
         }
 
-        User recipient = userRepository.getReferenceById(recipeOwnerId);
+        User recipient = userRepository.findById(recipeOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Recipe owner not found for notification: {}", recipeOwnerId);
+            return;
+        }
 
         String title = "누군가 당신의 레시피를 저장했어요!";
         String body = String.format("%s님이 '%s' 레시피를 저장했습니다.",
@@ -236,7 +252,11 @@ public class NotificationService {
             return;
         }
 
-        User recipient = userRepository.getReferenceById(logOwnerId);
+        User recipient = userRepository.findById(logOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Log owner not found for notification: {}", logOwnerId);
+            return;
+        }
 
         String title = "누군가 당신의 요리 일지를 저장했어요!";
         String body = String.format("%s님이 회원님의 요리 일지를 저장했습니다.",
@@ -330,7 +350,11 @@ public class NotificationService {
      * Send a test notification to the current user (for testing push notifications)
      */
     public void sendTestNotification(UserPrincipal principal) {
-        User user = userRepository.getReferenceById(principal.getId());
+        User user = userRepository.findById(principal.getId()).orElse(null);
+        if (user == null) {
+            log.warn("User not found for test notification: {}", principal.getId());
+            return;
+        }
 
         String title = "테스트 알림";
         String body = "푸시 알림이 정상적으로 작동합니다!";
