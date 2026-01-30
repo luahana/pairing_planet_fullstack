@@ -1,0 +1,145 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      ios: ${{ steps.changes.outputs.ios }}
+      android: ${{ steps.changes.outputs.android }}
+      backend: ${{ steps.changes.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            ios:
+              - 'ios/**'
+            android:
+              - 'android/**'
+            backend:
+              - 'backend/**'
+
+  ios-check:
+    name: iOS PR Check
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+
+      - name: SwiftLint
+        run: |
+          brew install swiftlint
+          cd ios && swiftlint lint --strict
+
+      - name: Build & Test
+        run: |
+          cd ios
+          xcodebuild test \
+            -scheme Cookstemma \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.2' \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty
+
+  android-check:
+    name: Android PR Check
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Lint
+        run: |
+          cd android
+          ./gradlew ktlintCheck detekt
+
+      - name: Test
+        run: |
+          cd android
+          ./gradlew testDebugUnitTest
+
+  backend-check:
+    name: Backend PR Check
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Test
+        run: |
+          cd backend
+          ./gradlew test
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [ios-check, android-check, backend-check]
+    if: always()
+
+    steps:
+      - name: Check Results
+        run: |
+          echo "## PR Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.ios-check.result }}" == "success" ] || [ "${{ needs.ios-check.result }}" == "skipped" ]; then
+            echo "✅ iOS: ${{ needs.ios-check.result }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ iOS: ${{ needs.ios-check.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.android-check.result }}" == "success" ] || [ "${{ needs.android-check.result }}" == "skipped" ]; then
+            echo "✅ Android: ${{ needs.android-check.result }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Android: ${{ needs.android-check.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.backend-check.result }}" == "success" ] || [ "${{ needs.backend-check.result }}" == "skipped" ]; then
+            echo "✅ Backend: ${{ needs.backend-check.result }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Backend: ${{ needs.backend-check.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
