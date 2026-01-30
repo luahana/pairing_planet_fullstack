@@ -419,6 +419,8 @@ private fun ProfileContent(
                         RecipeGridCard(
                             imageUrl = recipe.coverImageUrl,
                             title = recipe.title,
+                            foodName = recipe.foodName,
+                            cookingTimeRange = recipe.cookingTimeRange,
                             onClick = { onRecipeClick(recipe.id) }
                         )
                     }
@@ -437,6 +439,8 @@ private fun ProfileContent(
                         LogGridCard(
                             imageUrl = log.images?.firstOrNull()?.thumbnailUrl,
                             rating = log.rating,
+                            foodName = log.recipe?.foodName,
+                            userName = log.author?.username,
                             onClick = { onLogClick(log.id) }
                         )
                     }
@@ -464,14 +468,18 @@ private fun ProfileContent(
                         RecipeGridCard(
                             imageUrl = recipe.coverImageUrl,
                             title = recipe.title,
+                            foodName = recipe.foodName,
+                            cookingTimeRange = recipe.cookingTimeRange,
                             showSavedBadge = true,
                             onClick = { onRecipeClick(recipe.id) }
                         )
                     }
                     items(filteredLogs, key = { "log_${it.id}" }) { log ->
                         LogGridCard(
-                            imageUrl = log.images?.firstOrNull()?.thumbnailUrl,
+                            imageUrl = log.thumbnailUrl,
                             rating = log.rating,
+                            foodName = log.foodName ?: log.recipeTitle,
+                            userName = log.userName,
                             showSavedBadge = true,
                             onClick = { onLogClick(log.id) }
                         )
@@ -821,26 +829,83 @@ private fun SavedContentFilterRow(
 private fun RecipeGridCard(
     imageUrl: String?,
     title: String,
+    foodName: String? = null,
+    cookingTimeRange: String? = null,
     showSavedBadge: Boolean = false,
     onClick: () -> Unit
 ) {
-    Surface(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(Spacing.sm),
-        color = MaterialTheme.colorScheme.surfaceVariant
+            .clickable(onClick = onClick)
     ) {
-        Box {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            if (showSavedBadge) {
-                SavedBadge(Modifier.align(Alignment.TopEnd))
+        // Thumbnail
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f),
+            shape = RoundedCornerShape(Spacing.sm),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Box {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                if (showSavedBadge) {
+                    SavedBadge(Modifier.align(Alignment.TopEnd))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(Spacing.xs))
+
+        // Title
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        // Subtitle (food name + cooking time)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            foodName?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+            }
+            cookingTimeRange?.let { time ->
+                if (foodName != null) {
+                    Text(
+                        text = "·",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Icon(
+                    imageVector = AppIcons.timer,
+                    contentDescription = null,
+                    modifier = Modifier.size(12.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = time,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -850,46 +915,89 @@ private fun RecipeGridCard(
 private fun LogGridCard(
     imageUrl: String?,
     rating: Int?,
+    foodName: String? = null,
+    userName: String? = null,
     showSavedBadge: Boolean = false,
     onClick: () -> Unit
 ) {
-    Surface(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(Spacing.sm),
-        color = MaterialTheme.colorScheme.surfaceVariant
+            .clickable(onClick = onClick)
     ) {
-        Box {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            // Rating badge at bottom
-            rating?.let {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(Spacing.xs)
-                        .background(
-                            Color.Black.copy(alpha = 0.6f),
-                            RoundedCornerShape(Spacing.xs)
-                        )
-                        .padding(horizontal = Spacing.xs, vertical = 2.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        repeat(it.coerceIn(1, 5)) {
-                            Text("⭐", style = MaterialTheme.typography.labelSmall)
+        // Thumbnail with rating overlay
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f),
+            shape = RoundedCornerShape(Spacing.sm),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Box {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                
+                // Rating badge at bottom left
+                if (rating != null && rating > 0) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(Spacing.xs)
+                            .background(
+                                Color.Black.copy(alpha = 0.6f),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            repeat(rating.coerceIn(1, 5)) {
+                                Icon(
+                                    imageVector = AppIcons.star,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(10.dp),
+                                    tint = Color(0xFFFFC107)
+                                )
+                            }
                         }
                     }
                 }
+                
+                if (showSavedBadge) {
+                    SavedBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
-            if (showSavedBadge) {
-                SavedBadge(Modifier.align(Alignment.TopEnd))
-            }
+        }
+
+        Spacer(modifier = Modifier.height(Spacing.xs))
+
+        // Food name
+        foodName?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        // Username
+        userName?.let {
+            Text(
+                text = "@$it",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

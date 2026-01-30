@@ -11,6 +11,12 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class HashtagContentFilter(val title: String) {
+    ALL("All"),
+    RECIPES("Recipes"),
+    LOGS("Logs")
+}
+
 data class HashtagDetailUiState(
     val hashtag: String = "",
     val posts: List<FeedItem> = emptyList(),
@@ -18,8 +24,16 @@ data class HashtagDetailUiState(
     val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val hasMore: Boolean = true,
-    val error: String? = null
-)
+    val error: String? = null,
+    val selectedFilter: HashtagContentFilter = HashtagContentFilter.ALL
+) {
+    val filteredPosts: List<FeedItem>
+        get() = when (selectedFilter) {
+            HashtagContentFilter.ALL -> posts
+            HashtagContentFilter.RECIPES -> posts.filter { it.isRecipe }
+            HashtagContentFilter.LOGS -> posts.filter { it.isLog }
+        }
+}
 
 @HiltViewModel
 class HashtagDetailViewModel @Inject constructor(
@@ -110,5 +124,9 @@ class HashtagDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun selectFilter(filter: HashtagContentFilter) {
+        _uiState.update { it.copy(selectedFilter = filter) }
     }
 }

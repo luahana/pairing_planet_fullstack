@@ -126,8 +126,8 @@ fun SavedScreen(
                             SavedTab.LOGS -> {
                                 items(uiState.savedLogs, key = { it.id }) { log ->
                                     SavedLogGridItem(
-                                        imageUrl = log.images?.firstOrNull()?.thumbnailUrl,
-                                        rating = log.rating,
+                                        imageUrl = log.thumbnailUrl,
+                                        rating = log.rating ?: 0,
                                         onClick = { onLogClick(log.id) }
                                     )
                                 }

@@ -21,7 +21,7 @@ class SavedRepository @Inject constructor(
         }
     }
 
-    fun getSavedLogs(cursor: String? = null): Flow<Result<PaginatedResponse<CookingLog>>> = flow {
+    fun getSavedLogs(cursor: String? = null): Flow<Result<PaginatedResponse<FeedItem>>> = flow {
         emit(Result.Loading)
         try {
             val response = apiService.getSavedLogs(cursor)

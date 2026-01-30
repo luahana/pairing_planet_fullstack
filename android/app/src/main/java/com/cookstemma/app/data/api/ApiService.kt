@@ -99,11 +99,7 @@ interface ApiService {
     @DELETE("log_posts/{id}/save")
     suspend fun unsaveLog(@Path("id") id: String)
 
-    @GET("search/logs")
-    suspend fun searchLogs(
-        @Query("q") query: String,
-        @Query("cursor") cursor: String? = null
-    ): PaginatedResponse<FeedItem>
+
 
     // Home
     @GET("home")
@@ -193,11 +189,7 @@ interface ApiService {
     @DELETE("users/{id}/block")
     suspend fun unblockUser(@Path("id") userId: String)
 
-    @GET("search/users")
-    suspend fun searchUsers(
-        @Query("q") query: String,
-        @Query("cursor") cursor: String? = null
-    ): PaginatedResponse<UserSummary>
+
 
     // Saved
     @GET("recipes/saved")
@@ -208,7 +200,7 @@ interface ApiService {
     @GET("log_posts/saved")
     suspend fun getSavedLogs(
         @Query("cursor") cursor: String? = null
-    ): PaginatedResponse<CookingLog>
+    ): PaginatedResponse<FeedItem>
 
     // Search
     @GET("search")
@@ -219,13 +211,7 @@ interface ApiService {
         @Query("size") size: Int = 20
     ): com.cookstemma.app.data.repository.UnifiedSearchResponse
 
-    @GET("search/recipes")
-    suspend fun searchRecipes(
-        @Query("q") query: String,
-        @Query("cookingTimeRange") cookingTimeRange: String? = null,
-        @Query("category") category: String? = null,
-        @Query("cursor") cursor: String? = null
-    ): PaginatedResponse<RecipeSummary>
+
 
     @GET("hashtags/popular")
     suspend fun getTrendingHashtags(): List<HashtagResult>

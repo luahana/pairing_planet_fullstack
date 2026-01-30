@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 data class SavedUiState(
     val savedRecipes: List<RecipeSummary> = emptyList(),
-    val savedLogs: List<CookingLog> = emptyList(),
+    val savedLogs: List<FeedItem> = emptyList(),
     val isLoading: Boolean = true,
     val isLoadingMoreRecipes: Boolean = false,
     val isLoadingMoreLogs: Boolean = false,

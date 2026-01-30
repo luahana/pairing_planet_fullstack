@@ -19,8 +19,12 @@ data class FeedItem(
     val isVariant: Boolean?,
     val isPrivate: Boolean?,
     val commentCount: Int?,
-    val cookingStyle: String?
-)
+    val cookingStyle: String?,
+    val type: String? = null  // "recipe" or "log"
+) {
+    val isRecipe: Boolean get() = type == "recipe"
+    val isLog: Boolean get() = type == "log"
+}
 
 // Full log summary with nested author/recipe (used in other contexts)
 data class CookingLogSummary(

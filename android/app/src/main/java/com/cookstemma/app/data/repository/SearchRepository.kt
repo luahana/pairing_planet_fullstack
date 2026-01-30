@@ -153,10 +153,40 @@ class SearchRepository @Inject constructor(
         cursor: String? = null
     ): Flow<Result<PaginatedResponse<RecipeSummary>>> = flow {
         try {
-            val response = apiService.searchRecipes(query, cursor)
-            emit(Result.Success(response))
+            val response = apiService.search(query, SearchType.RECIPES.value, cursor)
+            val recipes = extractRecipesFromResponse(response)
+            emit(Result.Success(PaginatedResponse(
+                content = recipes,
+                nextCursor = response.nextCursor,
+                hasMore = response.hasNext
+            )))
         } catch (e: Exception) {
             emit(Result.Error(e))
+        }
+    }
+
+    private fun extractRecipesFromResponse(response: UnifiedSearchResponse): List<RecipeSummary> {
+        return response.content.mapNotNull { item ->
+            if (item.type != "RECIPE") return@mapNotNull null
+            val data = item.data ?: return@mapNotNull null
+            try {
+                RecipeSummary(
+                    id = (data["publicId"] as? String) ?: "",
+                    title = (data["title"] as? String) ?: "",
+                    description = data["description"] as? String,
+                    foodName = (data["foodName"] as? String) ?: "",
+                    cookingStyle = data["cookingStyle"] as? String,
+                    userName = (data["userName"] as? String) ?: "",
+                    thumbnail = data["thumbnail"] as? String,
+                    variantCount = (data["variantCount"] as? Double)?.toInt() ?: 0,
+                    logCount = (data["logCount"] as? Double)?.toInt() ?: 0,
+                    servings = (data["servings"] as? Double)?.toInt(),
+                    cookingTimeRange = data["cookingTimeRange"] as? String,
+                    isPrivate = (data["isPrivate"] as? Boolean) ?: false
+                )
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
@@ -165,10 +195,42 @@ class SearchRepository @Inject constructor(
         cursor: String? = null
     ): Flow<Result<PaginatedResponse<FeedItem>>> = flow {
         try {
-            val response = apiService.searchLogs(query, cursor)
-            emit(Result.Success(response))
+            val response = apiService.search(query, SearchType.LOGS.value, cursor)
+            val logs = extractLogsFromResponse(response)
+            emit(Result.Success(PaginatedResponse(
+                content = logs,
+                nextCursor = response.nextCursor,
+                hasMore = response.hasNext
+            )))
         } catch (e: Exception) {
             emit(Result.Error(e))
+        }
+    }
+
+    private fun extractLogsFromResponse(response: UnifiedSearchResponse): List<FeedItem> {
+        return response.content.mapNotNull { item ->
+            if (item.type != "LOG") return@mapNotNull null
+            val data = item.data ?: return@mapNotNull null
+            try {
+                FeedItem(
+                    id = (data["publicId"] as? String) ?: "",
+                    title = data["title"] as? String,
+                    content = data["content"] as? String,
+                    rating = (data["rating"] as? Double)?.toInt(),
+                    thumbnailUrl = data["thumbnailUrl"] as? String,
+                    creatorPublicId = (data["creatorPublicId"] as? String) ?: "",
+                    userName = (data["userName"] as? String) ?: "",
+                    foodName = data["foodName"] as? String,
+                    recipeTitle = data["recipeTitle"] as? String,
+                    hashtags = (data["hashtags"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                    isVariant = data["isVariant"] as? Boolean,
+                    isPrivate = data["isPrivate"] as? Boolean,
+                    commentCount = (data["commentCount"] as? Double)?.toInt(),
+                    cookingStyle = data["cookingStyle"] as? String
+                )
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
@@ -177,10 +239,32 @@ class SearchRepository @Inject constructor(
         cursor: String? = null
     ): Flow<Result<PaginatedResponse<UserSummary>>> = flow {
         try {
-            val response = apiService.searchUsers(query, cursor)
-            emit(Result.Success(response))
+            val response = apiService.search(query, SearchType.USERS.value, cursor)
+            val users = extractUsersFromResponse(response)
+            emit(Result.Success(PaginatedResponse(
+                content = users,
+                nextCursor = response.nextCursor,
+                hasMore = response.hasNext
+            )))
         } catch (e: Exception) {
             emit(Result.Error(e))
+        }
+    }
+
+    private fun extractUsersFromResponse(response: UnifiedSearchResponse): List<UserSummary> {
+        return response.content.mapNotNull { item ->
+            if (item.type != "USER") return@mapNotNull null
+            val data = item.data ?: return@mapNotNull null
+            try {
+                UserSummary(
+                    id = (data["publicId"] as? String) ?: "",
+                    username = data["username"] as? String,
+                    displayName = data["displayName"] as? String,
+                    avatarUrl = data["profileImageUrl"] as? String
+                )
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 

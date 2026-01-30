@@ -51,7 +51,7 @@ data class ProfileUiState(
     val recipes: List<RecipeSummary> = emptyList(),
     val logs: List<CookingLogSummary> = emptyList(),
     val savedRecipes: List<RecipeSummary> = emptyList(),
-    val savedLogs: List<CookingLog> = emptyList(),
+    val savedLogs: List<FeedItem> = emptyList(),
     val blockSuccess: Boolean = false,
     val reportSuccess: Boolean = false
 ) {
