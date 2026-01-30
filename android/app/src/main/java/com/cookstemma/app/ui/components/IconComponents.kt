@@ -17,8 +17,88 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage
+import com.cookstemma.app.ui.theme.AvatarSize
 import com.cookstemma.app.ui.theme.Spacing
+
+// MARK: - Avatar View (matches iOS AvatarView)
+@Composable
+fun AvatarView(
+    url: String?,
+    name: String? = null,
+    size: Dp = AvatarSize.md,
+    modifier: Modifier = Modifier
+) {
+    val isValidUrl = url != null && url.isNotEmpty() &&
+            (url.startsWith("http://") || url.startsWith("https://"))
+
+    val initial = name?.let { n ->
+        val cleanName = if (n.startsWith("@")) n.drop(1) else n
+        cleanName.firstOrNull()?.uppercase() ?: ""
+    } ?: ""
+
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isValidUrl) {
+            SubcomposeAsyncImage(
+                model = url,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                loading = {
+                    // Show initial while loading
+                    AvatarFallback(initial = initial, size = size)
+                },
+                error = {
+                    // Show fallback on error
+                    AvatarFallback(initial = initial, size = size)
+                }
+            )
+        } else {
+            AvatarFallback(initial = initial, size = size)
+        }
+    }
+}
+
+@Composable
+private fun AvatarFallback(
+    initial: String,
+    size: Dp
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+        contentAlignment = Alignment.Center
+    ) {
+        if (initial.isNotEmpty()) {
+            Text(
+                text = initial,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = (size.value * 0.4f).sp,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Filled.Person,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(size * 0.5f)
+            )
+        }
+    }
+}
 
 // MARK: - App Icons
 object AppIcons {

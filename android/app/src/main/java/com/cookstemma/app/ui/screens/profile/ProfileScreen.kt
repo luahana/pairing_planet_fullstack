@@ -504,14 +504,10 @@ private fun ProfileHeader(
         verticalAlignment = Alignment.Top
     ) {
         // Avatar
-        AsyncImage(
-            model = avatarUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .size(AvatarSize.xl)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentScale = ContentScale.Crop
+        AvatarView(
+            url = avatarUrl,
+            name = username,
+            size = AvatarSize.xl
         )
 
         // User Info
