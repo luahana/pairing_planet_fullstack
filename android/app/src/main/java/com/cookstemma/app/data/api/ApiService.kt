@@ -110,25 +110,30 @@ interface ApiService {
     suspend fun getLogComments(
         @Path("logId") logId: String,
         @Query("cursor") cursor: String? = null
-    ): PaginatedResponse<Comment>
+    ): com.google.gson.JsonObject
 
     @POST("log_posts/{logId}/comments")
     suspend fun createComment(
         @Path("logId") logId: String,
-        @Query("content") content: String,
-        @Query("parentCommentId") parentCommentId: String?
+        @Body request: CommentRequest
+    ): Comment
+
+    @POST("comments/{parentCommentId}/replies")
+    suspend fun createReply(
+        @Path("parentCommentId") parentCommentId: String,
+        @Body request: CommentRequest
     ): Comment
 
     @GET("comments/{commentId}/replies")
     suspend fun getCommentReplies(
         @Path("commentId") commentId: String,
         @Query("cursor") cursor: String? = null
-    ): PaginatedResponse<Comment>
+    ): com.google.gson.JsonObject
 
     @PATCH("comments/{commentId}")
     suspend fun updateComment(
         @Path("commentId") commentId: String,
-        @Query("content") content: String
+        @Body request: CommentRequest
     ): Comment
 
     @DELETE("comments/{commentId}")
@@ -281,12 +286,9 @@ interface ApiService {
     suspend fun updateProfile(
         @Part avatar: MultipartBody.Part? = null,
         @Query("username") username: String? = null,
-        @Query("displayName") displayName: String? = null,
         @Query("bio") bio: String? = null,
         @Query("youtubeUrl") youtubeUrl: String? = null,
-        @Query("instagramHandle") instagramHandle: String? = null,
-        @Query("tiktokHandle") tiktokHandle: String? = null,
-        @Query("website") website: String? = null
+        @Query("instagramHandle") instagramHandle: String? = null
     ): MyProfileResponse
 
     @GET("users/check-username")
@@ -307,6 +309,7 @@ interface ApiService {
 
 data class LoginRequest(val idToken: String, val locale: String)
 data class RefreshTokenRequest(val refreshToken: String)
+data class CommentRequest(val content: String)
 data class AuthResponse(
     val accessToken: String,
     val refreshToken: String,

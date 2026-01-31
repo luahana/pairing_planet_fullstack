@@ -287,45 +287,6 @@ fun FeedLogCard(
         }
 
         // Action buttons row (like Instagram)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Left side - comment button
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onCommentClick,
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = AppIcons.comment,
-                        contentDescription = stringResource(R.string.cd_comment),
-                        modifier = Modifier.size(22.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // Right side - save button
-            IconButton(
-                onClick = onSaveClick,
-                modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    imageVector = if (isSaved) AppIcons.save else AppIcons.saveOutline,
-                    contentDescription = if (isSaved) stringResource(R.string.cd_unsave) else stringResource(R.string.save),
-                    modifier = Modifier.size(22.dp),
-                    tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
         // Footer: Description, Food, Comments, Hashtags
         Column(
             modifier = Modifier.padding(horizontal = Spacing.sm).padding(bottom = Spacing.sm),

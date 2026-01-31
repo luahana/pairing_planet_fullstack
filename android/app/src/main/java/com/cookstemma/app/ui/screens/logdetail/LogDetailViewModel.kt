@@ -3,10 +3,8 @@ package com.cookstemma.app.ui.screens.logdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cookstemma.app.data.repository.CommentRepository
 import com.cookstemma.app.data.repository.LogRepository
 import com.cookstemma.app.data.repository.SavedItemsManager
-import com.cookstemma.app.data.repository.Comment
 import com.cookstemma.app.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -15,22 +13,14 @@ import javax.inject.Inject
 
 data class LogDetailUiState(
     val log: CookingLogDetail? = null,
-    val comments: List<Comment> = emptyList(),
     val isLoading: Boolean = true,
-    val isLoadingComments: Boolean = false,
-    val error: String? = null,
-    val commentText: String = "",
-    val replyingTo: Comment? = null,
-    val isSubmittingComment: Boolean = false,
-    val commentsCursor: String? = null,
-    val hasMoreComments: Boolean = false
+    val error: String? = null
 )
 
 @HiltViewModel
 class LogDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val logRepository: LogRepository,
-    private val commentRepository: CommentRepository,
     private val savedItemsManager: SavedItemsManager
 ) : ViewModel() {
 
@@ -41,7 +31,6 @@ class LogDetailViewModel @Inject constructor(
 
     init {
         loadLog()
-        loadComments()
         observeSavedState()
     }
 
@@ -82,41 +71,6 @@ class LogDetailViewModel @Inject constructor(
         }
     }
 
-    private fun loadComments(cursor: String? = null) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingComments = true) }
-            commentRepository.getComments(logId, cursor).collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                comments = if (cursor == null) {
-                                    result.data.content
-                                } else {
-                                    it.comments + result.data.content
-                                },
-                                commentsCursor = result.data.nextCursor,
-                                hasMoreComments = result.data.hasMore,
-                                isLoadingComments = false
-                            )
-                        }
-                    }
-                    is Result.Error -> {
-                        _uiState.update { it.copy(isLoadingComments = false) }
-                    }
-                    is Result.Loading -> {}
-                }
-            }
-        }
-    }
-
-    fun loadMoreComments() {
-        val cursor = _uiState.value.commentsCursor
-        if (cursor != null && !_uiState.value.isLoadingComments) {
-            loadComments(cursor)
-        }
-    }
-
     fun toggleLike() {
         val log = _uiState.value.log ?: return
 
@@ -150,85 +104,10 @@ class LogDetailViewModel @Inject constructor(
         savedItemsManager.toggleSaveLog(log.id)
     }
 
-    fun setCommentText(text: String) {
-        _uiState.update { it.copy(commentText = text) }
-    }
-
-    fun setReplyingTo(comment: Comment?) {
-        _uiState.update { it.copy(replyingTo = comment) }
-    }
-
-    fun submitComment() {
-        val text = _uiState.value.commentText.trim()
-        if (text.isEmpty()) return
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSubmittingComment = true) }
-
-            val parentId = _uiState.value.replyingTo?.id
-
-            commentRepository.createComment(logId, text, parentId).collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                comments = listOf(result.data) + it.comments,
-                                commentText = "",
-                                replyingTo = null,
-                                isSubmittingComment = false
-                            )
-                        }
-                        // Update comment count in log
-                        _uiState.value.log?.let { log ->
-                            _uiState.update {
-                                it.copy(log = log.copy(commentCount = log.commentCount + 1))
-                            }
-                        }
-                    }
-                    is Result.Error -> {
-                        _uiState.update { it.copy(isSubmittingComment = false) }
-                    }
-                    is Result.Loading -> {}
-                }
-            }
-        }
-    }
-
-    fun toggleCommentLike(comment: Comment) {
-        val newIsLiked = !comment.isLiked
-        val newLikeCount = if (newIsLiked) comment.likeCount + 1 else comment.likeCount - 1
-
-        // Optimistic update
-        _uiState.update { state ->
-            state.copy(
-                comments = state.comments.map {
-                    if (it.id == comment.id) {
-                        it.copy(isLiked = newIsLiked, likeCount = newLikeCount)
-                    } else {
-                        it
-                    }
-                }
-            )
-        }
-
-        viewModelScope.launch {
-            val result = if (newIsLiked) {
-                commentRepository.likeComment(comment.id)
-            } else {
-                commentRepository.unlikeComment(comment.id)
-            }
-
-            result.collect { apiResult ->
-                if (apiResult is Result.Error) {
-                    // Revert on failure
-                    _uiState.update { state ->
-                        state.copy(
-                            comments = state.comments.map {
-                                if (it.id == comment.id) comment else it
-                            }
-                        )
-                    }
-                }
+    fun refreshCommentCount(newCount: Int) {
+        _uiState.value.log?.let { log ->
+            _uiState.update {
+                it.copy(log = log.copy(commentCount = newCount))
             }
         }
     }

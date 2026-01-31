@@ -190,15 +190,39 @@ private fun CommentItem(
                 bottom = Spacing.xs
             )
     ) {
-        AsyncImage(
-            model = comment.author.avatarUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .size(if (isReply) 28.dp else 36.dp)
-                .clip(CircleShape)
-                .clickable { onNavigateToProfile(comment.author.id) },
-            contentScale = ContentScale.Crop
+        val avatarSize = if (isReply) 28.dp else 36.dp
+        val username = comment.author.username ?: ""
+        val avatarColors = listOf(
+            Color(0xFFE57373), Color(0xFFBA68C8), Color(0xFF64B5F6),
+            Color(0xFF4DB6AC), Color(0xFF81C784), Color(0xFFFFD54F),
+            Color(0xFFFF8A65), Color(0xFFA1887F), Color(0xFF90A4AE)
         )
+        val avatarBgColor = avatarColors[kotlin.math.abs(username.hashCode()) % avatarColors.size]
+
+        Box(
+            modifier = Modifier
+                .size(avatarSize)
+                .clip(CircleShape)
+                .background(if (comment.author.avatarUrl != null) Color.Transparent else avatarBgColor)
+                .clickable { onNavigateToProfile(comment.author.id) },
+            contentAlignment = Alignment.Center
+        ) {
+            if (comment.author.avatarUrl != null) {
+                AsyncImage(
+                    model = comment.author.avatarUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text(
+                    text = username.firstOrNull()?.uppercase() ?: "?",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
         Spacer(modifier = Modifier.width(Spacing.sm))
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
