@@ -73,4 +73,109 @@
     <string name="empty_feed">No posts yet</string>
     <string name="empty_saved">No saved items</string>
     <string name="empty_recipes">No recipes found</string>
+    <string name="no_recipes_yet">No recipes yet</string>
+    <string name="no_logs_yet">No logs yet</string>
+    <string name="no_saved_items_yet">No saved items yet</string>
+    <string name="no_saved_recipes_yet">No saved recipes yet</string>
+    <string name="no_saved_logs_yet">No saved logs yet</string>
+    <string name="no_trending_recipes">No trending recipes</string>
+    <string name="no_trending_hashtags">No trending hashtags</string>
+    <string name="no_recent_logs">No recent logs</string>
+    <string name="no_recent_searches">No recent searches</string>
+    <string name="no_comments_yet">No comments yet</string>
+    <string name="error_loading_comments">Error loading comments</string>
+    <string name="no_posts_hashtag">No posts with this hashtag yet</string>
+    <string name="no_recipes_hashtag">No recipes with this hashtag yet</string>
+    <string name="no_logs_hashtag">No cooking logs with this hashtag yet</string>
+
+    <!-- Profile Actions -->
+    <string name="sign_in_to_view_profile">Sign in to view your profile</string>
+    <string name="block_user">Block User</string>
+    <string name="unblock_user">Unblock User</string>
+    <string name="report_user">Report User</string>
+    <string name="block_user_confirm">Are you sure you want to block @%s? They won\'t be able to see your content or contact you.</string>
+    <string name="report_user_reason">Why are you reporting @%s?</string>
+    <string name="spam">Spam</string>
+    <string name="harassment">Harassment or Bullying</string>
+    <string name="inappropriate_content">Inappropriate Content</string>
+    <string name="impersonation">Impersonation</string>
+    <string name="other">Other</string>
+
+    <!-- Search -->
+    <string name="trending_recipes">Trending Recipes</string>
+    <string name="see_all">See All</string>
+    <string name="popular_hashtags">Popular Hashtags</string>
+    <string name="recent_logs">Recent Logs</string>
+    <string name="cooking_logs">Cooking Logs</string>
+    <string name="users">Users</string>
+    <string name="all">All</string>
+    <string name="clear">Clear</string>
+    <string name="posts_count">%d posts</string>
+
+    <!-- Notifications Messages -->
+    <string name="notif_started_following">started following you</string>
+    <string name="notif_commented">commented on your log</string>
+    <string name="notif_replied">replied to your comment</string>
+    <string name="notif_liked_comment">liked your comment</string>
+    <string name="notif_liked_log">liked your cooking log</string>
+    <string name="notif_cooked_recipe">cooked your recipe</string>
+    <string name="notif_saved_recipe">saved your recipe</string>
+
+    <!-- Create Log -->
+    <string name="new_cooking_log">New Cooking Log</string>
+    <string name="link_a_recipe">Link a Recipe</string>
+    <string name="tap_to_add">Tap to add</string>
+    <string name="share_cooking_experience">Share your cooking experience…</string>
+    <string name="add_hashtag">Add hashtag</string>
+    <string name="private_log">Private</string>
+    <string name="public_log">Public</string>
+    <string name="dismiss">Dismiss</string>
+
+    <!-- Auth -->
+    <string name="share_cooking_journey">Share your cooking journey</string>
+    <string name="continue_with_apple">Continue with Apple</string>
+    <string name="terms_agreement">By continuing, you agree to our Terms of Service and Privacy Policy</string>
+
+    <!-- Comments -->
+    <string name="replying_to">Replying to @%s</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Back</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_submit">Submit</string>
+    <string name="cd_more_options">More options</string>
+    <string name="cd_remove">Remove</string>
+    <string name="cd_add">Add</string>
+    <string name="cd_like">Like</string>
+    <string name="cd_comment">Comment</string>
+    <string name="cd_send">Send</string>
+    <string name="cd_view">View</string>
+    <string name="cd_logo">Cookstemma Logo</string>
+    <string name="cd_unsave">Unsave</string>
+
+    <!-- Settings -->
+    <string name="log_out">Log Out</string>
+    <string name="log_out_confirm">Are you sure you want to log out?</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="delete_account_confirm">This action cannot be undone. All your recipes, logs, and data will be permanently deleted.</string>
+    <string name="choose_theme">Choose Theme</string>
+    <string name="choose_language">Choose Language</string>
+    <string name="change_language">Change Language</string>
+    <string name="restart_confirm">The app will restart to apply the new language. Do you want to continue?</string>
+    <string name="restart">Restart</string>
+    <string name="theme">Theme</string>
+    <string name="language">Language</string>
+    <string name="account">Account</string>
+    <string name="preferences">Preferences</string>
+    <string name="privacy">Privacy</string>
+    <string name="manage_blocked_users">Manage blocked users</string>
+    <string name="measurement_units">Measurement Units</string>
+    <string name="original">Original</string>
+    <string name="support">Support</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="about">About</string>
+    <string name="legal">Legal</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="version">Version %s</string>
 </resources>

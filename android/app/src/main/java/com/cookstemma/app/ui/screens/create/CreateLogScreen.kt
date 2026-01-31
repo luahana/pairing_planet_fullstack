@@ -22,9 +22,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cookstemma.app.R
 import coil.compose.AsyncImage
 import com.cookstemma.app.domain.model.RecipeSummary
 import com.cookstemma.app.ui.components.AppIcons
@@ -81,14 +83,14 @@ fun CreateLogScreen(
             ) {
                 Icon(
                     imageVector = AppIcons.close,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(R.string.cd_close),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             // Title
             Text(
-                text = "New Cooking Log",
+                text = stringResource(R.string.new_cooking_log),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -115,7 +117,7 @@ fun CreateLogScreen(
                 } else {
                     Icon(
                         imageVector = Icons.Filled.ArrowCircleUp,
-                        contentDescription = "Submit",
+                        contentDescription = stringResource(R.string.cd_submit),
                         tint = if (uiState.canSubmit)
                             MaterialTheme.colorScheme.primary
                         else
@@ -197,7 +199,7 @@ fun CreateLogScreen(
             modifier = Modifier.padding(Spacing.md),
             action = {
                 TextButton(onClick = viewModel::clearError) {
-                    Text("Dismiss")
+                    Text(stringResource(R.string.dismiss))
                 }
             }
         ) {
@@ -277,7 +279,7 @@ private fun RecipeLinkSection(
             ) {
                 Icon(
                     imageVector = AppIcons.close,
-                    contentDescription = "Clear",
+                    contentDescription = stringResource(R.string.cd_remove),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(12.dp)
                 )
@@ -285,7 +287,7 @@ private fun RecipeLinkSection(
         } else {
             // Show placeholder
             Text(
-                text = "Link a Recipe",
+                text = stringResource(R.string.link_a_recipe),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -345,7 +347,7 @@ private fun PhotoSection(
                     ) {
                         Icon(
                             imageVector = AppIcons.close,
-                            contentDescription = "Remove",
+                            contentDescription = stringResource(R.string.cd_remove),
                             tint = Color.White,
                             modifier = Modifier.size(10.dp)
                         )
@@ -372,7 +374,7 @@ private fun PhotoSection(
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = "Tap to add",
+                            text = stringResource(R.string.tap_to_add),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
@@ -425,7 +427,7 @@ private fun DescriptionSection(
         ) {
             if (content.isEmpty()) {
                 Text(
-                    text = "Share your cooking experience...",
+                    text = stringResource(R.string.share_cooking_experience),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     modifier = Modifier.padding(top = 8.dp, start = 4.dp)
@@ -507,7 +509,7 @@ private fun HashtagsSection(
                     Box {
                         if (hashtagInput.isEmpty()) {
                             Text(
-                                text = "Add hashtag",
+                                text = stringResource(R.string.add_hashtag),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             )
@@ -525,7 +527,7 @@ private fun HashtagsSection(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.AddCircle,
-                        contentDescription = "Add",
+                        contentDescription = stringResource(R.string.cd_add),
                         tint = if (hashtagInput.isEmpty())
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         else
@@ -568,7 +570,7 @@ private fun HashtagsSection(
                             )
                             Icon(
                                 imageVector = AppIcons.close,
-                                contentDescription = "Remove",
+                                contentDescription = stringResource(R.string.cd_remove),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier
                                     .size(14.dp)
@@ -606,7 +608,7 @@ private fun PrivacySection(
                 modifier = Modifier.size(24.dp)
             )
             Text(
-                text = if (isPrivate) "Private" else "Public",
+                text = if (isPrivate) stringResource(R.string.private_log) else stringResource(R.string.public_log),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )

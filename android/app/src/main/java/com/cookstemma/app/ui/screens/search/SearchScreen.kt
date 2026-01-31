@@ -26,9 +26,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cookstemma.app.R
 import coil.compose.AsyncImage
 import com.cookstemma.app.data.api.HomeRecipeItem
 import com.cookstemma.app.data.api.RecentActivityItem
@@ -232,7 +234,7 @@ private fun SearchBar(
             Spacer(modifier = Modifier.width(Spacing.sm))
             TextButton(onClick = { onFocusChange(false) }) {
                 Text(
-                    text = "Cancel",
+                    text = stringResource(R.string.cancel),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -327,7 +329,7 @@ private fun TrendingRecipesSection(
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "Trending Recipes",
+                    text = stringResource(R.string.trending_recipes),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -337,7 +339,7 @@ private fun TrendingRecipesSection(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.xxs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("See All")
+                    Text(stringResource(R.string.see_all))
                     Icon(
                         imageVector = AppIcons.forward,
                         contentDescription = null,
@@ -364,7 +366,7 @@ private fun TrendingRecipesSection(
             recipes.isEmpty() -> {
                 EmptyStateCard(
                     icon = AppIcons.recipe,
-                    message = "No trending recipes"
+                    message = stringResource(R.string.no_trending_recipes)
                 )
             }
             else -> {
@@ -404,7 +406,7 @@ private fun PopularHashtagsSection(
                 modifier = Modifier.size(24.dp)
             )
             Text(
-                text = "Popular Hashtags",
+                text = stringResource(R.string.popular_hashtags),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -415,7 +417,7 @@ private fun PopularHashtagsSection(
         if (hashtags.isEmpty()) {
             EmptyStateCard(
                 icon = Icons.Default.Tag,
-                message = "No trending hashtags"
+                message = stringResource(R.string.no_trending_hashtags)
             )
         } else {
             // Use FlowRow for wrapping hashtag chips (like iOS)
@@ -474,7 +476,7 @@ private fun RecentLogsSection(
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "Recent Logs",
+                    text = stringResource(R.string.recent_logs),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -484,7 +486,7 @@ private fun RecentLogsSection(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.xxs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("See All")
+                    Text(stringResource(R.string.see_all))
                     Icon(
                         imageVector = AppIcons.forward,
                         contentDescription = null,
@@ -511,7 +513,7 @@ private fun RecentLogsSection(
             logs.isEmpty() -> {
                 EmptyStateCard(
                     icon = AppIcons.log,
-                    message = "No recent logs"
+                    message = stringResource(R.string.no_recent_logs)
                 )
             }
             else -> {
@@ -700,7 +702,7 @@ private fun SearchHistoryContent(
                     )
                     Spacer(modifier = Modifier.height(Spacing.sm))
                     Text(
-                        text = "No recent searches",
+                        text = stringResource(R.string.no_recent_searches),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
@@ -720,12 +722,12 @@ private fun SearchHistoryContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Recent Searches",
+                                text = stringResource(R.string.recent_searches),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             TextButton(onClick = onClearAllRecentSearches) {
-                                Text("Clear")
+                                Text(stringResource(R.string.clear))
                             }
                         }
 
@@ -845,7 +847,7 @@ private fun SearchResults(
                     if (results.recipes.isNotEmpty()) {
                         item {
                             Text(
-                                "Recipes",
+                                stringResource(R.string.recipes),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -860,7 +862,7 @@ private fun SearchResults(
                     if (results.logs.isNotEmpty()) {
                         item {
                             Text(
-                                "Cooking Logs",
+                                stringResource(R.string.cooking_logs),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -875,7 +877,7 @@ private fun SearchResults(
                     if (results.users.isNotEmpty()) {
                         item {
                             Text(
-                                "Users",
+                                stringResource(R.string.users),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -969,7 +971,7 @@ private fun SeeAllRecipesScreen(
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "Trending Recipes",
+                text = stringResource(R.string.trending_recipes),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -1030,7 +1032,7 @@ private fun SeeAllLogsScreen(
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "Recent Logs",
+                text = stringResource(R.string.recent_logs),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -1216,7 +1218,7 @@ private fun RecipeSearchItem(
                 color = Color.Gray
             )
             Text(
-                "${recipe.cookCount} cooked",
+                stringResource(R.string.cooked_count, recipe.cookCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -1338,7 +1340,7 @@ private fun HashtagSearchItem(
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                "${hashtag.postCount} posts",
+                stringResource(R.string.posts_count, hashtag.postCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )

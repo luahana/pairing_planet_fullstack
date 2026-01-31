@@ -3,6 +3,7 @@ package com.cookstemma.app.ui.screens.settings
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
+import com.cookstemma.app.util.AppLanguage
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cookstemma.app.R
 import com.cookstemma.app.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +28,7 @@ import com.cookstemma.app.ui.theme.Spacing
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToNotificationSettings: () -> Unit,
     onNavigateToBlockedUsers: () -> Unit,
     onLogoutSuccess: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
@@ -35,6 +39,9 @@ fun SettingsScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var showRestartConfirmDialog by remember { mutableStateOf(false) }
+    var pendingLanguage by remember { mutableStateOf<AppLanguage?>(null) }
 
     LaunchedEffect(uiState.logoutSuccess, uiState.deleteSuccess) {
         if (uiState.logoutSuccess || uiState.deleteSuccess) {
@@ -45,10 +52,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 }
             )
@@ -61,54 +68,54 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // Account Section
-            SettingsSectionHeader("Account")
+            SettingsSectionHeader(stringResource(R.string.account))
             SettingsItem(
                 icon = Icons.Default.Person,
-                title = "Edit Profile",
+                title = stringResource(R.string.edit_profile),
                 onClick = onNavigateToEditProfile
             )
             SettingsItem(
                 icon = Icons.Default.Notifications,
-                title = "Notifications",
-                onClick = { /* TODO: Navigate to notification settings */ }
+                title = stringResource(R.string.notifications),
+                onClick = onNavigateToNotificationSettings
             )
             SettingsItem(
                 icon = Icons.Default.Lock,
-                title = "Privacy",
-                subtitle = "Manage blocked users",
+                title = stringResource(R.string.privacy),
+                subtitle = stringResource(R.string.manage_blocked_users),
                 onClick = onNavigateToBlockedUsers
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
 
             // Preferences Section
-            SettingsSectionHeader("Preferences")
+            SettingsSectionHeader(stringResource(R.string.preferences))
             SettingsItem(
                 icon = Icons.Default.Palette,
-                title = "Theme",
+                title = stringResource(R.string.theme),
                 subtitle = uiState.appTheme.displayName,
                 onClick = { showThemeDialog = true }
             )
             SettingsItem(
                 icon = Icons.Default.Language,
-                title = "Language",
-                subtitle = uiState.currentLanguage,
-                onClick = { /* TODO: Language picker */ }
+                title = stringResource(R.string.language),
+                subtitle = uiState.currentLanguage.displayName,
+                onClick = { showLanguageDialog = true }
             )
             SettingsItem(
                 icon = Icons.Default.Straighten,
-                title = "Measurement Units",
-                subtitle = "Original",
+                title = stringResource(R.string.measurement_units),
+                subtitle = stringResource(R.string.original),
                 onClick = { /* TODO: Units settings */ }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
 
             // Support Section
-            SettingsSectionHeader("Support")
+            SettingsSectionHeader(stringResource(R.string.support))
             SettingsItem(
                 icon = Icons.Default.Email,
-                title = "Send Feedback",
+                title = stringResource(R.string.send_feedback),
                 onClick = {
                     val intent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:contact@cookstemma.com?subject=Cookstemma%20Feedback")
@@ -118,17 +125,17 @@ fun SettingsScreen(
             )
             SettingsItem(
                 icon = Icons.Default.Info,
-                title = "About",
+                title = stringResource(R.string.about),
                 onClick = { /* TODO: About screen */ }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
 
             // Legal Section
-            SettingsSectionHeader("Legal")
+            SettingsSectionHeader(stringResource(R.string.legal))
             SettingsItem(
                 icon = Icons.Default.Description,
-                title = "Terms of Service",
+                title = stringResource(R.string.terms_of_service),
                 onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://cookstemma.com/terms"))
                     context.startActivity(intent)
@@ -136,7 +143,7 @@ fun SettingsScreen(
             )
             SettingsItem(
                 icon = Icons.Default.PrivacyTip,
-                title = "Privacy Policy",
+                title = stringResource(R.string.privacy_policy),
                 onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://cookstemma.com/privacy"))
                     context.startActivity(intent)
@@ -148,13 +155,13 @@ fun SettingsScreen(
             // Account Actions
             SettingsItem(
                 icon = Icons.AutoMirrored.Filled.ExitToApp,
-                title = "Log Out",
+                title = stringResource(R.string.log_out),
                 titleColor = MaterialTheme.colorScheme.error,
                 onClick = { showLogoutDialog = true }
             )
             SettingsItem(
                 icon = Icons.Default.DeleteForever,
-                title = "Delete Account",
+                title = stringResource(R.string.delete_account),
                 titleColor = MaterialTheme.colorScheme.error,
                 onClick = { showDeleteDialog = true }
             )
@@ -162,7 +169,7 @@ fun SettingsScreen(
             // Version Info
             Spacer(modifier = Modifier.height(Spacing.lg))
             Text(
-                text = "Version ${uiState.appVersion}",
+                text = stringResource(R.string.version, uiState.appVersion),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
@@ -177,8 +184,8 @@ fun SettingsScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Log Out") },
-            text = { Text("Are you sure you want to log out?") },
+            title = { Text(stringResource(R.string.log_out)) },
+            text = { Text(stringResource(R.string.log_out_confirm)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -190,13 +197,13 @@ fun SettingsScreen(
                     if (uiState.isLoggingOut) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
-                        Text("Log Out", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.log_out), color = MaterialTheme.colorScheme.error)
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -206,8 +213,8 @@ fun SettingsScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Account") },
-            text = { Text("This action cannot be undone. All your recipes, logs, and data will be permanently deleted.") },
+            title = { Text(stringResource(R.string.delete_account)) },
+            text = { Text(stringResource(R.string.delete_account_confirm)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -219,13 +226,13 @@ fun SettingsScreen(
                     if (uiState.isDeletingAccount) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
-                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -235,7 +242,7 @@ fun SettingsScreen(
     if (showThemeDialog) {
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text("Choose Theme") },
+            title = { Text(stringResource(R.string.choose_theme)) },
             text = {
                 Column {
                     AppTheme.entries.forEach { theme ->
@@ -263,6 +270,87 @@ fun SettingsScreen(
                 }
             },
             confirmButton = { }
+        )
+    }
+
+    // Language Selection Dialog
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(stringResource(R.string.choose_language)) },
+            text = {
+                Column {
+                    viewModel.getAllLanguages().forEach { language ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (language != uiState.currentLanguage) {
+                                        pendingLanguage = language
+                                        showLanguageDialog = false
+                                        showRestartConfirmDialog = true
+                                    } else {
+                                        showLanguageDialog = false
+                                    }
+                                }
+                                .padding(vertical = Spacing.sm),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = uiState.currentLanguage == language,
+                                onClick = {
+                                    if (language != uiState.currentLanguage) {
+                                        pendingLanguage = language
+                                        showLanguageDialog = false
+                                        showRestartConfirmDialog = true
+                                    } else {
+                                        showLanguageDialog = false
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(Spacing.sm))
+                            Text(language.displayName)
+                        }
+                    }
+                }
+            },
+            confirmButton = { }
+        )
+    }
+
+    // Language Change Confirmation Dialog
+    if (showRestartConfirmDialog && pendingLanguage != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showRestartConfirmDialog = false
+                pendingLanguage = null
+            },
+            title = { Text(stringResource(R.string.change_language)) },
+            text = { Text(stringResource(R.string.restart_confirm)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingLanguage?.let { language ->
+                            showRestartConfirmDialog = false
+                            pendingLanguage = null
+                            // Set language - this will automatically trigger activity recreation
+                            viewModel.setLanguage(language)
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.restart))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showRestartConfirmDialog = false
+                        pendingLanguage = null
+                    }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
         )
     }
 

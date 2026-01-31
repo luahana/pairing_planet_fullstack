@@ -21,11 +21,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.cookstemma.app.R
 import com.cookstemma.app.domain.model.FeedItem
 import com.cookstemma.app.ui.components.AppIcons
 import com.cookstemma.app.ui.components.IconEmptyState
@@ -65,7 +67,7 @@ fun HashtagDetailScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 }
@@ -173,7 +175,7 @@ private fun PostCountHeader(count: Int) {
         )
         Spacer(modifier = Modifier.width(Spacing.xs))
         Text(
-            text = "$count posts",
+            text = stringResource(R.string.posts_count, count),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -199,7 +201,13 @@ private fun HashtagContentFilterRow(
                     count = HashtagContentFilter.entries.size
                 )
             ) {
-                Text(filter.title)
+                Text(
+                    when (filter) {
+                        HashtagContentFilter.ALL -> stringResource(R.string.all)
+                        HashtagContentFilter.RECIPES -> stringResource(R.string.recipes)
+                        HashtagContentFilter.LOGS -> stringResource(R.string.logs)
+                    }
+                )
             }
         }
     }
@@ -285,9 +293,9 @@ private fun FilterEmptyState(
     modifier: Modifier = Modifier
 ) {
     val (icon, message) = when (filter) {
-        HashtagContentFilter.ALL -> AppIcons.trending to "No posts with this hashtag yet"
-        HashtagContentFilter.RECIPES -> AppIcons.recipe to "No recipes with this hashtag yet"
-        HashtagContentFilter.LOGS -> AppIcons.log to "No cooking logs with this hashtag yet"
+        HashtagContentFilter.ALL -> AppIcons.trending to stringResource(R.string.no_posts_hashtag)
+        HashtagContentFilter.RECIPES -> AppIcons.recipe to stringResource(R.string.no_recipes_hashtag)
+        HashtagContentFilter.LOGS -> AppIcons.log to stringResource(R.string.no_logs_hashtag)
     }
 
     IconEmptyState(

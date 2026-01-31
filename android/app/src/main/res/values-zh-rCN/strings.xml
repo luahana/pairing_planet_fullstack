@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app_name is set per flavor in build.gradle.kts -->
+
+    <!-- Navigation -->
+    <string name="nav_home">首页</string>
+    <string name="nav_recipes">食谱</string>
+    <string name="nav_create">创建</string>
+    <string name="nav_saved">已保存</string>
+    <string name="nav_profile">个人主页</string>
+
+    <!-- Common -->
+    <string name="loading">加载中...</string>
+    <string name="error_generic">出了点问题</string>
+    <string name="retry">重试</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="edit">编辑</string>
+    <string name="share">分享</string>
+    <string name="report">举报</string>
+
+    <!-- Auth -->
+    <string name="sign_in">登录</string>
+    <string name="sign_out">退出登录</string>
+    <string name="continue_with_google">使用Google继续</string>
+
+    <!-- Profile -->
+    <string name="followers">粉丝</string>
+    <string name="following">关注中</string>
+    <string name="follow">关注</string>
+    <string name="unfollow">取消关注</string>
+    <string name="block">屏蔽</string>
+    <string name="settings">设置</string>
+    <string name="edit_profile">编辑资料</string>
+
+    <!-- Recipes -->
+    <string name="recipes">食谱</string>
+    <string name="logs">日志</string>
+    <string name="cooked_count">%d 次烹饪</string>
+    <string name="view_recipe">查看食谱</string>
+    <string name="start_cooking">开始烹饪</string>
+    <string name="ingredients">食材</string>
+    <string name="steps">步骤</string>
+
+    <!-- Create Log -->
+    <string name="create_log">创建日志</string>
+    <string name="add_photos">添加照片</string>
+    <string name="rate_your_cook">评价你的烹饪</string>
+    <string name="link_recipe">关联食谱（可选）</string>
+    <string name="write_about_experience">写下你的体验...</string>
+    <string name="post">发布</string>
+
+    <!-- Search -->
+    <string name="search">搜索</string>
+    <string name="search_placeholder">搜索食谱、日志、用户...</string>
+    <string name="recent_searches">最近搜索</string>
+    <string name="trending">热门</string>
+    <string name="no_results">无结果</string>
+
+    <!-- Notifications -->
+    <string name="notifications">通知</string>
+    <string name="mark_all_read">全部标为已读</string>
+    <string name="no_notifications">暂无通知</string>
+
+    <!-- Comments -->
+    <string name="comments">评论</string>
+    <string name="write_comment">写评论...</string>
+    <string name="reply">回复</string>
+    <string name="load_more">加载更多</string>
+
+    <!-- Empty States -->
+    <string name="empty_feed">暂无帖子</string>
+    <string name="empty_saved">暂无收藏</string>
+    <string name="empty_recipes">未找到食谱</string>
+    <string name="no_recipes_yet">暂无食谱</string>
+    <string name="no_logs_yet">暂无日志</string>
+    <string name="no_saved_items_yet">暂无收藏</string>
+    <string name="no_saved_recipes_yet">暂无收藏食谱</string>
+    <string name="no_saved_logs_yet">暂无收藏日志</string>
+    <string name="no_trending_recipes">暂无热门食谱</string>
+    <string name="no_trending_hashtags">暂无热门话题</string>
+    <string name="no_recent_logs">暂无最近日志</string>
+    <string name="no_recent_searches">暂无最近搜索</string>
+    <string name="no_comments_yet">暂无评论</string>
+    <string name="error_loading_comments">加载评论时出错</string>
+    <string name="no_posts_hashtag">该话题暂无帖子</string>
+    <string name="no_recipes_hashtag">该话题暂无食谱</string>
+    <string name="no_logs_hashtag">该话题暂无烹饪日志</string>
+
+    <!-- Profile Actions -->
+    <string name="sign_in_to_view_profile">登录以查看个人主页</string>
+    <string name="block_user">屏蔽用户</string>
+    <string name="unblock_user">解除屏蔽</string>
+    <string name="report_user">举报用户</string>
+    <string name="block_user_confirm">确定要屏蔽@%s吗？屏蔽后对方将无法看到您的内容或联系您。</string>
+    <string name="report_user_reason">举报@%s的原因是什么？</string>
+    <string name="spam">垃圾信息</string>
+    <string name="harassment">骚扰或欺凌</string>
+    <string name="inappropriate_content">不当内容</string>
+    <string name="impersonation">冒充他人</string>
+    <string name="other">其他</string>
+
+    <!-- Search -->
+    <string name="trending_recipes">热门食谱</string>
+    <string name="see_all">查看全部</string>
+    <string name="popular_hashtags">热门话题</string>
+    <string name="recent_logs">最近日志</string>
+    <string name="cooking_logs">烹饪日志</string>
+    <string name="users">用户</string>
+    <string name="all">全部</string>
+    <string name="clear">清除</string>
+    <string name="posts_count">%d篇帖子</string>
+
+    <!-- Notifications Messages -->
+    <string name="notif_started_following">开始关注你</string>
+    <string name="notif_commented">评论了你的日志</string>
+    <string name="notif_replied">回复了你的评论</string>
+    <string name="notif_liked_comment">点赞了你的评论</string>
+    <string name="notif_liked_log">点赞了你的烹饪日志</string>
+    <string name="notif_cooked_recipe">做了你的食谱</string>
+    <string name="notif_saved_recipe">收藏了你的食谱</string>
+
+    <!-- Create Log -->
+    <string name="new_cooking_log">新建烹饪日志</string>
+    <string name="link_a_recipe">关联食谱</string>
+    <string name="tap_to_add">点击添加</string>
+    <string name="share_cooking_experience">分享你的烹饪体验…</string>
+    <string name="add_hashtag">添加话题</string>
+    <string name="private_log">私密</string>
+    <string name="public_log">公开</string>
+    <string name="dismiss">关闭</string>
+
+    <!-- Auth -->
+    <string name="share_cooking_journey">分享你的烹饪之旅</string>
+    <string name="continue_with_apple">使用Apple继续</string>
+    <string name="terms_agreement">继续即表示您同意我们的服务条款和隐私政策</string>
+
+    <!-- Comments -->
+    <string name="replying_to">回复@%s</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">返回</string>
+    <string name="cd_close">关闭</string>
+    <string name="cd_submit">提交</string>
+    <string name="cd_more_options">更多选项</string>
+    <string name="cd_remove">移除</string>
+    <string name="cd_add">添加</string>
+    <string name="cd_like">点赞</string>
+    <string name="cd_comment">评论</string>
+    <string name="cd_send">发送</string>
+    <string name="cd_view">查看</string>
+    <string name="cd_logo">Cookstemma标志</string>
+    <string name="cd_unsave">取消收藏</string>
+
+    <!-- Settings -->
+    <string name="log_out">退出登录</string>
+    <string name="log_out_confirm">确定要退出登录吗？</string>
+    <string name="delete_account">删除账号</string>
+    <string name="delete_account_confirm">此操作无法撤销。您的所有食谱、日志和数据将被永久删除。</string>
+    <string name="choose_theme">选择主题</string>
+    <string name="choose_language">选择语言</string>
+    <string name="change_language">更改语言</string>
+    <string name="restart_confirm">应用将重启以应用新语言。是否继续？</string>
+    <string name="restart">重启</string>
+    <string name="theme">主题</string>
+    <string name="language">语言</string>
+    <string name="account">账号</string>
+    <string name="preferences">偏好设置</string>
+    <string name="privacy">隐私</string>
+    <string name="manage_blocked_users">管理已屏蔽用户</string>
+    <string name="measurement_units">计量单位</string>
+    <string name="original">原始</string>
+    <string name="support">支持</string>
+    <string name="send_feedback">发送反馈</string>
+    <string name="about">关于</string>
+    <string name="legal">法律</string>
+    <string name="terms_of_service">服务条款</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="version">版本 %s</string>
+</resources>

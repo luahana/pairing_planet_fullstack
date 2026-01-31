@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -88,7 +89,7 @@ fun HomeFeedScreen(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_logo),
-                    contentDescription = "Cookstemma Logo",
+                    contentDescription = stringResource(R.string.cd_logo),
                     modifier = Modifier.size(36.dp)
                 )
                 Text(
@@ -304,7 +305,7 @@ fun FeedLogCard(
                 ) {
                     Icon(
                         imageVector = AppIcons.comment,
-                        contentDescription = "Comment",
+                        contentDescription = stringResource(R.string.cd_comment),
                         modifier = Modifier.size(22.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -318,7 +319,7 @@ fun FeedLogCard(
             ) {
                 Icon(
                     imageVector = if (isSaved) AppIcons.save else AppIcons.saveOutline,
-                    contentDescription = if (isSaved) "Unsave" else "Save",
+                    contentDescription = if (isSaved) stringResource(R.string.cd_unsave) else stringResource(R.string.save),
                     modifier = Modifier.size(22.dp),
                     tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )

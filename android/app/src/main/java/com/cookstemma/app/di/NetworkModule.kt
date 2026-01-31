@@ -2,6 +2,7 @@ package com.cookstemma.app.di
 
 import com.cookstemma.app.BuildConfig
 import com.cookstemma.app.data.api.ApiService
+import com.cookstemma.app.data.api.LanguageInterceptor
 import com.cookstemma.app.data.auth.AuthInterceptor
 import com.cookstemma.app.data.auth.TokenAuthenticator
 import com.cookstemma.app.data.auth.TokenManager
@@ -43,9 +44,11 @@ object NetworkModule {
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
         authInterceptor: AuthInterceptor,
+        languageInterceptor: LanguageInterceptor,
         tokenAuthenticator: TokenAuthenticator
     ): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(languageInterceptor)
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .authenticator(tokenAuthenticator)

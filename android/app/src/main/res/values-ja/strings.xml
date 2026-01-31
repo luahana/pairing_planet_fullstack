@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app_name is set per flavor in build.gradle.kts -->
+
+    <!-- Navigation -->
+    <string name="nav_home">ホーム</string>
+    <string name="nav_recipes">レシピ</string>
+    <string name="nav_create">作成</string>
+    <string name="nav_saved">保存済み</string>
+    <string name="nav_profile">プロフィール</string>
+
+    <!-- Common -->
+    <string name="loading">読み込み中...</string>
+    <string name="error_generic">エラーが発生しました</string>
+    <string name="retry">再試行</string>
+    <string name="cancel">キャンセル</string>
+    <string name="save">保存</string>
+    <string name="delete">削除</string>
+    <string name="edit">編集</string>
+    <string name="share">共有</string>
+    <string name="report">報告</string>
+
+    <!-- Auth -->
+    <string name="sign_in">サインイン</string>
+    <string name="sign_out">サインアウト</string>
+    <string name="continue_with_google">Googleで続ける</string>
+
+    <!-- Profile -->
+    <string name="followers">フォロワー</string>
+    <string name="following">フォロー中</string>
+    <string name="follow">フォロー</string>
+    <string name="unfollow">フォロー解除</string>
+    <string name="block">ブロック</string>
+    <string name="settings">設定</string>
+    <string name="edit_profile">プロフィール編集</string>
+
+    <!-- Recipes -->
+    <string name="recipes">レシピ</string>
+    <string name="logs">ログ</string>
+    <string name="cooked_count">%d 回調理</string>
+    <string name="view_recipe">レシピを見る</string>
+    <string name="start_cooking">料理を始める</string>
+    <string name="ingredients">材料</string>
+    <string name="steps">手順</string>
+
+    <!-- Create Log -->
+    <string name="create_log">ログを作成</string>
+    <string name="add_photos">写真を追加</string>
+    <string name="rate_your_cook">料理を評価する</string>
+    <string name="link_recipe">レシピをリンク（任意）</string>
+    <string name="write_about_experience">体験を書いてください...</string>
+    <string name="post">投稿</string>
+
+    <!-- Search -->
+    <string name="search">検索</string>
+    <string name="search_placeholder">レシピ、ログ、ユーザーを検索...</string>
+    <string name="recent_searches">最近の検索</string>
+    <string name="trending">トレンド</string>
+    <string name="no_results">結果なし</string>
+
+    <!-- Notifications -->
+    <string name="notifications">通知</string>
+    <string name="mark_all_read">すべて既読</string>
+    <string name="no_notifications">通知はありません</string>
+
+    <!-- Comments -->
+    <string name="comments">コメント</string>
+    <string name="write_comment">コメントを書く...</string>
+    <string name="reply">返信</string>
+    <string name="load_more">もっと見る</string>
+
+    <!-- Empty States -->
+    <string name="empty_feed">投稿がありません</string>
+    <string name="empty_saved">保存したアイテムなし</string>
+    <string name="empty_recipes">レシピが見つかりません</string>
+    <string name="no_recipes_yet">レシピがありません</string>
+    <string name="no_logs_yet">ログがありません</string>
+    <string name="no_saved_items_yet">保存したアイテムがありません</string>
+    <string name="no_saved_recipes_yet">保存したレシピがありません</string>
+    <string name="no_saved_logs_yet">保存したログがありません</string>
+    <string name="no_trending_recipes">トレンドレシピがありません</string>
+    <string name="no_trending_hashtags">トレンドハッシュタグがありません</string>
+    <string name="no_recent_logs">最近のログがありません</string>
+    <string name="no_recent_searches">最近の検索がありません</string>
+    <string name="no_comments_yet">コメントはまだありません</string>
+    <string name="error_loading_comments">コメントの読み込みエラー</string>
+    <string name="no_posts_hashtag">このハッシュタグの投稿はまだありません</string>
+    <string name="no_recipes_hashtag">このハッシュタグのレシピはまだありません</string>
+    <string name="no_logs_hashtag">このハッシュタグの料理ログはまだありません</string>
+
+    <!-- Profile Actions -->
+    <string name="sign_in_to_view_profile">プロフィールを見るにはサインインしてください</string>
+    <string name="block_user">ユーザーをブロック</string>
+    <string name="unblock_user">ブロック解除</string>
+    <string name="report_user">ユーザーを報告</string>
+    <string name="block_user_confirm">@%sをブロックしますか？ブロックされたユーザーはあなたのコンテンツを見たり連絡したりできなくなります。</string>
+    <string name="report_user_reason">@%sを報告する理由は何ですか？</string>
+    <string name="spam">スパム</string>
+    <string name="harassment">嫌がらせ・いじめ</string>
+    <string name="inappropriate_content">不適切なコンテンツ</string>
+    <string name="impersonation">なりすまし</string>
+    <string name="other">その他</string>
+
+    <!-- Search -->
+    <string name="trending_recipes">トレンドレシピ</string>
+    <string name="see_all">すべて見る</string>
+    <string name="popular_hashtags">人気のハッシュタグ</string>
+    <string name="recent_logs">最近のログ</string>
+    <string name="cooking_logs">料理ログ</string>
+    <string name="users">ユーザー</string>
+    <string name="all">すべて</string>
+    <string name="clear">クリア</string>
+    <string name="posts_count">%d件の投稿</string>
+
+    <!-- Notifications Messages -->
+    <string name="notif_started_following">があなたをフォローしました</string>
+    <string name="notif_commented">があなたのログにコメントしました</string>
+    <string name="notif_replied">があなたのコメントに返信しました</string>
+    <string name="notif_liked_comment">があなたのコメントをいいねしました</string>
+    <string name="notif_liked_log">があなたの料理ログをいいねしました</string>
+    <string name="notif_cooked_recipe">があなたのレシピを作りました</string>
+    <string name="notif_saved_recipe">があなたのレシピを保存しました</string>
+
+    <!-- Create Log -->
+    <string name="new_cooking_log">新しい料理ログ</string>
+    <string name="link_a_recipe">レシピをリンク</string>
+    <string name="tap_to_add">タップして追加</string>
+    <string name="share_cooking_experience">料理体験を共有…</string>
+    <string name="add_hashtag">ハッシュタグを追加</string>
+    <string name="private_log">非公開</string>
+    <string name="public_log">公開</string>
+    <string name="dismiss">閉じる</string>
+
+    <!-- Auth -->
+    <string name="share_cooking_journey">料理の旅を共有しましょう</string>
+    <string name="continue_with_apple">Appleで続ける</string>
+    <string name="terms_agreement">続けることで、利用規約とプライバシーポリシーに同意したことになります</string>
+
+    <!-- Comments -->
+    <string name="replying_to">@%sに返信</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">戻る</string>
+    <string name="cd_close">閉じる</string>
+    <string name="cd_submit">送信</string>
+    <string name="cd_more_options">その他のオプション</string>
+    <string name="cd_remove">削除</string>
+    <string name="cd_add">追加</string>
+    <string name="cd_like">いいね</string>
+    <string name="cd_comment">コメント</string>
+    <string name="cd_send">送信</string>
+    <string name="cd_view">表示</string>
+    <string name="cd_logo">Cookstemmaロゴ</string>
+    <string name="cd_unsave">保存解除</string>
+
+    <!-- Settings -->
+    <string name="log_out">ログアウト</string>
+    <string name="log_out_confirm">ログアウトしますか？</string>
+    <string name="delete_account">アカウントを削除</string>
+    <string name="delete_account_confirm">この操作は取り消せません。すべてのレシピ、ログ、データが完全に削除されます。</string>
+    <string name="choose_theme">テーマを選択</string>
+    <string name="choose_language">言語を選択</string>
+    <string name="change_language">言語を変更</string>
+    <string name="restart_confirm">新しい言語を適用するためにアプリが再起動します。続けますか？</string>
+    <string name="restart">再起動</string>
+    <string name="theme">テーマ</string>
+    <string name="language">言語</string>
+    <string name="account">アカウント</string>
+    <string name="preferences">設定</string>
+    <string name="privacy">プライバシー</string>
+    <string name="manage_blocked_users">ブロックしたユーザーを管理</string>
+    <string name="measurement_units">単位</string>
+    <string name="original">オリジナル</string>
+    <string name="support">サポート</string>
+    <string name="send_feedback">フィードバックを送信</string>
+    <string name="about">このアプリについて</string>
+    <string name="legal">法的情報</string>
+    <string name="terms_of_service">利用規約</string>
+    <string name="privacy_policy">プライバシーポリシー</string>
+    <string name="version">バージョン %s</string>
+</resources>

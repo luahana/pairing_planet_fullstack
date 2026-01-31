@@ -20,10 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.cookstemma.app.R
 import com.cookstemma.app.data.repository.Comment
 import com.cookstemma.app.ui.theme.BrandOrange
 import com.cookstemma.app.ui.theme.Spacing
@@ -86,7 +88,7 @@ fun CommentsBottomSheet(
                     }
                     uiState.error != null -> {
                         Text(
-                            text = uiState.error ?: "Error loading comments",
+                            text = uiState.error ?: stringResource(R.string.error_loading_comments),
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(Spacing.md),
@@ -95,7 +97,7 @@ fun CommentsBottomSheet(
                     }
                     uiState.comments.isEmpty() -> {
                         Text(
-                            text = "No comments yet",
+                            text = stringResource(R.string.no_comments_yet),
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(Spacing.md),
@@ -110,7 +112,7 @@ fun CommentsBottomSheet(
                             items(uiState.comments, key = { it.id }) { comment ->
                                 CommentItem(
                                     comment = comment,
-                                    onLike = { viewModel.toggleCommentLike(comment) },
+                                    onLike = viewModel::toggleCommentLike,
                                     onReply = { viewModel.setReplyingTo(comment) },
                                     onNavigateToProfile = onNavigateToProfile
                                 )
@@ -156,7 +158,7 @@ private fun CommentsHeader(
             .padding(Spacing.md)
     ) {
         Text(
-            text = "Comments",
+            text = stringResource(R.string.comments),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.align(Alignment.Center)
@@ -165,7 +167,7 @@ private fun CommentsHeader(
             onClick = onClose,
             modifier = Modifier.align(Alignment.CenterEnd)
         ) {
-            Icon(Icons.Default.Close, contentDescription = "Close")
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_close))
         }
     }
 }
@@ -173,7 +175,7 @@ private fun CommentsHeader(
 @Composable
 private fun CommentItem(
     comment: Comment,
-    onLike: () -> Unit,
+    onLike: (Comment) -> Unit,
     onReply: () -> Unit,
     onNavigateToProfile: (String) -> Unit,
     isReply: Boolean = false
@@ -222,14 +224,14 @@ private fun CommentItem(
                 // Like button
                 Row(
                     modifier = Modifier
-                        .clickable(onClick = onLike)
+                        .clickable(onClick = { onLike(comment) })
                         .padding(vertical = Spacing.xs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = if (comment.isLiked) Icons.Filled.Favorite
                         else Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Like",
+                        contentDescription = stringResource(R.string.cd_like),
                         tint = if (comment.isLiked) Color.Red
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
@@ -246,7 +248,7 @@ private fun CommentItem(
                 Spacer(modifier = Modifier.width(Spacing.md))
                 // Reply button
                 Text(
-                    text = "Reply",
+                    text = stringResource(R.string.reply),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
@@ -259,7 +261,7 @@ private fun CommentItem(
             comment.replies?.forEach { reply ->
                 CommentItem(
                     comment = reply,
-                    onLike = { /* Handle reply like */ },
+                    onLike = onLike,
                     onReply = onReply,
                     onNavigateToProfile = onNavigateToProfile,
                     isReply = true
@@ -295,7 +297,7 @@ private fun CommentInputBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Replying to @${replyingTo.author.username}",
+                    text = stringResource(R.string.replying_to, replyingTo.author.username ?: ""),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -305,7 +307,7 @@ private fun CommentInputBar(
                 ) {
                     Icon(
                         Icons.Default.Close,
-                        contentDescription = "Cancel",
+                        contentDescription = stringResource(R.string.cancel),
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -322,7 +324,7 @@ private fun CommentInputBar(
                 value = text,
                 onValueChange = onTextChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Write a comment...") },
+                placeholder = { Text(stringResource(R.string.write_comment)) },
                 shape = RoundedCornerShape(24.dp),
                 maxLines = 3,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -344,7 +346,7 @@ private fun CommentInputBar(
                 } else {
                     Icon(
                         Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send",
+                        contentDescription = stringResource(R.string.cd_send),
                         tint = if (text.isNotBlank()) BrandOrange
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )

@@ -20,11 +20,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.cookstemma.app.R
 import com.cookstemma.app.domain.model.SocialLinks
 import com.cookstemma.app.ui.AppState
 import com.cookstemma.app.ui.components.*
@@ -93,7 +95,7 @@ fun ProfileScreen(
                             IconButton(onClick = { showMenu = true }) {
                                 Icon(
                                     imageVector = AppIcons.more,
-                                    contentDescription = "More options",
+                                    contentDescription = stringResource(R.string.cd_more_options),
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -103,7 +105,7 @@ fun ProfileScreen(
                             ) {
                                 DropdownMenuItem(
                                     text = {
-                                        Text(if (uiState.isBlocked) "Unblock User" else "Block User")
+                                        Text(if (uiState.isBlocked) stringResource(R.string.unblock_user) else stringResource(R.string.block_user))
                                     },
                                     onClick = {
                                         showMenu = false
@@ -118,7 +120,7 @@ fun ProfileScreen(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Report User") },
+                                    text = { Text(stringResource(R.string.report_user)) },
                                     onClick = {
                                         showMenu = false
                                         showReportDialog = true
@@ -148,7 +150,7 @@ fun ProfileScreen(
                 isOwnProfile && !isAuthenticated -> {
                     IconEmptyState(
                         icon = AppIcons.profile,
-                        subtitle = "Sign in to view your profile",
+                        subtitle = stringResource(R.string.sign_in_to_view_profile),
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -200,9 +202,9 @@ fun ProfileScreen(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { Text("Block User") },
+            title = { Text(stringResource(R.string.block_user)) },
             text = {
-                Text("Are you sure you want to block @${uiState.username}? They won't be able to see your content or contact you.")
+                Text(stringResource(R.string.block_user_confirm, uiState.username))
             },
             confirmButton = {
                 TextButton(
@@ -214,12 +216,12 @@ fun ProfileScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Block")
+                    Text(stringResource(R.string.block))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showBlockConfirmDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -228,11 +230,11 @@ fun ProfileScreen(
     // Report Dialog
     if (showReportDialog) {
         val reportReasons = listOf(
-            "Spam" to "spam",
-            "Harassment or Bullying" to "harassment",
-            "Inappropriate Content" to "inappropriate",
-            "Impersonation" to "impersonation",
-            "Other" to "other"
+            stringResource(R.string.spam) to "spam",
+            stringResource(R.string.harassment) to "harassment",
+            stringResource(R.string.inappropriate_content) to "inappropriate",
+            stringResource(R.string.impersonation) to "impersonation",
+            stringResource(R.string.other) to "other"
         )
 
         AlertDialog(
@@ -247,11 +249,11 @@ fun ProfileScreen(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { Text("Report User") },
+            title = { Text(stringResource(R.string.report_user)) },
             text = {
                 Column {
                     Text(
-                        "Why are you reporting @${uiState.username}?",
+                        stringResource(R.string.report_user_reason, uiState.username),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = Spacing.md)
                     )
@@ -287,7 +289,7 @@ fun ProfileScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Report")
+                    Text(stringResource(R.string.report))
                 }
             },
             dismissButton = {
@@ -297,7 +299,7 @@ fun ProfileScreen(
                         selectedReportReason = null
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -430,7 +432,7 @@ private fun ProfileContent(
                     item(span = { GridItemSpan(2) }) {
                         EmptyState(
                             icon = AppIcons.recipe,
-                            message = "No recipes yet"
+                            message = stringResource(R.string.no_recipes_yet)
                         )
                     }
                 } else {
@@ -450,7 +452,7 @@ private fun ProfileContent(
                     item(span = { GridItemSpan(2) }) {
                         EmptyState(
                             icon = AppIcons.log,
-                            message = "No logs yet"
+                            message = stringResource(R.string.no_logs_yet)
                         )
                     }
                 } else {
@@ -476,9 +478,9 @@ private fun ProfileContent(
                         EmptyState(
                             icon = AppIcons.save,
                             message = when (uiState.savedContentFilter) {
-                                SavedContentFilter.ALL -> "No saved items yet"
-                                SavedContentFilter.RECIPES -> "No saved recipes yet"
-                                SavedContentFilter.LOGS -> "No saved logs yet"
+                                SavedContentFilter.ALL -> stringResource(R.string.no_saved_items_yet)
+                                SavedContentFilter.RECIPES -> stringResource(R.string.no_saved_recipes_yet)
+                                SavedContentFilter.LOGS -> stringResource(R.string.no_saved_logs_yet)
                             }
                         )
                     }
@@ -623,7 +625,7 @@ private fun ProfileHeader(
             IconButton(onClick = onSettingsClick) {
                 Icon(
                     imageVector = AppIcons.settings,
-                    contentDescription = "Settings",
+                    contentDescription = stringResource(R.string.settings),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -688,16 +690,16 @@ private fun StatsRow(
             .padding(vertical = Spacing.sm),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        StatItem(count = recipeCount, label = "Recipes")
-        StatItem(count = logCount, label = "Logs")
+        StatItem(count = recipeCount, label = stringResource(R.string.recipes))
+        StatItem(count = logCount, label = stringResource(R.string.logs))
         StatItem(
             count = followerCount,
-            label = "Followers",
+            label = stringResource(R.string.followers),
             onClick = onFollowersClick
         )
         StatItem(
             count = followingCount,
-            label = "Following",
+            label = stringResource(R.string.following),
             onClick = onFollowingClick
         )
     }
@@ -741,14 +743,14 @@ private fun ProfileTabBar(
         modifier = Modifier.fillMaxWidth()
     ) {
         ProfileTabButton(
-            title = "Recipes",
+            title = stringResource(R.string.recipes),
             count = recipeCount,
             isSelected = selectedTab == ProfileTab.RECIPES,
             onClick = { onTabChange(ProfileTab.RECIPES) },
             modifier = Modifier.weight(1f)
         )
         ProfileTabButton(
-            title = "Logs",
+            title = stringResource(R.string.logs),
             count = logCount,
             isSelected = selectedTab == ProfileTab.LOGS,
             onClick = { onTabChange(ProfileTab.LOGS) },
@@ -756,7 +758,7 @@ private fun ProfileTabBar(
         )
         if (isOwnProfile) {
             ProfileTabButton(
-                title = "Saved",
+                title = stringResource(R.string.nav_saved),
                 count = savedCount,
                 isSelected = selectedTab == ProfileTab.SAVED,
                 onClick = { onTabChange(ProfileTab.SAVED) },

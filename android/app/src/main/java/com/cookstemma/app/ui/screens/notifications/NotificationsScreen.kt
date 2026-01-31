@@ -21,8 +21,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cookstemma.app.R
 import coil.compose.AsyncImage
 import com.cookstemma.app.data.repository.Notification
 import com.cookstemma.app.data.repository.NotificationType
@@ -264,6 +266,7 @@ private fun NotificationItem(
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
+            val notificationText = getNotificationText(notification.type)
             Text(
                 text = buildAnnotatedString {
                     notification.actorUser?.let { user ->
@@ -272,7 +275,7 @@ private fun NotificationItem(
                         }
                         append(" ")
                     }
-                    append(getNotificationText(notification.type))
+                    append(notificationText)
                 },
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -323,15 +326,16 @@ private fun NotificationTypeIcon(
     }
 }
 
+@Composable
 private fun getNotificationText(type: NotificationType): String {
     return when (type) {
-        NotificationType.NEW_FOLLOWER -> "started following you"
-        NotificationType.COMMENT -> "commented on your log"
-        NotificationType.COMMENT_REPLY -> "replied to your comment"
-        NotificationType.COMMENT_LIKE -> "liked your comment"
-        NotificationType.LOG_LIKED -> "liked your cooking log"
-        NotificationType.RECIPE_COOKED -> "cooked your recipe"
-        NotificationType.RECIPE_SAVED -> "saved your recipe"
+        NotificationType.NEW_FOLLOWER -> stringResource(R.string.notif_started_following)
+        NotificationType.COMMENT -> stringResource(R.string.notif_commented)
+        NotificationType.COMMENT_REPLY -> stringResource(R.string.notif_replied)
+        NotificationType.COMMENT_LIKE -> stringResource(R.string.notif_liked_comment)
+        NotificationType.LOG_LIKED -> stringResource(R.string.notif_liked_log)
+        NotificationType.RECIPE_COOKED -> stringResource(R.string.notif_cooked_recipe)
+        NotificationType.RECIPE_SAVED -> stringResource(R.string.notif_saved_recipe)
     }
 }
 

@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class HashtagContentFilter(val title: String) {
-    ALL("All"),
-    RECIPES("Recipes"),
-    LOGS("Logs")
+enum class HashtagContentFilter {
+    ALL,
+    RECIPES,
+    LOGS
 }
 
 data class HashtagDetailUiState(

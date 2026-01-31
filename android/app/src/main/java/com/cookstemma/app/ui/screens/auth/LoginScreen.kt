@@ -11,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cookstemma.app.R
 import com.cookstemma.app.ui.theme.BrandOrange
 
 @Composable
@@ -55,7 +57,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Share your cooking journey",
+                text = stringResource(R.string.share_cooking_journey),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
@@ -65,7 +67,7 @@ fun LoginScreen(
 
             // Sign in buttons
             SignInButton(
-                text = "Continue with Google",
+                text = stringResource(R.string.continue_with_google),
                 onClick = onGoogleSignIn,
                 enabled = !uiState.isLoading,
                 icon = {
@@ -81,11 +83,11 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             SignInButton(
-                text = "Continue with Apple",
+                text = stringResource(R.string.continue_with_apple),
                 onClick = onAppleSignIn,
                 enabled = !uiState.isLoading,
-                containerColor = Color.Black,
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.inverseOnSurface,
                 icon = {
                     // Apple icon would go here
                     Text("", style = MaterialTheme.typography.titleLarge)
@@ -122,7 +124,7 @@ fun LoginScreen(
                             modifier = Modifier.weight(1f)
                         )
                         TextButton(onClick = viewModel::clearError) {
-                            Text("Dismiss")
+                            Text(stringResource(R.string.dismiss))
                         }
                     }
                 }
@@ -132,7 +134,7 @@ fun LoginScreen(
 
             // Terms and privacy
             Text(
-                text = "By continuing, you agree to our Terms of Service and Privacy Policy",
+                text = stringResource(R.string.terms_agreement),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
@@ -147,8 +149,8 @@ private fun SignInButton(
     text: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    containerColor: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    containerColor: Color = MaterialTheme.colorScheme.inverseSurface,
+    contentColor: Color = MaterialTheme.colorScheme.inverseOnSurface,
     icon: @Composable () -> Unit
 ) {
     Button(
