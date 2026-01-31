@@ -138,6 +138,9 @@ final class ProfileViewModel: ObservableObject {
     }
 
     func loadContent() {
+        #if DEBUG
+        print("[Profile] loadContent called for tab: \(selectedTab), needsRefresh=\(savedContentNeedsRefresh)")
+        #endif
         Task {
             switch selectedTab {
             case .recipes: await loadRecipes(refresh: true)
@@ -289,6 +292,9 @@ final class ProfileViewModel: ObservableObject {
         case .success(let response):
             #if DEBUG
             print("[Profile] Saved recipes loaded: \(response.content.count) items")
+            for recipe in response.content.prefix(3) {
+                print("[Profile]   - \(recipe.title): thumbnail=\(recipe.thumbnail ?? "nil")")
+            }
             #endif
             savedRecipes = refresh ? response.content : savedRecipes + response.content
             savedRecipesNextCursor = response.nextCursor
@@ -303,6 +309,9 @@ final class ProfileViewModel: ObservableObject {
         case .success(let response):
             #if DEBUG
             print("[Profile] Saved logs loaded: \(response.content.count) items")
+            for log in response.content.prefix(3) {
+                print("[Profile]   - \(log.id): thumbnail=\(log.thumbnailUrl ?? "nil")")
+            }
             #endif
             savedLogs = refresh ? response.content : savedLogs + response.content
             savedLogsNextCursor = response.nextCursor

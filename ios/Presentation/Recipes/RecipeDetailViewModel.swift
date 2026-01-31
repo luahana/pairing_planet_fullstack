@@ -111,16 +111,29 @@ final class RecipeDetailViewModel: ObservableObject {
     func toggleSave() async {
         let wasSaved = isSaved
         isSaved = !wasSaved
-        let result = wasSaved ? await recipeRepository.unsaveRecipe(id: recipeId) : await recipeRepository.saveRecipe(id: recipeId)
-        if case .failure = result {
-            isSaved = wasSaved
-        } else {
-            // Notify other views about save state change
+        #if DEBUG
+        print("[RecipeDetail] toggleSave: wasSaved=\(wasSaved), now isSaved=\(isSaved)")
+        #endif
+
+        let result = wasSaved
+            ? await recipeRepository.unsaveRecipe(id: recipeId)
+            : await recipeRepository.saveRecipe(id: recipeId)
+
+        switch result {
+        case .success:
+            #if DEBUG
+            print("[RecipeDetail] toggleSave: API success, isSaved=\(isSaved)")
+            #endif
             NotificationCenter.default.post(
                 name: .recipeSaveStateChanged,
                 object: nil,
                 userInfo: ["recipeId": recipeId, "isSaved": isSaved]
             )
+        case .failure(let error):
+            #if DEBUG
+            print("[RecipeDetail] toggleSave: API failed with error: \(error), reverting to \(wasSaved)")
+            #endif
+            isSaved = wasSaved
         }
     }
 

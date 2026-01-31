@@ -197,7 +197,16 @@ final class APIClient: APIClientProtocol {
 
     func request(_ endpoint: APIEndpoint) async throws {
         let request = try buildRequest(endpoint)
-        let (_, response) = try await performRequest(request, endpoint: endpoint)
+        #if DEBUG
+        print("[API] Request: \(request.httpMethod ?? "GET") \(request.url?.absoluteString ?? "")")
+        #endif
+        let (data, response) = try await performRequest(request, endpoint: endpoint)
+        #if DEBUG
+        print("[API] Response: \(response.statusCode)")
+        if let jsonString = String(data: data, encoding: .utf8), !jsonString.isEmpty {
+            print("[API] Data: \(String(jsonString.prefix(500)))")
+        }
+        #endif
         try validateResponse(response)
     }
 
@@ -259,6 +268,10 @@ final class APIClient: APIClientProtocol {
         // to return user-specific data (e.g., isSavedByCurrentUser)
         if let token = tokenManager?.accessToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        } else if endpoint.requiresAuth {
+            #if DEBUG
+            print("[API] WARNING: No token available for authenticated endpoint: \(endpoint.path)")
+            #endif
         }
 
         if let body = endpoint.body {

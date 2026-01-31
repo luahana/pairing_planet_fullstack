@@ -317,7 +317,12 @@ struct ProfileView: View {
                 }
             }
         }
-        .onChange(of: viewModel.selectedTab) { viewModel.loadContent() }
+        .onChange(of: viewModel.selectedTab) { _, newTab in
+                    #if DEBUG
+                    print("[ProfileView] Tab changed to: \(newTab)")
+                    #endif
+                    viewModel.loadContent()
+                }
     }
 
     @ViewBuilder
@@ -407,6 +412,8 @@ struct ProfileView: View {
                 }
             }
             .padding(.horizontal, DesignSystem.Spacing.md)
+            // Force view recreation when saved content changes
+            .id("saved-\(viewModel.savedRecipes.map { $0.id }.joined(separator: ","))-\(viewModel.savedLogs.map { $0.id }.joined(separator: ","))")
 
             if viewModel.isLoadingContent {
                 ProgressView()

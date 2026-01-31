@@ -20,7 +20,7 @@ public interface SavedLogRepository extends JpaRepository<SavedLog, SavedLogId> 
     @Query("DELETE FROM SavedLog sl WHERE sl.userId = :userId AND sl.logPostId = :logPostId")
     void deleteByUserIdAndLogPostId(@Param("userId") Long userId, @Param("logPostId") Long logPostId);
 
-    @Query("SELECT sl FROM SavedLog sl JOIN FETCH sl.logPost lp WHERE sl.userId = :userId AND lp.deletedAt IS NULL ORDER BY sl.createdAt DESC")
+    @Query("SELECT DISTINCT sl FROM SavedLog sl JOIN FETCH sl.logPost lp LEFT JOIN FETCH lp.images WHERE sl.userId = :userId AND lp.deletedAt IS NULL ORDER BY sl.createdAt DESC")
     Slice<SavedLog> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
     long countByLogPostId(Long logPostId);
@@ -29,19 +29,19 @@ public interface SavedLogRepository extends JpaRepository<SavedLog, SavedLogId> 
 
     // ==================== CURSOR-BASED PAGINATION ====================
 
-    // [Cursor] Saved logs - initial page
-    @Query("SELECT sl FROM SavedLog sl JOIN FETCH sl.logPost lp WHERE sl.userId = :userId AND lp.deletedAt IS NULL ORDER BY sl.createdAt DESC, sl.logPostId DESC")
+    // [Cursor] Saved logs - initial page (fetch log images eagerly)
+    @Query("SELECT DISTINCT sl FROM SavedLog sl JOIN FETCH sl.logPost lp LEFT JOIN FETCH lp.images WHERE sl.userId = :userId AND lp.deletedAt IS NULL ORDER BY sl.createdAt DESC, sl.logPostId DESC")
     Slice<SavedLog> findSavedLogsWithCursorInitial(@Param("userId") Long userId, Pageable pageable);
 
-    // [Cursor] Saved logs - with cursor
-    @Query("SELECT sl FROM SavedLog sl JOIN FETCH sl.logPost lp WHERE sl.userId = :userId AND lp.deletedAt IS NULL " +
+    // [Cursor] Saved logs - with cursor (fetch log images eagerly)
+    @Query("SELECT DISTINCT sl FROM SavedLog sl JOIN FETCH sl.logPost lp LEFT JOIN FETCH lp.images WHERE sl.userId = :userId AND lp.deletedAt IS NULL " +
            "AND (sl.createdAt < :cursorTime OR (sl.createdAt = :cursorTime AND sl.logPostId < :cursorId)) " +
            "ORDER BY sl.createdAt DESC, sl.logPostId DESC")
     Slice<SavedLog> findSavedLogsWithCursor(@Param("userId") Long userId, @Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
 
     // ==================== OFFSET-BASED PAGINATION (for Web) ====================
 
-    // [Offset] Saved logs - page
-    @Query("SELECT sl FROM SavedLog sl JOIN FETCH sl.logPost lp WHERE sl.userId = :userId AND lp.deletedAt IS NULL")
+    // [Offset] Saved logs - page (fetch log images eagerly)
+    @Query("SELECT DISTINCT sl FROM SavedLog sl JOIN FETCH sl.logPost lp LEFT JOIN FETCH lp.images WHERE sl.userId = :userId AND lp.deletedAt IS NULL")
     Page<SavedLog> findSavedLogsPage(@Param("userId") Long userId, Pageable pageable);
 }
