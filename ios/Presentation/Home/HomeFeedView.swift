@@ -113,6 +113,7 @@ struct HomeFeedView: View {
                 }
                 .buttonStyle(.plain)
                 .responsiveFrame()
+                .id("\(item.id)-\(item.thumbnailUrl ?? "")")
                 .onAppear {
                     viewModel.loadMoreIfNeeded(currentItem: item)
                 }
