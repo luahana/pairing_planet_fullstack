@@ -3,10 +3,10 @@ import Foundation
 // MARK: - API Configuration
 
 enum APIConfiguration {
-    // For local development, use your Mac's IP (e.g., "http://192.168.x.x:4000/api/v1")
-    // Or use "http://localhost:4000/api/v1" if testing on a physical device with proxy
-    #if DEBUG
-    // TODO: Change to your local IP if testing against local backend
+    // API URLs per environment (configured via build configurations in project.yml)
+    // DEV builds use dev server, PROD builds use production server
+    #if DEV
+    // For local development, uncomment and use your Mac's IP:
     // static let baseURL = URL(string: "http://192.168.1.100:4000/api/v1")!
     static let baseURL = URL(string: "https://dev.cookstemma.com/api/v1")!
     #else
@@ -120,6 +120,15 @@ protocol TokenManagerProtocol: AnyObject {
 protocol APIClientProtocol {
     func request<T: Decodable>(_ endpoint: APIEndpoint) async throws -> T
     func request(_ endpoint: APIEndpoint) async throws
+    func uploadImage(_ imageData: Data, type: String) async throws -> ImageUploadResponse
+}
+
+// MARK: - Image Upload Response
+
+struct ImageUploadResponse: Decodable {
+    let imagePublicId: String
+    let imageUrl: String
+    let originalFilename: String?
 }
 
 // MARK: - API Client
@@ -188,8 +197,54 @@ final class APIClient: APIClientProtocol {
 
     func request(_ endpoint: APIEndpoint) async throws {
         let request = try buildRequest(endpoint)
-        let (_, response) = try await performRequest(request, endpoint: endpoint)
+        #if DEBUG
+        print("[API] Request: \(request.httpMethod ?? "GET") \(request.url?.absoluteString ?? "")")
+        #endif
+        let (data, response) = try await performRequest(request, endpoint: endpoint)
+        #if DEBUG
+        print("[API] Response: \(response.statusCode)")
+        if let jsonString = String(data: data, encoding: .utf8), !jsonString.isEmpty {
+            print("[API] Data: \(String(jsonString.prefix(500)))")
+        }
+        #endif
         try validateResponse(response)
+    }
+
+    func uploadImage(_ imageData: Data, type: String) async throws -> ImageUploadResponse {
+        let boundary = UUID().uuidString
+        let url = baseURL.appendingPathComponent("images/upload")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 60
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+        if let token = tokenManager?.accessToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        var body = Data()
+        // Image file part
+        body.append("--\(boundary)\r\n")
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"photo.jpg\"\r\n")
+        body.append("Content-Type: image/jpeg\r\n\r\n")
+        body.append(imageData)
+        body.append("\r\n")
+        // Type part
+        body.append("--\(boundary)\r\n")
+        body.append("Content-Disposition: form-data; name=\"type\"\r\n\r\n")
+        body.append(type)
+        body.append("\r\n")
+        body.append("--\(boundary)--\r\n")
+        request.httpBody = body
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.unknown
+        }
+        try validateResponse(httpResponse)
+        return try decoder.decode(ImageUploadResponse.self, from: data)
     }
 
     private func buildRequest(_ endpoint: APIEndpoint) throws -> URLRequest {
@@ -209,8 +264,14 @@ final class APIClient: APIClientProtocol {
 
         endpoint.headers?.forEach { request.setValue($1, forHTTPHeaderField: $0) }
 
-        if endpoint.requiresAuth, let token = tokenManager?.accessToken {
+        // Always send auth token if available - this allows public endpoints
+        // to return user-specific data (e.g., isSavedByCurrentUser)
+        if let token = tokenManager?.accessToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        } else if endpoint.requiresAuth {
+            #if DEBUG
+            print("[API] WARNING: No token available for authenticated endpoint: \(endpoint.path)")
+            #endif
         }
 
         if let body = endpoint.body {
@@ -309,6 +370,16 @@ extension JSONEncoder {
         encoder.dateEncodingStrategy = .iso8601
         return encoder
     }()
+}
+
+// MARK: - Data Multipart Helper
+
+extension Data {
+    mutating func append(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            append(data)
+        }
+    }
 }
 
 extension ISO8601DateFormatter {

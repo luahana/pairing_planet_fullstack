@@ -1,48 +1,42 @@
 import SwiftUI
 
 struct NotificationsView: View {
+    @Binding var navigationPath: NavigationPath
     @StateObject private var viewModel = NotificationsViewModel()
     @EnvironmentObject private var appState: AppState
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            Group {
-                switch viewModel.state {
-                case .idle, .loading:
-                    LoadingView()
-                case .loaded:
-                    if viewModel.notifications.isEmpty {
-                        // Empty state (icon only)
-                        IconEmptyState(icon: AppIcon.notificationsOutline)
-                    } else {
-                        notificationsList
-                    }
-                case .error(let message):
-                    ErrorStateView(message: message) { viewModel.loadNotifications() }
+        Group {
+            switch viewModel.state {
+            case .idle, .loading:
+                ProgressView()
+            case .loaded:
+                if viewModel.notifications.isEmpty {
+                    IconEmptyState(icon: AppIcon.notificationsOutline)
+                } else {
+                    notificationsList
                 }
+            case .error(let message):
+                ErrorStateView(message: message) { viewModel.loadNotifications() }
             }
-            .background(DesignSystem.Colors.secondaryBackground)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    // Icon header
-                    Image(systemName: AppIcon.notifications)
-                        .font(.system(size: DesignSystem.IconSize.lg))
-                        .foregroundColor(DesignSystem.Colors.primary)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if !viewModel.notifications.isEmpty {
-                        // Mark all button (icon only)
-                        Button {
-                            Task { await viewModel.markAllAsRead() }
-                        } label: {
-                            Image(systemName: AppIcon.checkmarkAll)
-                                .foregroundColor(DesignSystem.Colors.primary)
-                        }
+        }
+        .navigationTitle(String(localized: "settings.notifications"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if !viewModel.notifications.isEmpty {
+                    Button {
+                        #if DEBUG
+                        print("[NotificationsView] Clear all button tapped")
+                        #endif
+                        Task { await viewModel.deleteAllNotifications() }
+                    } label: {
+                        Image(systemName: AppIcon.trash)
+                            .foregroundColor(DesignSystem.Colors.error)
                     }
                 }
             }
-            .refreshable { viewModel.loadNotifications() }
         }
         .onAppear {
             if case .idle = viewModel.state { viewModel.loadNotifications() }
@@ -54,36 +48,12 @@ struct NotificationsView: View {
 
     private var notificationsList: some View {
         List {
-            // New notifications section (icon header)
-            if !viewModel.newNotifications.isEmpty {
-                Section {
-                    ForEach(viewModel.newNotifications) { notification in
-                        NotificationRow(notification: notification)
-                            .onTapGesture { handleNotificationTap(notification) }
-                    }
-                } header: {
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: AppIcon.new)
-                            .foregroundColor(DesignSystem.Colors.primary)
-                        // Unread indicator dot
-                        Circle()
-                            .fill(DesignSystem.Colors.error)
-                            .frame(width: 6, height: 6)
-                    }
-                }
+            ForEach(viewModel.notifications) { notification in
+                NotificationRow(notification: notification)
+                    .onTapGesture { handleNotificationTap(notification) }
             }
-
-            // Earlier notifications section (icon header)
-            if !viewModel.earlierNotifications.isEmpty {
-                Section {
-                    ForEach(viewModel.earlierNotifications) { notification in
-                        NotificationRow(notification: notification)
-                            .onTapGesture { handleNotificationTap(notification) }
-                    }
-                } header: {
-                    Image(systemName: AppIcon.history)
-                        .foregroundColor(DesignSystem.Colors.secondaryText)
-                }
+            .onDelete { offsets in
+                viewModel.deleteNotifications(at: offsets, from: viewModel.notifications)
             }
 
             if viewModel.hasMore {
@@ -98,23 +68,29 @@ struct NotificationsView: View {
     private func handleNotificationTap(_ notification: AppNotification) {
         Task { await viewModel.markAsRead(notification) }
 
-        guard let targetId = notification.targetId else { return }
-
         switch notification.type {
         case .newFollower:
-            appState.deepLinkDestination = .user(id: notification.actor?.id ?? targetId)
-        case .logComment, .commentReply, .logLike:
-            appState.deepLinkDestination = .log(id: targetId, commentId: nil)
-        case .recipeCooked, .recipeSaved:
-            if notification.targetType == .log {
-                appState.deepLinkDestination = .log(id: targetId)
-            } else {
-                appState.deepLinkDestination = .recipe(id: targetId)
+            // For followers, navigate to the sender's profile
+            if let username = notification.senderUsername {
+                // We need sender's user ID - for now use username as workaround
+                // TODO: Backend should provide sender's publicId
+                navigationPath.append(HomeDestination.user(username))
             }
-        case .commentLike:
-            appState.deepLinkDestination = .log(id: targetId)
-        case .weeklyDigest:
-            break // No navigation for weekly digest
+        case .logComment, .commentReply, .logLike, .commentLike:
+            // For all comment-related notifications, use logId directly
+            if let logId = notification.logId {
+                navigationPath.append(HomeDestination.log(logId))
+            }
+        case .recipeCooked, .recipeSaved:
+            // Prefer logId if available (user cooked and created a log)
+            // Otherwise navigate to the recipe
+            if let logId = notification.logId {
+                navigationPath.append(HomeDestination.log(logId))
+            } else if let recipeId = notification.recipeId {
+                navigationPath.append(HomeDestination.recipe(recipeId))
+            }
+        case .weeklyDigest, .unknown:
+            break
         }
     }
 }
@@ -125,7 +101,7 @@ struct NotificationRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: DesignSystem.Spacing.sm) {
             // Icon or avatar
-            if let avatarUrl = notification.actor?.avatarUrl {
+            if let avatarUrl = notification.senderProfileImageUrl {
                 AvatarView(url: avatarUrl, size: DesignSystem.AvatarSize.sm)
             } else {
                 Image(systemName: notification.type.iconName)
@@ -146,7 +122,7 @@ struct NotificationRow: View {
                         .lineLimit(2)
                 }
 
-                Text(notification.createdAt, style: .relative)
+                Text(notification.createdAt.timeAgo())
                     .font(DesignSystem.Typography.caption)
                     .foregroundColor(DesignSystem.Colors.secondaryText)
             }
@@ -175,4 +151,9 @@ struct NotificationRow: View {
     }
 }
 
-#Preview { NotificationsView().environmentObject(AppState()) }
+#Preview {
+    NavigationStack {
+        NotificationsView(navigationPath: .constant(NavigationPath()))
+    }
+    .environmentObject(AppState())
+}

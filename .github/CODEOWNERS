@@ -1,0 +1,19 @@
+# CODEOWNERS for Cookstemma
+
+# Default owners for everything in the repo
+*       @cookstemma/core-team
+
+# iOS
+/ios/   @cookstemma/ios-team
+
+# Android
+/android/   @cookstemma/android-team
+
+# Backend
+/backend/   @cookstemma/backend-team
+
+# CI/CD
+/.github/   @cookstemma/devops-team
+
+# Documentation
+*.md    @cookstemma/core-team

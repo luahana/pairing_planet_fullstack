@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 
 struct UISearchResults {
     var topResult: SearchResult?
@@ -16,6 +15,7 @@ final class SearchViewModel: ObservableObject {
     @Published var query: String = ""
     @Published private(set) var results: UISearchResults = .empty
     @Published private(set) var isSearching = false
+    @Published private(set) var nextCursor: String?
     @Published private(set) var recentSearches: [String] = []
     @Published private(set) var trendingHashtags: [HashtagCount] = []
     @Published private(set) var popularHashtags: [HashtagCount] = []
@@ -32,8 +32,6 @@ final class SearchViewModel: ObservableObject {
     private let searchRepository: SearchRepositoryProtocol
     private let logRepository: CookingLogRepositoryProtocol
     private var searchTask: Task<Void, Never>?
-    private var cancellables = Set<AnyCancellable>()
-    private let debounceInterval: TimeInterval = 0.3
 
     init(
         searchRepository: SearchRepositoryProtocol = SearchRepository(),
@@ -41,18 +39,6 @@ final class SearchViewModel: ObservableObject {
     ) {
         self.searchRepository = searchRepository
         self.logRepository = logRepository
-        setupDebounce()
-    }
-
-    private func setupDebounce() {
-        $query
-            .debounce(for: .seconds(debounceInterval), scheduler: DispatchQueue.main)
-            .removeDuplicates()
-            .sink { [weak self] query in
-                guard let self = self, !query.isEmpty else { return }
-                self.search()
-            }
-            .store(in: &cancellables)
     }
 
     func loadRecentSearches() {
@@ -75,13 +61,21 @@ final class SearchViewModel: ObservableObject {
         isLoadingHomeFeed = true
 
         Task {
-            defer { isLoadingHomeFeed = false }
+            await performLoadHomeFeed()
+        }
+    }
 
-            let result = await logRepository.getHomeFeed()
-            if case .success(let feed) = result {
-                trendingRecipes = feed.recentRecipes
-                recentLogs = feed.recentActivity
-            }
+    func refreshHomeFeed() async {
+        await performLoadHomeFeed()
+    }
+
+    private func performLoadHomeFeed() async {
+        defer { isLoadingHomeFeed = false }
+
+        let result = await logRepository.getHomeFeed()
+        if case .success(let feed) = result {
+            trendingRecipes = feed.recentRecipes
+            recentLogs = feed.recentActivity
         }
     }
 
@@ -94,42 +88,132 @@ final class SearchViewModel: ObservableObject {
         searchTask?.cancel()
         guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             results = .empty
+            nextCursor = nil
             return
         }
 
         isSearching = true
         searchTask = Task {
-            let result = await searchRepository.search(query: query, type: nil, cursor: nil)
+            let result = await searchRepository.search(query: query, type: nil, cursor: nil, size: 20)
 
             guard !Task.isCancelled else { return }
 
             isSearching = false
             switch result {
             case .success(let response):
-                results = UISearchResults(
-                    topResult: determineTopResult(response),
-                    recipes: response.recipes,
-                    logs: response.logs,
-                    users: response.users,
-                    hashtags: response.hashtags
-                )
+                results = transformResponse(response)
+                nextCursor = response.nextCursor
                 saveRecentSearch(query)
             case .failure:
                 results = .empty
+                nextCursor = nil
             }
         }
     }
 
-    private func determineTopResult(_ response: SearchResponse) -> SearchResult? {
-        // Return the most relevant result based on type and relevance
-        if let recipe = response.recipes.first {
-            return .recipe(recipe)
-        } else if let log = response.logs.first {
-            return .log(log)
-        } else if let user = response.users.first {
-            return .user(user)
+    private func transformResponse(_ response: UnifiedSearchResponse) -> UISearchResults {
+        var recipes: [RecipeSummary] = []
+        var logs: [CookingLogSummary] = []
+        var hashtags: [HashtagCount] = []
+
+        for item in response.content {
+            switch item.data {
+            case .recipe(let recipe):
+                recipes.append(recipe)
+            case .log(let log):
+                // Transform LogPostSummaryResponse to CookingLogSummary
+                let recipe: RecipeSummary? = log.recipeTitle.map { title in
+                    RecipeSummary(
+                        id: "",
+                        title: title,
+                        description: nil,
+                        foodName: log.foodName ?? "",
+                        cookingStyle: nil,
+                        userName: "",
+                        thumbnail: nil,
+                        variantCount: 0,
+                        logCount: 0,
+                        servings: nil,
+                        cookingTimeRange: nil,
+                        hashtags: [],
+                        isPrivate: false
+                    )
+                }
+                let logSummary = CookingLogSummary(
+                    id: log.id,
+                    rating: log.rating ?? 0,
+                    content: log.content,
+                    images: log.thumbnailUrl.map { [ImageInfo(id: log.id, url: $0, thumbnailUrl: $0, width: nil, height: nil)] } ?? [],
+                    author: UserSummary(id: log.creatorPublicId ?? "", username: log.userName, displayName: nil, avatarUrl: nil, level: 0, isFollowing: nil),
+                    recipe: recipe,
+                    likeCount: 0,
+                    commentCount: log.commentCount ?? 0,
+                    isLiked: false,
+                    isSaved: false,
+                    createdAt: Date()
+                )
+                logs.append(logSummary)
+            case .hashtag(let hashtag):
+                hashtags.append(HashtagCount(id: hashtag.id, name: hashtag.name, postCount: hashtag.totalCount))
+            case .user:
+                break // Users handled separately in searchUsers
+            case .unknown:
+                break
+            }
         }
-        return nil
+
+        // Determine top result from first item
+        let topResult: SearchResult? = response.content.first.flatMap { item in
+            switch item.data {
+            case .recipe(let recipe): return .recipe(recipe)
+            case .log(let log):
+                let recipe: RecipeSummary? = log.recipeTitle.map { title in
+                    RecipeSummary(
+                        id: "",
+                        title: title,
+                        description: nil,
+                        foodName: log.foodName ?? "",
+                        cookingStyle: nil,
+                        userName: "",
+                        thumbnail: nil,
+                        variantCount: 0,
+                        logCount: 0,
+                        servings: nil,
+                        cookingTimeRange: nil,
+                        hashtags: [],
+                        isPrivate: false
+                    )
+                }
+                let logSummary = CookingLogSummary(
+                    id: log.id,
+                    rating: log.rating ?? 0,
+                    content: log.content,
+                    images: log.thumbnailUrl.map { [ImageInfo(id: log.id, url: $0, thumbnailUrl: $0, width: nil, height: nil)] } ?? [],
+                    author: UserSummary(id: log.creatorPublicId ?? "", username: log.userName, displayName: nil, avatarUrl: nil, level: 0, isFollowing: nil),
+                    recipe: recipe,
+                    likeCount: 0,
+                    commentCount: log.commentCount ?? 0,
+                    isLiked: false,
+                    isSaved: false,
+                    createdAt: Date()
+                )
+                return .log(logSummary)
+            case .hashtag(let hashtag):
+                return .hashtag(HashtagCount(id: hashtag.id, name: hashtag.name, postCount: hashtag.totalCount))
+            case .user(let user):
+                return .user(user)
+            case .unknown:
+                return nil
+            }
+        }
+
+        return UISearchResults(
+            topResult: topResult,
+            recipes: recipes,
+            logs: logs,
+            users: [],
+            hashtags: hashtags
+        )
     }
 
     private func saveRecentSearch(_ search: String) {
@@ -144,6 +228,7 @@ final class SearchViewModel: ObservableObject {
     func clearSearch() {
         query = ""
         results = .empty
+        nextCursor = nil
         searchTask?.cancel()
     }
 

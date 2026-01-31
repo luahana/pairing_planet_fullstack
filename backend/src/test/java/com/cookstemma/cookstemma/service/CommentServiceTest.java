@@ -538,41 +538,36 @@ class CommentServiceTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Hidden comment should show content to creator")
-        void hiddenComment_ShowsContentToCreator() {
+        @DisplayName("Hidden comment should not be returned even to creator")
+        void hiddenComment_NotReturnedToCreator() {
+            // Hidden comments are filtered out for everyone (including creator)
+            // to ensure comment count matches visible comments
             Page<CommentWithRepliesDto> result = commentService.getComments(testLogPost.getPublicId(), "en", PageRequest.of(0, 10), commenter.getId());
 
-            assertThat(result.getContent()).hasSize(1);
-            CommentResponseDto dto = result.getContent().get(0).comment();
-            assertThat(dto.isHidden()).isTrue();
-            assertThat(dto.content()).isEqualTo("Hidden content");
+            assertThat(result.getContent()).isEmpty();
         }
 
         @Test
-        @DisplayName("Hidden comment should hide content from others")
-        void hiddenComment_HidesContentFromOthers() {
+        @DisplayName("Hidden comment should not be returned to others")
+        void hiddenComment_NotReturnedToOthers() {
             Page<CommentWithRepliesDto> result = commentService.getComments(testLogPost.getPublicId(), "en", PageRequest.of(0, 10), anotherUser.getId());
 
-            assertThat(result.getContent()).hasSize(1);
-            CommentResponseDto dto = result.getContent().get(0).comment();
-            assertThat(dto.isHidden()).isTrue();
-            assertThat(dto.content()).isNull();
+            // Hidden comments are completely filtered out for non-creators
+            assertThat(result.getContent()).isEmpty();
         }
 
         @Test
-        @DisplayName("Hidden comment should hide content from anonymous users")
-        void hiddenComment_HidesContentFromAnonymous() {
+        @DisplayName("Hidden comment should not be returned to anonymous users")
+        void hiddenComment_NotReturnedToAnonymous() {
             Page<CommentWithRepliesDto> result = commentService.getComments(testLogPost.getPublicId(), "en", PageRequest.of(0, 10), null);
 
-            assertThat(result.getContent()).hasSize(1);
-            CommentResponseDto dto = result.getContent().get(0).comment();
-            assertThat(dto.isHidden()).isTrue();
-            assertThat(dto.content()).isNull();
+            // Hidden comments are completely filtered out for anonymous users
+            assertThat(result.getContent()).isEmpty();
         }
 
         @Test
-        @DisplayName("isHidden flag should be correctly set in response")
-        void hiddenComment_IsHiddenFlagSet() {
+        @DisplayName("Only non-hidden comments returned to other users")
+        void hiddenComment_OnlyNormalCommentsReturnedToOthers() {
             // Create a normal comment for comparison
             Comment normalComment = Comment.builder()
                     .logPost(testLogPost)
@@ -583,25 +578,12 @@ class CommentServiceTest extends BaseIntegrationTest {
 
             Page<CommentWithRepliesDto> result = commentService.getComments(testLogPost.getPublicId(), "en", PageRequest.of(0, 10), anotherUser.getId());
 
-            assertThat(result.getContent()).hasSize(2);
+            // Only the normal comment should be returned (hidden one filtered out)
+            assertThat(result.getContent()).hasSize(1);
 
-            // Find normal and hidden comments
-            CommentResponseDto normalDto = result.getContent().stream()
-                    .map(CommentWithRepliesDto::comment)
-                    .filter(c -> !c.isHidden())
-                    .findFirst()
-                    .orElseThrow();
-            CommentResponseDto hiddenDto = result.getContent().stream()
-                    .map(CommentWithRepliesDto::comment)
-                    .filter(CommentResponseDto::isHidden)
-                    .findFirst()
-                    .orElseThrow();
-
+            CommentResponseDto normalDto = result.getContent().get(0).comment();
             assertThat(normalDto.isHidden()).isFalse();
             assertThat(normalDto.content()).isEqualTo("Normal content");
-
-            assertThat(hiddenDto.isHidden()).isTrue();
-            assertThat(hiddenDto.content()).isNull();
         }
 
         @Test
@@ -619,6 +601,50 @@ class CommentServiceTest extends BaseIntegrationTest {
 
             assertThat(comment.isHidden()).isTrue();
             assertThat(comment.getHiddenReason()).isEqualTo("Test reason");
+        }
+
+        @Test
+        @DisplayName("Visible comment count should include both top-level and replies")
+        void visibleCommentCount_IncludesReplies() {
+            // Clear the hidden comment from setup
+            commentRepository.delete(hiddenComment);
+            commentRepository.flush();
+
+            // Create 2 top-level comments
+            Comment topLevel1 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(commenter)
+                    .content("Top level 1")
+                    .build();
+            commentRepository.saveAndFlush(topLevel1);
+
+            Comment topLevel2 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(anotherUser)
+                    .content("Top level 2")
+                    .build();
+            commentRepository.saveAndFlush(topLevel2);
+
+            // Create 2 replies to top-level 1
+            Comment reply1 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(anotherUser)
+                    .parent(topLevel1)
+                    .content("Reply 1")
+                    .build();
+            commentRepository.saveAndFlush(reply1);
+
+            Comment reply2 = Comment.builder()
+                    .logPost(testLogPost)
+                    .creator(commenter)
+                    .parent(topLevel1)
+                    .content("Reply 2")
+                    .build();
+            commentRepository.saveAndFlush(reply2);
+
+            // Count should be 4 (2 top-level + 2 replies)
+            long count = commentRepository.countVisibleCommentsAnonymous(testLogPost.getId());
+            assertThat(count).as("Count should include 2 top-level + 2 replies = 4").isEqualTo(4);
         }
     }
 

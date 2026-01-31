@@ -67,8 +67,10 @@ final class NotificationsViewModel: ObservableObject {
         if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
             notifications[index] = AppNotification(
                 id: notification.id, type: notification.type, title: notification.title,
-                body: notification.body, isRead: true, actor: notification.actor,
-                targetId: notification.targetId, targetType: notification.targetType,
+                body: notification.body, isRead: true,
+                logId: notification.logId, recipeId: notification.recipeId,
+                senderUsername: notification.senderUsername,
+                senderProfileImageUrl: notification.senderProfileImageUrl,
                 thumbnailUrl: notification.thumbnailUrl, createdAt: notification.createdAt
             )
             unreadCount = max(0, unreadCount - 1)
@@ -92,8 +94,10 @@ final class NotificationsViewModel: ObservableObject {
         notifications = notifications.map { notification in
             AppNotification(
                 id: notification.id, type: notification.type, title: notification.title,
-                body: notification.body, isRead: true, actor: notification.actor,
-                targetId: notification.targetId, targetType: notification.targetType,
+                body: notification.body, isRead: true,
+                logId: notification.logId, recipeId: notification.recipeId,
+                senderUsername: notification.senderUsername,
+                senderProfileImageUrl: notification.senderProfileImageUrl,
                 thumbnailUrl: notification.thumbnailUrl, createdAt: notification.createdAt
             )
         }
@@ -105,6 +109,66 @@ final class NotificationsViewModel: ObservableObject {
             // Revert on failure - reload to get correct state
             unreadCount = previousUnreadCount
             loadNotifications()
+        }
+    }
+
+    func deleteNotification(_ notification: AppNotification) async {
+        // Optimistic update
+        let wasUnread = !notification.isRead
+        notifications.removeAll { $0.id == notification.id }
+        if wasUnread {
+            unreadCount = max(0, unreadCount - 1)
+        }
+
+        let result = await notificationRepository.deleteNotification(id: notification.id)
+        if case .failure(let error) = result {
+            #if DEBUG
+            print("[Notifications] Delete failed: \(error)")
+            #endif
+            // Revert on failure - reload to get correct state
+            loadNotifications()
+        }
+    }
+
+    func deleteNotifications(at offsets: IndexSet, from list: [AppNotification]) {
+        Task {
+            for index in offsets {
+                await deleteNotification(list[index])
+            }
+        }
+    }
+
+    func deleteAllNotifications() async {
+        guard !notifications.isEmpty else {
+            #if DEBUG
+            print("[Notifications] Delete all: no notifications to delete")
+            #endif
+            return
+        }
+
+        #if DEBUG
+        print("[Notifications] Delete all: starting with \(notifications.count) notifications")
+        #endif
+
+        // Optimistic update
+        let previousNotifications = notifications
+        let previousUnreadCount = unreadCount
+        notifications = []
+        unreadCount = 0
+
+        let result = await notificationRepository.deleteAllNotifications()
+        switch result {
+        case .success:
+            #if DEBUG
+            print("[Notifications] Delete all: success")
+            #endif
+        case .failure(let error):
+            #if DEBUG
+            print("[Notifications] Delete all failed: \(error)")
+            #endif
+            // Revert on failure
+            notifications = previousNotifications
+            unreadCount = previousUnreadCount
         }
     }
 }

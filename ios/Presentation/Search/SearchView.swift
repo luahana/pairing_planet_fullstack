@@ -31,6 +31,7 @@ struct SearchView: View {
     @EnvironmentObject private var appState: AppState
     @State private var selectedTab: SearchTab = .all
     @State private var navigationPath = NavigationPath()
+    @State private var scrollProxy: ScrollViewProxy?
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
@@ -81,6 +82,11 @@ struct SearchView: View {
             viewModel.clearSearch()
         }
 
+        // Scroll to top with animation
+        withAnimation(.easeInOut(duration: 0.3)) {
+            scrollProxy?.scrollTo("search-top", anchor: .top)
+        }
+
         // Refresh home feed
         viewModel.loadHomeFeed()
     }
@@ -92,13 +98,13 @@ struct SearchView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(DesignSystem.Colors.secondaryText)
 
-            TextField("Search recipes, logs, users", text: $viewModel.query)
+            TextField(String(localized: "search.placeholder"), text: $viewModel.query)
                 .focused($isSearchFocused)
                 .submitLabel(.search)
                 .onSubmit { viewModel.search() }
 
             if isSearchFocused && viewModel.query.isEmpty {
-                Button("Cancel") {
+                Button(String(localized: "common.cancel")) {
                     isSearchFocused = false
                     viewModel.resetSeeAllState()
                 }
@@ -141,22 +147,27 @@ struct SearchView: View {
     // MARK: - Home Style Content (Default View)
 
     private var homeStyleContentView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                // Trending Recipes Section
-                trendingRecipesSection
+        ScrollViewReader { proxy in
+            ScrollView {
+                Color.clear.frame(height: 0).id("search-top")
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                    // Trending Recipes Section
+                    trendingRecipesSection
 
-                // Popular Hashtags Section
-                popularHashtagsSection
+                    // Popular Hashtags Section
+                    popularHashtagsSection
 
-                // Recent Cooking Logs Section
-                recentLogsSection
+                    // Recent Cooking Logs Section
+                    recentLogsSection
+                }
+                .padding(.vertical, DesignSystem.Spacing.md)
             }
-            .padding(.vertical, DesignSystem.Spacing.md)
-            .safeAreaPadding(.bottom)
-        }
-        .refreshable {
-            viewModel.loadHomeFeed()
+            .scrollIndicators(.hidden)
+            .contentMargins(.bottom, 80, for: .scrollContent)
+            .refreshable {
+                await viewModel.refreshHomeFeed()
+            }
+            .onAppear { scrollProxy = proxy }
         }
     }
 
@@ -168,7 +179,7 @@ struct SearchView: View {
                     Image(systemName: AppIcon.trending)
                         .font(.system(size: DesignSystem.IconSize.md))
                         .foregroundColor(DesignSystem.Colors.primary)
-                    Text("Trending Recipes")
+                    Text(String(localized: "search.trendingRecipes"))
                         .font(DesignSystem.Typography.headline)
                         .foregroundColor(DesignSystem.Colors.text)
                 }
@@ -177,7 +188,7 @@ struct SearchView: View {
                     viewModel.showAllRecipes = true
                 } label: {
                     HStack(spacing: DesignSystem.Spacing.xxs) {
-                        Text("See All")
+                        Text(String(localized: "common.seeAll"))
                             .font(DesignSystem.Typography.subheadline)
                         Image(systemName: "chevron.right")
                             .font(.system(size: DesignSystem.IconSize.xs))
@@ -196,7 +207,7 @@ struct SearchView: View {
                 }
                 .frame(height: 180)
             } else if viewModel.trendingRecipes.isEmpty {
-                emptyStateCard(icon: AppIcon.recipe, message: "No recipes yet")
+                emptyStateCard(icon: AppIcon.recipe, message: String(localized: "search.noRecipes"))
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.Spacing.sm) {
@@ -220,22 +231,23 @@ struct SearchView: View {
                 Image(systemName: "number")
                     .font(.system(size: DesignSystem.IconSize.md))
                     .foregroundColor(DesignSystem.Colors.primary)
-                Text("Popular Hashtags")
+                Text(String(localized: "search.popularHashtags"))
                     .font(DesignSystem.Typography.headline)
                     .foregroundColor(DesignSystem.Colors.text)
             }
             .padding(.horizontal, DesignSystem.Spacing.md)
 
-            // Flow layout hashtag pills
+            // Wrapping hashtag chips
             if viewModel.trendingHashtags.isEmpty {
-                emptyStateCard(icon: "number", message: "No hashtags yet")
+                emptyStateCard(icon: "number", message: String(localized: "search.noHashtags"))
                     .padding(.horizontal, DesignSystem.Spacing.md)
             } else {
                 FlowLayout(spacing: DesignSystem.Spacing.sm) {
-                    ForEach(viewModel.trendingHashtags, id: \.name) { hashtag in
+                    ForEach(viewModel.trendingHashtags, id: \.id) { hashtag in
                         NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
                             Text("#\(hashtag.name)")
                                 .font(DesignSystem.Typography.subheadline)
+                                .fontWeight(.medium)
                                 .foregroundColor(DesignSystem.Colors.primary)
                                 .padding(.horizontal, DesignSystem.Spacing.sm)
                                 .padding(.vertical, DesignSystem.Spacing.xs)
@@ -255,7 +267,7 @@ struct SearchView: View {
             HStack {
                 HStack(spacing: DesignSystem.Spacing.xs) {
                     LogoIconView(size: DesignSystem.IconSize.lg)
-                    Text("Recent Cooking Logs")
+                    Text(String(localized: "search.recentLogs"))
                         .font(DesignSystem.Typography.headline)
                         .foregroundColor(DesignSystem.Colors.text)
                 }
@@ -264,7 +276,7 @@ struct SearchView: View {
                     viewModel.showAllLogs = true
                 } label: {
                     HStack(spacing: DesignSystem.Spacing.xxs) {
-                        Text("See All")
+                        Text(String(localized: "common.seeAll"))
                             .font(DesignSystem.Typography.subheadline)
                         Image(systemName: "chevron.right")
                             .font(.system(size: DesignSystem.IconSize.xs))
@@ -283,7 +295,7 @@ struct SearchView: View {
                 }
                 .frame(height: 180)
             } else if viewModel.recentLogs.isEmpty {
-                emptyStateCardWithLogo(message: "No cooking logs yet")
+                emptyStateCardWithLogo(message: String(localized: "search.noLogs"))
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.Spacing.sm) {
@@ -335,6 +347,16 @@ struct SearchView: View {
         .cornerRadius(DesignSystem.CornerRadius.md)
     }
 
+    private func formatCount(_ count: Int) -> String {
+        if count >= 1_000_000 {
+            return String(format: "%.1fM", Double(count) / 1_000_000)
+        } else if count >= 1_000 {
+            return String(format: "%.1fK", Double(count) / 1_000)
+        } else {
+            return "\(count)"
+        }
+    }
+
     // MARK: - Search History View (When Focused)
 
     private var searchHistoryView: some View {
@@ -345,7 +367,7 @@ struct SearchView: View {
                         Image(systemName: AppIcon.history)
                             .font(.system(size: DesignSystem.IconSize.xxl))
                             .foregroundColor(DesignSystem.Colors.tertiaryText)
-                        Text("No recent searches")
+                        Text(String(localized: "search.noRecentSearches"))
                             .font(DesignSystem.Typography.subheadline)
                             .foregroundColor(DesignSystem.Colors.tertiaryText)
                     }
@@ -354,11 +376,11 @@ struct SearchView: View {
                 } else {
                     VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                         HStack {
-                            Text("Recent Searches")
+                            Text(String(localized: "search.recentSearches"))
                                 .font(DesignSystem.Typography.headline)
                                 .foregroundColor(DesignSystem.Colors.text)
                             Spacer()
-                            Button("Clear") {
+                            Button(String(localized: "common.clear")) {
                                 viewModel.clearRecentSearches()
                             }
                             .font(DesignSystem.Typography.subheadline)
@@ -398,6 +420,7 @@ struct SearchView: View {
             }
             .padding(.vertical, DesignSystem.Spacing.md)
         }
+        .scrollIndicators(.hidden)
     }
 
     // MARK: - See All Views
@@ -409,19 +432,19 @@ struct SearchView: View {
                 Button {
                     viewModel.showAllRecipes = false
                 } label: {
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
-                    }
-                    .font(DesignSystem.Typography.subheadline)
-                    .foregroundColor(DesignSystem.Colors.primary)
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                        .frame(width: 44, alignment: .leading)
                 }
+                .buttonStyle(.borderless)
+                .padding(.leading, DesignSystem.Spacing.sm)
                 Spacer()
-                Text("Trending Recipes")
+                Text(String(localized: "search.trendingRecipes"))
                     .font(DesignSystem.Typography.headline)
                 Spacer()
                 // Spacer for balance
-                Color.clear.frame(width: 60)
+                Color.clear.frame(width: 44)
             }
             .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.Spacing.md, bottom: 0, trailing: DesignSystem.Spacing.md))
             .listRowSeparator(.hidden)
@@ -435,7 +458,7 @@ struct SearchView: View {
         .listStyle(.plain)
         .contentMargins(.bottom, 80, for: .scrollContent)
         .refreshable {
-            viewModel.loadHomeFeed()
+            await viewModel.refreshHomeFeed()
         }
     }
 
@@ -446,19 +469,19 @@ struct SearchView: View {
                 Button {
                     viewModel.showAllLogs = false
                 } label: {
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
-                    }
-                    .font(DesignSystem.Typography.subheadline)
-                    .foregroundColor(DesignSystem.Colors.primary)
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                        .frame(width: 44, alignment: .leading)
                 }
+                .buttonStyle(.borderless)
+                .padding(.leading, DesignSystem.Spacing.sm)
                 Spacer()
-                Text("Recent Cooking Logs")
+                Text(String(localized: "search.recentLogs"))
                     .font(DesignSystem.Typography.headline)
                 Spacer()
                 // Spacer for balance
-                Color.clear.frame(width: 60)
+                Color.clear.frame(width: 44)
             }
             .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.Spacing.md, bottom: 0, trailing: DesignSystem.Spacing.md))
             .listRowSeparator(.hidden)
@@ -472,7 +495,7 @@ struct SearchView: View {
         .listStyle(.plain)
         .contentMargins(.bottom, 80, for: .scrollContent)
         .refreshable {
-            viewModel.loadHomeFeed()
+            await viewModel.refreshHomeFeed()
         }
     }
 
@@ -487,18 +510,13 @@ struct SearchView: View {
                         selectedTab = tab
                     } label: {
                         VStack(spacing: DesignSystem.Spacing.xxs) {
-                            if tab == .logs {
-                                LogoIconView(size: DesignSystem.IconSize.md)
-                                    .opacity(selectedTab == tab ? 1.0 : 0.4)
-                            } else {
-                                Image(systemName: tab.icon)
-                                    .font(.system(size: DesignSystem.IconSize.md))
-                                    .foregroundColor(
-                                        selectedTab == tab
-                                            ? DesignSystem.Colors.primary
-                                            : DesignSystem.Colors.tertiaryText
-                                    )
-                            }
+                            Image(systemName: tab.icon)
+                                .font(.system(size: DesignSystem.IconSize.md))
+                                .foregroundColor(
+                                    selectedTab == tab
+                                        ? DesignSystem.Colors.primary
+                                        : DesignSystem.Colors.tertiaryText
+                                )
 
                             Circle()
                                 .fill(selectedTab == tab ? DesignSystem.Colors.primary : Color.clear)
@@ -536,13 +554,13 @@ struct SearchView: View {
     @ViewBuilder
     private var allResultsSection: some View {
         if let topResult = viewModel.results.topResult {
-            Section("Top Result") {
+            Section(String(localized: "search.topResult")) {
                 searchResultRow(topResult)
             }
         }
 
         if !viewModel.results.recipes.isEmpty {
-            Section("Recipes (\(viewModel.results.recipes.count))") {
+            Section("\(String(localized: "profile.recipes")) (\(viewModel.results.recipes.count))") {
                 ForEach(viewModel.results.recipes.prefix(3)) { recipe in
                     NavigationLink(value: SearchNavDestination.recipe(id: recipe.id)) {
                         RecipeCardCompact(recipe: recipe)
@@ -552,7 +570,7 @@ struct SearchView: View {
         }
 
         if !viewModel.results.logs.isEmpty {
-            Section("Cooking Logs (\(viewModel.results.logs.count))") {
+            Section("\(String(localized: "search.cookingLogs")) (\(viewModel.results.logs.count))") {
                 ForEach(viewModel.results.logs.prefix(3)) { log in
                     NavigationLink(value: SearchNavDestination.log(id: log.id)) {
                         LogCardCompact(log: log)
@@ -562,7 +580,7 @@ struct SearchView: View {
         }
 
         if !viewModel.results.users.isEmpty {
-            Section("Users (\(viewModel.results.users.count))") {
+            Section("\(String(localized: "search.users")) (\(viewModel.results.users.count))") {
                 ForEach(viewModel.results.users.prefix(3)) { user in
                     NavigationLink(value: SearchNavDestination.user(id: user.id)) {
                         UserRow(user: user)
@@ -572,13 +590,13 @@ struct SearchView: View {
         }
 
         if !viewModel.results.hashtags.isEmpty {
-            Section("Hashtags") {
+            Section(String(localized: "search.hashtags")) {
                 ForEach(viewModel.results.hashtags.prefix(3).map { $0 }, id: \.id) { (hashtag: HashtagCount) in
                     NavigationLink(value: SearchNavDestination.hashtag(name: hashtag.name)) {
                         HStack {
                             Text("#\(hashtag.name)").fontWeight(.medium)
                             Spacer()
-                            Text("\(hashtag.postCount) posts")
+                            Text("\(hashtag.postCount) \(String(localized: "search.posts"))")
                                 .foregroundColor(DesignSystem.Colors.secondaryText)
                         }
                     }
@@ -617,7 +635,7 @@ struct SearchView: View {
                 HStack {
                     Text("#\(hashtag.name)").fontWeight(.medium)
                     Spacer()
-                    Text("\(hashtag.postCount) posts")
+                    Text("\(hashtag.postCount) \(String(localized: "search.posts"))")
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
             }
@@ -644,7 +662,7 @@ struct SearchView: View {
                 HStack {
                     Text("#\(hashtag.name)").fontWeight(.medium)
                     Spacer()
-                    Text("\(hashtag.postCount) posts")
+                    Text("\(hashtag.postCount) \(String(localized: "search.posts"))")
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
             }
@@ -835,7 +853,7 @@ struct UserRow: View {
 
     var body: some View {
         HStack {
-            AvatarView(url: user.avatarUrl, size: DesignSystem.AvatarSize.sm)
+            AvatarView(url: user.avatarUrl, name: user.username, size: DesignSystem.AvatarSize.sm)
             VStack(alignment: .leading) {
                 Text(user.displayNameOrUsername)
                     .font(DesignSystem.Typography.subheadline)
@@ -854,62 +872,253 @@ struct LogCardCompact: View {
     let log: CookingLogSummary
 
     var body: some View {
-        HStack {
+        VStack(alignment: .leading, spacing: 0) {
+            // Large image
             AsyncImage(url: URL(string: log.images.first?.thumbnailUrl ?? "")) { img in
                 img.resizable().scaledToFill()
             } placeholder: {
                 Rectangle().fill(DesignSystem.Colors.secondaryBackground)
             }
-            .frame(width: 60, height: 60)
-            .cornerRadius(DesignSystem.CornerRadius.sm)
+            .frame(height: 120)
+            .frame(maxWidth: .infinity)
             .clipped()
 
-            VStack(alignment: .leading) {
-                Text(log.author.displayNameOrUsername)
+            // Info section
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.xxs) {
+                Text(log.recipe?.title ?? String(localized: "search.cookingLog"))
                     .font(DesignSystem.Typography.subheadline)
                     .fontWeight(.medium)
-                StarRating(rating: log.rating)
+                    .lineLimit(1)
+                    .foregroundColor(DesignSystem.Colors.text)
+
+                HStack {
+                    Text("@\(log.author.username)")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundColor(DesignSystem.Colors.secondaryText)
+                    Spacer()
+                    StarRating(rating: log.rating)
+                }
             }
-            Spacer()
+            .padding(DesignSystem.Spacing.sm)
         }
+        .background(DesignSystem.Colors.background)
+        .cornerRadius(DesignSystem.CornerRadius.md)
+        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
         .contentShape(Rectangle())
+    }
+}
+
+enum HashtagContentFilter: String, CaseIterable {
+    case all, recipes, logs
+
+    var title: String {
+        switch self {
+        case .all: return String(localized: "filter.all")
+        case .recipes: return String(localized: "profile.recipes")
+        case .logs: return String(localized: "profile.logs")
+        }
+    }
+}
+
+@MainActor
+final class HashtagContentViewModel: ObservableObject {
+    @Published private(set) var items: [HashtagContentItem] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var cursor: String?
+    @Published private(set) var hasNext = false
+    @Published private(set) var totalElements: Int?
+    @Published var contentFilter: HashtagContentFilter = .all
+
+    private let searchRepository: SearchRepositoryProtocol
+    private let hashtag: String
+
+    var filteredItems: [HashtagContentItem] {
+        switch contentFilter {
+        case .all: return items
+        case .recipes: return items.filter { $0.isRecipe }
+        case .logs: return items.filter { $0.isLog }
+        }
+    }
+
+    init(hashtag: String, searchRepository: SearchRepositoryProtocol = SearchRepository()) {
+        self.hashtag = hashtag
+        self.searchRepository = searchRepository
+    }
+
+    func loadContent() {
+        guard !isLoading else { return }
+        isLoading = true
+
+        Task {
+            defer { isLoading = false }
+            let result = await searchRepository.getHashtagContent(hashtag: hashtag, type: nil, cursor: nil)
+            if case .success(let response) = result {
+                items = response.content
+                cursor = response.nextCursor
+                hasNext = response.hasNext
+                totalElements = response.totalElements
+            }
+        }
     }
 }
 
 struct HashtagView: View {
     let hashtag: String
-    @State private var selectedTab = 0
+    @StateObject private var viewModel: HashtagContentViewModel
+
+    private let gridColumns = [
+        GridItem(.flexible(), spacing: DesignSystem.Spacing.sm),
+        GridItem(.flexible(), spacing: DesignSystem.Spacing.sm)
+    ]
+
+    init(hashtag: String) {
+        self.hashtag = hashtag
+        self._viewModel = StateObject(wrappedValue: HashtagContentViewModel(hashtag: hashtag))
+    }
+
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                HashtagTabButton(icon: AppIcon.recipe, isSelected: selectedTab == 0) {
-                    selectedTab = 0
+            // Custom header matching Trending Recipes style
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                        .frame(width: 44, alignment: .leading)
                 }
-                HashtagTabButton(useLogoIcon: true, isSelected: selectedTab == 1) {
-                    selectedTab = 1
-                }
-            }
-            .padding(DesignSystem.Spacing.xs)
-            .background(DesignSystem.Colors.background)
-            .cornerRadius(DesignSystem.CornerRadius.md)
-            .padding(.horizontal, DesignSystem.Spacing.md)
-            .padding(.vertical, DesignSystem.Spacing.sm)
-
-            Spacer()
-        }
-        .background(DesignSystem.Colors.secondaryBackground)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
+                .buttonStyle(.borderless)
+                .padding(.leading, DesignSystem.Spacing.md)
+                Spacer()
                 HStack(spacing: DesignSystem.Spacing.xs) {
                     Image(systemName: "number")
                         .foregroundColor(DesignSystem.Colors.primary)
                     Text(hashtag)
                         .font(DesignSystem.Typography.headline)
+                    if !viewModel.items.isEmpty {
+                        Text("(\(viewModel.items.count))")
+                            .font(DesignSystem.Typography.subheadline)
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
+                }
+                Spacer()
+                Color.clear.frame(width: 44)
+            }
+            .padding(.vertical, DesignSystem.Spacing.sm)
+
+            // Segmented filter picker
+            Picker(String(localized: "search.filter"), selection: $viewModel.contentFilter) {
+                ForEach(HashtagContentFilter.allCases, id: \.self) { filter in
+                    Text(filter.title).tag(filter)
                 }
             }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, DesignSystem.Spacing.md)
+            .padding(.vertical, DesignSystem.Spacing.sm)
+
+            // Content
+            if viewModel.isLoading {
+                Spacer()
+                ProgressView()
+                Spacer()
+            } else {
+                contentGrid
+            }
         }
+        .background(DesignSystem.Colors.secondaryBackground)
+        .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
+        .onAppear {
+            if viewModel.items.isEmpty {
+                viewModel.loadContent()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var contentGrid: some View {
+        // Calculate height to fill remaining space below picker
+        let contentHeight = max(400, UIScreen.main.bounds.height - 200)
+
+        TabView(selection: $viewModel.contentFilter) {
+            ForEach(HashtagContentFilter.allCases, id: \.self) { filter in
+                filterPageContent(for: filter)
+                    .tag(filter)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(height: contentHeight)
+    }
+
+    @ViewBuilder
+    private func filterPageContent(for filter: HashtagContentFilter) -> some View {
+        let items = itemsForFilter(filter)
+        if items.isEmpty {
+            emptyStateForFilter(filter)
+        } else {
+            ScrollView {
+                LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
+                    ForEach(items) { item in
+                        NavigationLink(value: item.isRecipe
+                            ? SearchNavDestination.recipe(id: item.id)
+                            : SearchNavDestination.log(id: item.id)
+                        ) {
+                            HashtagContentGridCard(item: item)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, DesignSystem.Spacing.md)
+                .padding(.bottom, 100) // Extra padding for tab bar
+            }
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private func itemsForFilter(_ filter: HashtagContentFilter) -> [HashtagContentItem] {
+        switch filter {
+        case .all: return viewModel.items
+        case .recipes: return viewModel.items.filter { $0.isRecipe }
+        case .logs: return viewModel.items.filter { $0.isLog }
+        }
+    }
+
+    @ViewBuilder
+    private func emptyStateForFilter(_ filter: HashtagContentFilter) -> some View {
+        switch filter {
+        case .all:
+            emptyState(icon: "number", message: String(localized: "search.noHashtagContent"))
+        case .recipes:
+            emptyState(icon: AppIcon.recipe, message: String(localized: "search.noHashtagRecipes"))
+        case .logs:
+            emptyStateWithLogo(message: String(localized: "search.noHashtagLogs"))
+        }
+    }
+
+    private func emptyState(icon: String, message: String) -> some View {
+        VStack(spacing: DesignSystem.Spacing.sm) {
+            Image(systemName: icon)
+                .font(.system(size: DesignSystem.IconSize.xxl))
+                .foregroundColor(DesignSystem.Colors.tertiaryText)
+            Text(message)
+                .font(DesignSystem.Typography.subheadline)
+                .foregroundColor(DesignSystem.Colors.tertiaryText)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func emptyStateWithLogo(message: String) -> some View {
+        VStack(spacing: DesignSystem.Spacing.sm) {
+            LogoIconView(size: DesignSystem.IconSize.xxl)
+                .opacity(0.5)
+            Text(message)
+                .font(DesignSystem.Typography.subheadline)
+                .foregroundColor(DesignSystem.Colors.tertiaryText)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -955,57 +1164,6 @@ struct HashtagTabButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, DesignSystem.Spacing.sm)
         }
-    }
-}
-
-// MARK: - Flow Layout
-
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = calculateLayout(proposal: proposal, subviews: subviews)
-        return result.size
-    }
-
-    func placeSubviews(
-        in bounds: CGRect,
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) {
-        let result = calculateLayout(proposal: proposal, subviews: subviews)
-        for (index, position) in result.positions.enumerated() {
-            subviews[index].place(
-                at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y),
-                proposal: .unspecified
-            )
-        }
-    }
-
-    private func calculateLayout(
-        proposal: ProposedViewSize,
-        subviews: Subviews
-    ) -> (size: CGSize, positions: [CGPoint]) {
-        var positions: [CGPoint] = []
-        var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
-        var lineHeight: CGFloat = 0
-        let maxWidth = proposal.width ?? .infinity
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if currentX + size.width > maxWidth && currentX > 0 {
-                currentX = 0
-                currentY += lineHeight + spacing
-                lineHeight = 0
-            }
-            positions.append(CGPoint(x: currentX, y: currentY))
-            lineHeight = max(lineHeight, size.height)
-            currentX += size.width + spacing
-        }
-
-        return (CGSize(width: maxWidth, height: currentY + lineHeight), positions)
     }
 }
 

@@ -5,7 +5,9 @@ struct RecipeDetailView: View {
     @StateObject private var viewModel: RecipeDetailViewModel
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var appState: AppState
+    @Environment(\.dismiss) private var dismiss
     @State private var showCreateLog = false
+    @AppStorage("userMeasurement") private var measurementPreference: MeasurementPreference = .original
 
     init(recipeId: String) {
         self.recipeId = recipeId
@@ -13,12 +15,71 @@ struct RecipeDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            switch viewModel.state {
-            case .idle, .loading: LoadingView()
-            case .loaded(let recipe): recipeContent(recipe)
-            case .error(let msg): ErrorStateView(message: msg) { viewModel.loadRecipe() }
+        VStack(spacing: 0) {
+            // Custom header
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                        .frame(width: 44, alignment: .leading)
+                }
+                .buttonStyle(.borderless)
+                .padding(.leading, DesignSystem.Spacing.md)
+                
+                Spacer()
+                
+                HStack(spacing: 0) {
+                    // Save button (icon only) - requires auth
+                    Button {
+                        appState.requireAuth {
+                            Task { await viewModel.toggleSave() }
+                        }
+                    } label: {
+                        Image(systemName: viewModel.isSaved ? AppIcon.save : AppIcon.saveOutline)
+                            .font(.system(size: 18))
+                            .foregroundColor(viewModel.isSaved ? DesignSystem.Colors.bookmark : DesignSystem.Colors.secondaryText)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+
+                    // Share button (icon only)
+                    if let url = viewModel.shareRecipe() {
+                        ShareLink(item: url) {
+                            Image(systemName: AppIcon.share)
+                                .font(.system(size: 18))
+                                .foregroundColor(DesignSystem.Colors.text)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                    }
+
+                    // More options (block/report) - only show for other users' recipes
+                    if let recipe = viewModel.recipe,
+                       recipe.author.id != authManager.currentUser?.id {
+                        BlockReportMenu(
+                            targetUserId: recipe.author.id,
+                            targetUsername: recipe.author.username,
+                            onBlock: { Task { await viewModel.blockUser() } },
+                            onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
+                        )
+                    }
+                }
+                .padding(.trailing, DesignSystem.Spacing.xs)
             }
+            .padding(.vertical, DesignSystem.Spacing.sm)
+            .background(DesignSystem.Colors.background)
+
+            ScrollView {
+                switch viewModel.state {
+                case .idle, .loading: LoadingView()
+                case .loaded(let recipe): recipeContent(recipe)
+                case .error(let msg): ErrorStateView(message: msg) { viewModel.loadRecipe() }
+                }
+            }
+            .contentMargins(.bottom, 80, for: .scrollContent)
         }
         .overlay(alignment: .bottomTrailing) {
             // FAB for creating cooking log
@@ -44,38 +105,8 @@ struct RecipeDetailView: View {
             CreateLogView(recipe: viewModel.recipeSummary)
         }
         .background(DesignSystem.Colors.secondaryBackground)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: DesignSystem.Spacing.sm) {
-                    // Save button (icon only) - requires auth
-                    Button {
-                        appState.requireAuth {
-                            Task { await viewModel.toggleSave() }
-                        }
-                    } label: {
-                        Image(systemName: viewModel.isSaved ? AppIcon.save : AppIcon.saveOutline)
-                            .foregroundColor(viewModel.isSaved ? DesignSystem.Colors.bookmark : DesignSystem.Colors.secondaryText)
-                    }
-
-                    // Share button (icon only)
-                    if let url = viewModel.shareRecipe() {
-                        ShareLink(item: url) {
-                            Image(systemName: AppIcon.share)
-                                .foregroundColor(DesignSystem.Colors.text)
-                        }
-                    }
-
-                    // More options (icon only)
-                    Menu {
-                        Button { } label: { Label("", systemImage: AppIcon.report) }
-                    } label: {
-                        Image(systemName: AppIcon.more)
-                            .foregroundColor(DesignSystem.Colors.text)
-                    }
-                }
-            }
-        }
+        .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .onAppear { if case .idle = viewModel.state { viewModel.loadRecipe() } }
     }
 
@@ -86,7 +117,10 @@ struct RecipeDetailView: View {
             TabView {
                 ForEach(recipe.images) { image in
                     AsyncImage(url: URL(string: image.url)) { img in
-                        img.resizable().scaledToFill()
+                        img.resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .clipped()
                     } placeholder: {
                         Rectangle().fill(DesignSystem.Colors.tertiaryBackground)
                     }
@@ -94,6 +128,7 @@ struct RecipeDetailView: View {
             }
             .tabViewStyle(.page)
             .frame(height: 300)
+            .clipped()
 
             // Content Card
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
@@ -103,11 +138,13 @@ struct RecipeDetailView: View {
                     .foregroundColor(DesignSystem.Colors.text)
 
                 // Author row (icon-focused)
-                HStack(spacing: DesignSystem.Spacing.sm) {
-                    AvatarView(url: recipe.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
-                    Text("@\(recipe.author.username)")
-                        .font(DesignSystem.Typography.caption)
-                        .foregroundColor(DesignSystem.Colors.secondaryText)
+                NavigationLink(destination: ProfileView(userId: recipe.author.id)) {
+                    HStack(spacing: DesignSystem.Spacing.sm) {
+                        AvatarView(url: recipe.author.avatarUrl, name: recipe.author.username, size: DesignSystem.AvatarSize.xs)
+                        Text("@\(recipe.author.username)")
+                            .font(DesignSystem.Typography.caption)
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
                 }
 
                 // Stats row (Icons with minimal text)
@@ -154,6 +191,19 @@ struct RecipeDetailView: View {
                         .font(DesignSystem.Typography.body)
                         .foregroundColor(DesignSystem.Colors.secondaryText)
                 }
+
+                // Hashtags
+                if let hashtags = recipe.hashtags, !hashtags.isEmpty {
+                    FlowLayout(spacing: DesignSystem.Spacing.xs) {
+                        ForEach(hashtags, id: \.self) { tag in
+                            NavigationLink(destination: HashtagView(hashtag: tag)) {
+                                Text("#\(tag)")
+                                    .font(DesignSystem.Typography.subheadline)
+                                    .foregroundColor(DesignSystem.Colors.primary)
+                            }
+                        }
+                    }
+                }
             }
             .padding(DesignSystem.Spacing.md)
             .background(DesignSystem.Colors.background)
@@ -169,27 +219,10 @@ struct RecipeDetailView: View {
 
             // Cooking Logs Section (Icon header)
             cookingLogsSectionCard(recipe)
-
-            // Hashtags
-            if let hashtags = recipe.hashtags, !hashtags.isEmpty {
-                FlowLayout(spacing: DesignSystem.Spacing.xs) {
-                    ForEach(hashtags, id: \.self) { tag in
-                        Text("#\(tag)")
-                            .font(DesignSystem.Typography.caption)
-                            .padding(.horizontal, DesignSystem.Spacing.xs)
-                            .padding(.vertical, DesignSystem.Spacing.xxs)
-                            .background(DesignSystem.Colors.tertiaryBackground)
-                            .cornerRadius(DesignSystem.CornerRadius.xs)
-                    }
-                }
-                .padding(.horizontal, DesignSystem.Spacing.md)
-                .padding(.top, DesignSystem.Spacing.md)
-                .padding(.bottom, DesignSystem.Spacing.md)
-            }
-
         }
+        .responsiveFrame()
+        .frame(maxWidth: .infinity)
         .padding(.bottom, DesignSystem.Spacing.xl)
-        .safeAreaPadding(.bottom)
     }
 
     // MARK: - Ingredients Section Card
@@ -231,8 +264,12 @@ struct RecipeDetailView: View {
                     Text(ing.name)
                         .font(DesignSystem.Typography.body)
                     Spacer()
-                    if let amount = ing.quantity {
-                        Text("\(String(format: "%.1f", amount)) \(ing.displayUnit)")
+                    if let converted = MeasurementConverter.convert(
+                        quantity: ing.quantity,
+                        unitString: ing.unit,
+                        preference: measurementPreference
+                    ) {
+                        Text(converted.displayString)
                             .font(DesignSystem.Typography.caption)
                             .foregroundColor(DesignSystem.Colors.secondaryText)
                     }

@@ -27,32 +27,42 @@ enum MockFactory {
     static func myProfile(
         id: String = "me-1",
         username: String = "myuser",
-        displayName: String? = "My Name",
-        email: String = "test@example.com",
         level: Int = 5,
-        xp: Int = 500,
         levelProgress: Double = 0.5,
         recipeCount: Int = 10,
         logCount: Int = 25,
+        savedCount: Int = 5,
         followerCount: Int = 100,
         followingCount: Int = 50
     ) -> MyProfile {
-        MyProfile(
+        let userInfo = UserInfo(
             id: id,
             username: username,
-            displayName: displayName,
-            email: email,
-            avatarUrl: nil,
-            bio: nil,
-            level: level,
-            xp: xp,
-            levelProgress: levelProgress,
-            recipeCount: recipeCount,
-            logCount: logCount,
+            role: "USER",
+            profileImageUrl: nil,
+            gender: nil,
+            locale: "en",
+            defaultCookingStyle: nil,
+            measurementPreference: "METRIC",
             followerCount: followerCount,
             followingCount: followingCount,
-            socialLinks: nil,
-            createdAt: Date()
+            recipeCount: recipeCount,
+            logCount: logCount,
+            level: level,
+            levelName: "homeCook",
+            totalXp: 500,
+            xpForCurrentLevel: 100,
+            xpForNextLevel: 200,
+            levelProgress: levelProgress,
+            bio: nil,
+            youtubeUrl: nil,
+            instagramHandle: nil
+        )
+        return MyProfile(
+            user: userInfo,
+            recipeCount: recipeCount,
+            logCount: logCount,
+            savedCount: savedCount
         )
     }
 
@@ -69,11 +79,13 @@ enum MockFactory {
             avatarUrl: nil,
             bio: "Test bio",
             level: 10,
+            levelName: "homeCook",
             recipeCount: 5,
             logCount: 20,
             followerCount: 100,
             followingCount: 50,
-            socialLinks: nil,
+            youtubeUrl: nil,
+            instagramHandle: nil,
             isFollowing: isFollowing,
             isFollowedBy: false,
             isBlocked: isBlocked,
@@ -93,15 +105,17 @@ enum MockFactory {
             id: id,
             title: title,
             description: "A test recipe description",
-            coverImageUrl: nil,
-            cookingTimeRange: .between15And30,
+            foodName: "Test Food",
+            cookingStyle: "US",
+            userName: "testuser",
+            thumbnail: nil,
+            variantCount: 1,
+            logCount: cookCount,
             servings: 2,
-            cookCount: cookCount,
-            averageRating: 4.5,
-            author: userSummary(),
-            isSaved: isSaved,
-            category: nil,
-            createdAt: Date()
+            cookingTimeRange: "MIN_15_TO_30",
+            hashtags: [],
+            isPrivate: false,
+            isSaved: isSaved
         )
     }
 
@@ -116,7 +130,7 @@ enum MockFactory {
             description: "A detailed test recipe",
             coverImageUrl: nil,
             images: [],
-            cookingTimeRange: .between30And60,
+            cookingTimeRange: .min30To60,
             servings: 4,
             cookCount: 50,
             saveCount: 25,
@@ -281,8 +295,8 @@ enum MockFactory {
 
     // MARK: - Search
 
-    static func hashtagCount(name: String = "cooking", count: Int = 100) -> HashtagCount {
-        HashtagCount(name: name, count: count)
+    static func hashtagCount(name: String = "cooking", postCount: Int = 100) -> HashtagCount {
+        HashtagCount(name: name, postCount: postCount)
     }
 
     static func searchResponse(

@@ -1,82 +1,54 @@
 import SwiftUI
 
+enum HomeDestination: Hashable {
+    case log(String)
+    case notifications
+    case user(String)
+    case recipe(String)
+}
+
 struct HomeFeedView: View {
     @StateObject private var viewModel = HomeFeedViewModel()
     @EnvironmentObject private var appState: AppState
-    @State private var scrollOffset: CGFloat = 0
-    @State private var scrollToTopTrigger: Int = 0
-    @State private var programmaticRefreshTrigger: Int = 0
     @State private var navigationPath = NavigationPath()
-
-    private let headerHeight: CGFloat = 56
+    @State private var scrollProxy: ScrollViewProxy?
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            ZStack(alignment: .top) {
-                // Main content area
-                switch viewModel.state {
-                case .idle, .loading:
-                    // Loading content with header space
-                    VStack {
-                        Color.clear.frame(height: headerHeight)
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                case .loaded:
-                    scrollContent
-                case .empty:
-                    VStack {
-                        Color.clear.frame(height: headerHeight)
-                        Spacer()
-                        IconEmptyState(useLogoIcon: true, subtitle: "No cooking logs yet")
-                        Spacer()
-                    }
-                case .error(let msg):
-                    VStack {
-                        Color.clear.frame(height: headerHeight)
-                        Spacer()
-                        ErrorStateView(message: msg) { viewModel.loadFeed() }
-                        Spacer()
-                    }
-                }
-
-                // Header overlay - scrolls with content when loaded
+            VStack(spacing: 0) {
                 homeHeader
-                    .offset(y: min(0, scrollOffset))
+                contentView
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .background(DesignSystem.Colors.background)
             .navigationBarHidden(true)
-            .navigationDestination(for: String.self) { logId in
-                LogDetailView(logId: logId)
-            }
-            .navigationDestination(for: NotificationDestination.self) { _ in
-                NotificationsView()
+            .navigationDestination(for: HomeDestination.self) { destination in
+                switch destination {
+                case .log(let logId):
+                    LogDetailView(logId: logId)
+                case .notifications:
+                    NotificationsView(navigationPath: $navigationPath)
+                case .user(let userId):
+                    ProfileView(userId: userId)
+                case .recipe(let recipeId):
+                    RecipeDetailView(recipeId: recipeId)
+                }
             }
         }
         .onAppear { if case .idle = viewModel.state { viewModel.loadFeed() } }
         .onChange(of: appState.homeScrollToTopTrigger) { _, _ in
-            // Check if in a detail view (navigation path not empty)
+            // Dismiss any presented views and pop to root
             if !navigationPath.isEmpty {
-                // Pop to root with back-button-style animation
                 navigationPath = NavigationPath()
                 return
             }
-
-            // At root - check if scrolled
-            let isAtTop = scrollOffset >= -10
-            if isAtTop {
-                // Already at top - trigger refresh with pull-down animation
-                programmaticRefreshTrigger += 1
-            } else {
-                // Scrolled down - scroll to top smoothly
-                scrollToTopTrigger += 1
+            // Scroll to top with animation
+            withAnimation(.easeInOut(duration: 0.3)) {
+                scrollProxy?.scrollTo("home-top", anchor: .top)
             }
+            Task { await viewModel.refresh() }
         }
     }
-
-    // Placeholder type for notifications navigation
-    private struct NotificationDestination: Hashable {}
 
     private var homeHeader: some View {
         HStack {
@@ -90,35 +62,58 @@ struct HomeFeedView: View {
                     .foregroundColor(DesignSystem.Colors.text)
             }
             Spacer()
-            NavigationLink(value: NotificationDestination()) {
+            Button {
+                appState.requireAuth {
+                    navigationPath.append(HomeDestination.notifications)
+                }
+            } label: {
                 NotificationBadge(count: appState.unreadNotificationCount)
             }
         }
         .padding(.horizontal, DesignSystem.Spacing.md)
-        .frame(height: headerHeight)
-        .frame(maxWidth: .infinity)
-        .background(DesignSystem.Colors.background)
+        .padding(.top, DesignSystem.Spacing.xs)
+        .padding(.bottom, 0)
     }
 
-    private var scrollContent: some View {
-        CustomRefreshableScrollView(
-            headerHeight: headerHeight,
-            headerScrollOffset: $scrollOffset,
-            scrollToTopTrigger: $scrollToTopTrigger,
-            programmaticRefreshTrigger: $programmaticRefreshTrigger,
-            onRefresh: { await viewModel.refresh() }
-        ) {
-            feedContent
+    @ViewBuilder
+    private var contentView: some View {
+        switch viewModel.state {
+        case .idle, .loading:
+            Spacer()
+            ProgressView()
+            Spacer()
+        case .loaded:
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    Color.clear.frame(height: 0).id("home-top")
+                    feedContent
+                }
+                .contentMargins(.top, 0, for: .scrollContent)
+                .refreshable {
+                    await viewModel.refresh()
+                }
+                .onAppear { scrollProxy = proxy }
+            }
+        case .empty:
+            Spacer()
+            IconEmptyState(useLogoIcon: true, subtitle: String(localized: "home.noLogs"))
+            Spacer()
+        case .error(let msg):
+            Spacer()
+            ErrorStateView(message: msg) { viewModel.loadFeed() }
+            Spacer()
         }
     }
 
     private var feedContent: some View {
         VStack(spacing: DesignSystem.Spacing.md) {
             ForEach(viewModel.feedItems) { item in
-                NavigationLink(value: item.id) {
+                NavigationLink(value: HomeDestination.log(item.id)) {
                     FeedLogCard(item: item)
                 }
                 .buttonStyle(.plain)
+                .responsiveFrame()
+                .id("\(item.id)-\(item.thumbnailUrl ?? "")")
                 .onAppear {
                     viewModel.loadMoreIfNeeded(currentItem: item)
                 }
@@ -130,7 +125,7 @@ struct HomeFeedView: View {
                     .padding(.vertical, DesignSystem.Spacing.md)
             }
         }
-        .padding(.horizontal, DesignSystem.Spacing.md)
+        .frame(maxWidth: .infinity)
         .padding(.bottom, DesignSystem.Spacing.sm)
     }
 }
@@ -246,7 +241,6 @@ struct FeedLogCard: View {
             .padding(DesignSystem.Spacing.sm)
         }
         .background(DesignSystem.Colors.background)
-        .cornerRadius(DesignSystem.CornerRadius.md)
         .contentShape(Rectangle())
     }
 }

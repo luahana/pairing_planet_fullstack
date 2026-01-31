@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app_name is set per flavor in build.gradle.kts -->
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_recipes">Recepten</string>
+    <string name="nav_create">Maken</string>
+    <string name="nav_saved">Opgeslagen</string>
+    <string name="nav_profile">Profiel</string>
+
+    <!-- Common -->
+    <string name="loading">Laden...</string>
+    <string name="error_generic">Er ging iets mis</string>
+    <string name="retry">Opnieuw</string>
+    <string name="cancel">Annuleren</string>
+    <string name="save">Opslaan</string>
+    <string name="delete">Verwijderen</string>
+    <string name="edit">Bewerken</string>
+    <string name="share">Delen</string>
+    <string name="report">Rapporteren</string>
+
+    <!-- Auth -->
+    <string name="sign_in">Inloggen</string>
+    <string name="sign_out">Uitloggen</string>
+    <string name="continue_with_google">Doorgaan met Google</string>
+
+    <!-- Profile -->
+    <string name="followers">Volgers</string>
+    <string name="following">Volgend</string>
+    <string name="follow">Volgen</string>
+    <string name="unfollow">Ontvolgen</string>
+    <string name="block">Blokkeren</string>
+    <string name="settings">Instellingen</string>
+    <string name="edit_profile">Profiel bewerken</string>
+
+    <!-- Recipes -->
+    <string name="recipes">Recepten</string>
+    <string name="logs">Logs</string>
+    <string name="cooked_count">%d gekookt</string>
+    <string name="view_recipe">Recept bekijken</string>
+    <string name="start_cooking">Begin met koken</string>
+    <string name="ingredients">Ingrediënten</string>
+    <string name="steps">Stappen</string>
+
+    <!-- Create Log -->
+    <string name="create_log">Log maken</string>
+    <string name="add_photos">Foto\'s toevoegen</string>
+    <string name="rate_your_cook">Beoordeel je kookkunst</string>
+    <string name="link_recipe">Recept koppelen (optioneel)</string>
+    <string name="write_about_experience">Schrijf over je ervaring...</string>
+    <string name="post">Plaatsen</string>
+
+    <!-- Search -->
+    <string name="search">Zoeken</string>
+    <string name="search_placeholder">Zoek recepten, logs, gebruikers...</string>
+    <string name="recent_searches">Recente zoekopdrachten</string>
+    <string name="trending">Trending</string>
+    <string name="no_results">Geen resultaten</string>
+
+    <!-- Notifications -->
+    <string name="notifications">Meldingen</string>
+    <string name="mark_all_read">Alles als gelezen markeren</string>
+    <string name="no_notifications">Geen meldingen</string>
+
+    <!-- Comments -->
+    <string name="comments">Reacties</string>
+    <string name="write_comment">Schrijf een reactie...</string>
+    <string name="reply">Reageren</string>
+    <string name="load_more">Meer laden</string>
+
+    <!-- Empty States -->
+    <string name="empty_feed">Geen berichten</string>
+    <string name="empty_saved">Geen opgeslagen items</string>
+    <string name="empty_recipes">Geen recepten gevonden</string>
+    <string name="no_recipes_yet">Nog geen recepten</string>
+    <string name="no_logs_yet">Nog geen logs</string>
+    <string name="no_saved_items_yet">Geen opgeslagen items</string>
+    <string name="no_saved_recipes_yet">Geen opgeslagen recepten</string>
+    <string name="no_saved_logs_yet">Geen opgeslagen logs</string>
+    <string name="no_trending_recipes">Geen trending recepten</string>
+    <string name="no_trending_hashtags">Geen trending hashtags</string>
+    <string name="no_recent_logs">Geen recente logs</string>
+    <string name="no_recent_searches">Geen recente zoekopdrachten</string>
+    <string name="no_comments_yet">Nog geen reacties</string>
+    <string name="error_loading_comments">Fout bij laden van reacties</string>
+    <string name="no_posts_hashtag">Geen berichten met deze hashtag</string>
+    <string name="no_recipes_hashtag">Geen recepten met deze hashtag</string>
+    <string name="no_logs_hashtag">Geen kooklogs met deze hashtag</string>
+
+    <!-- Profile Actions -->
+    <string name="sign_in_to_view_profile">Log in om je profiel te bekijken</string>
+    <string name="block_user">Gebruiker blokkeren</string>
+    <string name="unblock_user">Blokkering opheffen</string>
+    <string name="report_user">Gebruiker rapporteren</string>
+    <string name="block_user_confirm">Weet je zeker dat je @%s wilt blokkeren? Ze kunnen je content niet meer zien of contact met je opnemen.</string>
+    <string name="report_user_reason">Waarom rapporteer je @%s?</string>
+    <string name="spam">Spam</string>
+    <string name="harassment">Intimidatie of pesten</string>
+    <string name="inappropriate_content">Ongepaste inhoud</string>
+    <string name="impersonation">Nabootsing</string>
+    <string name="other">Anders</string>
+
+    <!-- Search -->
+    <string name="trending_recipes">Trending recepten</string>
+    <string name="see_all">Alles bekijken</string>
+    <string name="popular_hashtags">Populaire hashtags</string>
+    <string name="recent_logs">Recente logs</string>
+    <string name="cooking_logs">Kooklogs</string>
+    <string name="users">Gebruikers</string>
+    <string name="all">Alles</string>
+    <string name="clear">Wissen</string>
+    <string name="posts_count">%d berichten</string>
+
+    <!-- Notifications Messages -->
+    <string name="notif_started_following">is je gaan volgen</string>
+    <string name="notif_commented">heeft gereageerd op je log</string>
+    <string name="notif_replied">heeft geantwoord op je reactie</string>
+    <string name="notif_liked_comment">vindt je reactie leuk</string>
+    <string name="notif_liked_log">vindt je kooklog leuk</string>
+    <string name="notif_cooked_recipe">heeft je recept gemaakt</string>
+    <string name="notif_saved_recipe">heeft je recept opgeslagen</string>
+
+    <!-- Create Log -->
+    <string name="new_cooking_log">Nieuwe kooklog</string>
+    <string name="link_a_recipe">Recept koppelen</string>
+    <string name="tap_to_add">Tik om toe te voegen</string>
+    <string name="share_cooking_experience">Deel je kookervaring…</string>
+    <string name="add_hashtag">Hashtag toevoegen</string>
+    <string name="private_log">Privé</string>
+    <string name="public_log">Openbaar</string>
+    <string name="dismiss">Sluiten</string>
+
+    <!-- Auth -->
+    <string name="share_cooking_journey">Deel je culinaire reis</string>
+    <string name="continue_with_apple">Doorgaan met Apple</string>
+    <string name="terms_agreement">Door verder te gaan ga je akkoord met onze Servicevoorwaarden en Privacybeleid</string>
+
+    <!-- Comments -->
+    <string name="replying_to">Antwoord aan @%s</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Terug</string>
+    <string name="cd_close">Sluiten</string>
+    <string name="cd_submit">Verzenden</string>
+    <string name="cd_more_options">Meer opties</string>
+    <string name="cd_remove">Verwijderen</string>
+    <string name="cd_add">Toevoegen</string>
+    <string name="cd_like">Vind ik leuk</string>
+    <string name="cd_comment">Reageren</string>
+    <string name="cd_send">Verzenden</string>
+    <string name="cd_view">Bekijken</string>
+    <string name="cd_logo">Cookstemma Logo</string>
+    <string name="cd_unsave">Niet meer opslaan</string>
+
+    <!-- Settings -->
+    <string name="log_out">Uitloggen</string>
+    <string name="log_out_confirm">Weet je zeker dat je wilt uitloggen?</string>
+    <string name="delete_account">Account verwijderen</string>
+    <string name="delete_account_confirm">Deze actie kan niet ongedaan worden gemaakt. Al je recepten, logs en gegevens worden permanent verwijderd.</string>
+    <string name="choose_theme">Kies thema</string>
+    <string name="choose_language">Kies taal</string>
+    <string name="change_language">Taal wijzigen</string>
+    <string name="restart_confirm">De app wordt opnieuw gestart om de nieuwe taal toe te passen. Wil je doorgaan?</string>
+    <string name="restart">Herstarten</string>
+    <string name="theme">Thema</string>
+    <string name="language">Taal</string>
+    <string name="account">Account</string>
+    <string name="preferences">Voorkeuren</string>
+    <string name="privacy">Privacy</string>
+    <string name="manage_blocked_users">Geblokkeerde gebruikers beheren</string>
+    <string name="measurement_units">Maateenheden</string>
+    <string name="units_original">Origineel</string>
+    <string name="units_original_description">Ingrediënten weergeven in originele eenheden</string>
+    <string name="units_metric">Metrisch</string>
+    <string name="units_metric_description">Omzetten naar metrische eenheden (ml, L, g, kg)</string>
+    <string name="units_us">US</string>
+    <string name="units_us_description">Omzetten naar Amerikaanse eenheden (cup, el, tl, oz, lb)</string>
+    <string name="original">Origineel</string>
+    <string name="support">Ondersteuning</string>
+    <string name="send_feedback">Feedback verzenden</string>
+    <string name="about">Over</string>
+    <string name="legal">Juridisch</string>
+    <string name="terms_of_service">Servicevoorwaarden</string>
+    <string name="privacy_policy">Privacybeleid</string>
+    <string name="version">Versie %s</string>
+</resources>

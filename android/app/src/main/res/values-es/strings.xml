@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app_name is set per flavor in build.gradle.kts -->
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_recipes">Recetas</string>
+    <string name="nav_create">Crear</string>
+    <string name="nav_saved">Guardado</string>
+    <string name="nav_profile">Perfil</string>
+
+    <!-- Common -->
+    <string name="loading">Cargando...</string>
+    <string name="error_generic">Algo salió mal</string>
+    <string name="retry">Reintentar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="edit">Editar</string>
+    <string name="share">Compartir</string>
+    <string name="report">Reportar</string>
+
+    <!-- Auth -->
+    <string name="sign_in">Iniciar sesión</string>
+    <string name="sign_out">Cerrar sesión</string>
+    <string name="continue_with_google">Continuar con Google</string>
+
+    <!-- Profile -->
+    <string name="followers">Seguidores</string>
+    <string name="following">Siguiendo</string>
+    <string name="follow">Seguir</string>
+    <string name="unfollow">Dejar de seguir</string>
+    <string name="block">Bloquear</string>
+    <string name="settings">Configuración</string>
+    <string name="edit_profile">Editar perfil</string>
+
+    <!-- Recipes -->
+    <string name="recipes">Recetas</string>
+    <string name="logs">Registros</string>
+    <string name="cooked_count">%d cocinados</string>
+    <string name="view_recipe">Ver receta</string>
+    <string name="start_cooking">Empezar a cocinar</string>
+    <string name="ingredients">Ingredientes</string>
+    <string name="steps">Pasos</string>
+
+    <!-- Create Log -->
+    <string name="create_log">Crear registro</string>
+    <string name="add_photos">Añadir fotos</string>
+    <string name="rate_your_cook">Califica tu cocina</string>
+    <string name="link_recipe">Vincular receta (opcional)</string>
+    <string name="write_about_experience">Escribe sobre tu experiencia...</string>
+    <string name="post">Publicar</string>
+
+    <!-- Search -->
+    <string name="search">Buscar</string>
+    <string name="search_placeholder">Buscar recetas, registros, usuarios...</string>
+    <string name="recent_searches">Búsquedas recientes</string>
+    <string name="trending">Tendencias</string>
+    <string name="no_results">Sin resultados</string>
+
+    <!-- Notifications -->
+    <string name="notifications">Notificaciones</string>
+    <string name="mark_all_read">Marcar todo como leído</string>
+    <string name="no_notifications">Sin notificaciones</string>
+
+    <!-- Comments -->
+    <string name="comments">Comentarios</string>
+    <string name="write_comment">Escribe un comentario...</string>
+    <string name="reply">Responder</string>
+    <string name="load_more">Cargar más</string>
+
+    <!-- Empty States -->
+    <string name="empty_feed">No hay publicaciones</string>
+    <string name="empty_saved">Sin elementos guardados</string>
+    <string name="empty_recipes">No se encontraron recetas</string>
+    <string name="no_recipes_yet">Sin recetas todavía</string>
+    <string name="no_logs_yet">Sin registros todavía</string>
+    <string name="no_saved_items_yet">Sin elementos guardados</string>
+    <string name="no_saved_recipes_yet">Sin recetas guardadas</string>
+    <string name="no_saved_logs_yet">Sin registros guardados</string>
+    <string name="no_trending_recipes">Sin recetas en tendencia</string>
+    <string name="no_trending_hashtags">Sin hashtags en tendencia</string>
+    <string name="no_recent_logs">Sin registros recientes</string>
+    <string name="no_recent_searches">Sin búsquedas recientes</string>
+    <string name="no_comments_yet">Sin comentarios todavía</string>
+    <string name="error_loading_comments">Error al cargar comentarios</string>
+    <string name="no_posts_hashtag">Sin publicaciones con este hashtag</string>
+    <string name="no_recipes_hashtag">Sin recetas con este hashtag</string>
+    <string name="no_logs_hashtag">Sin registros de cocina con este hashtag</string>
+
+    <!-- Profile Actions -->
+    <string name="sign_in_to_view_profile">Inicia sesión para ver tu perfil</string>
+    <string name="block_user">Bloquear usuario</string>
+    <string name="unblock_user">Desbloquear usuario</string>
+    <string name="report_user">Reportar usuario</string>
+    <string name="block_user_confirm">¿Estás seguro de que quieres bloquear a @%s? No podrá ver tu contenido ni contactarte.</string>
+    <string name="report_user_reason">¿Por qué reportas a @%s?</string>
+    <string name="spam">Spam</string>
+    <string name="harassment">Acoso o intimidación</string>
+    <string name="inappropriate_content">Contenido inapropiado</string>
+    <string name="impersonation">Suplantación</string>
+    <string name="other">Otro</string>
+
+    <!-- Search -->
+    <string name="trending_recipes">Recetas en tendencia</string>
+    <string name="see_all">Ver todo</string>
+    <string name="popular_hashtags">Hashtags populares</string>
+    <string name="recent_logs">Registros recientes</string>
+    <string name="cooking_logs">Registros de cocina</string>
+    <string name="users">Usuarios</string>
+    <string name="all">Todo</string>
+    <string name="clear">Borrar</string>
+    <string name="posts_count">%d publicaciones</string>
+
+    <!-- Notifications Messages -->
+    <string name="notif_started_following">comenzó a seguirte</string>
+    <string name="notif_commented">comentó en tu registro</string>
+    <string name="notif_replied">respondió a tu comentario</string>
+    <string name="notif_liked_comment">le gustó tu comentario</string>
+    <string name="notif_liked_log">le gustó tu registro de cocina</string>
+    <string name="notif_cooked_recipe">cocinó tu receta</string>
+    <string name="notif_saved_recipe">guardó tu receta</string>
+
+    <!-- Create Log -->
+    <string name="new_cooking_log">Nuevo registro de cocina</string>
+    <string name="link_a_recipe">Vincular receta</string>
+    <string name="tap_to_add">Toca para añadir</string>
+    <string name="share_cooking_experience">Comparte tu experiencia cocinando…</string>
+    <string name="add_hashtag">Añadir hashtag</string>
+    <string name="private_log">Privado</string>
+    <string name="public_log">Público</string>
+    <string name="dismiss">Cerrar</string>
+
+    <!-- Auth -->
+    <string name="share_cooking_journey">Comparte tu viaje culinario</string>
+    <string name="continue_with_apple">Continuar con Apple</string>
+    <string name="terms_agreement">Al continuar, aceptas nuestros Términos de servicio y Política de privacidad</string>
+
+    <!-- Comments -->
+    <string name="replying_to">Respondiendo a @%s</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Atrás</string>
+    <string name="cd_close">Cerrar</string>
+    <string name="cd_submit">Enviar</string>
+    <string name="cd_more_options">Más opciones</string>
+    <string name="cd_remove">Eliminar</string>
+    <string name="cd_add">Añadir</string>
+    <string name="cd_like">Me gusta</string>
+    <string name="cd_comment">Comentar</string>
+    <string name="cd_send">Enviar</string>
+    <string name="cd_view">Ver</string>
+    <string name="cd_logo">Logo de Cookstemma</string>
+    <string name="cd_unsave">Quitar de guardados</string>
+
+    <!-- Settings -->
+    <string name="log_out">Cerrar sesión</string>
+    <string name="log_out_confirm">¿Estás seguro de que quieres cerrar sesión?</string>
+    <string name="delete_account">Eliminar cuenta</string>
+    <string name="delete_account_confirm">Esta acción no se puede deshacer. Todas tus recetas, registros y datos se eliminarán permanentemente.</string>
+    <string name="choose_theme">Elegir tema</string>
+    <string name="choose_language">Elegir idioma</string>
+    <string name="change_language">Cambiar idioma</string>
+    <string name="restart_confirm">La app se reiniciará para aplicar el nuevo idioma. ¿Deseas continuar?</string>
+    <string name="restart">Reiniciar</string>
+    <string name="theme">Tema</string>
+    <string name="language">Idioma</string>
+    <string name="account">Cuenta</string>
+    <string name="preferences">Preferencias</string>
+    <string name="privacy">Privacidad</string>
+    <string name="manage_blocked_users">Gestionar usuarios bloqueados</string>
+    <string name="measurement_units">Unidades de medida</string>
+    <string name="units_original">Original</string>
+    <string name="units_original_description">Mostrar ingredientes en sus unidades originales</string>
+    <string name="units_metric">Métrico</string>
+    <string name="units_metric_description">Convertir a unidades métricas (ml, L, g, kg)</string>
+    <string name="units_us">US</string>
+    <string name="units_us_description">Convertir a unidades estadounidenses (taza, cda, cdta, oz, lb)</string>
+    <string name="original">Original</string>
+    <string name="support">Soporte</string>
+    <string name="send_feedback">Enviar comentarios</string>
+    <string name="about">Acerca de</string>
+    <string name="legal">Legal</string>
+    <string name="terms_of_service">Términos de servicio</string>
+    <string name="privacy_policy">Política de privacidad</string>
+    <string name="version">Versión %s</string>
+</resources>

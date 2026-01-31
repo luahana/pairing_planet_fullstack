@@ -9,6 +9,7 @@ HELP.md
 .gradle/
 **/build/
 !gradle/wrapper/gradle-wrapper.jar
+!android/gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 *.jar
@@ -133,6 +134,10 @@ tfplan
 credentials.json
 **/firebase-service-account.json
 .aws/
+
+# Firebase config files (download from Firebase Console)
+**/google-services.json
+**/GoogleService-Info.plist
 
 # -----------------------------------------------------------------------------
 # OS-specific

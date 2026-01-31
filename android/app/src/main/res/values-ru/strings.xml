@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- app_name is set per flavor in build.gradle.kts -->
+
+    <!-- Navigation -->
+    <string name="nav_home">Главная</string>
+    <string name="nav_recipes">Рецепты</string>
+    <string name="nav_create">Создать</string>
+    <string name="nav_saved">Сохранённое</string>
+    <string name="nav_profile">Профиль</string>
+
+    <!-- Common -->
+    <string name="loading">Загрузка...</string>
+    <string name="error_generic">Что-то пошло не так</string>
+    <string name="retry">Повторить</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Редактировать</string>
+    <string name="share">Поделиться</string>
+    <string name="report">Пожаловаться</string>
+
+    <!-- Auth -->
+    <string name="sign_in">Войти</string>
+    <string name="sign_out">Выйти</string>
+    <string name="continue_with_google">Продолжить с Google</string>
+
+    <!-- Profile -->
+    <string name="followers">Подписчики</string>
+    <string name="following">Подписки</string>
+    <string name="follow">Подписаться</string>
+    <string name="unfollow">Отписаться</string>
+    <string name="block">Заблокировать</string>
+    <string name="settings">Настройки</string>
+    <string name="edit_profile">Редактировать профиль</string>
+
+    <!-- Recipes -->
+    <string name="recipes">Рецепты</string>
+    <string name="logs">Записи</string>
+    <string name="cooked_count">%d приготовлено</string>
+    <string name="view_recipe">Смотреть рецепт</string>
+    <string name="start_cooking">Начать готовить</string>
+    <string name="ingredients">Ингредиенты</string>
+    <string name="steps">Шаги</string>
+
+    <!-- Create Log -->
+    <string name="create_log">Создать запись</string>
+    <string name="add_photos">Добавить фото</string>
+    <string name="rate_your_cook">Оцените готовку</string>
+    <string name="link_recipe">Привязать рецепт (необязательно)</string>
+    <string name="write_about_experience">Напишите о своём опыте...</string>
+    <string name="post">Опубликовать</string>
+
+    <!-- Search -->
+    <string name="search">Поиск</string>
+    <string name="search_placeholder">Поиск рецептов, записей, пользователей...</string>
+    <string name="recent_searches">Недавние поиски</string>
+    <string name="trending">Популярное</string>
+    <string name="no_results">Нет результатов</string>
+
+    <!-- Notifications -->
+    <string name="notifications">Уведомления</string>
+    <string name="mark_all_read">Отметить всё как прочитанное</string>
+    <string name="no_notifications">Нет уведомлений</string>
+
+    <!-- Comments -->
+    <string name="comments">Комментарии</string>
+    <string name="write_comment">Написать комментарий...</string>
+    <string name="reply">Ответить</string>
+    <string name="load_more">Загрузить ещё</string>
+
+    <!-- Empty States -->
+    <string name="empty_feed">Нет публикаций</string>
+    <string name="empty_saved">Нет сохранённых элементов</string>
+    <string name="empty_recipes">Рецепты не найдены</string>
+    <string name="no_recipes_yet">Рецептов пока нет</string>
+    <string name="no_logs_yet">Записей пока нет</string>
+    <string name="no_saved_items_yet">Нет сохранённых элементов</string>
+    <string name="no_saved_recipes_yet">Нет сохранённых рецептов</string>
+    <string name="no_saved_logs_yet">Нет сохранённых записей</string>
+    <string name="no_trending_recipes">Нет популярных рецептов</string>
+    <string name="no_trending_hashtags">Нет популярных хештегов</string>
+    <string name="no_recent_logs">Нет недавних записей</string>
+    <string name="no_recent_searches">Нет недавних поисков</string>
+    <string name="no_comments_yet">Комментариев пока нет</string>
+    <string name="error_loading_comments">Ошибка загрузки комментариев</string>
+    <string name="no_posts_hashtag">Публикаций с этим хештегом пока нет</string>
+    <string name="no_recipes_hashtag">Рецептов с этим хештегом пока нет</string>
+    <string name="no_logs_hashtag">Записей о готовке с этим хештегом пока нет</string>
+
+    <!-- Profile Actions -->
+    <string name="sign_in_to_view_profile">Войдите, чтобы увидеть свой профиль</string>
+    <string name="block_user">Заблокировать пользователя</string>
+    <string name="unblock_user">Разблокировать пользователя</string>
+    <string name="report_user">Пожаловаться на пользователя</string>
+    <string name="block_user_confirm">Вы уверены, что хотите заблокировать @%s? Они не смогут видеть ваш контент или связаться с вами.</string>
+    <string name="report_user_reason">Почему вы жалуетесь на @%s?</string>
+    <string name="spam">Спам</string>
+    <string name="harassment">Преследование или травля</string>
+    <string name="inappropriate_content">Неприемлемый контент</string>
+    <string name="impersonation">Выдача себя за другого</string>
+    <string name="other">Другое</string>
+
+    <!-- Search -->
+    <string name="trending_recipes">Популярные рецепты</string>
+    <string name="see_all">Показать все</string>
+    <string name="popular_hashtags">Популярные хештеги</string>
+    <string name="recent_logs">Недавние записи</string>
+    <string name="cooking_logs">Записи о готовке</string>
+    <string name="users">Пользователи</string>
+    <string name="all">Все</string>
+    <string name="clear">Очистить</string>
+    <string name="posts_count">%d публикаций</string>
+
+    <!-- Notifications Messages -->
+    <string name="notif_started_following">подписался(ась) на вас</string>
+    <string name="notif_commented">прокомментировал(а) вашу запись</string>
+    <string name="notif_replied">ответил(а) на ваш комментарий</string>
+    <string name="notif_liked_comment">понравился ваш комментарий</string>
+    <string name="notif_liked_log">понравилась ваша запись о готовке</string>
+    <string name="notif_cooked_recipe">приготовил(а) ваш рецепт</string>
+    <string name="notif_saved_recipe">сохранил(а) ваш рецепт</string>
+
+    <!-- Create Log -->
+    <string name="new_cooking_log">Новая запись о готовке</string>
+    <string name="link_a_recipe">Привязать рецепт</string>
+    <string name="tap_to_add">Нажмите для добавления</string>
+    <string name="share_cooking_experience">Поделитесь своим опытом готовки…</string>
+    <string name="add_hashtag">Добавить хештег</string>
+    <string name="private_log">Приватная</string>
+    <string name="public_log">Публичная</string>
+    <string name="dismiss">Закрыть</string>
+
+    <!-- Auth -->
+    <string name="share_cooking_journey">Поделитесь своим кулинарным путешествием</string>
+    <string name="continue_with_apple">Продолжить с Apple</string>
+    <string name="terms_agreement">Продолжая, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности</string>
+
+    <!-- Comments -->
+    <string name="replying_to">Ответ @%s</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Назад</string>
+    <string name="cd_close">Закрыть</string>
+    <string name="cd_submit">Отправить</string>
+    <string name="cd_more_options">Дополнительные параметры</string>
+    <string name="cd_remove">Удалить</string>
+    <string name="cd_add">Добавить</string>
+    <string name="cd_like">Нравится</string>
+    <string name="cd_comment">Комментарий</string>
+    <string name="cd_send">Отправить</string>
+    <string name="cd_view">Просмотр</string>
+    <string name="cd_logo">Логотип Cookstemma</string>
+    <string name="cd_unsave">Убрать из сохранённых</string>
+
+    <!-- Settings -->
+    <string name="log_out">Выйти</string>
+    <string name="log_out_confirm">Вы уверены, что хотите выйти?</string>
+    <string name="delete_account">Удалить аккаунт</string>
+    <string name="delete_account_confirm">Это действие нельзя отменить. Все ваши рецепты, записи и данные будут удалены навсегда.</string>
+    <string name="choose_theme">Выберите тему</string>
+    <string name="choose_language">Выберите язык</string>
+    <string name="change_language">Изменить язык</string>
+    <string name="restart_confirm">Приложение перезапустится для применения нового языка. Продолжить?</string>
+    <string name="restart">Перезапустить</string>
+    <string name="theme">Тема</string>
+    <string name="language">Язык</string>
+    <string name="account">Аккаунт</string>
+    <string name="preferences">Настройки</string>
+    <string name="privacy">Конфиденциальность</string>
+    <string name="manage_blocked_users">Управление заблокированными</string>
+    <string name="measurement_units">Единицы измерения</string>
+    <string name="units_original">Оригинал</string>
+    <string name="units_original_description">Отображать ингредиенты в исходных единицах</string>
+    <string name="units_metric">Метрическая</string>
+    <string name="units_metric_description">Конвертировать в метрические единицы (мл, л, г, кг)</string>
+    <string name="units_us">Американская</string>
+    <string name="units_us_description">Конвертировать в американские единицы (чашка, ст.л., ч.л., унция, фунт)</string>
+    <string name="original">Оригинал</string>
+    <string name="support">Поддержка</string>
+    <string name="send_feedback">Отправить отзыв</string>
+    <string name="about">О приложении</string>
+    <string name="legal">Правовая информация</string>
+    <string name="terms_of_service">Условия использования</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="version">Версия %s</string>
+</resources>

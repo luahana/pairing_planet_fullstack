@@ -3,7 +3,13 @@ import SwiftUI
 struct LogDetailView: View {
     let logId: String
     @StateObject private var viewModel: LogDetailViewModel
+    @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss
+    @State private var showDeleteConfirmation = false
+    @State private var showEditSheet = false
+    @State private var showActionSheet = false
+    @State private var showCommentsSheet = false
 
     init(logId: String) {
         self.logId = logId
@@ -11,34 +17,124 @@ struct LogDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            switch viewModel.state {
-            case .idle, .loading:
-                LoadingView()
-            case .loaded:
-                if let log = viewModel.log {
-                    logContent(log)
-                }
-            case .error(let message):
-                ErrorStateView(message: message) { viewModel.loadLog() }
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    ShareLink(item: URL(string: "https://cookstemma.com/logs/\(logId)")!) {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                    }
-                    Button(role: .destructive) { } label: {
-                        Label("Report", systemImage: "flag")
-                    }
+        VStack(spacing: 0) {
+            // Custom header
+            HStack {
+                Button {
+                    dismiss()
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                        .frame(width: 44, alignment: .leading)
+                }
+                .buttonStyle(.borderless)
+                .padding(.leading, DesignSystem.Spacing.md)
+
+                Spacer()
+
+                HStack(spacing: 0) {
+                    // Save button (icon only) - requires auth
+                    Button {
+                        appState.requireAuth {
+                            Task { await viewModel.toggleSave() }
+                        }
+                    } label: {
+                        Image(systemName: viewModel.isSaved ? AppIcon.save : AppIcon.saveOutline)
+                            .font(.system(size: 18))
+                            .foregroundColor(viewModel.isSaved ? DesignSystem.Colors.bookmark : DesignSystem.Colors.secondaryText)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+
+                    // Share button (icon only)
+                    ShareLink(item: URL(string: "https://cookstemma.com/logs/\(logId)")!) {
+                        Image(systemName: AppIcon.share)
+                            .font(.system(size: 18))
+                            .foregroundColor(DesignSystem.Colors.text)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+
+                    // More options menu
+                    if let log = viewModel.log {
+                        if log.author.id == authManager.currentUser?.id {
+                            // Own log - show edit/delete action sheet
+                            Button {
+                                showActionSheet = true
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(DesignSystem.Colors.text)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .confirmationDialog("", isPresented: $showActionSheet, titleVisibility: .hidden) {
+                                Button(String(localized: "common.edit")) {
+                                    showEditSheet = true
+                                }
+                                Button(String(localized: "common.delete"), role: .destructive) {
+                                    showDeleteConfirmation = true
+                                }
+                                Button(String(localized: "common.cancel"), role: .cancel) { }
+                            }
+                        } else {
+                            // Other user's log - show block/report
+                            BlockReportMenu(
+                                targetUserId: log.author.id,
+                                targetUsername: log.author.username,
+                                onBlock: { Task { await viewModel.blockUser() } },
+                                onReport: { reason in Task { await viewModel.reportUser(reason: reason) } }
+                            )
+                        }
+                    }
+                }
+                .padding(.trailing, DesignSystem.Spacing.xs)
+            }
+            .padding(.vertical, DesignSystem.Spacing.sm)
+            .background(DesignSystem.Colors.background)
+
+            ScrollView {
+                switch viewModel.state {
+                case .idle, .loading:
+                    LoadingView()
+                case .loaded:
+                    if let log = viewModel.log {
+                        logContent(log)
+                    }
+                case .error(let message):
+                    ErrorStateView(message: message) { viewModel.loadLog() }
+                }
+            }
+            .contentMargins(.bottom, 80, for: .scrollContent)
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
+        .onAppear { if case .idle = viewModel.state { viewModel.loadLog() } }
+        .alert(String(localized: "menu.deleteCookingLog"), isPresented: $showDeleteConfirmation) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+            Button(String(localized: "common.delete"), role: .destructive) {
+                Task {
+                    if await viewModel.deleteLog() {
+                        dismiss()
+                    }
+                }
+            }
+        } message: {
+            Text(String(localized: "menu.deleteCookingLogConfirm"))
+        }
+        .sheet(isPresented: $showEditSheet) {
+            if let log = viewModel.log {
+                EditLogView(log: log) {
+                    viewModel.loadLog()
                 }
             }
         }
-        .onAppear { if case .idle = viewModel.state { viewModel.loadLog() } }
+        .sheet(isPresented: $showCommentsSheet) {
+            CommentsBottomSheet(logId: logId)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
 
     @ViewBuilder
@@ -48,10 +144,10 @@ struct LogDetailView: View {
             HStack {
                 NavigationLink(destination: ProfileView(userId: log.author.id)) {
                     HStack {
-                        AvatarView(url: log.author.avatarUrl, size: DesignSystem.AvatarSize.sm)
+                        AvatarView(url: log.author.avatarUrl, name: log.author.username, size: DesignSystem.AvatarSize.sm)
                         VStack(alignment: .leading) {
                             Text(log.author.displayNameOrUsername).font(DesignSystem.Typography.subheadline).fontWeight(.medium)
-                            Text(log.createdAt, style: .relative).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
+                            Text(log.createdAt.timeAgo()).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
                         }
                     }
                 }
@@ -64,7 +160,10 @@ struct LogDetailView: View {
                 TabView {
                     ForEach(log.images, id: \.url) { image in
                         AsyncImage(url: URL(string: image.url)) { img in
-                            img.resizable().scaledToFill()
+                            img.resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .clipped()
                         } placeholder: {
                             Rectangle().fill(DesignSystem.Colors.secondaryBackground)
                         }
@@ -72,6 +171,7 @@ struct LogDetailView: View {
                 }
                 .tabViewStyle(.page)
                 .frame(height: 300)
+                .clipped()
             }
 
             // Rating
@@ -86,6 +186,20 @@ struct LogDetailView: View {
                 Text(content)
                     .font(DesignSystem.Typography.body)
                     .padding(.horizontal)
+            }
+
+            // Hashtags
+            if !log.hashtags.isEmpty {
+                FlowLayout(spacing: DesignSystem.Spacing.xs) {
+                    ForEach(log.hashtags, id: \.self) { hashtag in
+                        NavigationLink(destination: HashtagView(hashtag: hashtag)) {
+                            Text("#\(hashtag)")
+                                .font(DesignSystem.Typography.subheadline)
+                                .foregroundColor(DesignSystem.Colors.primary)
+                        }
+                    }
+                }
+                .padding(.horizontal)
             }
 
             // Linked recipe
@@ -126,173 +240,26 @@ struct LogDetailView: View {
                 .padding(.horizontal)
             }
 
-            // Actions
-            HStack(spacing: DesignSystem.Spacing.lg) {
-                Button { Task { await viewModel.toggleLike() } } label: {
-                    Label("\(log.likeCount)", systemImage: log.isLiked ? "heart.fill" : "heart")
-                        .foregroundColor(log.isLiked ? .red : DesignSystem.Colors.primaryText)
-                }
-                Button { } label: {
-                    Label("\(log.commentCount)", systemImage: "bubble.right")
-                }
-                Button { Task { await viewModel.toggleSave() } } label: {
-                    Image(systemName: viewModel.isSaved ? "bookmark.fill" : "bookmark")
-                        .foregroundColor(viewModel.isSaved ? DesignSystem.Colors.primary : DesignSystem.Colors.primaryText)
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-
             Divider()
 
-            // Comments section
-            CommentsSection(logId: logId)
-        }
-        .padding(.bottom, DesignSystem.Spacing.xl)
-        .safeAreaPadding(.bottom)
-    }
-}
-
-// MARK: - Comments Section
-struct CommentsSection: View {
-    let logId: String
-    @StateObject private var viewModel: CommentsViewModel
-    @EnvironmentObject private var authManager: AuthManager
-    @State private var showBlockConfirmation = false
-    @State private var userToBlock: UserSummary?
-
-    init(logId: String) {
-        self.logId = logId
-        self._viewModel = StateObject(wrappedValue: CommentsViewModel(logId: logId))
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-            Text("Comments (\(viewModel.comments.count))")
-                .font(DesignSystem.Typography.headline)
+            // Comments button
+            Button {
+                showCommentsSheet = true
+            } label: {
+                HStack(spacing: DesignSystem.Spacing.xs) {
+                    Image(systemName: AppIcon.comment)
+                        .font(.system(size: DesignSystem.IconSize.md))
+                    Text("\(log.commentCount)")
+                        .font(DesignSystem.Typography.headline)
+                }
+                .foregroundColor(DesignSystem.Colors.text)
                 .padding(.horizontal)
-
-            ForEach(viewModel.comments) { comment in
-                CommentRow(
-                    comment: comment,
-                    isOwnComment: comment.author.id == authManager.currentUser?.id,
-                    onLike: { Task { await viewModel.likeComment(comment) } },
-                    onBlock: {
-                        userToBlock = comment.author
-                        showBlockConfirmation = true
-                    },
-                    onReport: { reason in
-                        Task { await viewModel.reportUser(comment.author.id, reason: reason) }
-                    }
-                )
-            }
-
-            if viewModel.hasMore {
-                Button("Load more comments...") { viewModel.loadMore() }
-                    .font(DesignSystem.Typography.subheadline)
-                    .padding(.horizontal)
-            }
-
-            // Comment input
-            HStack {
-                TextField("Write a comment...", text: $viewModel.newCommentText)
-                    .textFieldStyle(.roundedBorder)
-                Button { Task { await viewModel.postComment() } } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(viewModel.newCommentText.isEmpty ? DesignSystem.Colors.secondaryText : DesignSystem.Colors.primary)
-                }
-                .disabled(viewModel.newCommentText.isEmpty)
-            }
-            .padding()
-        }
-        .onAppear { viewModel.loadComments() }
-        .alert("Block User", isPresented: $showBlockConfirmation) {
-            Button("Block", role: .destructive) {
-                guard let user = userToBlock else { return }
-                Task { await viewModel.blockUser(user.id) }
-            }
-            Button("Cancel", role: .cancel) { userToBlock = nil }
-        } message: {
-            if let user = userToBlock {
-                Text("Are you sure you want to block @\(user.username)? You won't see their content anymore.")
+                .padding(.vertical, DesignSystem.Spacing.sm)
             }
         }
-    }
-}
-
-struct CommentRow: View {
-    let comment: Comment
-    let isOwnComment: Bool
-    let onLike: () -> Void
-    let onBlock: () -> Void
-    let onReport: (ReportReason) -> Void
-    @State private var showReportSheet = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
-            HStack(alignment: .top) {
-                AvatarView(url: comment.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack {
-                        Text(comment.author.displayNameOrUsername).font(DesignSystem.Typography.caption).fontWeight(.medium)
-                        Text(comment.createdAt, style: .relative).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
-                    }
-                    Text(comment.content).font(DesignSystem.Typography.body)
-                    HStack {
-                        Button { onLike() } label: {
-                            HStack(spacing: 2) {
-                                Image(systemName: comment.isLiked ? "heart.fill" : "heart").font(.caption)
-                                Text("\(comment.likeCount)").font(DesignSystem.Typography.caption)
-                            }
-                            .foregroundColor(comment.isLiked ? .red : DesignSystem.Colors.secondaryText)
-                        }
-                        Button("Reply") { }.font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
-                    }
-                }
-                Spacer()
-                if !isOwnComment {
-                    Menu {
-                        Button(role: .destructive) { onBlock() } label: {
-                            Label("Block User", systemImage: AppIcon.block)
-                        }
-                        Button(role: .destructive) { showReportSheet = true } label: {
-                            Label("Report", systemImage: AppIcon.report)
-                        }
-                    } label: {
-                        Image(systemName: AppIcon.more)
-                            .font(.caption)
-                            .foregroundColor(DesignSystem.Colors.secondaryText)
-                            .padding(DesignSystem.Spacing.xs)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .confirmationDialog("Report Comment", isPresented: $showReportSheet, titleVisibility: .visible) {
-                ForEach(ReportReason.allCases, id: \.self) { reason in
-                    Button(reason.displayText) { onReport(reason) }
-                }
-                Button("Cancel", role: .cancel) { }
-            }
-
-            // Replies
-            if let replies = comment.replies, !replies.isEmpty {
-                ForEach(replies) { reply in
-                    HStack(alignment: .top) {
-                        AvatarView(url: reply.author.avatarUrl, size: DesignSystem.AvatarSize.xs)
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack {
-                                Text(reply.author.displayNameOrUsername).font(DesignSystem.Typography.caption).fontWeight(.medium)
-                                Text(reply.createdAt, style: .relative).font(DesignSystem.Typography.caption).foregroundColor(DesignSystem.Colors.secondaryText)
-                            }
-                            Text(reply.content).font(DesignSystem.Typography.body)
-                        }
-                    }
-                    .padding(.leading, 40)
-                    .padding(.horizontal)
-                }
-            }
-        }
+        .responsiveFrame()
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, DesignSystem.Spacing.xl)
     }
 }
 

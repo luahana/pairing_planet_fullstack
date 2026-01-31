@@ -78,7 +78,7 @@ struct LoadingView: View {
     var body: some View {
         VStack(spacing: DesignSystem.Spacing.md) {
             ProgressView()
-            Text("Loading...")
+            Text(String(localized: "common.loading"))
                 .font(DesignSystem.Typography.subheadline)
                 .foregroundColor(DesignSystem.Colors.secondaryText)
         }
@@ -124,12 +124,12 @@ struct ErrorStateView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: DesignSystem.IconSize.xxl))
                 .foregroundColor(DesignSystem.Colors.error)
-            Text("Something went wrong").font(DesignSystem.Typography.title3)
+            Text(String(localized: "common.somethingWentWrong")).font(DesignSystem.Typography.title3)
             Text(message)
                 .font(DesignSystem.Typography.body)
                 .foregroundColor(DesignSystem.Colors.secondaryText)
                 .multilineTextAlignment(.center)
-            Button(action: retry) { Text("Try Again").primaryButtonStyle() }
+            Button(action: retry) { Text(String(localized: "common.tryAgain")).primaryButtonStyle() }
                 .padding(.top, DesignSystem.Spacing.sm)
         }
         .padding(DesignSystem.Spacing.xl)
@@ -255,16 +255,64 @@ struct PhotoGrid: View {
 // MARK: - Avatar View
 struct AvatarView: View {
     let url: String?
+    var name: String? = nil
     var size: CGFloat = DesignSystem.AvatarSize.md
 
+    /// Check if URL is valid (starts with http/https)
+    private var isValidUrl: Bool {
+        guard let url = url, !url.isEmpty else { return false }
+        return url.hasPrefix("http://") || url.hasPrefix("https://")
+    }
+
+    /// Get the initial letter from name
+    private var initial: String {
+        guard let name = name, !name.isEmpty else { return "" }
+        let cleanName = name.hasPrefix("@") ? String(name.dropFirst()) : name
+        return String(cleanName.prefix(1)).uppercased()
+    }
+
     var body: some View {
-        AsyncImage(url: URL(string: url ?? "")) { image in image.resizable().scaledToFill() }
-            placeholder: {
-                Circle().fill(DesignSystem.Colors.secondaryBackground)
-                    .overlay(Image(systemName: "person.fill").foregroundColor(DesignSystem.Colors.tertiaryText))
+        Group {
+            if isValidUrl {
+                AsyncImage(url: URL(string: url!)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure:
+                        fallbackView
+                    case .empty:
+                        ProgressView()
+                    @unknown default:
+                        fallbackView
+                    }
+                }
+            } else {
+                fallbackView
             }
-            .frame(width: size, height: size)
-            .clipShape(Circle())
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+    }
+
+    @ViewBuilder
+    private var fallbackView: some View {
+        if !initial.isEmpty {
+            Circle()
+                .fill(DesignSystem.Colors.primary.opacity(0.15))
+                .overlay(
+                    Text(initial)
+                        .font(.system(size: size * 0.4, weight: .semibold))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                )
+        } else {
+            Circle()
+                .fill(DesignSystem.Colors.secondaryBackground)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .font(.system(size: size * 0.4))
+                        .foregroundColor(DesignSystem.Colors.tertiaryText)
+                )
+        }
     }
 }
 
@@ -285,7 +333,7 @@ struct FollowButton: View {
             if isLoading {
                 ProgressView().frame(width: 80, height: 32)
             } else {
-                Text(isFollowing ? "Following" : "Follow")
+                Text(isFollowing ? String(localized: "profile.following_button") : String(localized: "profile.follow"))
                     .font(DesignSystem.Typography.subheadline).fontWeight(.medium)
                     .foregroundColor(isFollowing ? DesignSystem.Colors.text : .white)
                     .padding(.horizontal, DesignSystem.Spacing.md)
@@ -301,9 +349,24 @@ struct FollowButton: View {
 // MARK: - Date Extension
 extension Date {
     func timeAgo() -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: self, relativeTo: Date())
+        let now = Date()
+        let components = Calendar.current.dateComponents([.year, .month, .weekOfYear, .day, .hour, .minute], from: self, to: now)
+
+        if let years = components.year, years > 0 {
+            return "\(years)y"
+        } else if let months = components.month, months > 0 {
+            return "\(months)mo"
+        } else if let weeks = components.weekOfYear, weeks > 0 {
+            return "\(weeks)w"
+        } else if let days = components.day, days > 0 {
+            return "\(days)d"
+        } else if let hours = components.hour, hours > 0 {
+            return "\(hours)h"
+        } else if let minutes = components.minute, minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "now"
+        }
     }
 }
 
@@ -620,5 +683,425 @@ struct TrackableScrollView<Content: View>: UIViewRepresentable {
                 displayLink = nil
             }
         }
+    }
+}
+
+// MARK: - Recipe Grid Card
+/// Compact card for displaying recipes in a 2-column grid
+struct RecipeGridCard: View {
+    let recipe: RecipeSummary
+    var showSavedBadge: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+            // Thumbnail with optional saved badge
+            ZStack(alignment: .topTrailing) {
+                Color.clear
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay(
+                        AsyncImage(url: URL(string: recipe.coverImageUrl ?? "")) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: {
+                            Rectangle()
+                                .fill(DesignSystem.Colors.tertiaryBackground)
+                                .overlay(
+                                    Image(systemName: AppIcon.recipe)
+                                        .font(.system(size: 24))
+                                        .foregroundColor(DesignSystem.Colors.secondaryText.opacity(0.5))
+                                )
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm))
+
+                // Saved indicator
+                if showSavedBadge {
+                    Image(systemName: AppIcon.save)
+                        .font(.system(size: 12))
+                        .foregroundColor(.white)
+                        .padding(6)
+                        .background(Color.black.opacity(0.5))
+                        .clipShape(Circle())
+                        .padding(8)
+                }
+            }
+
+            // Title
+            Text(recipe.title)
+                .font(DesignSystem.Typography.subheadline)
+                .fontWeight(.medium)
+                .lineLimit(1)
+                .foregroundColor(DesignSystem.Colors.text)
+
+            // Subtitle (food name + cooking time)
+            HStack(spacing: 4) {
+                Text(recipe.foodName)
+                    .lineLimit(1)
+
+                if let time = recipe.cookingTimeRange {
+                    Text("·")
+                    Image(systemName: AppIcon.timer)
+                        .font(.system(size: 10))
+                    Text(time.cookingTimeDisplayText)
+                }
+            }
+            .font(DesignSystem.Typography.caption)
+            .foregroundColor(DesignSystem.Colors.secondaryText)
+            .lineLimit(1)
+        }
+    }
+}
+
+// MARK: - Log Grid Card
+/// Compact card for displaying cooking logs in a 2-column grid
+struct LogGridCard: View {
+    let log: FeedLogItem
+    var showSavedBadge: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+            // Thumbnail with rating overlay
+            ZStack {
+                Color.clear
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay(
+                        AsyncImage(url: URL(string: log.thumbnailUrl ?? "")) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: {
+                            Rectangle()
+                                .fill(DesignSystem.Colors.tertiaryBackground)
+                                .overlay(
+                                    LogoIconView(
+                                        size: 24,
+                                        color: DesignSystem.Colors.secondaryText.opacity(0.5),
+                                        useOriginalColors: false
+                                    )
+                                )
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm))
+
+                // Overlays
+                VStack {
+                    // Saved badge (top right)
+                    HStack {
+                        Spacer()
+                        if showSavedBadge {
+                            Image(systemName: AppIcon.save)
+                                .font(.system(size: 12))
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                    }
+
+                    Spacer()
+
+                    // Rating stars (bottom left)
+                    HStack {
+                        if let rating = log.rating, rating > 0 {
+                            HStack(spacing: 2) {
+                                ForEach(0..<rating, id: \.self) { _ in
+                                    Image(systemName: AppIcon.star)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                            .foregroundColor(DesignSystem.Colors.rating)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 4)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(4)
+                        }
+                        Spacer()
+                    }
+                }
+                .padding(8)
+            }
+
+            // Food name
+            if let foodName = log.foodName {
+                Text(foodName)
+                    .font(DesignSystem.Typography.subheadline)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                    .foregroundColor(DesignSystem.Colors.text)
+            } else if let recipeTitle = log.recipeTitle {
+                Text(recipeTitle)
+                    .font(DesignSystem.Typography.subheadline)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                    .foregroundColor(DesignSystem.Colors.text)
+            }
+
+            // Username
+            Text("@\(log.userName)")
+                .font(DesignSystem.Typography.caption)
+                .foregroundColor(DesignSystem.Colors.secondaryText)
+                .lineLimit(1)
+        }
+    }
+}
+
+// MARK: - Log Grid Card (CookingLogSummary variant)
+struct LogGridCardFromSummary: View {
+    let log: CookingLogSummary
+    var showSavedBadge: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+            // Thumbnail with rating overlay
+            ZStack {
+                Color.clear
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay(
+                        AsyncImage(url: URL(string: log.images.first?.thumbnailUrl ?? "")) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: {
+                            Rectangle()
+                                .fill(DesignSystem.Colors.tertiaryBackground)
+                                .overlay(
+                                    LogoIconView(
+                                        size: 24,
+                                        color: DesignSystem.Colors.secondaryText.opacity(0.5),
+                                        useOriginalColors: false
+                                    )
+                                )
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm))
+
+                // Overlays
+                VStack {
+                    // Saved badge (top right)
+                    HStack {
+                        Spacer()
+                        if showSavedBadge {
+                            Image(systemName: AppIcon.save)
+                                .font(.system(size: 12))
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                    }
+
+                    Spacer()
+
+                    // Rating stars (bottom left)
+                    HStack {
+                        if log.rating > 0 {
+                            HStack(spacing: 2) {
+                                ForEach(0..<log.rating, id: \.self) { _ in
+                                    Image(systemName: AppIcon.star)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                            .foregroundColor(DesignSystem.Colors.rating)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 4)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(4)
+                        }
+                        Spacer()
+                    }
+                }
+                .padding(8)
+            }
+
+            // Recipe title
+            if let recipeTitle = log.recipe?.title {
+                Text(recipeTitle)
+                    .font(DesignSystem.Typography.subheadline)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                    .foregroundColor(DesignSystem.Colors.text)
+            }
+
+            // Username
+            Text("@\(log.author.username)")
+                .font(DesignSystem.Typography.caption)
+                .foregroundColor(DesignSystem.Colors.secondaryText)
+                .lineLimit(1)
+        }
+    }
+}
+
+// MARK: - Hashtag Content Grid Card
+struct HashtagContentGridCard: View {
+    let item: HashtagContentItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+            // Thumbnail with optional rating overlay (for logs)
+            ZStack {
+                Color.clear
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay(
+                        AsyncImage(url: URL(string: item.thumbnailUrl ?? "")) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: {
+                            Rectangle()
+                                .fill(DesignSystem.Colors.tertiaryBackground)
+                                .overlay(
+                                    Group {
+                                        if item.isRecipe {
+                                            Image(systemName: AppIcon.recipe)
+                                                .font(.system(size: 24))
+                                                .foregroundColor(DesignSystem.Colors.secondaryText.opacity(0.5))
+                                        } else {
+                                            LogoIconView(
+                                                size: 24,
+                                                color: DesignSystem.Colors.secondaryText.opacity(0.5),
+                                                useOriginalColors: false
+                                            )
+                                        }
+                                    }
+                                )
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm))
+
+                // Rating overlay for logs
+                if item.isLog, let rating = item.rating, rating > 0 {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            HStack(spacing: 2) {
+                                ForEach(0..<rating, id: \.self) { _ in
+                                    Image(systemName: AppIcon.star)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                            .foregroundColor(DesignSystem.Colors.rating)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 4)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(4)
+                            Spacer()
+                        }
+                    }
+                    .padding(8)
+                }
+            }
+
+            // Title (recipe title or food name for recipes, recipe title for logs)
+            if item.isRecipe {
+                Text(item.title ?? item.foodName ?? "")
+                    .font(DesignSystem.Typography.subheadline)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                    .foregroundColor(DesignSystem.Colors.text)
+            } else if let recipeTitle = item.recipeTitle {
+                Text(recipeTitle)
+                    .font(DesignSystem.Typography.subheadline)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                    .foregroundColor(DesignSystem.Colors.text)
+            }
+
+            // Username
+            Text("@\(item.userName)")
+                .font(DesignSystem.Typography.caption)
+                .foregroundColor(DesignSystem.Colors.secondaryText)
+                .lineLimit(1)
+        }
+    }
+}
+
+// MARK: - Content Grid
+/// Reusable 2-column grid layout for content cards
+struct ContentGrid<Content: View>: View {
+    let content: () -> Content
+
+    init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
+    }
+
+    private let columns = [
+        GridItem(.flexible(), spacing: DesignSystem.Spacing.sm),
+        GridItem(.flexible(), spacing: DesignSystem.Spacing.sm)
+    ]
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: DesignSystem.Spacing.md) {
+            content()
+        }
+        .padding(.horizontal, DesignSystem.Spacing.md)
+    }
+}
+
+// MARK: - Flow Layout
+/// A layout that arranges views in a flowing, wrapping manner
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = calculateLayout(proposal: proposal, subviews: subviews)
+        return result.size
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
+        let result = calculateLayout(proposal: proposal, subviews: subviews)
+        for (index, position) in result.positions.enumerated() {
+            subviews[index].place(
+                at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y),
+                proposal: .unspecified
+            )
+        }
+    }
+
+    private func calculateLayout(
+        proposal: ProposedViewSize,
+        subviews: Subviews
+    ) -> (size: CGSize, positions: [CGPoint]) {
+        var positions: [CGPoint] = []
+        var currentX: CGFloat = 0
+        var currentY: CGFloat = 0
+        var lineHeight: CGFloat = 0
+        let maxWidth = proposal.width ?? .infinity
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX + size.width > maxWidth && currentX > 0 {
+                currentX = 0
+                currentY += lineHeight + spacing
+                lineHeight = 0
+            }
+            positions.append(CGPoint(x: currentX, y: currentY))
+            lineHeight = max(lineHeight, size.height)
+            currentX += size.width + spacing
+        }
+
+        return (CGSize(width: maxWidth, height: currentY + lineHeight), positions)
+    }
+}
+
+// MARK: - Swipe Back Gesture Enabler
+/// Enables the interactive pop gesture (swipe from left edge to go back) when navigation bar is hidden
+struct SwipeBackGestureEnabler: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        SwipeBackGestureViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+
+private class SwipeBackGestureViewController: UIViewController {
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        navigationController?.interactivePopGestureRecognizer?.delegate = nil
+    }
+}
+
+extension View {
+    /// Enables swipe back gesture when navigation bar is hidden
+    func enableSwipeBack() -> some View {
+        background(SwipeBackGestureEnabler())
     }
 }

@@ -304,22 +304,17 @@ final class CreateLogViewModelTests: XCTestCase {
             id: "recipe-123",
             title: "Test Recipe",
             description: nil,
-            coverImageUrl: nil,
-            cookingTimeRange: .under15,
+            foodName: "Test Food",
+            cookingStyle: "US",
+            userName: "testuser",
+            thumbnail: nil,
+            variantCount: 1,
+            logCount: 50,
             servings: 2,
-            cookCount: 50,
-            averageRating: 4.0,
-            author: UserSummary(
-                id: "user-1",
-                username: "testuser",
-                displayName: "Test User",
-                avatarUrl: nil,
-                level: 5,
-                isFollowing: nil
-            ),
-            isSaved: false,
-            category: nil,
-            createdAt: Date()
+            cookingTimeRange: "UNDER_15",
+            hashtags: [],
+            isPrivate: false,
+            isSaved: false
         )
     }
 

@@ -62,7 +62,7 @@ final class RecipeRepositoryTests: XCTestCase {
     func testGetRecipes_withFilters_passesToAPI() async {
         // Given
         let filters = RecipeFilters(
-            cookingTimeRange: .under15,
+            cookingTimeRange: .under15Min,
             category: "korean",
             searchQuery: "kimchi",
             sortBy: .newest
@@ -283,15 +283,17 @@ final class RecipeRepositoryTests: XCTestCase {
                 id: "recipe-\(i)",
                 title: "Recipe \(i)",
                 description: "Description \(i)",
-                coverImageUrl: nil,
-                cookingTimeRange: .under15,
+                foodName: "Food \(i)",
+                cookingStyle: "US",
+                userName: "testuser",
+                thumbnail: nil,
+                variantCount: 1,
+                logCount: i * 10,
                 servings: 2,
-                cookCount: i * 10,
-                averageRating: 4.0,
-                author: createMockAuthor(),
-                isSaved: false,
-                category: nil,
-                createdAt: Date()
+                cookingTimeRange: "UNDER_15",
+                hashtags: [],
+                isPrivate: false,
+                isSaved: false
             )
         }
     }
@@ -302,7 +304,7 @@ final class RecipeRepositoryTests: XCTestCase {
             title: "Test Recipe",
             description: "Test description",
             images: [],
-            cookingTimeRange: .between15And30,
+            cookingTimeRange: .min15To30,
             servings: 4,
             cookCount: 100,
             averageRating: 4.5,
@@ -381,6 +383,15 @@ class MockAPIClient: APIClientProtocol {
         }
 
         return response
+    }
+
+    func request(_ endpoint: any APIEndpoint) async throws {
+        requestCalled = true
+        if let error = mockError { throw error }
+    }
+
+    func uploadImage(_ imageData: Data, type: String) async throws -> ImageUploadResponse {
+        throw APIError.unknown
     }
 }
 

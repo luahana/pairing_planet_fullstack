@@ -4,48 +4,16 @@ struct RecipesListView: View {
     @StateObject private var viewModel = RecipesListViewModel()
     @EnvironmentObject private var appState: AppState
     @State private var showFilters = false
-    @State private var scrollOffset: CGFloat = 0
-    @State private var scrollToTopTrigger: Int = 0
-    @State private var programmaticRefreshTrigger: Int = 0
     @State private var navigationPath = NavigationPath()
-
-    private let headerHeight: CGFloat = 56
+    @State private var scrollProxy: ScrollViewProxy?
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            ZStack(alignment: .top) {
-                // Main content area
-                switch viewModel.state {
-                case .idle, .loading:
-                    // Loading content with header space
-                    VStack {
-                        Color.clear.frame(height: headerHeight)
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                case .loaded:
-                    scrollContent
-                case .empty:
-                    VStack {
-                        Color.clear.frame(height: headerHeight)
-                        Spacer()
-                        IconEmptyState(icon: AppIcon.recipe)
-                        Spacer()
-                    }
-                case .error(let msg):
-                    VStack {
-                        Color.clear.frame(height: headerHeight)
-                        Spacer()
-                        ErrorStateView(message: msg) { viewModel.loadRecipes() }
-                        Spacer()
-                    }
-                }
-
-                // Header overlay - scrolls with content when loaded
+            VStack(spacing: 0) {
                 recipesHeader
-                    .offset(y: min(0, scrollOffset))
+                contentView
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .background(DesignSystem.Colors.background)
             .navigationBarHidden(true)
             .navigationDestination(for: String.self) { recipeId in
@@ -57,28 +25,20 @@ struct RecipesListView: View {
         }
         .onAppear { if case .idle = viewModel.state { viewModel.loadRecipes() } }
         .onChange(of: appState.recipesScrollToTopTrigger) { _, _ in
-            // Check if in a detail view (navigation path not empty)
             if !navigationPath.isEmpty {
-                // Pop to root with back-button-style animation
                 navigationPath = NavigationPath()
                 return
             }
-
-            // At root - check if scrolled
-            let isAtTop = scrollOffset >= -10
-            if isAtTop {
-                // Already at top - trigger refresh with pull-down animation
-                programmaticRefreshTrigger += 1
-            } else {
-                // Scrolled down - scroll to top smoothly
-                scrollToTopTrigger += 1
+            // Scroll to top with animation
+            withAnimation(.easeInOut(duration: 0.3)) {
+                scrollProxy?.scrollTo("recipes-top", anchor: .top)
             }
+            Task { await viewModel.refresh() }
         }
     }
 
     private var recipesHeader: some View {
         HStack {
-            // Icon header
             Image(systemName: AppIcon.recipe)
                 .font(.system(size: DesignSystem.IconSize.lg))
                 .foregroundColor(DesignSystem.Colors.primary)
@@ -89,7 +49,6 @@ struct RecipesListView: View {
 
             Spacer()
 
-            // Filter button
             Button { showFilters = true } label: {
                 Image(systemName: AppIcon.filter)
                     .font(.system(size: DesignSystem.IconSize.md))
@@ -97,25 +56,40 @@ struct RecipesListView: View {
             }
         }
         .padding(.horizontal, DesignSystem.Spacing.md)
-        .frame(height: headerHeight)
-        .frame(maxWidth: .infinity)
-        .background(DesignSystem.Colors.background)
+        .padding(.vertical, DesignSystem.Spacing.sm)
     }
 
-    private var scrollContent: some View {
-        CustomRefreshableScrollView(
-            headerHeight: headerHeight,
-            headerScrollOffset: $scrollOffset,
-            scrollToTopTrigger: $scrollToTopTrigger,
-            programmaticRefreshTrigger: $programmaticRefreshTrigger,
-            onRefresh: { await viewModel.refresh() }
-        ) {
-            recipeContent
+    @ViewBuilder
+    private var contentView: some View {
+        switch viewModel.state {
+        case .idle, .loading:
+            Spacer()
+            ProgressView()
+            Spacer()
+        case .loaded:
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    Color.clear.frame(height: 0).id("recipes-top")
+                    recipeContent
+                }
+                .refreshable {
+                    await viewModel.refresh()
+                }
+                .onAppear { scrollProxy = proxy }
+            }
+        case .empty:
+            Spacer()
+            IconEmptyState(icon: AppIcon.recipe)
+            Spacer()
+        case .error(let msg):
+            Spacer()
+            ErrorStateView(message: msg) { viewModel.loadRecipes() }
+            Spacer()
         }
     }
 
     private var recipeContent: some View {
-        VStack(spacing: DesignSystem.Spacing.md) {
+        LazyVStack(spacing: DesignSystem.Spacing.md) {
             ForEach(viewModel.recipes) { recipe in
                 NavigationLink(value: recipe.id) {
                     RecipeCard(
@@ -125,21 +99,20 @@ struct RecipesListView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .responsiveFrame()
                 .onAppear {
-                    // Load more when near the end
                     if recipe.id == viewModel.recipes.suffix(3).first?.id {
                         viewModel.loadMore()
                     }
                 }
             }
 
-            // Loading indicator at bottom
             if viewModel.isLoadingMore {
                 ProgressView()
                     .padding(.vertical, DesignSystem.Spacing.md)
             }
         }
-        .padding(.horizontal, DesignSystem.Spacing.md)
+        .frame(maxWidth: .infinity)
         .padding(.bottom, DesignSystem.Spacing.sm)
     }
 }
@@ -154,9 +127,17 @@ struct RecipeCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
             // Cover image
-            AsyncImage(url: URL(string: recipe.coverImageUrl ?? "")) { img in img.resizable().scaledToFill() }
-                placeholder: { Rectangle().fill(DesignSystem.Colors.tertiaryBackground) }
-                .frame(height: 180).cornerRadius(DesignSystem.CornerRadius.md).clipped()
+            GeometryReader { geometry in
+                AsyncImage(url: URL(string: recipe.coverImageUrl ?? "")) { img in
+                    img.resizable().scaledToFill()
+                } placeholder: {
+                    Rectangle().fill(DesignSystem.Colors.tertiaryBackground)
+                }
+                .frame(width: geometry.size.width, height: 180)
+                .clipped()
+            }
+            .frame(height: 180)
+            .cornerRadius(DesignSystem.CornerRadius.md)
 
             // Title
             Text(recipe.title)
@@ -213,7 +194,6 @@ struct RecipeCard: View {
         }
         .padding(DesignSystem.Spacing.md)
         .background(DesignSystem.Colors.background)
-        .cornerRadius(DesignSystem.CornerRadius.md)
         .contentShape(Rectangle())
     }
 }
@@ -227,7 +207,7 @@ struct RecipeFiltersView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Cooking Time Section (icon header)
+                // Cooking Time Section
                 Section {
                     ForEach(CookingTimeRange.allCases, id: \.self) { range in
                         Button {
@@ -248,22 +228,27 @@ struct RecipeFiltersView: View {
                     HStack(spacing: DesignSystem.Spacing.xs) {
                         Image(systemName: AppIcon.timer)
                             .foregroundColor(DesignSystem.Colors.primary)
+                        Text(String(localized: "filter.cookingTime"))
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
 
-                // Sort Section (icon header)
+                // Servings Section
                 Section {
-                    ForEach(RecipeSortOption.allCases, id: \.self) { option in
+                    ForEach(ServingsOption.allCases, id: \.self) { option in
                         Button {
-                            filters.sortBy = option
+                            if filters.minServings == option.minServings {
+                                filters.minServings = nil
+                                filters.maxServings = nil
+                            } else {
+                                filters.minServings = option.minServings
+                                filters.maxServings = option.maxServings
+                            }
                         } label: {
                             HStack {
-                                Image(systemName: option.iconName)
-                                    .foregroundColor(DesignSystem.Colors.secondaryText)
-                                    .frame(width: 20)
                                 Text(option.displayText)
                                 Spacer()
-                                if filters.sortBy == option {
+                                if filters.minServings == option.minServings {
                                     Image(systemName: AppIcon.checkmark)
                                         .foregroundColor(DesignSystem.Colors.primary)
                                 }
@@ -273,15 +258,28 @@ struct RecipeFiltersView: View {
                     }
                 } header: {
                     HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: AppIcon.sort)
+                        Image(systemName: AppIcon.servings)
                             .foregroundColor(DesignSystem.Colors.primary)
+                        Text(String(localized: "filter.servings"))
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
+                    }
+                }
+
+                // Cooking Style Section (searchable dropdown with all countries)
+                Section {
+                    CookingStylePicker(selection: $filters.cookingStyle)
+                } header: {
+                    HStack(spacing: DesignSystem.Spacing.xs) {
+                        Image(systemName: AppIcon.chef)
+                            .foregroundColor(DesignSystem.Colors.primary)
+                        Text(String(localized: "filter.cookingStyle"))
+                            .foregroundColor(DesignSystem.Colors.secondaryText)
                     }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    // Reset button (icon)
                     Button {
                         filters = RecipeFilters()
                     } label: {
@@ -290,7 +288,6 @@ struct RecipeFiltersView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    // Apply button (icon)
                     Button {
                         onApply()
                         dismiss()
@@ -304,14 +301,88 @@ struct RecipeFiltersView: View {
     }
 }
 
-// Extension for sort option icons
-extension RecipeSortOption {
-    var iconName: String {
-        switch self {
-        case .trending: return "flame"
-        case .mostCooked: return "person.2"
-        case .highestRated: return "star"
-        case .newest: return "clock"
+// MARK: - Cooking Style Picker (Searchable Dropdown)
+struct CookingStylePicker: View {
+    @Binding var selection: String?
+    @State private var searchText = ""
+
+    private var filteredStyles: [CookingStyleOption] {
+        if searchText.isEmpty {
+            return CookingStyleOption.allCases
+        }
+        return CookingStyleOption.allCases.filter {
+            $0.displayText.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Search field
+            HStack {
+                Image(systemName: AppIcon.search)
+                    .foregroundColor(DesignSystem.Colors.tertiaryText)
+                TextField("Search countries...", text: $searchText)
+                    .textFieldStyle(.plain)
+                if !searchText.isEmpty {
+                    Button { searchText = "" } label: {
+                        Image(systemName: AppIcon.close)
+                            .foregroundColor(DesignSystem.Colors.tertiaryText)
+                    }
+                }
+            }
+            .padding(DesignSystem.Spacing.sm)
+            .background(DesignSystem.Colors.tertiaryBackground)
+            .cornerRadius(DesignSystem.CornerRadius.sm)
+
+            // Selected style indicator
+            if let selected = selection, let style = CookingStyleOption(rawValue: selected) {
+                HStack {
+                    Text("Selected:")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundColor(DesignSystem.Colors.secondaryText)
+                    Text("\(style.flag) \(style.displayText)")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundColor(DesignSystem.Colors.primary)
+                    Spacer()
+                    Button { selection = nil } label: {
+                        Image(systemName: AppIcon.close)
+                            .font(.system(size: DesignSystem.IconSize.sm))
+                            .foregroundColor(DesignSystem.Colors.tertiaryText)
+                    }
+                }
+                .padding(.top, DesignSystem.Spacing.xs)
+            }
+
+            // Country list
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(filteredStyles) { style in
+                        Button {
+                            selection = selection == style.rawValue ? nil : style.rawValue
+                        } label: {
+                            HStack {
+                                Text(style.flag)
+                                    .font(.system(size: 20))
+                                Text(style.displayText)
+                                    .font(DesignSystem.Typography.body)
+                                Spacer()
+                                if selection == style.rawValue {
+                                    Image(systemName: AppIcon.checkmark)
+                                        .foregroundColor(DesignSystem.Colors.primary)
+                                }
+                            }
+                            .padding(.vertical, DesignSystem.Spacing.sm)
+                            .contentShape(Rectangle())
+                        }
+                        .foregroundColor(DesignSystem.Colors.text)
+
+                        if style != filteredStyles.last {
+                            Divider()
+                        }
+                    }
+                }
+            }
+            .frame(maxHeight: 250)
         }
     }
 }

@@ -70,7 +70,7 @@ final class MockCookingLogRepository: CookingLogRepositoryProtocol {
         return getLogResult ?? .failure(.notFound)
     }
 
-    func getUserLogs(userId: String, cursor: String?) async -> RepositoryResult<PaginatedResponse<CookingLogSummary>> {
+    func getUserLogs(userId: String, cursor: String?) async -> RepositoryResult<PaginatedResponse<FeedLogItem>> {
         return .success(PaginatedResponse(content: [], nextCursor: nil, hasNext: false))
     }
 
@@ -112,7 +112,7 @@ final class MockCookingLogRepository: CookingLogRepositoryProtocol {
 final class MockUserRepository: UserRepositoryProtocol {
     var getMyProfileResult: RepositoryResult<MyProfile>?
     var getUserProfileResult: RepositoryResult<UserProfile>?
-    var updateProfileResult: RepositoryResult<MyProfile>?
+    var updateProfileResult: RepositoryResult<Void>?
     var checkUsernameAvailabilityResult: RepositoryResult<Bool> = .success(true)
     var followCalled = false
     var unfollowCalled = false
@@ -130,10 +130,10 @@ final class MockUserRepository: UserRepositoryProtocol {
         return getUserProfileResult ?? .failure(.notFound)
     }
 
-    func updateProfile(_ request: UpdateProfileRequest) async -> RepositoryResult<MyProfile> {
+    func updateProfile(_ request: UpdateProfileRequest) async -> RepositoryResult<Void> {
         updateProfileCalled = true
         lastUpdateProfileRequest = request
-        return updateProfileResult ?? getMyProfileResult ?? .failure(.notFound)
+        return updateProfileResult ?? .success(())
     }
 
     func checkUsernameAvailability(_ username: String) async -> RepositoryResult<Bool> {
@@ -171,6 +171,10 @@ final class MockUserRepository: UserRepositoryProtocol {
 
     func unblockUser(userId: String) async -> RepositoryResult<Void> {
         return .success(())
+    }
+
+    func getBlockedUsers(page: Int) async -> RepositoryResult<BlockedUsersResponse> {
+        return .success(BlockedUsersResponse(content: [], hasNext: false, page: 0, size: 20, totalElements: 0))
     }
 
     func reportUser(userId: String, reason: ReportReason) async -> RepositoryResult<Void> {
@@ -254,7 +258,7 @@ final class MockSavedContentRepository: SavedContentRepositoryProtocol {
     var getSavedRecipesResult: RepositoryResult<PaginatedResponse<RecipeSummary>> = .success(
         PaginatedResponse(content: [], nextCursor: nil, hasNext: false)
     )
-    var getSavedLogsResult: RepositoryResult<PaginatedResponse<CookingLogSummary>> = .success(
+    var getSavedLogsResult: RepositoryResult<PaginatedResponse<FeedLogItem>> = .success(
         PaginatedResponse(content: [], nextCursor: nil, hasNext: false)
     )
 
@@ -262,7 +266,7 @@ final class MockSavedContentRepository: SavedContentRepositoryProtocol {
         return getSavedRecipesResult
     }
 
-    func getSavedLogs(cursor: String?) async -> RepositoryResult<PaginatedResponse<CookingLogSummary>> {
+    func getSavedLogs(cursor: String?) async -> RepositoryResult<PaginatedResponse<FeedLogItem>> {
         return getSavedLogsResult
     }
 }
@@ -290,6 +294,18 @@ final class MockNotificationRepository: NotificationRepositoryProtocol {
 
     func markAllAsRead() async -> RepositoryResult<Void> {
         markAllAsReadCalled = true
+        return .success(())
+    }
+
+    var deleteNotificationCalled = false
+    func deleteNotification(id: String) async -> RepositoryResult<Void> {
+        deleteNotificationCalled = true
+        return .success(())
+    }
+
+    var deleteAllNotificationsCalled = false
+    func deleteAllNotifications() async -> RepositoryResult<Void> {
+        deleteAllNotificationsCalled = true
         return .success(())
     }
 

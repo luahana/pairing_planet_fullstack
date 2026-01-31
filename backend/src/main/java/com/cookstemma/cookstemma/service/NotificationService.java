@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,7 +37,11 @@ public class NotificationService {
     // =========== FCM Token Management ===========
 
     public void registerFcmToken(UserPrincipal principal, RegisterFcmTokenRequest request) {
-        User user = userRepository.getReferenceById(principal.getId());
+        User user = userRepository.findById(principal.getId()).orElse(null);
+        if (user == null) {
+            log.warn("User not found for FCM token registration: {}", principal.getId());
+            return;
+        }
 
         // Check if token already exists for this user
         fcmTokenRepository.findByUserIdAndFcmToken(principal.getId(), request.fcmToken())
@@ -90,11 +95,15 @@ public class NotificationService {
             return;
         }
 
-        User recipient = userRepository.getReferenceById(recipeOwnerId);
+        User recipient = userRepository.findById(recipeOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Recipe owner not found for notification: {}", recipeOwnerId);
+            return;
+        }
 
         String title = "누군가 당신의 레시피를 요리했어요!";
         String body = String.format("%s님이 '%s' 레시피를 요리하고 후기를 남겼습니다.",
-            sender.getUsername(), truncate(recipe.getTitle(), 30));
+            safeUsername(sender), truncate(recipe.getTitle(), 30));
 
         Notification notification = Notification.builder()
             .recipient(recipient)
@@ -104,9 +113,9 @@ public class NotificationService {
             .logPost(logPost)
             .title(title)
             .body(body)
-            .data(Map.of(
+            .data(buildDataMap(
                 "recipeTitle", recipe.getTitle(),
-                "senderName", sender.getUsername()
+                "senderName", safeUsername(sender)
             ))
             .build();
 
@@ -129,7 +138,7 @@ public class NotificationService {
 
         String title = "새로운 팔로워가 생겼어요!";
         String body = String.format("%s님이 회원님을 팔로우하기 시작했습니다.",
-            follower.getUsername());
+            safeUsername(follower));
 
         Notification notification = Notification.builder()
             .recipient(followedUser)
@@ -137,8 +146,8 @@ public class NotificationService {
             .type(NotificationType.NEW_FOLLOWER)
             .title(title)
             .body(body)
-            .data(Map.of(
-                "followerName", follower.getUsername(),
+            .data(buildDataMap(
+                "followerName", safeUsername(follower),
                 "followerPublicId", follower.getPublicId().toString()
             ))
             .build();
@@ -160,11 +169,15 @@ public class NotificationService {
             return;
         }
 
-        User recipient = userRepository.getReferenceById(parentOwnerId);
+        User recipient = userRepository.findById(parentOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Parent recipe owner not found for notification: {}", parentOwnerId);
+            return;
+        }
 
         String title = "당신의 레시피에 새로운 변형이 생겼어요!";
         String body = String.format("%s님이 '%s' 레시피를 변형하여 '%s'를 만들었습니다.",
-            sender.getUsername(),
+            safeUsername(sender),
             truncate(parentRecipe.getTitle(), 20),
             truncate(newVariation.getTitle(), 20));
 
@@ -175,16 +188,96 @@ public class NotificationService {
             .recipe(newVariation)
             .title(title)
             .body(body)
-            .data(Map.of(
+            .data(buildDataMap(
                 "parentRecipeTitle", parentRecipe.getTitle(),
                 "newRecipeTitle", newVariation.getTitle(),
-                "senderName", sender.getUsername()
+                "senderName", safeUsername(sender)
             ))
             .build();
 
         notificationRepository.save(notification);
         pushNotificationService.sendToUser(parentOwnerId, notification);
         log.info("Sent RECIPE_VARIATION notification to user {} from user {}", parentOwnerId, sender.getId());
+    }
+
+    /**
+     * Called when someone saves a recipe
+     */
+    public void notifyRecipeSaved(Recipe recipe, User sender) {
+        Long recipeOwnerId = recipe.getCreatorId();
+
+        // Don't notify yourself
+        if (recipeOwnerId.equals(sender.getId())) {
+            log.debug("Skipping self-notification for RECIPE_SAVED");
+            return;
+        }
+
+        User recipient = userRepository.findById(recipeOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Recipe owner not found for notification: {}", recipeOwnerId);
+            return;
+        }
+
+        String title = "누군가 당신의 레시피를 저장했어요!";
+        String body = String.format("%s님이 '%s' 레시피를 저장했습니다.",
+            safeUsername(sender), truncate(recipe.getTitle(), 30));
+
+        Notification notification = Notification.builder()
+            .recipient(recipient)
+            .sender(sender)
+            .type(NotificationType.RECIPE_SAVED)
+            .recipe(recipe)
+            .title(title)
+            .body(body)
+            .data(buildDataMap(
+                "recipeTitle", recipe.getTitle(),
+                "senderName", safeUsername(sender)
+            ))
+            .build();
+
+        notificationRepository.save(notification);
+        pushNotificationService.sendToUser(recipeOwnerId, notification);
+        log.info("Sent RECIPE_SAVED notification to user {} from user {}", recipeOwnerId, sender.getId());
+    }
+
+    /**
+     * Called when someone saves a cooking log
+     */
+    public void notifyLogSaved(LogPost logPost, User sender) {
+        Long logOwnerId = logPost.getCreatorId();
+
+        // Don't notify yourself
+        if (logOwnerId.equals(sender.getId())) {
+            log.debug("Skipping self-notification for LOG_SAVED");
+            return;
+        }
+
+        User recipient = userRepository.findById(logOwnerId).orElse(null);
+        if (recipient == null) {
+            log.warn("Log owner not found for notification: {}", logOwnerId);
+            return;
+        }
+
+        String title = "누군가 당신의 요리 일지를 저장했어요!";
+        String body = String.format("%s님이 회원님의 요리 일지를 저장했습니다.",
+            safeUsername(sender));
+
+        Notification notification = Notification.builder()
+            .recipient(recipient)
+            .sender(sender)
+            .type(NotificationType.LOG_SAVED)
+            .logPost(logPost)
+            .title(title)
+            .body(body)
+            .data(buildDataMap(
+                "senderName", safeUsername(sender),
+                "logPublicId", logPost.getPublicId().toString()
+            ))
+            .build();
+
+        notificationRepository.save(notification);
+        pushNotificationService.sendToUser(logOwnerId, notification);
+        log.info("Sent LOG_SAVED notification to user {} from user {}", logOwnerId, sender.getId());
     }
 
     // =========== Notification Inbox ===========
@@ -227,13 +320,41 @@ public class NotificationService {
         log.debug("Marked all notifications as read for user {}", principal.getId());
     }
 
+    public void deleteNotification(UUID notificationPublicId, UserPrincipal principal) {
+        Notification notification = notificationRepository.findByPublicId(notificationPublicId)
+            .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+
+        // Security check - only recipient can delete their notification
+        if (!notification.getRecipient().getId().equals(principal.getId())) {
+            throw new SecurityException("Not authorized to delete this notification");
+        }
+
+        notificationRepository.delete(notification);
+        log.debug("Deleted notification {} for user {}", notificationPublicId, principal.getId());
+    }
+
+    public void deleteAllNotifications(UserPrincipal principal) {
+        try {
+            log.info("Deleting all notifications for user {}", principal.getId());
+            notificationRepository.deleteAllByRecipientId(principal.getId());
+            log.info("Deleted all notifications for user {}", principal.getId());
+        } catch (Exception e) {
+            log.error("Failed to delete all notifications for user {}: {}", principal.getId(), e.getMessage(), e);
+            throw e;
+        }
+    }
+
     // =========== Test ===========
 
     /**
      * Send a test notification to the current user (for testing push notifications)
      */
     public void sendTestNotification(UserPrincipal principal) {
-        User user = userRepository.getReferenceById(principal.getId());
+        User user = userRepository.findById(principal.getId()).orElse(null);
+        if (user == null) {
+            log.warn("User not found for test notification: {}", principal.getId());
+            return;
+        }
 
         String title = "테스트 알림";
         String body = "푸시 알림이 정상적으로 작동합니다!";
@@ -258,5 +379,22 @@ public class NotificationService {
         if (text == null) return "";
         if (text.length() <= maxLength) return text;
         return text.substring(0, maxLength - 3) + "...";
+    }
+
+    /**
+     * Creates a map that handles null values (unlike Map.of())
+     */
+    private Map<String, Object> buildDataMap(String... keyValues) {
+        Map<String, Object> map = new HashMap<>();
+        for (int i = 0; i + 1 < keyValues.length; i += 2) {
+            String key = keyValues[i];
+            String value = keyValues[i + 1];
+            map.put(key, value != null ? value : "Unknown");
+        }
+        return map;
+    }
+
+    private String safeUsername(User user) {
+        return user != null && user.getUsername() != null ? user.getUsername() : "Unknown";
     }
 }

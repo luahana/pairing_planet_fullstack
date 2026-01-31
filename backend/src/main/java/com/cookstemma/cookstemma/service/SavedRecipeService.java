@@ -36,6 +36,7 @@ public class SavedRecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeLogRepository recipeLogRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
@@ -51,6 +52,17 @@ public class SavedRecipeService {
                     .recipeId(recipe.getId())
                     .build());
             recipe.incrementSavedCount();
+
+            // Send notification to recipe owner (don't let notification failures affect save)
+            try {
+                User sender = userRepository.findById(userId).orElse(null);
+                if (sender != null) {
+                    notificationService.notifyRecipeSaved(recipe, sender);
+                }
+            } catch (Exception e) {
+                // Log but don't fail the save operation
+                System.err.println("Failed to send recipe saved notification: " + e.getMessage());
+            }
         }
     }
 

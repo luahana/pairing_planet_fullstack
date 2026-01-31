@@ -207,7 +207,7 @@ export default function TermsOfServicePage() {
           If you have any questions about these Terms, please contact us at:
         </p>
         <p className="text-gray-700 mt-2">
-          <strong>Email:</strong> support@cookstemma.com
+          <strong>Email:</strong> contact@cookstemma.com
         </p>
       </section>
     </LegalPageLayout>

@@ -34,6 +34,7 @@ public class SavedLogService {
     private final SavedLogRepository savedLogRepository;
     private final LogPostRepository logPostRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${file.upload.url-prefix}")
     private String urlPrefix;
@@ -49,6 +50,17 @@ public class SavedLogService {
                     .logPostId(logPost.getId())
                     .build());
             logPost.incrementSavedCount();
+
+            // Send notification to log owner (don't let notification failures affect save)
+            try {
+                User sender = userRepository.findById(userId).orElse(null);
+                if (sender != null) {
+                    notificationService.notifyLogSaved(logPost, sender);
+                }
+            } catch (Exception e) {
+                // Log but don't fail the save operation
+                System.err.println("Failed to send log saved notification: " + e.getMessage());
+            }
         }
     }
 

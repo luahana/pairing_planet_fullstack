@@ -14,6 +14,7 @@ import com.cookstemma.cookstemma.dto.log_post.CreateLogRequestDto;
 import com.cookstemma.cookstemma.dto.log_post.LogPostSummaryDto;
 import com.cookstemma.cookstemma.dto.log_post.UpdateLogRequestDto;
 import com.cookstemma.cookstemma.dto.recipe.RecipeSummaryDto;
+import com.cookstemma.cookstemma.repository.comment.CommentRepository;
 import com.cookstemma.cookstemma.repository.log_post.LogPostRepository;
 import com.cookstemma.cookstemma.repository.log_post.SavedLogRepository;
 import com.cookstemma.cookstemma.repository.recipe.RecipeLogRepository;
@@ -51,6 +52,7 @@ public class LogPostService {
     private final NotificationService notificationService;
     private final SavedLogRepository savedLogRepository;
     private final TranslationEventService translationEventService;
+    private final CommentRepository commentRepository;
 
     @Value("${file.upload.url-prefix}") // [추가] URL 조합을 위해 필요
     private String urlPrefix;
@@ -231,7 +233,11 @@ public class LogPostService {
         String localizedContent = LocaleUtils.getLocalizedValue(
                 logPost.getContentTranslations(), normalizedLocale, logPost.getContent());
 
-        // 7. 최종 DTO 생성
+        // 7. Calculate visible comment count (excludes hidden comments)
+        // Use anonymous count for consistency with feed cards
+        int visibleCommentCount = (int) commentRepository.countVisibleCommentsAnonymous(logPost.getId());
+
+        // 8. 최종 DTO 생성
         return new LogPostDetailResponseDto(
                 logPost.getPublicId(),
                 localizedTitle,
@@ -245,7 +251,7 @@ public class LogPostService {
                 creatorPublicId,
                 userName,
                 logPost.getIsPrivate() != null ? logPost.getIsPrivate() : false,
-                logPost.getCommentCount() != null ? logPost.getCommentCount() : 0
+                visibleCommentCount
         );
     }
 
@@ -295,6 +301,9 @@ public class LogPostService {
                 .map(Hashtag::getName)
                 .toList();
 
+        // Calculate visible comment count (excludes hidden comments)
+        int visibleCommentCount = (int) commentRepository.countVisibleCommentsAnonymous(log.getId());
+
         return new LogPostSummaryDto(
                 log.getPublicId(),
                 localizedTitle,
@@ -308,7 +317,7 @@ public class LogPostService {
                 hashtags,
                 isVariant,
                 log.getIsPrivate() != null ? log.getIsPrivate() : false,
-                log.getCommentCount() != null ? log.getCommentCount() : 0,
+                visibleCommentCount,
                 log.getLocale()
         );
     }

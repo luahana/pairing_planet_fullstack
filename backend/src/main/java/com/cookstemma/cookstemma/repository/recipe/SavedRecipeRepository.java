@@ -20,7 +20,7 @@ public interface SavedRecipeRepository extends JpaRepository<SavedRecipe, SavedR
     @Query("DELETE FROM SavedRecipe sr WHERE sr.userId = :userId AND sr.recipeId = :recipeId")
     void deleteByUserIdAndRecipeId(@Param("userId") Long userId, @Param("recipeId") Long recipeId);
 
-    @Query("SELECT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r WHERE sr.userId = :userId AND r.deletedAt IS NULL ORDER BY sr.createdAt DESC")
+    @Query("SELECT DISTINCT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r LEFT JOIN FETCH r.recipeImages ri LEFT JOIN FETCH ri.image WHERE sr.userId = :userId AND r.deletedAt IS NULL ORDER BY sr.createdAt DESC")
     Slice<SavedRecipe> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
     long countByRecipeId(Long recipeId);
@@ -30,20 +30,20 @@ public interface SavedRecipeRepository extends JpaRepository<SavedRecipe, SavedR
 
     // ==================== CURSOR-BASED PAGINATION ====================
 
-    // [Cursor] Saved recipes - initial page
-    @Query("SELECT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r WHERE sr.userId = :userId AND r.deletedAt IS NULL ORDER BY sr.createdAt DESC, sr.recipeId DESC")
+    // [Cursor] Saved recipes - initial page (fetch recipe images eagerly)
+    @Query("SELECT DISTINCT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r LEFT JOIN FETCH r.recipeImages ri LEFT JOIN FETCH ri.image WHERE sr.userId = :userId AND r.deletedAt IS NULL ORDER BY sr.createdAt DESC, sr.recipeId DESC")
     Slice<SavedRecipe> findSavedRecipesWithCursorInitial(@Param("userId") Long userId, Pageable pageable);
 
-    // [Cursor] Saved recipes - with cursor
-    @Query("SELECT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r WHERE sr.userId = :userId AND r.deletedAt IS NULL " +
+    // [Cursor] Saved recipes - with cursor (fetch recipe images eagerly)
+    @Query("SELECT DISTINCT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r LEFT JOIN FETCH r.recipeImages ri LEFT JOIN FETCH ri.image WHERE sr.userId = :userId AND r.deletedAt IS NULL " +
            "AND (sr.createdAt < :cursorTime OR (sr.createdAt = :cursorTime AND sr.recipeId < :cursorId)) " +
            "ORDER BY sr.createdAt DESC, sr.recipeId DESC")
     Slice<SavedRecipe> findSavedRecipesWithCursor(@Param("userId") Long userId, @Param("cursorTime") Instant cursorTime, @Param("cursorId") Long cursorId, Pageable pageable);
 
     // ==================== OFFSET-BASED PAGINATION (for Web) ====================
 
-    // [Offset] Saved recipes - page
-    @Query("SELECT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r WHERE sr.userId = :userId AND r.deletedAt IS NULL")
+    // [Offset] Saved recipes - page (fetch recipe images eagerly)
+    @Query("SELECT DISTINCT sr FROM SavedRecipe sr JOIN FETCH sr.recipe r LEFT JOIN FETCH r.recipeImages ri LEFT JOIN FETCH ri.image WHERE sr.userId = :userId AND r.deletedAt IS NULL")
     Page<SavedRecipe> findSavedRecipesPage(@Param("userId") Long userId, Pageable pageable);
 
     // Count total saves received on recipes created by a user

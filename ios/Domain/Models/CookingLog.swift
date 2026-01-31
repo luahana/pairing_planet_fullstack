@@ -158,7 +158,8 @@ struct CookingLogDetail: Codable, Identifiable, Equatable {
             id: r.id, title: r.title, description: r.description, foodName: r.foodName,
             cookingStyle: r.cookingStyle, userName: r.userName, thumbnail: r.thumbnail,
             variantCount: r.variantCount, logCount: r.logCount, servings: r.servings,
-            cookingTimeRange: r.cookingTimeRange, hashtags: r.hashtags, isPrivate: r.isPrivate
+            cookingTimeRange: r.cookingTimeRange, hashtags: r.hashtags, isPrivate: r.isPrivate,
+            isSaved: false
         )
     }
     var likeCount: Int { 0 }
@@ -166,6 +167,26 @@ struct CookingLogDetail: Codable, Identifiable, Equatable {
     var isSaved: Bool { isSavedByCurrentUser ?? false }
     var hashtags: [String] { hashtagObjects.map { $0.name } }
     var updatedAt: Date { createdAt }
+
+    /// Convert to FeedLogItem for use in saved content list
+    var asFeedLogItem: FeedLogItem {
+        FeedLogItem(
+            id: id,
+            title: title,
+            content: content,
+            rating: rating,
+            thumbnailUrl: logImages.first?.imageUrl,
+            creatorPublicId: creatorPublicId,
+            userName: userName,
+            foodName: linkedRecipe?.foodName,
+            recipeTitle: linkedRecipe?.title,
+            hashtags: hashtags,
+            isVariant: false,
+            isPrivate: isPrivate,
+            commentCount: commentCount,
+            cookingStyle: linkedRecipe?.cookingStyle
+        )
+    }
 }
 
 // MARK: - Log Image Info (from API)
@@ -297,6 +318,12 @@ struct CreateLogRequest: Codable {
     let recipeId: String?
     let hashtags: [String]
     let isPrivate: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case rating, content, hashtags, isPrivate
+        case imageIds = "imagePublicIds"
+        case recipeId = "recipePublicId"
+    }
 }
 
 struct UpdateLogRequest: Codable {
@@ -306,4 +333,10 @@ struct UpdateLogRequest: Codable {
     let recipeId: String?
     let hashtags: [String]?
     let isPrivate: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case rating, content, hashtags, isPrivate
+        case imageIds = "imagePublicIds"
+        case recipeId = "recipePublicId"
+    }
 }

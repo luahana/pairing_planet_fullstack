@@ -5,7 +5,7 @@ import Foundation
 /// Backend CommentResponseDto structure
 struct CommentResponse: Codable {
     let publicId: String
-    let content: String
+    let content: String?  // Can be null for deleted/hidden comments
     let creatorPublicId: String
     let creatorUsername: String
     let creatorProfileImageUrl: String?
@@ -21,7 +21,7 @@ struct CommentResponse: Codable {
     func toComment() -> Comment {
         Comment(
             id: publicId,
-            content: content,
+            content: content ?? "",  // Use empty string for null content
             author: UserSummary(
                 id: creatorPublicId,
                 username: creatorUsername,

@@ -83,6 +83,27 @@ public class NotificationController {
     }
 
     /**
+     * Delete a notification
+     */
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<Void> deleteNotification(
+            @PathVariable UUID notificationId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        notificationService.deleteNotification(notificationId, principal);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Delete all notifications for the current user
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllNotifications(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        notificationService.deleteAllNotifications(principal);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Send a test push notification to the current user (for testing only)
      */
     @PostMapping("/test")

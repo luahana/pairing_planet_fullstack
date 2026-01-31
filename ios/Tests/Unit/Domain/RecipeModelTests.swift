@@ -51,7 +51,7 @@ final class RecipeModelTests: XCTestCase {
         XCTAssertEqual(recipe.title, "Kimchi Fried Rice")
         XCTAssertEqual(recipe.description, "A delicious Korean dish")
         XCTAssertEqual(recipe.coverImageUrl, "https://example.com/image.jpg")
-        XCTAssertEqual(recipe.cookingTimeRange, .between15And30)
+        XCTAssertEqual(recipe.cookingTimeRange, .min15To30)
         XCTAssertEqual(recipe.servings, 2)
         XCTAssertEqual(recipe.cookCount, 156)
         XCTAssertEqual(recipe.averageRating, 4.3)
@@ -203,7 +203,7 @@ final class RecipeModelTests: XCTestCase {
         XCTAssertEqual(recipe.id, "recipe-123")
         XCTAssertEqual(recipe.title, "Kimchi Fried Rice")
         XCTAssertEqual(recipe.images.count, 1)
-        XCTAssertEqual(recipe.cookingTimeRange, .between30And60)
+        XCTAssertEqual(recipe.cookingTimeRange, .min30To60)
         XCTAssertEqual(recipe.servings, 4)
         XCTAssertEqual(recipe.ingredients.count, 4)
         XCTAssertEqual(recipe.steps.count, 2)
@@ -236,10 +236,11 @@ final class RecipeModelTests: XCTestCase {
 
     func testCookingTimeRange_allCasesMap() throws {
         let testCases: [(String, CookingTimeRange)] = [
-            ("UNDER_15_MIN", .under15),
-            ("BETWEEN_15_AND_30_MIN", .between15And30),
-            ("BETWEEN_30_AND_60_MIN", .between30And60),
-            ("OVER_60_MIN", .over60)
+            ("UNDER_15_MIN", .under15MinMin),
+            ("MIN_15_TO_30", .min15To30),
+            ("MIN_30_TO_60", .min30To60),
+            ("HOUR_1_TO_2", .hour1To2),
+            ("OVER_2_HOURS", .over2Hours)
         ]
 
         for (jsonValue, expectedCase) in testCases {
@@ -250,10 +251,11 @@ final class RecipeModelTests: XCTestCase {
     }
 
     func testCookingTimeRange_displayText() {
-        XCTAssertEqual(CookingTimeRange.under15.displayText, "< 15 min")
-        XCTAssertEqual(CookingTimeRange.between15And30.displayText, "15-30 min")
-        XCTAssertEqual(CookingTimeRange.between30And60.displayText, "30-60 min")
-        XCTAssertEqual(CookingTimeRange.over60.displayText, "60+ min")
+        XCTAssertEqual(CookingTimeRange.under15MinMin.displayText, "<15 min")
+        XCTAssertEqual(CookingTimeRange.min15To30.displayText, "15-30 min")
+        XCTAssertEqual(CookingTimeRange.min30To60.displayText, "30-60 min")
+        XCTAssertEqual(CookingTimeRange.hour1To2.displayText, "1-2 hr")
+        XCTAssertEqual(CookingTimeRange.over2Hours.displayText, "2+ hr")
     }
 
     // MARK: - Ingredient Tests
@@ -397,7 +399,7 @@ final class RecipeModelTests: XCTestCase {
     }
 
     func testRecipeFilters_isNotEmptyWithFilter() {
-        let filters = RecipeFilters(cookingTimeRange: .under15)
+        let filters = RecipeFilters(cookingTimeRange: .under15Min)
 
         XCTAssertFalse(filters.isEmpty)
     }

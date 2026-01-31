@@ -103,10 +103,12 @@ enum RecipeEndpoint: APIEndpoint {
             var items: [URLQueryItem] = []
             if let cursor = cursor { items.append(URLQueryItem(name: "cursor", value: cursor)) }
             if let filters = filters {
-                if let t = filters.cookingTimeRange { items.append(URLQueryItem(name: "cookingTimeRange", value: t.rawValue)) }
+                if let t = filters.cookingTimeRange { items.append(URLQueryItem(name: "cookingTime", value: t.rawValue)) }
                 if let c = filters.category { items.append(URLQueryItem(name: "category", value: c)) }
                 if let q = filters.searchQuery { items.append(URLQueryItem(name: "q", value: q)) }
-                items.append(URLQueryItem(name: "sort", value: filters.sortBy.rawValue))
+                if let minS = filters.minServings { items.append(URLQueryItem(name: "minServings", value: String(minS))) }
+                if let maxS = filters.maxServings { items.append(URLQueryItem(name: "maxServings", value: String(maxS))) }
+                if let style = filters.cookingStyle { items.append(URLQueryItem(name: "locale", value: style)) }
             }
             return items.isEmpty ? nil : items
         case .logs(_, let cursor):
@@ -158,7 +160,7 @@ enum LogEndpoint: APIEndpoint {
         switch self {
         case .home, .feed, .detail, .userLogs: return .get
         case .create, .like, .save: return .post
-        case .update: return .patch
+        case .update: return .put
         case .delete, .unlike, .unsave: return .delete
         }
     }
@@ -205,11 +207,13 @@ enum UserEndpoint: APIEndpoint {
     case following(userId: String, cursor: String?)
     case block(userId: String)
     case unblock(userId: String)
+    case blockedUsers(page: Int)
     case report(userId: String, reason: ReportReason)
+    case deleteAccount
 
     var path: String {
         switch self {
-        case .myProfile: return "users/me"
+        case .myProfile, .deleteAccount: return "users/me"
         case .profile(let id): return "users/\(id)"
         case .updateProfile: return "users/me"
         case .checkUsername: return "users/check-username"
@@ -218,16 +222,17 @@ enum UserEndpoint: APIEndpoint {
         case .followers(let id, _): return "users/\(id)/followers"
         case .following(let id, _): return "users/\(id)/following"
         case .block(let id), .unblock(let id): return "users/\(id)/block"
+        case .blockedUsers: return "users/me/blocked"
         case .report(let id, _): return "users/\(id)/report"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .myProfile, .profile, .checkUsername, .userRecipes, .followers, .following: return .get
+        case .myProfile, .profile, .checkUsername, .userRecipes, .followers, .following, .blockedUsers: return .get
         case .updateProfile: return .patch
         case .follow, .block, .report: return .post
-        case .unfollow, .unblock: return .delete
+        case .unfollow, .unblock, .deleteAccount: return .delete
         }
     }
 
@@ -237,6 +242,8 @@ enum UserEndpoint: APIEndpoint {
             return [URLQueryItem(name: "username", value: username)]
         case .userRecipes(_, let cursor), .followers(_, let cursor), .following(_, let cursor):
             return cursor.map { [URLQueryItem(name: "cursor", value: $0)] }
+        case .blockedUsers(let page):
+            return [URLQueryItem(name: "page", value: String(page))]
         default: return nil
         }
     }
@@ -261,7 +268,8 @@ enum UserEndpoint: APIEndpoint {
 
 enum CommentEndpoint: APIEndpoint {
     case list(logId: String, cursor: String?)
-    case create(logId: String, content: String, parentId: String?)
+    case create(logId: String, content: String)
+    case reply(parentCommentId: String, content: String)
     case update(id: String, content: String)
     case delete(id: String)
     case like(id: String)
@@ -270,7 +278,8 @@ enum CommentEndpoint: APIEndpoint {
     var path: String {
         switch self {
         case .list(let logId, _): return "log_posts/\(logId)/comments"
-        case .create(let logId, _, _): return "log_posts/\(logId)/comments"
+        case .create(let logId, _): return "log_posts/\(logId)/comments"
+        case .reply(let parentCommentId, _): return "comments/\(parentCommentId)/replies"
         case .update(let id, _), .delete(let id): return "comments/\(id)"
         case .like(let id), .unlike(let id): return "comments/\(id)/like"
         }
@@ -279,7 +288,7 @@ enum CommentEndpoint: APIEndpoint {
     var method: HTTPMethod {
         switch self {
         case .list: return .get
-        case .create, .like: return .post
+        case .create, .reply, .like: return .post
         case .update: return .patch
         case .delete, .unlike: return .delete
         }
@@ -297,10 +306,8 @@ enum CommentEndpoint: APIEndpoint {
 
     var body: Encodable? {
         switch self {
-        case .create(_, let content, let parentId):
-            var body: [String: String] = ["content": content]
-            if let parentId = parentId { body["parentId"] = parentId }
-            return body
+        case .create(_, let content), .reply(_, let content):
+            return ["content": content]
         case .update(_, let content):
             return ["content": content]
         default:
@@ -312,10 +319,7 @@ enum CommentEndpoint: APIEndpoint {
 // MARK: - Search Endpoints
 
 enum SearchEndpoint: APIEndpoint {
-    case search(query: String, type: SearchType?, cursor: String?)
-    case searchRecipes(query: String, filters: RecipeFilters?, cursor: String?)
-    case searchLogs(query: String, cursor: String?)
-    case searchUsers(query: String, cursor: String?)
+    case search(query: String, type: SearchType?, cursor: String?, size: Int)
     case recentSearches
     case clearRecentSearches
     case trending
@@ -324,40 +328,32 @@ enum SearchEndpoint: APIEndpoint {
     var path: String {
         switch self {
         case .search: return "search"
-        case .searchRecipes: return "search/recipes"
-        case .searchLogs: return "search/logs"
-        case .searchUsers: return "search/users"
         case .recentSearches, .clearRecentSearches: return "search/history"
-        case .trending: return "hashtags/trending"
-        case .hashtagContent(let h, _, _): return "hashtags/\(h)"
+        case .trending: return "hashtags/popular"
+        case .hashtagContent(let h, _, _): return "hashtags/\(h)/content"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .search, .searchRecipes, .searchLogs, .searchUsers, .recentSearches, .trending, .hashtagContent: return .get
+        case .search, .recentSearches, .trending, .hashtagContent: return .get
         case .clearRecentSearches: return .delete
         }
     }
 
     var queryItems: [URLQueryItem]? {
         switch self {
-        case .search(let q, let type, let cursor):
-            var items = [URLQueryItem(name: "q", value: q)]
-            if let t = type, t != .all { items.append(URLQueryItem(name: "type", value: t.rawValue)) }
-            if let c = cursor { items.append(URLQueryItem(name: "cursor", value: c)) }
-            return items
-        case .searchRecipes(let q, let filters, let cursor):
-            var items = [URLQueryItem(name: "q", value: q)]
-            if let cursor = cursor { items.append(URLQueryItem(name: "cursor", value: cursor)) }
-            if let filters = filters {
-                if let t = filters.cookingTimeRange { items.append(URLQueryItem(name: "cookingTimeRange", value: t.rawValue)) }
-                if let c = filters.category { items.append(URLQueryItem(name: "category", value: c)) }
+        case .search(let q, let type, let cursor, let size):
+            var items = [
+                URLQueryItem(name: "q", value: q),
+                URLQueryItem(name: "size", value: String(size))
+            ]
+            if let t = type, t != .all {
+                items.append(URLQueryItem(name: "type", value: t.rawValue.lowercased()))
             }
-            return items
-        case .searchLogs(let q, let cursor), .searchUsers(let q, let cursor):
-            var items = [URLQueryItem(name: "q", value: q)]
-            if let c = cursor { items.append(URLQueryItem(name: "cursor", value: c)) }
+            if let c = cursor {
+                items.append(URLQueryItem(name: "cursor", value: c))
+            }
             return items
         case .hashtagContent(_, let type, let cursor):
             var items: [URLQueryItem] = []
@@ -376,15 +372,18 @@ enum NotificationEndpoint: APIEndpoint {
     case unreadCount
     case markRead(id: String)
     case markAllRead
+    case delete(id: String)
+    case deleteAll
     case registerFCM(token: String)
     case unregisterFCM(token: String)
 
     var path: String {
         switch self {
-        case .list: return "notifications"
+        case .list, .deleteAll: return "notifications"
         case .unreadCount: return "notifications/unread-count"
         case .markRead(let id): return "notifications/\(id)/read"
         case .markAllRead: return "notifications/read-all"
+        case .delete(let id): return "notifications/\(id)"
         case .registerFCM, .unregisterFCM: return "notifications/fcm-token"
         }
     }
@@ -392,8 +391,9 @@ enum NotificationEndpoint: APIEndpoint {
     var method: HTTPMethod {
         switch self {
         case .list, .unreadCount: return .get
-        case .markRead, .markAllRead, .registerFCM: return .post
-        case .unregisterFCM: return .delete
+        case .markRead, .markAllRead: return .patch
+        case .registerFCM: return .post
+        case .delete, .deleteAll, .unregisterFCM: return .delete
         }
     }
 
@@ -418,8 +418,8 @@ enum SavedEndpoint: APIEndpoint {
 
     var path: String {
         switch self {
-        case .recipes: return "saved/recipes"
-        case .logs: return "saved/logs"
+        case .recipes: return "recipes/saved"
+        case .logs: return "log_posts/saved"
         }
     }
 
