@@ -32,6 +32,7 @@ import com.cookstemma.app.ui.screens.profile.FollowersScreen
 import com.cookstemma.app.ui.screens.hashtag.HashtagDetailScreen
 import com.cookstemma.app.ui.screens.settings.BlockedUsersScreen
 import com.cookstemma.app.ui.screens.settings.EditProfileScreen
+import com.cookstemma.app.ui.screens.settings.NotificationSettingsScreen
 import com.cookstemma.app.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
@@ -184,6 +185,8 @@ private fun MainContent(
             composable(BottomNavItem.Profile.route) {
                 ProfileScreen(
                     userId = null,
+                    appState = appState,
+                    isAuthenticated = isAuthenticated,
                     onRecipeClick = { navController.navigate("recipe/$it") },
                     onLogClick = { navController.navigate("log/$it") },
                     onSettingsClick = { navController.navigate("settings") },
@@ -240,6 +243,7 @@ private fun MainContent(
                 SettingsScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToEditProfile = { navController.navigate("settings/edit-profile") },
+                    onNavigateToNotificationSettings = { navController.navigate("settings/notifications") },
                     onNavigateToBlockedUsers = { navController.navigate("settings/blocked-users") },
                     onLogoutSuccess = {
                         navController.navigate(BottomNavItem.Home.route) {
@@ -256,6 +260,11 @@ private fun MainContent(
             }
             composable("settings/blocked-users") {
                 BlockedUsersScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable("settings/notifications") {
+                NotificationSettingsScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

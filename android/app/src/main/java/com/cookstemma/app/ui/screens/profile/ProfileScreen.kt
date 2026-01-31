@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.cookstemma.app.domain.model.SocialLinks
+import com.cookstemma.app.ui.AppState
 import com.cookstemma.app.ui.components.*
 import com.cookstemma.app.ui.theme.AvatarSize
 import com.cookstemma.app.ui.theme.Spacing
@@ -33,6 +35,8 @@ import com.cookstemma.app.ui.theme.Spacing
 @Composable
 fun ProfileScreen(
     userId: String?,
+    appState: AppState? = null,
+    isAuthenticated: Boolean = false,
     viewModel: ProfileViewModel = hiltViewModel(),
     onRecipeClick: (String) -> Unit,
     onLogClick: (String) -> Unit,
@@ -48,8 +52,15 @@ fun ProfileScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     val isOwnProfile = userId == null
 
-    LaunchedEffect(userId) {
-        viewModel.loadProfile(userId)
+    LaunchedEffect(userId, isAuthenticated) {
+        if (isOwnProfile && !isAuthenticated) {
+            // Don't load - show login sheet instead
+            appState?.requireAuth(false) {
+                viewModel.loadProfile(null)
+            }
+        } else {
+            viewModel.loadProfile(userId)
+        }
     }
 
     LaunchedEffect(uiState.blockSuccess) {
@@ -133,6 +144,14 @@ fun ProfileScreen(
                 .padding(padding)
         ) {
             when {
+                // Show sign-in prompt for own profile when not authenticated
+                isOwnProfile && !isAuthenticated -> {
+                    IconEmptyState(
+                        icon = AppIcons.profile,
+                        subtitle = "Sign in to view your profile",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
                 uiState.isLoading && !isRefreshing -> {
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
@@ -590,7 +609,7 @@ private fun ProfileHeader(
                         val cleanHandle = instagramHandle!!.replace("@", "")
                         val url = "https://instagram.com/$cleanHandle"
                         SocialIconButton(
-                            icon = "📷",
+                            imageVector = AppIcons.camera,
                             gradientColors = listOf(Color(0xFFFFA500), Color(0xFFFF69B4), Color(0xFF9370DB)),
                             onClick = { onSocialLinkClick(url) }
                         )
@@ -614,7 +633,8 @@ private fun ProfileHeader(
 
 @Composable
 private fun SocialIconButton(
-    icon: String,
+    icon: String? = null,
+    imageVector: ImageVector? = null,
     backgroundColor: Color? = null,
     gradientColors: List<Color>? = null,
     onClick: () -> Unit
@@ -635,11 +655,20 @@ private fun SocialIconButton(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = icon,
-            color = Color.White,
-            style = MaterialTheme.typography.bodyMedium
-        )
+        if (imageVector != null) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+        } else if (icon != null) {
+            Text(
+                text = icon,
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 

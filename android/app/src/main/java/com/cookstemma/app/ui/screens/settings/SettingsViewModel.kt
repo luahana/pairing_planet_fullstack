@@ -4,8 +4,12 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cookstemma.app.data.auth.TokenManager
+import com.cookstemma.app.data.local.ThemePreferencesDataStore
+import com.cookstemma.app.data.repository.AuthRepository
 import com.cookstemma.app.data.repository.UserRepository
 import com.cookstemma.app.domain.model.Result
+import com.cookstemma.app.util.AppLanguage
+import com.cookstemma.app.util.LanguageManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +27,7 @@ enum class AppTheme(val displayName: String) {
 
 data class SettingsUiState(
     val appTheme: AppTheme = AppTheme.SYSTEM,
-    val currentLanguage: String = "English",
+    val currentLanguage: AppLanguage = AppLanguage.ENGLISH,
     val appVersion: String = "1.0.0",
     val isLoggingOut: Boolean = false,
     val isDeletingAccount: Boolean = false,
@@ -35,7 +39,10 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
     private val tokenManager: TokenManager,
+    private val languageManager: LanguageManager,
+    private val themePreferencesDataStore: ThemePreferencesDataStore,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -44,25 +51,54 @@ class SettingsViewModel @Inject constructor(
 
     init {
         loadSettings()
+        observeThemeChanges()
     }
 
     private fun loadSettings() {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-        _uiState.update { it.copy(appVersion = packageInfo.versionName ?: "1.0.0") }
+        val currentLanguage = languageManager.getCurrentLanguage()
+        val savedTheme = themePreferencesDataStore.currentTheme
+        _uiState.update {
+            it.copy(
+                appVersion = packageInfo.versionName ?: "1.0.0",
+                currentLanguage = currentLanguage,
+                appTheme = savedTheme
+            )
+        }
+    }
+
+    private fun observeThemeChanges() {
+        viewModelScope.launch {
+            themePreferencesDataStore.themePreference.collect { theme ->
+                _uiState.update { it.copy(appTheme = theme) }
+            }
+        }
     }
 
     fun setTheme(theme: AppTheme) {
-        _uiState.update { it.copy(appTheme = theme) }
+        themePreferencesDataStore.setTheme(theme)
     }
+
+    fun setLanguage(language: AppLanguage) {
+        languageManager.setLanguage(language)
+        _uiState.update { it.copy(currentLanguage = language) }
+    }
+
+    fun getAllLanguages(): List<AppLanguage> = languageManager.getAllLanguages()
 
     fun logout() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoggingOut = true, error = null) }
-            try {
-                tokenManager.clearTokens()
-                _uiState.update { it.copy(isLoggingOut = false, logoutSuccess = true) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoggingOut = false, error = e.message) }
+            authRepository.logout().collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        _uiState.update { it.copy(isLoggingOut = false, logoutSuccess = true) }
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoggingOut = false, error = result.exception.message) }
+                    }
+                    is Result.Loading -> {}
+                }
             }
         }
     }
