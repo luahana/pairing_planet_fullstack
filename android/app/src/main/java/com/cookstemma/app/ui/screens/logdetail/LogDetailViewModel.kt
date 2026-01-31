@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cookstemma.app.data.repository.CommentRepository
 import com.cookstemma.app.data.repository.LogRepository
+import com.cookstemma.app.data.repository.SavedItemsManager
 import com.cookstemma.app.data.repository.Comment
 import com.cookstemma.app.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,8 @@ data class LogDetailUiState(
 class LogDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val logRepository: LogRepository,
-    private val commentRepository: CommentRepository
+    private val commentRepository: CommentRepository,
+    private val savedItemsManager: SavedItemsManager
 ) : ViewModel() {
 
     private val logId: String = checkNotNull(savedStateHandle["logId"])
@@ -40,6 +42,20 @@ class LogDetailViewModel @Inject constructor(
     init {
         loadLog()
         loadComments()
+        observeSavedState()
+    }
+
+    private fun observeSavedState() {
+        viewModelScope.launch {
+            savedItemsManager.savedLogIds.collect { savedIds ->
+                _uiState.value.log?.let { log ->
+                    val isSaved = savedIds.contains(log.id)
+                    if (log.isSaved != isSaved) {
+                        _uiState.update { it.copy(log = log.copy(isSaved = isSaved)) }
+                    }
+                }
+            }
+        }
     }
 
     private fun loadLog() {
@@ -131,28 +147,7 @@ class LogDetailViewModel @Inject constructor(
 
     fun toggleSave() {
         val log = _uiState.value.log ?: return
-
-        // Optimistic update
-        val newIsSaved = !log.isSaved
-        _uiState.update {
-            it.copy(log = log.copy(isSaved = newIsSaved))
-        }
-
-        viewModelScope.launch {
-            val result = if (newIsSaved) {
-                logRepository.saveLog(log.id)
-            } else {
-                logRepository.unsaveLog(log.id)
-            }
-
-            result.collect { apiResult ->
-                if (apiResult is Result.Error) {
-                    _uiState.update {
-                        it.copy(log = log)
-                    }
-                }
-            }
-        }
+        savedItemsManager.toggleSaveLog(log.id)
     }
 
     fun setCommentText(text: String) {

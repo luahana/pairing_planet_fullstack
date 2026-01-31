@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cookstemma.app.data.repository.RecipeRepository
+import com.cookstemma.app.data.repository.SavedItemsManager
 import com.cookstemma.app.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -23,7 +24,8 @@ data class RecipeDetailUiState(
 @HiltViewModel
 class RecipeDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val savedItemsManager: SavedItemsManager
 ) : ViewModel() {
 
     private val recipeId: String = checkNotNull(savedStateHandle["recipeId"])
@@ -34,6 +36,20 @@ class RecipeDetailViewModel @Inject constructor(
     init {
         loadRecipe()
         loadCookingLogs()
+        observeSavedState()
+    }
+
+    private fun observeSavedState() {
+        viewModelScope.launch {
+            savedItemsManager.savedRecipeIds.collect { savedIds ->
+                _uiState.value.recipe?.let { recipe ->
+                    val isSaved = savedIds.contains(recipe.id)
+                    if (recipe.isSaved != isSaved) {
+                        _uiState.update { it.copy(recipe = recipe.copy(uiIsSaved = isSaved)) }
+                    }
+                }
+            }
+        }
     }
 
     private fun loadRecipe() {
@@ -96,29 +112,7 @@ class RecipeDetailViewModel @Inject constructor(
 
     fun toggleSave() {
         val recipe = _uiState.value.recipe ?: return
-
-        // Optimistic update
-        val newIsSaved = !recipe.isSaved
-        _uiState.update {
-            it.copy(recipe = recipe.copy(uiIsSaved = newIsSaved))
-        }
-
-        viewModelScope.launch {
-            val result = if (newIsSaved) {
-                recipeRepository.saveRecipe(recipeId)
-            } else {
-                recipeRepository.unsaveRecipe(recipeId)
-            }
-
-            result.collect { apiResult ->
-                if (apiResult is Result.Error) {
-                    // Revert on failure
-                    _uiState.update {
-                        it.copy(recipe = recipe)
-                    }
-                }
-            }
-        }
+        savedItemsManager.toggleSaveRecipe(recipe.id)
     }
 
     fun refresh() {

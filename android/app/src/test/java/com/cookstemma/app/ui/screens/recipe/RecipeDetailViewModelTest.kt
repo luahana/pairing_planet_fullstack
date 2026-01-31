@@ -2,10 +2,12 @@ package com.cookstemma.app.ui.screens.recipe
 
 import app.cash.turbine.test
 import com.cookstemma.app.data.repository.RecipeRepository
+import com.cookstemma.app.data.repository.SavedItemsManager
 import com.cookstemma.app.domain.model.*
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.After
@@ -19,16 +21,20 @@ import kotlin.test.assertTrue
 class RecipeDetailViewModelTest {
 
     private lateinit var recipeRepository: RecipeRepository
+    private lateinit var savedItemsManager: SavedItemsManager
     private lateinit var savedStateHandle: androidx.lifecycle.SavedStateHandle
     private lateinit var viewModel: RecipeDetailViewModel
     private val testDispatcher = StandardTestDispatcher()
+    private val savedRecipeIdsFlow = MutableStateFlow<Set<String>>(emptySet())
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         recipeRepository = mockk()
+        savedItemsManager = mockk(relaxed = true)
         savedStateHandle = mockk()
         every { savedStateHandle.get<String>("recipeId") } returns "recipe-123"
+        every { savedItemsManager.savedRecipeIds } returns savedRecipeIdsFlow
     }
 
     @After
@@ -43,7 +49,7 @@ class RecipeDetailViewModelTest {
         coEvery { recipeRepository.getRecipe("recipe-123") } returns flowOf(Result.Loading)
         coEvery { recipeRepository.getRecipeLogs("recipe-123", 0) } returns flowOf(Result.Loading)
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -59,7 +65,7 @@ class RecipeDetailViewModelTest {
             Result.Success(PaginatedResponse(emptyList<RecipeLogItem>(), null, false))
         )
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -76,7 +82,7 @@ class RecipeDetailViewModelTest {
         coEvery { recipeRepository.getRecipe("recipe-123") } returns flowOf(Result.Error(error))
         coEvery { recipeRepository.getRecipeLogs("recipe-123", any()) } returns flowOf(Result.Loading)
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -97,7 +103,7 @@ class RecipeDetailViewModelTest {
             Result.Success(PaginatedResponse(mockLogs, "cursor-1", true))
         )
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -121,7 +127,7 @@ class RecipeDetailViewModelTest {
             Result.Success(PaginatedResponse(moreLogs, null, false))
         )
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.loadMoreLogs()
@@ -142,7 +148,7 @@ class RecipeDetailViewModelTest {
             Result.Success(PaginatedResponse(emptyList<RecipeLogItem>(), null, false))
         )
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.loadMoreLogs()
@@ -155,69 +161,62 @@ class RecipeDetailViewModelTest {
     // MARK: - Toggle Save Tests
 
     @Test
-    fun `toggleSave optimistically updates UI when saving`() = runTest {
+    fun `toggleSave calls savedItemsManager`() = runTest {
         val mockRecipe = createMockRecipeDetail(isSaved = false)
         coEvery { recipeRepository.getRecipe("recipe-123") } returns flowOf(Result.Success(mockRecipe))
         coEvery { recipeRepository.getRecipeLogs("recipe-123", any()) } returns flowOf(
             Result.Success(PaginatedResponse(emptyList<RecipeLogItem>(), null, false))
         )
-        coEvery { recipeRepository.saveRecipe("recipe-123") } returns flowOf(Result.Success(Unit))
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.toggleSave()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        verify { savedItemsManager.toggleSaveRecipe("recipe-123", any()) }
+    }
+
+    @Test
+    fun `observes savedRecipeIds from manager`() = runTest {
+        val mockRecipe = createMockRecipeDetail(isSaved = false)
+        coEvery { recipeRepository.getRecipe("recipe-123") } returns flowOf(Result.Success(mockRecipe))
+        coEvery { recipeRepository.getRecipeLogs("recipe-123", any()) } returns flowOf(
+            Result.Success(PaginatedResponse(emptyList<RecipeLogItem>(), null, false))
+        )
+
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Simulate manager updating saved state
+        savedRecipeIdsFlow.value = setOf("recipe-123")
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
             val state = awaitItem()
             assertTrue(state.recipe?.isSaved ?: false)
         }
-
-        coVerify { recipeRepository.saveRecipe("recipe-123") }
     }
 
     @Test
-    fun `toggleSave optimistically updates UI when unsaving`() = runTest {
+    fun `observes unsave from manager`() = runTest {
         val mockRecipe = createMockRecipeDetail(isSaved = true)
+        savedRecipeIdsFlow.value = setOf("recipe-123")
         coEvery { recipeRepository.getRecipe("recipe-123") } returns flowOf(Result.Success(mockRecipe))
         coEvery { recipeRepository.getRecipeLogs("recipe-123", any()) } returns flowOf(
             Result.Success(PaginatedResponse(emptyList<RecipeLogItem>(), null, false))
         )
-        coEvery { recipeRepository.unsaveRecipe("recipe-123") } returns flowOf(Result.Success(Unit))
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        viewModel.toggleSave()
+        // Simulate manager removing saved state
+        savedRecipeIdsFlow.value = emptySet()
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
             val state = awaitItem()
             assertFalse(state.recipe?.isSaved ?: true)
-        }
-
-        coVerify { recipeRepository.unsaveRecipe("recipe-123") }
-    }
-
-    @Test
-    fun `toggleSave reverts on API failure`() = runTest {
-        val mockRecipe = createMockRecipeDetail(isSaved = false)
-        coEvery { recipeRepository.getRecipe("recipe-123") } returns flowOf(Result.Success(mockRecipe))
-        coEvery { recipeRepository.getRecipeLogs("recipe-123", any()) } returns flowOf(
-            Result.Success(PaginatedResponse(emptyList<RecipeLogItem>(), null, false))
-        )
-        coEvery { recipeRepository.saveRecipe("recipe-123") } returns flowOf(Result.Error(Exception("Failed")))
-
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        viewModel.toggleSave()
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertFalse(state.recipe?.isSaved ?: true) // Should be reverted
         }
     }
 
@@ -231,7 +230,7 @@ class RecipeDetailViewModelTest {
             Result.Success(PaginatedResponse(emptyList<RecipeLogItem>(), null, false))
         )
 
-        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository)
+        viewModel = RecipeDetailViewModel(savedStateHandle, recipeRepository, savedItemsManager)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.refresh()

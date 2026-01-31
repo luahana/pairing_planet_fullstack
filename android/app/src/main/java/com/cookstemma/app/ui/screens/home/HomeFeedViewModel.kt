@@ -3,7 +3,7 @@ package com.cookstemma.app.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cookstemma.app.data.repository.FeedRepository
-import com.cookstemma.app.data.repository.UserRepository
+import com.cookstemma.app.data.repository.SavedItemsManager
 import com.cookstemma.app.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -27,51 +27,25 @@ data class HomeFeedUiState(
 @HiltViewModel
 class HomeFeedViewModel @Inject constructor(
     private val feedRepository: FeedRepository,
-    private val userRepository: UserRepository
+    private val savedItemsManager: SavedItemsManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeFeedUiState())
     val uiState: StateFlow<HomeFeedUiState> = _uiState.asStateFlow()
 
     private var nextCursor: String? = null
-    private var hasFetchedSavedIds = false
-
-    // Track pending changes during initial fetch to prevent overwrite
-    private val pendingUnsaves = mutableSetOf<String>()
-    private val pendingSaves = mutableSetOf<String>()
 
     init {
         loadFeed()
-        fetchSavedLogIds()
+        savedItemsManager.fetchSavedLogIds()
+        observeSavedLogIds()
     }
-    
-    private fun fetchSavedLogIds() {
-        if (hasFetchedSavedIds) return
-        
+
+    private fun observeSavedLogIds() {
         viewModelScope.launch {
-            val allSavedIds = mutableSetOf<String>()
-            var cursor: String? = null
-            
-            do {
-                userRepository.getSavedLogs(cursor).collect { result ->
-                    if (result is Result.Success) {
-                        allSavedIds.addAll(result.data.content.map { it.id })
-                        cursor = if (result.data.hasMore) result.data.nextCursor else null
-                    } else {
-                        cursor = null
-                    }
-                }
-            } while (cursor != null)
-            
-            _uiState.update { state ->
-                // Apply fetched IDs while respecting pending changes
-                val mergedIds = (allSavedIds + pendingSaves) - pendingUnsaves
-                state.copy(savedLogIds = mergedIds)
+            savedItemsManager.savedLogIds.collect { savedIds ->
+                _uiState.update { it.copy(savedLogIds = savedIds) }
             }
-            // Clear pending tracking now that fetch is complete
-            pendingSaves.clear()
-            pendingUnsaves.clear()
-            hasFetchedSavedIds = true
         }
     }
 
@@ -179,53 +153,9 @@ class HomeFeedViewModel @Inject constructor(
     }
 
     fun saveLog(logId: String) {
-        viewModelScope.launch {
-            val wasSaved = _uiState.value.isLogSaved(logId)
-
-            // Track pending change if initial fetch is still in progress
-            if (!hasFetchedSavedIds) {
-                if (wasSaved) {
-                    pendingUnsaves.add(logId)
-                    pendingSaves.remove(logId)
-                } else {
-                    pendingSaves.add(logId)
-                    pendingUnsaves.remove(logId)
-                }
-            }
-
-            // Optimistic update
-            _uiState.update { state ->
-                val newSavedIds = if (wasSaved) {
-                    state.savedLogIds - logId
-                } else {
-                    state.savedLogIds + logId
-                }
-                state.copy(savedLogIds = newSavedIds)
-            }
-
-            val result = if (wasSaved) {
-                feedRepository.unsaveLog(logId)
-            } else {
-                feedRepository.saveLog(logId)
-            }
-
-            if (result is Result.Error) {
-                // Clear pending change tracking on error
-                pendingSaves.remove(logId)
-                pendingUnsaves.remove(logId)
-                // Revert on failure
-                _uiState.update { state ->
-                    val revertedIds = if (wasSaved) {
-                        state.savedLogIds + logId
-                    } else {
-                        state.savedLogIds - logId
-                    }
-                    state.copy(savedLogIds = revertedIds)
-                }
-            }
-        }
+        savedItemsManager.toggleSaveLog(logId)
     }
-    
+
     fun isLogSaved(logId: String): Boolean = _uiState.value.isLogSaved(logId)
     fun isLogLiked(logId: String): Boolean = _uiState.value.isLogLiked(logId)
 }
