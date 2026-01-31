@@ -332,4 +332,17 @@ final class ProfileViewModel: ObservableObject {
             }
         }
     }
+
+    /// Refresh saved content (called when saved tab appears)
+    func refreshSavedContentIfNeeded() async {
+        guard isOwnProfile, !isLoadingContent else { return }
+        
+        #if DEBUG
+        print("[Profile] refreshSavedContentIfNeeded: forcing refresh")
+        #endif
+        
+        // Always refresh to ensure we have the latest saved content
+        await loadSavedContent(refresh: true)
+        savedContentNeedsRefresh = false
+    }
 }

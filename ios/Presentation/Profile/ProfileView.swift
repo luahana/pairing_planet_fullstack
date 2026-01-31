@@ -412,8 +412,6 @@ struct ProfileView: View {
                 }
             }
             .padding(.horizontal, DesignSystem.Spacing.md)
-            // Force view recreation when saved content changes
-            .id("saved-\(viewModel.savedRecipes.map { $0.id }.joined(separator: ","))-\(viewModel.savedLogs.map { $0.id }.joined(separator: ","))")
 
             if viewModel.isLoadingContent {
                 ProgressView()
@@ -422,6 +420,15 @@ struct ProfileView: View {
 
             if isEmptyForSavedFilter(filter) {
                 savedEmptyState(for: filter)
+            }
+        }
+        .onAppear {
+            // Always refresh saved content when this view appears
+            #if DEBUG
+            print("[ProfileView] savedFilterContent onAppear, triggering refresh")
+            #endif
+            Task {
+                await viewModel.refreshSavedContentIfNeeded()
             }
         }
     }
