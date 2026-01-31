@@ -135,6 +135,7 @@ fun HomeFeedScreen(
                         LazyColumn(
                             state = listState,
                             contentPadding = PaddingValues(bottom = Spacing.md),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.md),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(uiState.items, key = { it.id }) { item ->
