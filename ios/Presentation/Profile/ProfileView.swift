@@ -408,6 +408,23 @@ struct ProfileView: View {
     @ViewBuilder
     private func savedFilterContent(for filter: SavedContentFilter) -> some View {
         VStack(spacing: 0) {
+            #if DEBUG
+            let _ = {
+                print("========== [ProfileView] SAVED CONTENT RENDERING ==========")
+                print("[ProfileView] filter: \(filter)")
+                print("[ProfileView] viewModel.savedRecipes.count: \(viewModel.savedRecipes.count)")
+                print("[ProfileView] viewModel.savedLogs.count: \(viewModel.savedLogs.count)")
+                print("[ProfileView] SavedItemsManager.shared.savedRecipes.count: \(SavedItemsManager.shared.savedRecipes.count)")
+                print("[ProfileView] SavedItemsManager.shared.savedLogs.count: \(SavedItemsManager.shared.savedLogs.count)")
+                for (index, r) in viewModel.savedRecipes.prefix(3).enumerated() {
+                    print("[ProfileView] Recipe[\(index)]: \(r.id) - \(r.coverImageUrl ?? "NIL")")
+                }
+                for (index, l) in viewModel.savedLogs.prefix(3).enumerated() {
+                    print("[ProfileView] Log[\(index)]: \(l.id) - \(l.thumbnailUrl ?? "NIL")")
+                }
+                print("========== [ProfileView] END ==========")
+            }()
+            #endif
             LazyVGrid(columns: gridColumns, spacing: DesignSystem.Spacing.md) {
                 if filter != .logs {
                     ForEach(viewModel.savedRecipes) { recipe in
@@ -415,7 +432,7 @@ struct ProfileView: View {
                             RecipeGridCard(recipe: recipe, showSavedBadge: true)
                         }
                         .buttonStyle(.plain)
-                        .id("\(recipe.id)-\(recipe.coverImageUrl ?? "")")
+                        .id("recipe-\(recipe.id)-\(viewModel.savedContentVersion)")
                     }
                 }
                 if filter != .recipes {
@@ -424,7 +441,7 @@ struct ProfileView: View {
                             LogGridCard(log: log, showSavedBadge: true)
                         }
                         .buttonStyle(.plain)
-                        .id("\(log.id)-\(log.thumbnailUrl ?? "")")
+                        .id("log-\(log.id)-\(viewModel.savedContentVersion)")
                     }
                 }
             }
@@ -447,6 +464,16 @@ struct ProfileView: View {
             Task {
                 await viewModel.refreshSavedContentIfNeeded()
             }
+        }
+        .onChange(of: viewModel.savedRecipes.count) { oldValue, newValue in
+            #if DEBUG
+            print("[ProfileView] savedRecipes.count CHANGED: \(oldValue) -> \(newValue)")
+            #endif
+        }
+        .onChange(of: viewModel.savedLogs.count) { oldValue, newValue in
+            #if DEBUG
+            print("[ProfileView] savedLogs.count CHANGED: \(oldValue) -> \(newValue)")
+            #endif
         }
     }
 
