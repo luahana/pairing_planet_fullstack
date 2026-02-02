@@ -190,6 +190,37 @@ final class ProfileViewModelTests: XCTestCase {
         XCTAssertEqual(sut.savedCount, 42)
     }
 
+    // MARK: - Saved Content Version Tests
+
+    func testSavedContentVersion_defaultIsZero() {
+        // Given
+        sut = ProfileViewModel(
+            userId: nil,
+            userRepository: mockUserRepository,
+            logRepository: mockLogRepository,
+            savedContentRepository: mockSavedContentRepository
+        )
+
+        // Then
+        XCTAssertEqual(sut.savedContentVersion, 0)
+    }
+
+    func testReset_resetsSavedContentVersion() {
+        // Given
+        sut = ProfileViewModel(
+            userId: nil,
+            userRepository: mockUserRepository,
+            logRepository: mockLogRepository,
+            savedContentRepository: mockSavedContentRepository
+        )
+
+        // When
+        sut.reset()
+
+        // Then
+        XCTAssertEqual(sut.savedContentVersion, 0)
+    }
+
     // MARK: - Visibility Filter Tests
 
     func testVisibilityFilter_defaultIsAll() {

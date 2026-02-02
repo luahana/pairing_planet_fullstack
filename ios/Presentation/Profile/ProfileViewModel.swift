@@ -43,6 +43,7 @@ final class ProfileViewModel: ObservableObject {
     @Published private(set) var hasMoreLogs = true
     @Published private(set) var hasMoreSavedRecipes = true
     @Published private(set) var hasMoreSavedLogs = true
+    @Published private(set) var savedContentVersion: Int = 0
     @Published var selectedTab: ProfileTab = .recipes
     @Published var visibilityFilter: VisibilityFilter = .all
     @Published var savedContentFilter: SavedContentFilter = .all
@@ -56,8 +57,6 @@ final class ProfileViewModel: ObservableObject {
     private var savedRecipesNextCursor: String?
     private var savedLogsNextCursor: String?
     private var cancellables = Set<AnyCancellable>()
-    private var savedContentNeedsRefresh = false
-    @Published private var savedCountAdjustment = 0
 
     init(
         userId: String? = nil,
@@ -74,69 +73,76 @@ final class ProfileViewModel: ObservableObject {
     }
 
     private func setupSaveStateObserver() {
-        // Listen for recipe save state changes
-        NotificationCenter.default.publisher(for: .recipeSaveStateChanged)
+        guard isOwnProfile else {
+            #if DEBUG
+            print("[ProfileVM] NOT own profile - skipping observer setup")
+            #endif
+            return
+        }
+
+        #if DEBUG
+        print("========== [ProfileVM] SETTING UP OBSERVERS ==========")
+        #endif
+
+        // Observe SavedItemsManager for saved recipes changes
+        SavedItemsManager.shared.$savedRecipes
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] notification in
-                guard let self = self, self.isOwnProfile else { return }
-                guard let recipeId = notification.userInfo?["recipeId"] as? String,
-                      let isSaved = notification.userInfo?["isSaved"] as? Bool else { return }
-
-                #if DEBUG
-                print("[Profile] Recipe save state changed: \(recipeId), isSaved=\(isSaved)")
-                #endif
-
-                if isSaved {
-                    // Recipe was saved - update count and add to list directly if data provided
-                    self.savedCountAdjustment += 1
-                    if let summary = notification.userInfo?["recipeSummary"] as? RecipeSummary {
-                        // Add directly to the list (prepend since it's the newest)
-                        if !self.savedRecipes.contains(where: { $0.id == summary.id }) {
-                            self.savedRecipes.insert(summary, at: 0)
-                        }
-                    } else {
-                        // Fallback: mark for refresh on next tab visit
-                        self.savedContentNeedsRefresh = true
-                    }
-                } else {
-                    // Recipe was unsaved - update count and remove from list immediately
-                    self.savedCountAdjustment -= 1
-                    self.savedRecipes = self.savedRecipes.filter { $0.id != recipeId }
+            .sink { [weak self] recipes in
+                guard let self = self else {
+                    #if DEBUG
+                    print("[ProfileVM] RECIPE OBSERVER - self is nil!")
+                    #endif
+                    return
                 }
+                #if DEBUG
+                print("========== [ProfileVM] RECIPE OBSERVER FIRED ==========")
+                print("[ProfileVM] Received \(recipes.count) recipes from SavedItemsManager")
+                for (index, r) in recipes.prefix(5).enumerated() {
+                    print("[ProfileVM]   [\(index)] \(r.id): \(r.coverImageUrl ?? "NIL")")
+                }
+                print("[ProfileVM] BEFORE assignment - self.savedRecipes.count: \(self.savedRecipes.count)")
+                #endif
+                self.savedRecipes = recipes
+                self.savedContentVersion += 1
+                #if DEBUG
+                print("[ProfileVM] AFTER assignment - self.savedRecipes.count: \(self.savedRecipes.count)")
+                print("[ProfileVM] savedContentVersion: \(self.savedContentVersion)")
+                print("========== [ProfileVM] RECIPE OBSERVER END ==========")
+                #endif
             }
             .store(in: &cancellables)
 
-        // Listen for log save state changes
-        NotificationCenter.default.publisher(for: .logSaveStateChanged)
+        // Observe SavedItemsManager for saved logs changes
+        SavedItemsManager.shared.$savedLogs
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] notification in
-                guard let self = self, self.isOwnProfile else { return }
-                guard let logId = notification.userInfo?["logId"] as? String,
-                      let isSaved = notification.userInfo?["isSaved"] as? Bool else { return }
-
-                #if DEBUG
-                print("[Profile] Log save state changed: \(logId), isSaved=\(isSaved)")
-                #endif
-
-                if isSaved {
-                    // Log was saved - update count and add to list directly if data provided
-                    self.savedCountAdjustment += 1
-                    if let feedLogItem = notification.userInfo?["feedLogItem"] as? FeedLogItem {
-                        // Add directly to the list (prepend since it's the newest)
-                        if !self.savedLogs.contains(where: { $0.id == feedLogItem.id }) {
-                            self.savedLogs.insert(feedLogItem, at: 0)
-                        }
-                    } else {
-                        // Fallback: mark for refresh on next tab visit
-                        self.savedContentNeedsRefresh = true
-                    }
-                } else {
-                    // Log was unsaved - update count and remove from list immediately
-                    self.savedCountAdjustment -= 1
-                    self.savedLogs = self.savedLogs.filter { $0.id != logId }
+            .sink { [weak self] logs in
+                guard let self = self else {
+                    #if DEBUG
+                    print("[ProfileVM] LOG OBSERVER - self is nil!")
+                    #endif
+                    return
                 }
+                #if DEBUG
+                print("========== [ProfileVM] LOG OBSERVER FIRED ==========")
+                print("[ProfileVM] Received \(logs.count) logs from SavedItemsManager")
+                for (index, log) in logs.prefix(5).enumerated() {
+                    print("[ProfileVM]   [\(index)] \(log.id): \(log.thumbnailUrl ?? "NIL")")
+                }
+                print("[ProfileVM] BEFORE assignment - self.savedLogs.count: \(self.savedLogs.count)")
+                #endif
+                self.savedLogs = logs
+                self.savedContentVersion += 1
+                #if DEBUG
+                print("[ProfileVM] AFTER assignment - self.savedLogs.count: \(self.savedLogs.count)")
+                print("[ProfileVM] savedContentVersion: \(self.savedContentVersion)")
+                print("========== [ProfileVM] LOG OBSERVER END ==========")
+                #endif
             }
             .store(in: &cancellables)
+
+        #if DEBUG
+        print("[ProfileVM] Observers setup complete")
+        #endif
     }
 
     func loadProfile() {
@@ -149,21 +155,20 @@ final class ProfileViewModel: ObservableObject {
 
     func loadContent() {
         #if DEBUG
-        print("[Profile] loadContent called for tab: \(selectedTab), needsRefresh=\(savedContentNeedsRefresh)")
+        print("[Profile] loadContent called for tab: \(selectedTab)")
         #endif
         Task {
             switch selectedTab {
             case .recipes: await loadRecipes(refresh: true)
             case .logs: await loadLogs(refresh: true)
-            case .saved:
-                await loadSavedContent(refresh: true)
-                savedContentNeedsRefresh = false
+            case .saved: await loadSavedContent(refresh: true)
             }
         }
     }
 
     var savedCount: Int {
-        max(0, (myProfile?.savedCount ?? 0) + savedCountAdjustment)
+        // Use local published properties for proper SwiftUI updates
+        savedRecipes.count + savedLogs.count
     }
 
     func toggleFollow() async {
@@ -215,7 +220,6 @@ final class ProfileViewModel: ObservableObject {
         switch result {
         case .success(let profile):
             myProfile = profile
-            savedCountAdjustment = 0  // Reset adjustment since API has accurate count
             state = .loaded
             loadContent()
         case .failure(let error):
@@ -287,50 +291,14 @@ final class ProfileViewModel: ObservableObject {
         print("[Profile] Loading saved content, refresh=\(refresh)")
         #endif
 
-        // Load both saved recipes and logs in parallel
-        async let recipesTask = savedContentRepository.getSavedRecipes(
-            cursor: refresh ? nil : savedRecipesNextCursor
-        )
-        async let logsTask = savedContentRepository.getSavedLogs(
-            cursor: refresh ? nil : savedLogsNextCursor
-        )
+        // Delegate to SavedItemsManager which is the single source of truth
+        await SavedItemsManager.shared.fetchAllSavedContent()
 
-        let recipesResult = await recipesTask
-        let logsResult = await logsTask
-
-        switch recipesResult {
-        case .success(let response):
-            #if DEBUG
-            print("[Profile] Saved recipes loaded: \(response.content.count) items")
-            for recipe in response.content.prefix(3) {
-                print("[Profile]   - \(recipe.title): thumbnail=\(recipe.thumbnail ?? "nil")")
-            }
-            #endif
-            savedRecipes = refresh ? response.content : savedRecipes + response.content
-            savedRecipesNextCursor = response.nextCursor
-            hasMoreSavedRecipes = response.hasMore
-        case .failure(let error):
-            #if DEBUG
-            print("[Profile] Failed to load saved recipes: \(error)")
-            #endif
-        }
-
-        switch logsResult {
-        case .success(let response):
-            #if DEBUG
-            print("[Profile] Saved logs loaded: \(response.content.count) items")
-            for log in response.content.prefix(3) {
-                print("[Profile]   - \(log.id): thumbnail=\(log.thumbnailUrl ?? "nil")")
-            }
-            #endif
-            savedLogs = refresh ? response.content : savedLogs + response.content
-            savedLogsNextCursor = response.nextCursor
-            hasMoreSavedLogs = response.hasMore
-        case .failure(let error):
-            #if DEBUG
-            print("[Profile] Failed to load saved logs: \(error)")
-            #endif
-        }
+        #if DEBUG
+        print("[Profile] Saved content loaded via SavedItemsManager")
+        print("[Profile]   - Recipes: \(SavedItemsManager.shared.savedRecipes.count)")
+        print("[Profile]   - Logs: \(SavedItemsManager.shared.savedLogs.count)")
+        #endif
     }
 
     func loadMoreContent() {
@@ -346,14 +314,13 @@ final class ProfileViewModel: ObservableObject {
     /// Refresh saved content (called when saved tab appears)
     func refreshSavedContentIfNeeded() async {
         guard isOwnProfile, !isLoadingContent else { return }
-        
+
         #if DEBUG
         print("[Profile] refreshSavedContentIfNeeded: forcing refresh")
         #endif
-        
+
         // Always refresh to ensure we have the latest saved content
         await loadSavedContent(refresh: true)
-        savedContentNeedsRefresh = false
     }
 
     /// Reset all state (called when user changes)
@@ -368,6 +335,7 @@ final class ProfileViewModel: ObservableObject {
         logs = []
         savedRecipes = []
         savedLogs = []
+        savedContentVersion = 0
         recipesNextCursor = nil
         logsNextCursor = nil
         savedRecipesNextCursor = nil
@@ -377,7 +345,5 @@ final class ProfileViewModel: ObservableObject {
         hasMoreSavedRecipes = true
         hasMoreSavedLogs = true
         selectedTab = .recipes
-        savedCountAdjustment = 0
-        savedContentNeedsRefresh = false
     }
 }
